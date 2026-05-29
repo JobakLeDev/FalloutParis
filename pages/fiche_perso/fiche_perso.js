@@ -514,6 +514,24 @@ function toggleAtout(name){const it=char.inventory.find(i=>i.name===name&&i.type
 
 function tEquip(i){
   const it=char.inventory[i];
+  if(!it.equipped){
+    // Si c'est une armure/tenue, déséquiper la même zone d'abord
+    if(['ARMOR','POWERARMOR','CLOTHING','OUTFIT'].includes(it.type)){
+      const zone=it.zone||null;
+      char.inventory.forEach((other,j)=>{
+        if(j===i||!other.equipped)return;
+        if(!['ARMOR','POWERARMOR','CLOTHING','OUTFIT'].includes(other.type))return;
+        // CLOTHING/OUTFIT : une seule tenue à la fois (zone Body)
+        if(['CLOTHING','OUTFIT'].includes(it.type)&&['CLOTHING','OUTFIT'].includes(other.type)){
+          other.equipped=false;
+        }
+        // ARMOR/POWERARMOR : une seule pièce par zone
+        else if(zone&&other.zone===zone){
+          other.equipped=false;
+        }
+      });
+    }
+  }
   it.equipped=!it.equipped;
   rAll();
 }
