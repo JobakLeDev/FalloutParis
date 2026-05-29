@@ -111,9 +111,10 @@ function utiliserItem(i){
   const it=char.inventory[i];
   if(!it||it.qty<=0)return;
   const db=[...DB.food,...DB.drinks,...DB.drugs].find(d=>d.n===it.name)||{};
-  if(db.hp>0){char.hp=Math.min(hpMax(),char.hp+(db.hp||0));}
-  if(it.name==='RadAway')char.rad=Math.max(0,char.rad-4);
-  if(it.name==='RadAway Diluted')char.rad=Math.max(0,char.rad-2);
+  if(db.hp>0) char.hp=Math.min(hpMax(),char.hp+db.hp);
+  if(db.rad&&typeof db.rad==='number'&&db.rad<0) char.rad=Math.max(0,char.rad+db.rad);
+  if(it.name==='RadAway') char.rad=Math.max(0,char.rad-4);
+  if(it.name==='RadAway Diluted') char.rad=Math.max(0,char.rad-2);
   it.qty--;
   if(it.qty<=0)char.inventory.splice(i,1);
   rAll();
