@@ -51,7 +51,12 @@ function getLocRD(zone){
     if(!it.equipped)return;
     const db=[...DB.armor].find(a=>a.n===it.name);
     if(!db)return;
-    if(db.z===zm[zone]||(db.t==='POWERARMOR'&&char.powerArmor)){ph+=db.ph;en+=db.en;rad+=db.rad||0;}
+    // Body = bras/jambes/torse (pas la tête), All = tout
+    const coversZone = db.z===zm[zone]
+      || (db.t==='POWERARMOR'&&char.powerArmor)
+      || (db.z==='Body'&&zone!=='head')
+      || db.z==='All';
+    if(coversZone){ph+=db.ph;en+=db.en;rad+=(db.rad===999?999:db.rad||0);}
   });
   return{phys:ph,en,rad};
 }
