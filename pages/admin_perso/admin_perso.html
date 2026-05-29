@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fallout Paris — Admin Personnages</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <link rel="stylesheet" href="../../common/style.css">
+  <link rel="stylesheet" href="admin_perso.css">
+</head>
+<body>
+
+<!-- LOCK SCREEN -->
+<div class="lock" id="lock">
+  <div class="lock-box">
+    <div class="lock-title">ACCÈS RESTREINT</div>
+    <div class="lock-sub">FALLOUT PARIS — MJ</div>
+    <input type="password" class="lock-input" id="lock-input" placeholder="••••" maxlength="4" inputmode="numeric">
+    <button class="lock-btn" onclick="unlock()">ENTRER</button>
+    <div class="lock-err" id="lock-err">Code incorrect</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+
+  <div class="hdr">
+    <div>
+      <div class="hdr-title">ADMIN PERSONNAGES<small>Fallout Paris — MAÎTRE DU JEU</small></div>
+    </div>
+    <button class="btn-back" onclick="window.location.href='../../index.html'">← Accueil</button>
+  </div>
+
+  <div class="main">
+
+    <!-- LISTE GAUCHE -->
+    <div>
+      <div class="panel">
+        <div class="ptitle">Personnages</div>
+        <div id="perso-list"><div style="font-size:9px;color:var(--td)">Chargement...</div></div>
+        <hr class="fo">
+        <button class="btn full" onclick="nouveauPerso()">+ Nouveau personnage</button>
+      </div>
+    </div>
+
+    <!-- ÉDITEUR DROITE -->
+    <div id="editor" style="display:none">
+      <div class="panel active-panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="ptitle" style="margin:0;border:none" id="editor-title">Édition</div>
+          <div style="display:flex;gap:6px">
+            <button class="btn" onclick="sauvegarder()">💾 Sauvegarder</button>
+            <button class="btn danger" onclick="supprimer()">✕ Supprimer</button>
+          </div>
+        </div>
+
+        <div class="edit-tabs">
+          <div class="etab on" onclick="swTab('infos')">INFOS</div>
+          <div class="etab" onclick="swTab('special')">SPECIAL</div>
+          <div class="etab" onclick="swTab('skills')">COMPÉT.</div>
+          <div class="etab" onclick="swTab('perks')">PERKS</div>
+          <div class="etab" onclick="swTab('inventaire')">INVENTAIRE</div>
+        </div>
+
+        <!-- INFOS -->
+        <div class="etcontent on" id="et-infos">
+          <div class="g2">
+            <div class="field"><label>ID joueur</label><input type="text" id="e-id" readonly style="opacity:0.5"></div>
+            <div class="field"><label>Code</label><input type="password" id="e-code" maxlength="4" placeholder="••••"></div>
+          </div>
+          <div class="g2">
+            <div class="field"><label>Nom du personnage</label><input type="text" id="e-nom"></div>
+            <div class="field"><label>Origine</label><input type="text" id="e-origine"></div>
+          </div>
+          <div class="g3">
+            <div class="field"><label>Niveau</label><input type="number" id="e-niveau" min="1" max="20" value="1"></div>
+            <div class="field"><label>XP</label><input type="number" id="e-xp" min="0" value="0"></div>
+            <div class="field"><label>PV actuels</label><input type="number" id="e-hp" min="0" value="10"></div>
+          </div>
+          <div class="g2">
+            <div class="field"><label>Radiation</label><input type="number" id="e-rad" min="0" value="0"></div>
+            <div class="field"><label>Power Armor</label><select id="e-pa"><option value="false">Non</option><option value="true">Oui</option></select></div>
+          </div>
+          <div style="margin-top:6px">
+            <a id="e-link" href="#" target="_blank" style="font-size:9px;color:var(--g);letter-spacing:1px">↗ Ouvrir la fiche joueur</a>
+          </div>
+        </div>
+
+        <!-- SPECIAL -->
+        <div class="etcontent" id="et-special">
+          <div id="sp-grid"></div>
+          <div style="font-size:8px;color:var(--td);margin-top:8px">PV max calculé automatiquement : LCK + END + (niveau-1)</div>
+        </div>
+
+        <!-- COMPETENCES -->
+        <div class="etcontent" id="et-skills">
+          <div class="scroll" id="sk-grid"></div>
+        </div>
+
+        <!-- PERKS -->
+        <div class="etcontent" id="et-perks">
+          <div class="scroll" id="pk-grid"></div>
+        </div>
+
+        <!-- INVENTAIRE -->
+        <div class="etcontent" id="et-inventaire">
+          <div class="scroll" id="inv-grid"></div>
+          <hr class="fo">
+          <div style="display:flex;gap:6px;margin-top:6px">
+            <select class="fo-sel" id="inv-add-sel"><option value="">+ Ajouter un objet...</option></select>
+            <button class="btn" onclick="addInvItem()">+</button>
+          </div>
+          <hr class="fo">
+          <div class="ptitle" style="margin-top:4px">Munitions</div>
+          <div id="ammo-grid"></div>
+          <div style="display:flex;gap:6px;margin-top:6px">
+            <input type="text" id="ammo-cal" placeholder="Calibre..." style="flex:1;background:#060d06;border:1px solid var(--b2);color:var(--tb);font-family:'Share Tech Mono',monospace;font-size:10px;padding:5px;outline:none;">
+            <button class="btn" onclick="addAmmo()">+ Munitions</button>
+          </div>
+        </div>
+
+        <div class="msg" id="msg"></div>
+      </div>
+    </div>
+
+    <!-- PLACEHOLDER -->
+    <div id="placeholder">
+      <div class="panel" style="text-align:center;padding:40px">
+        <div style="font-size:9px;color:var(--td);line-height:2">Sélectionne un personnage<br>ou crée-en un nouveau</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+  <script src="../../common/data.js"></script>
+  <script src="../../common/firebase.js"></script>
+  <script src="admin_perso.js"></script>
+</body>
+</html>

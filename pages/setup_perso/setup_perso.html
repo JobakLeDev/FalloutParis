@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fallout Paris — Configuration du personnage</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <link rel="stylesheet" href="../../common/style.css">
+  <link rel="stylesheet" href="setup_perso.css">
+</head>
+<body>
+
+<div class="hdr">
+  <div><div class="hdr-title">CONFIGURATION<small>Fallout Paris</small></div></div>
+  <div class="hdr-char">
+    <div class="hdr-name" id="hdr-name">...</div>
+    <div class="hdr-meta" id="hdr-meta">...</div>
+  </div>
+  <div style="width:120px"></div>
+</div>
+
+<!-- POINTS RÉSUMÉ -->
+<div class="pts-bar">
+  <div class="pts-item"><span class="pts-lbl">POINTS SPECIAL</span><span class="pts-val" id="pts-special">21 / 40</span></div>
+  <div class="pts-item"><span class="pts-lbl">COMPÉTENCES TAG</span><span class="pts-val" id="pts-tag">0 / 3</span></div>
+  <div class="pts-item"><span class="pts-lbl">RANGS COMPÉT.</span><span class="pts-val" id="pts-skills">0</span></div>
+  <div class="pts-item"><span class="pts-lbl">PERKS ACTIFS</span><span class="pts-val" id="pts-perks">0</span></div>
+  <div class="pts-item"><span class="pts-lbl">PV MAX</span><span class="pts-val" id="pts-hp">—</span></div>
+</div>
+
+<div class="main">
+
+  <!-- SPECIAL -->
+  <div class="panel">
+    <div class="ptitle">S.P.E.C.I.A.L</div>
+    <div class="psubtitle">Clique sur + / − pour répartir tes points.<br>Chaque stat commence à 5, max 10.</div>
+    <div id="sp-grid"></div>
+  </div>
+
+  <!-- COMPÉTENCES -->
+  <div class="panel">
+    <div class="ptitle">Compétences</div>
+    <div class="tag-info">Sélectionne <span>3 compétences TAG ★</span> — elles reçoivent un bonus de +2 TN.</div>
+    <div class="scroll" id="sk-grid"></div>
+  </div>
+
+  <!-- PERKS -->
+  <div class="panel">
+    <div class="ptitle">Perks de départ</div>
+    <div class="psubtitle">Perks disponibles selon ton niveau.<br>Le MJ peut en ajouter d'autres.</div>
+    <div class="scroll" id="pk-grid"></div>
+  </div>
+
+</div>
+
+<div class="bottom">
+  <div class="msg" id="msg"></div>
+  <div class="save-info">Toutes les modifications sont sauvegardées automatiquement</div>
+  <button class="btn-save" onclick="terminer()">✓ Terminer &amp; Jouer</button>
+</div>
+  <script src="../../common/data.js"></script>
+  <script src="../../common/firebase.js"></script>
+  <script src="setup_perso.js"></script>
+</body>
+</html>

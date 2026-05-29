@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fallout Paris — Nouveau personnage</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <link rel="stylesheet" href="../../common/style.css">
+  <link rel="stylesheet" href="creation_perso.css">
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <img src="../../img/VaultBoy.png" class="vb" alt="">
+    <div class="title">NOUVEAU PERSONNAGE</div>
+    <div class="subtitle">Fallout Online Play</div>
+  </div>
+
+  <div class="panel">
+    <div class="ptitle">Informations de connexion</div>
+    <div class="field">
+      <label>Identifiant unique</label>
+      <input type="text" id="f-id" placeholder="ex: alice, marcus..." autocomplete="off" autocorrect="off" spellcheck="false" oninput="this.value=this.value.toLowerCase().replace(/\s/g,'')">
+      <div class="hint">Utilisé pour te connecter · sans espace · en minuscules</div>
+    </div>
+    <div class="field">
+      <label>Code de connexion (4 chiffres)</label>
+      <input type="password" id="f-code" placeholder="••••" maxlength="4" inputmode="numeric">
+      <div class="hint">Retiens-le bien, il ne peut pas être récupéré</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ptitle">Ton personnage</div>
+    <div class="field">
+      <label>Nom du personnage</label>
+      <input type="text" id="f-nom" placeholder="ex: Alice, Marcus Aurelius...">
+    </div>
+    <div class="field">
+      <label>Origine</label>
+      <input type="text" id="f-origine" placeholder="ex: Vault 74, Survivor...">
+      <div class="hint">Le MJ peut compléter le reste de ta fiche ensuite</div>
+    </div>
+  </div>
+
+  <button class="btn" onclick="creer()">⟶ Créer mon personnage</button>
+  <button class="btn-back" onclick="window.location.href='../../index.html'">← Retour</button>
+  <div class="msg" id="msg"></div>
+
+</div>
+  <script src="../../common/data.js"></script>
+  <script src="../../common/firebase.js"></script>
+  <script src="creation_perso.js"></script>
+</body>
+</html>

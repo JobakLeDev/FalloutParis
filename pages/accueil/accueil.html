@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>F.O.P. — Fallout Online Play</title>
+      <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <link rel="stylesheet" href="../../common/style.css">
+  <link rel="stylesheet" href="accueil.css">
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <img src="../../img/VaultBoy.png" class="vaultboy-img" alt="Vault Boy">
+    <div class="title">FALLOUT PARIS</div>
+    <div class="subtitle">FALLOUT ONLINE PLAY</div>
+    <div class="tagline">WAR... WAR NEVER CHANGES.</div>
+  </div>
+
+  <!-- PANEL CONNEXION -->
+  <div class="panel">
+    <div class="ptitle">Connexion</div>
+
+    <div class="field">
+      <label>Identifiant</label>
+      <input type="text" id="inp-id" placeholder="ton id..." autocomplete="off" autocorrect="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label>Code (4 chiffres)</label>
+      <input type="password" id="inp-code" placeholder="••••" maxlength="4" inputmode="numeric">
+    </div>
+
+    <button class="btn-primary" onclick="connexion()">⟶ Accéder à ma fiche</button>
+
+    <div class="sep">ou</div>
+
+    <button class="btn-secondary" onclick="window.location.href='../creation_perso/creation_perso.html'">+ Nouveau personnage</button>
+
+    <div class="msg" id="msg"></div>
+    <div class="loading" id="loading">Connexion en cours<span class="dot-anim"></span></div>
+  </div>
+
+  <div class="footer">Fallout Paris · Vault 74 · v1.0</div>
+
+</div>
+  <script src="../../common/firebase.js" defer></script>
+  <script src="accueil.js"></script>
+</body>
+</html>

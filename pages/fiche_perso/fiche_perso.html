@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fallout Paris — Fiche Personnage</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <link rel="stylesheet" href="../../common/style.css">
+  <link rel="stylesheet" href="fiche_perso.css">
+</head>
+<body>
+<div class="pip">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div><div class="logo">PIP-BOY 3000<small>Fallout Paris</small></div></div>
+  <div class="hdr-mid">
+    <div class="name-inp" id="name-inp">...</div>
+    <div class="meta" id="meta">Chargement...</div>
+  </div>
+  <div class="hdr-right">
+    <div class="mini-hp">PV <b id="mini-hp">3/13</b></div>
+    <div class="mini-rad-lbl">RAD <b id="mini-rad">0</b></div>
+    <div class="bdgs" id="bdgs"></div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab on" onclick="sw('general')">GÉNÉRAL</div>
+  <div class="tab" onclick="sw('inventaire')">INVENTAIRE</div>
+  <div class="tab" onclick="sw('perks')">PERKS &amp; COMPÉT.</div>
+  <div class="tab" onclick="sw('carte')">CARTE</div>
+  <div class="tab" onclick="sw('journal')">JOURNAL</div>
+</div>
+
+<div class="body">
+
+<!-- GÉNÉRAL -->
+<div class="tc on" id="tc-general">
+
+  <!-- LIGNE 1 : SPECIAL étroit | ARMURE en croix -->
+  <div style="display:grid;grid-template-columns:160px 1fr;gap:9px;margin-bottom:9px">
+
+    <!-- SPECIAL compact étroit -->
+    <div class="pnl" style="padding:7px 8px">
+      <div class="ptitle">S.P.E.C.I.A.L</div>
+      <div id="sg"></div>
+    </div>
+
+    <!-- ARMURE en croix -->
+    <div class="pnl">
+      <div class="ptitle">Armure</div>
+      <div class="body-cross-wrap">
+        <!-- Vault Boy en fond -->
+        <img src="../../img/VaultBoy.png" class="vaultboy-bg" alt="">
+        <!-- Cases d'armure positionnées sur l'image -->
+        <div class="body-cross">
+          <div id="loc-head"   style="position:absolute;top:2%;left:50%;transform:translateX(-50%)"></div>
+          <div id="loc-torso"  style="position:absolute;top:40%;left:50%;transform:translateX(-50%)"></div>
+          <div id="loc-armR"   style="position:absolute;top:30%;left:18%"></div>
+          <div id="loc-armL"   style="position:absolute;top:30%;right:18%"></div>
+          <div id="loc-legR"   style="position:absolute;top:68%;left:22%"></div>
+          <div id="loc-legL"   style="position:absolute;top:68%;right:22%"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- LIGNE 2 : ARMES équipées + munitions -->
+  <div class="pnl">
+    <div class="ptitle">Armes équipées</div>
+    <div id="gen-weap"></div>
+  </div>
+
+  <!-- STATUTS -->
+  <div class="pnl" style="margin-top:9px">
+    <div class="ptitle">Statuts actifs</div>
+    <div id="statuts" style="font-size:8px;color:var(--td);line-height:1.8">—</div>
+  </div>
+
+</div>
+
+<!-- ARMES ÉQUIPÉES -->
+<div class="tc" id="tc-armes">
+  <div class="g2">
+    <div>
+      <div class="pnl">
+        <div class="ptitle">Armes équipées (depuis l'inventaire)</div>
+        <div class="scr" id="weap-eq"></div>
+      </div>
+      <div class="pnl">
+        <div class="ptitle">Résistances (perks)</div>
+        <div id="perk-rd" style="font-size:9px;line-height:1.9;color:var(--td)"></div>
+      </div>
+    </div>
+    <div>
+      <div class="pnl">
+        <div class="ptitle">Munitions</div>
+        <div id="ammo-list"></div>
+        <div class="row" style="margin-top:6px">
+          <input class="fo-sel" type="text" id="am-new" placeholder="Calibre...">
+          <button class="btn" onclick="addAmmo()">+ Ajouter</button>
+        </div>
+      </div>
+      <div class="pnl">
+        <div class="ptitle">Localisations & Armure</div>
+        <div class="g3" id="locs"></div>
+        <div style="font-size:7px;color:var(--td);margin-top:5px">● = blessure · cliquer pour marquer</div>
+        <hr class="fo">
+        <div class="row">
+          <button class="btn f1" id="pa-btn" onclick="togglePA()">Power Armor : OFF</button>
+          <span style="font-size:8px;color:var(--td)">Charge ×1.5 +200kg</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- INVENTAIRE UNIFIÉ -->
+<div class="tc" id="tc-inventaire">
+  <div class="pnl">
+    <div class="row" style="margin-bottom:8px;justify-content:space-between">
+      <div class="charge-bar" style="flex:1;margin-bottom:0">
+        <div class="charge-lbl"><span style="font-size:8px;letter-spacing:2px;color:var(--td)">CHARGE</span><span id="ch-txt" style="color:var(--tb);font-size:9px">0/0 kg</span></div>
+        <div class="bt"><div class="bf ch-f" id="ch-f" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="inv-tabs">
+      <div class="inv-tab on" onclick="swInv('all')">TOUT</div>
+      <div class="inv-tab" onclick="swInv('weap')">ARMES</div>
+      <div class="inv-tab" onclick="swInv('armor')">ARMURE</div>
+      <div class="inv-tab" onclick="swInv('aid')">AIDE</div>
+      <div class="inv-tab" onclick="swInv('misc')">DIVERS</div>
+    </div>
+
+    <!-- TOUT -->
+    <div class="inv-content on" id="inv-all">
+      
+      <div class="scr" id="inv-all-list"></div>
+    </div>
+
+    <!-- ARMES -->
+    <div class="inv-content" id="inv-weap">
+      
+      <div class="inv-header weap-cols" style="display:grid"><span>TYPE</span><span>NOM</span><span>DMG</span><span>EFFETS</span><span>FR</span><span>TN</span><span>QTÉ</span><span>POIDS</span><span>ÉQUIPÉ</span><span></span></div>
+      <div class="scr" id="inv-weap-list"></div>
+    </div>
+
+    <!-- ARMURE -->
+    <div class="inv-content" id="inv-armor">
+      
+      <div class="inv-header armor-cols" style="display:grid"><span>TYPE</span><span>NOM</span><span>QTÉ</span><span>POIDS</span><span>ZONE/RD</span><span></span></div>
+      <div class="scr" id="inv-armor-list"></div>
+    </div>
+
+    <!-- AIDE -->
+    <div class="inv-content" id="inv-aid">
+      
+      <div class="inv-header food-cols" style="display:grid"><span>TYPE</span><span>NOM</span><span>SOIN</span><span>EFFET</span><span>RAD</span><span>QTÉ</span><span>POIDS</span><span></span></div>
+      <div class="scr" id="inv-aid-list"></div>
+    </div>
+
+    <!-- DIVERS -->
+    <div class="inv-content" id="inv-misc">
+      
+      <div class="inv-header stuff-cols" style="display:grid"><span>TYPE</span><span>NOM</span><span>EFFET</span><span>QTÉ</span><span>POIDS</span><span></span></div>
+      <div class="scr" id="inv-misc-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- COMPÉTENCES -->
+<div class="tc" id="tc-competences">
+  <div class="g2">
+    <div class="pnl"><div class="ptitle">Compétences — cliquer pour modifier</div><div id="sk-a"></div></div>
+    <div class="pnl"><div class="ptitle">&nbsp;</div><div id="sk-b"></div></div>
+  </div>
+</div>
+
+<!-- PERKS -->
+<div class="tc" id="tc-perks">
+  <div class="g2">
+    <div>
+      <div class="pnl"><div class="ptitle">Perks — cliquer pour activer / changer rang</div><div class="scr" id="perks-list"></div></div>
+    </div>
+    <div>
+      <div class="pnl"><div class="ptitle">Effets calculés</div><div id="perk-eff" style="font-size:9px;line-height:2;color:var(--td)"></div></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- CARTE -->
+<div class="tc" id="tc-carte">
+  <div class="pnl" style="text-align:center;padding:40px">
+    <div class="ptitle">CARTE</div>
+    <div style="color:var(--td);font-size:10px;margin-top:20px;line-height:2">
+      La carte sera disponible prochainement.<br>
+      En attente du fichier image de la carte.
+    </div>
+  </div>
+</div>
+
+<!-- JOURNAL -->
+<div class="tc" id="tc-journal">
+  <div class="pnl">
+    <div class="ptitle">Journal de campagne</div>
+    <div style="color:var(--td);font-size:10px;line-height:2">
+      Le journal de campagne sera disponible prochainement.
+    </div>
+  </div>
+</div>
+
+</div><!-- /body -->
+</div><!-- /pip -->
+
+<!-- MODAL SPECIAL -->
+<div class="mo" id="mo-sp">
+  <div class="mbox">
+    <div class="mtitle" id="mo-sp-t">MODIFIER STAT</div>
+    <div class="mf"><label id="mo-sp-l">STRENGTH</label><input type="number" id="mo-sp-v" min="1" max="10"></div>
+    <div class="mbtns"><button class="btn pri f1" onclick="saveSpec()">CONFIRMER</button><button class="btn f1" onclick="closeMo('mo-sp')">ANNULER</button></div>
+  </div>
+</div>
+
+<!-- MODAL SKILL -->
+<div class="mo" id="mo-sk">
+  <div class="mbox">
+    <div class="mtitle" id="mo-sk-t">COMPÉTENCE</div>
+    <div class="mf"><label>RANG (0–6)</label><input type="number" id="mo-sk-v" min="0" max="6"></div>
+    <div class="mf"><label>TAG ★</label><select id="mo-sk-tag"><option value="0">Non</option><option value="1">Oui</option></select></div>
+    <div class="mbtns"><button class="btn pri f1" onclick="saveSkill()">CONFIRMER</button><button class="btn f1" onclick="closeMo('mo-sk')">ANNULER</button></div>
+  </div>
+</div>
+
+<!-- Tout le JS est dans js/ -->
+  <script src="../../common/data.js"></script>
+  <script src="../../common/firebase.js"></script>
+  <script src="fiche_perso.js"></script>
+</body>
+</html>
