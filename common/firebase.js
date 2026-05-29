@@ -50,16 +50,20 @@ function appliquerDonnees(data) {
   if (data.wounds     !== undefined) char.wounds     = data.wounds;
 }
 
-// ---- Afficher nom et origine directement dans le DOM ----
+// ---- Afficher nom/origine dans le bandeau ----
+// Fonctionne pour fiche_perso (name-inp/meta) ET setup_perso (hdr-name/hdr-meta)
 function afficherBandeau() {
+  // fiche_perso
   const ni = document.getElementById('name-inp');
   if (ni && char.name) ni.textContent = char.name.toUpperCase();
-
   const mt = document.getElementById('meta');
-  if (mt && char.origine !== undefined) {
-    const xpNext = [0,100,300,600,1000,1500,2100,2800,3600,4500,5500,6600,7800,9100,10500,12000,13600,15300,17100,19000,21000];
-    mt.textContent = `LVL ${char.niveau||1} · ${char.origine||'—'} · ${char.xp||0}/${xpNext[Math.min(char.niveau||1,20)]} XP`;
-  }
+  if (mt) mt.textContent = `LVL ${char.niveau||1} · ${char.origine||'—'} · ${char.xp||0} XP`;
+
+  // setup_perso
+  const hn = document.getElementById('hdr-name');
+  if (hn && char.name) hn.textContent = char.name.toUpperCase();
+  const hm = document.getElementById('hdr-meta');
+  if (hm) hm.textContent = `${char.origine||'—'} · LVL ${char.niveau||1}`;
 }
 
 // ---- Sauvegarder dans Firebase ----
@@ -85,23 +89,23 @@ function saveToFirebase() {
   }, 800);
 }
 
-// ---- Patch rAll ----
-const _rAllOrig = rAll;
-let _isRemote = false;
-window.rAll = function() {
-  _rAllOrig();
-  afficherBandeau(); // toujours après rAll pour ne pas être écrasé
-  if (!_isRemote) saveToFirebase();
-};
+// ---- Patch rAll si elle existe (fiche_perso uniquement) ----
+if (typeof rAll === 'function') {
+  const _rAllOrig = rAll;
+  let _isRemote = false;
+  window.rAll = function() {
+    _rAllOrig();
+    afficherBandeau();
+    if (!_isRemote) saveToFirebase();
+  };
 
-// ---- Écoute temps réel ----
-function startSync() {
+  // Écoute temps réel
   db.collection('joueurs').doc(JOUEUR_ID).onSnapshot((snap) => {
     if (snap.exists) {
       _isRemote = true;
       appliquerDonnees(snap.data());
       _rAllOrig();
-      if (typeof rMeta === 'function') rMeta();
+      afficherBandeau();
       _isRemote = false;
       setStatus('✓ Synchronisé', '#5dbe5d');
     }
@@ -118,9 +122,7 @@ async function initFirebase() {
   try {
     const snap = await db.collection('joueurs').doc(JOUEUR_ID).get();
     if (snap.exists) {
-      appliquerDonnees(snap.data());  // 1. charger dans char
-      // 2. Afficher nom et origine immédiatement
-      if (typeof rMeta === 'function') rMeta();
+      appliquerDonnees(snap.data());
     } else {
       await db.collection('joueurs').doc(JOUEUR_ID).set({
         nom: JOUEUR_ID, origine: '', niveau: 1, xp: 0,
@@ -130,9 +132,9 @@ async function initFirebase() {
         wounds: char.wounds, lastUpdate: Date.now(),
       });
     }
-    _rAllOrig();          // 2. render avec les données
-    afficherBandeau();    // 3. afficher nom/origine EN DERNIER
-    startSync();
+    // Render puis afficher le bandeau EN DERNIER
+    if (typeof rAll === 'function') rAll();
+    afficherBandeau();
     setStatus('✓ ' + (char.name || JOUEUR_ID), '#5dbe5d');
   } catch (e) {
     setStatus('✗ Erreur Firebase', '#e04040');
