@@ -41,6 +41,11 @@ let tagged = [];
 SKILLS_DEF.forEach(s=>skills[s.key]=0);
 Object.keys(PERKS_DEF).forEach(k=>perks[k]=0);
 
+// Budget compétences = 9 + INT
+function skillBudget(){ return 9 + sp.I; }
+function skillSpent(){ return Object.values(skills).reduce((a,b)=>a+b,0); }
+function skillRestants(){ return skillBudget() - skillSpent(); }
+
 // INIT
 async function init(){
   if(!JOUEUR_ID){
@@ -94,19 +99,21 @@ function renderSpecial(){
 function renderSkills(){
   const g=document.getElementById('sk-grid');g.innerHTML='';
   const attrMap={en_weapon:'P',cac_weapon:'S',light_weapon:'A',heavy_weapon:'E',athletics:'S',lockpick:'P',speech:'C',sneak:'A',explosives:'P',barehand:'S',medicine:'I',pilot:'P',throwing:'A',repair:'I',science:'I',survival:'E',barter:'C'};
+  const restants=skillRestants();
   SKILLS_DEF.forEach(sk=>{
     const r=skills[sk.key]||0;
     const tg=tagged.includes(sk.key);
     const attrKey=attrMap[sk.key]||'A';
     const attrVal={S:sp.S,P:sp.P,E:sp.E,C:sp.C,I:sp.I,A:sp.A,L:sp.L}[attrKey]||5;
-    const tn=attrVal+r+(tg?2:0);
+    const tn=attrVal+r+(tg?2:0); // TAG donne +2 TN mais pas de rang
+    const canAdd = restants > 0 && r < 3;
     g.innerHTML+=`<div class="sk-row">
-      <span class="sk-name">${sk.name}</span>
+      <span class="sk-name${tg?' sk-tagged':''}">${sk.name}</span>
       <button class="sk-tag${tg?' on':''}" onclick="toggleTag('${sk.key}')">${tg?'★':'TAG'}</button>
       <div class="sk-ctrl">
-        <button class="sk-btn" onclick="chSk('${sk.key}',-1)">−</button>
+        <button class="sk-btn" onclick="chSk('${sk.key}',-1)" ${r===0?'disabled':''}>−</button>
         <span class="sk-val">${r}</span>
-        <button class="sk-btn" onclick="chSk('${sk.key}',1)">+</button>
+        <button class="sk-btn" onclick="chSk('${sk.key}',1)" ${!canAdd?'disabled':''}>+</button>
       </div>
       <span class="sk-tn">TN ${tn}</span>
     </div>`;
@@ -132,41 +139,58 @@ function renderPerks(){
 }
 
 function renderSummary(){
+  // SPECIAL
   const total=Object.values(sp).reduce((a,b)=>a+b,0);
-  const restants=40-total;
+  const spRestants=40-total;
   const elSp=document.getElementById('pts-special');
-  elSp.textContent=restants;
-  elSp.className='pts-val'+(restants===0?' warn':'');
+  elSp.textContent=spRestants;
+  elSp.className='pts-val'+(spRestants===0?' warn':'');
 
+  // TAG
   const tagCount=tagged.length;
   const elTag=document.getElementById('pts-tag');
   elTag.textContent=`${tagCount} / 3`;
   elTag.className='pts-val'+(tagCount===3?' warn':'');
 
-  const skillTotal=Object.values(skills).reduce((a,b)=>a+b,0);
-  document.getElementById('pts-skills').textContent=skillTotal;
+  // COMPÉTENCES — points restants sur budget 9+INT
+  const skRest=skillRestants();
+  const elSk=document.getElementById('pts-skills');
+  elSk.textContent=skRest;
+  elSk.className='pts-val'+(skRest===0?' warn':skRest<0?' over':'');
 
+  // PERKS
   const perkTotal=Object.values(perks).reduce((a,b)=>a+b,0);
   document.getElementById('pts-perks').textContent=perkTotal;
 
+  // PV MAX
   const hpMax=sp.L+sp.E+Math.max(0,(charData.niveau||1)-1);
   document.getElementById('pts-hp').textContent=hpMax;
 }
 
-// ACTIONS — min 4, bloqué à 40 total
+// ACTIONS
 function chSP(k,n){
   const total=Object.values(sp).reduce((a,b)=>a+b,0);
   if(n>0 && total>=40) return;
   sp[k]=Math.max(4,Math.min(10,sp[k]+n));
   render();autoSave();
 }
-function chSk(k,n){skills[k]=Math.max(0,Math.min(6,(skills[k]||0)+n));render();autoSave();}
+
+function chSk(k,n){
+  if(n>0){
+    if(skillRestants()<=0){showMsg('Plus de points de compétence !','err');return;}
+    if((skills[k]||0)>=3){showMsg('Maximum 3 rangs à la création !','err');return;}
+  }
+  skills[k]=Math.max(0,Math.min(3,skills[k]+n));
+  render();autoSave();
+}
+
 function toggleTag(k){
   if(tagged.includes(k)){tagged=tagged.filter(t=>t!==k);}
   else if(tagged.length<3){tagged.push(k);}
   else{showMsg('Maximum 3 compétences TAG !','err');return;}
   render();autoSave();
 }
+
 function chPk(n,v){perks[n]=Math.max(0,Math.min(PERKS_DEF[n]?.max||1,(perks[n]||0)+v));render();autoSave();}
 
 // AUTO SAVE
@@ -184,10 +208,10 @@ function autoSave(){
 
 // TERMINER
 async function terminer(){
-  const tagCount=tagged.length;
-  if(tagCount<3){showMsg('Sélectionne 3 compétences TAG avant de continuer !','err');return;}
-  const total=Object.values(sp).reduce((a,b)=>a+b,0);
-  if(total<40){showMsg(`Il reste ${40-total} point(s) SPECIAL à dépenser !`,'err');return;}
+  if(tagged.length<3){showMsg('Sélectionne 3 compétences TAG avant de continuer !','err');return;}
+  const spTotal=Object.values(sp).reduce((a,b)=>a+b,0);
+  if(spTotal<40){showMsg(`Il reste ${40-spTotal} point(s) SPECIAL à dépenser !`,'err');return;}
+  if(skillRestants()>0){showMsg(`Il reste ${skillRestants()} point(s) de compétence à dépenser !`,'err');return;}
   const hpMax=sp.L+sp.E+Math.max(0,(charData.niveau||1)-1);
   await db.collection('joueurs').doc(JOUEUR_ID).update({
     special:sp, skills, perks, taggedSkills:tagged,
