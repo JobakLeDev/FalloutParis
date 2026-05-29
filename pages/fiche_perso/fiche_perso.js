@@ -200,7 +200,15 @@ function rLocsGen(){
   Object.entries(LOCS).forEach(([k,loc])=>{
     const el=document.getElementById(loc.el);if(!el)return;
     const rd=getLocRD(k);
-    const arm=char.inventory.find(it=>it.equipped&&DB.armor.find(a=>a.n===it.name&&a.z===ZM[k]));
+    // Chercher armure spécifique à la zone OU tenue Body (sauf tête)
+    const arm=char.inventory.find(it=>{
+      if(!it.equipped)return false;
+      const db=DB.armor.find(a=>a.n===it.name);if(!db)return false;
+      if(db.z===ZM[k])return true;
+      if(db.z==='Body'&&k!=='head')return true;
+      if(db.z==='All')return true;
+      return false;
+    });
     const center=k==='torso';
     el.innerHTML=`<div class="loc-card-cross${char.wounds[k]?' hurt':''}${center?' center-loc':''}">
       <span class="lcc-name">${loc.l}</span>
