@@ -101,7 +101,7 @@ function startSync() {
       _isRemote = true;
       appliquerDonnees(snap.data());
       _rAllOrig();
-      afficherBandeau();
+      if (typeof rMeta === 'function') rMeta();
       _isRemote = false;
       setStatus('✓ Synchronisé', '#5dbe5d');
     }
@@ -119,6 +119,8 @@ async function initFirebase() {
     const snap = await db.collection('joueurs').doc(JOUEUR_ID).get();
     if (snap.exists) {
       appliquerDonnees(snap.data());  // 1. charger dans char
+      // 2. Afficher nom et origine immédiatement
+      if (typeof rMeta === 'function') rMeta();
     } else {
       await db.collection('joueurs').doc(JOUEUR_ID).set({
         nom: JOUEUR_ID, origine: '', niveau: 1, xp: 0,
