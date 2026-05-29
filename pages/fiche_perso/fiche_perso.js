@@ -382,7 +382,7 @@ function rInvWeap(){
 function rInvArmor(){
   const el=document.getElementById('inv-armor-list');if(!el)return;
   el.innerHTML='';
-  char.inventory.filter(it=>it.type==='ARMOR'||it.type==='POWERARMOR').forEach((it)=>{
+  char.inventory.filter(it=>['ARMOR','POWERARMOR','CLOTHING','OUTFIT'].includes(it.type)).forEach((it)=>{
     const i=char.inventory.indexOf(it);
     const db=[...DB.armor].find(a=>a.n===it.name)||{};
     el.innerHTML+=`<div class="irow armor-cols${it.equipped?' equipped-row':''}">
