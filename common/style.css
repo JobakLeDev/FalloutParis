@@ -15,7 +15,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .logo{font-family:'Oswald',sans-serif;font-size:18px;font-weight:600;letter-spacing:3px;color:var(--g);}
 .logo small{display:block;font-size:8px;letter-spacing:5px;color:var(--td);font-family:'Share Tech Mono',monospace;}
 .hdr-mid{flex:1;text-align:center;}
-.name-inp{background:transparent;border:none;border-bottom:1px solid var(--b2);color:var(--tb);font-family:'Oswald',sans-serif;font-size:18px;letter-spacing:3px;text-align:center;width:200px;outline:none;}
+.name-inp{color:var(--tb);font-family:'Oswald',sans-serif;font-size:18px;letter-spacing:3px;text-align:center;}
 .meta{font-size:9px;color:var(--td);letter-spacing:3px;margin-top:2px;}
 .hdr-right{text-align:right;min-width:140px;}
 .mini-hp{font-size:9px;color:var(--td);}
