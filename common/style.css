@@ -246,7 +246,7 @@ hr.fo{border:none;border-top:1px solid var(--b);margin:6px 0;}
 /* ARMOR GRID (cols: tag, name, effect, qty, weight, equip, del) */
 .armor-cols{grid-template-columns:44px 1fr auto auto auto 120px 20px;}
 /* FOOD cols: tag, name, soin, effet, rad, qty, weight, del */
-.food-cols{grid-template-columns:44px 1fr 38px 80px 30px 40px 40px 20px;}
+.food-cols{grid-template-columns:44px 1fr auto auto auto auto auto 80px 20px;}
 /* DRUGS cols: tag, name, effets, durée, qty, weight, del */
 .drugs-cols{grid-template-columns:44px 1fr 80px 40px 40px 40px 20px;}
 /* STUFF cols: tag, name, effet, qty, weight, del */
