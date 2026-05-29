@@ -20,10 +20,10 @@ body::before{
 .container{width:100%;max-width:460px;padding:20px;}
 
 /* HEADER */
-.header{text-align:center;margin-bottom:32px;}
+.header{text-align:center;margin-bottom:32px;isolation:auto;background:transparent;}
 .vaultboy-img{
-  mix-blend-mode: screen;
-  width:140px;opacity:0.85;
+  width:140px;
+  opacity:0.88;
   filter:drop-shadow(0 0 18px #5dbe5d88);
   margin-bottom:16px;
   animation:float 4s ease-in-out infinite;
