@@ -54,7 +54,9 @@ function appliquerDonnees(data) {
 // ---- Mettre à jour l'affichage du nom dans le bandeau ----
 function afficherNom() {
   const el = document.getElementById('name-inp');
-  if (el) el.textContent = (char.name || JOUEUR_ID).toUpperCase();
+  if (!el) return;
+  const nom = char.name || JOUEUR_ID;
+  if (nom && nom !== '') el.textContent = nom.toUpperCase();
 }
 
 // ---- Sauvegarder dans Firebase ----
