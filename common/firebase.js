@@ -125,7 +125,13 @@ async function initFirebase() {
   try {
     const snap = await db.collection('joueurs').doc(JOUEUR_ID).get();
     if (snap.exists) {
-      appliquerDonnees(snap.data());
+      const data = snap.data();
+      // Afficher le nom immédiatement depuis Firebase, sans attendre rAll
+      const ni = document.getElementById('name-inp');
+      if (ni && data.nom) ni.textContent = data.nom.toUpperCase();
+      const mt = document.getElementById('meta');
+      if (mt && data.origine) mt.textContent = `LVL ${data.niveau||1} · ${data.origine} · ${data.xp||0}/${data.niveau>=20?21000:[0,100,300,600,1000,1500,2100,2800,3600,4500][Math.min(data.niveau||1,9)]} XP`;
+      appliquerDonnees(data);
     } else {
       // Nouveau joueur — créer le document avec les valeurs par défaut
       await db.collection('joueurs').doc(JOUEUR_ID).set({
