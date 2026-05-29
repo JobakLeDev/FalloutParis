@@ -45,7 +45,7 @@ Object.keys(PERKS_DEF).forEach(k=>perks[k]=0);
 async function init(){
   if(!JOUEUR_ID){
     document.getElementById('hdr-name').textContent='ERREUR';
-    document.getElementById('hdr-meta').textContent='Aucun ID dans l\'URL';
+    document.getElementById('hdr-meta').textContent="Aucun ID dans l'URL";
     return;
   }
   const snap=await db.collection('joueurs').doc(JOUEUR_ID).get();
@@ -87,12 +87,12 @@ function renderSpecial(){
     </div>`;
   });
   const total=Object.values(sp).reduce((a,b)=>a+b,0);
-  const restants=40-total;document.getElementById('sp-grid').innerHTML+=`<div class="sp-total">Points restants : <span class="${restants<0?'over':''}">${restants}</span></div>`;
+  const restants=40-total;
+  g.innerHTML+=`<div class="sp-total">Points restants : <span>${restants}</span></div>`;
 }
 
 function renderSkills(){
   const g=document.getElementById('sk-grid');g.innerHTML='';
-  const ATTR={S:'FOR',P:'PER',E:'END',C:'CHR',I:'INT',A:'AGI',L:'LCK'};
   const attrMap={en_weapon:'P',cac_weapon:'S',light_weapon:'A',heavy_weapon:'E',athletics:'S',lockpick:'P',speech:'C',sneak:'A',explosives:'P',barehand:'S',medicine:'I',pilot:'P',throwing:'A',repair:'I',science:'I',survival:'E',barter:'C'};
   SKILLS_DEF.forEach(sk=>{
     const r=skills[sk.key]||0;
@@ -133,10 +133,10 @@ function renderPerks(){
 
 function renderSummary(){
   const total=Object.values(sp).reduce((a,b)=>a+b,0);
-  const elSp=document.getElementById('pts-special');
   const restants=40-total;
+  const elSp=document.getElementById('pts-special');
   elSp.textContent=restants;
-  elSp.className='pts-val'+(restants<0?' over':restants===0?' warn':'');
+  elSp.className='pts-val'+(restants===0?' warn':'');
 
   const tagCount=tagged.length;
   const elTag=document.getElementById('pts-tag');
@@ -153,10 +153,10 @@ function renderSummary(){
   document.getElementById('pts-hp').textContent=hpMax;
 }
 
-// ACTIONS
+// ACTIONS — min 4, bloqué à 40 total
 function chSP(k,n){
   const total=Object.values(sp).reduce((a,b)=>a+b,0);
-  if(n>0 && total>=40) return; // plus de points disponibles
+  if(n>0 && total>=40) return;
   sp[k]=Math.max(4,Math.min(10,sp[k]+n));
   render();autoSave();
 }
@@ -186,6 +186,8 @@ function autoSave(){
 async function terminer(){
   const tagCount=tagged.length;
   if(tagCount<3){showMsg('Sélectionne 3 compétences TAG avant de continuer !','err');return;}
+  const total=Object.values(sp).reduce((a,b)=>a+b,0);
+  if(total<40){showMsg(`Il reste ${40-total} point(s) SPECIAL à dépenser !`,'err');return;}
   const hpMax=sp.L+sp.E+Math.max(0,(charData.niveau||1)-1);
   await db.collection('joueurs').doc(JOUEUR_ID).update({
     special:sp, skills, perks, taggedSkills:tagged,
