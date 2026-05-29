@@ -104,7 +104,7 @@ window.rAll = function() {
 // ---- Écoute temps réel ----
 function startSync() {
   db.collection('joueurs').doc(JOUEUR_ID).onSnapshot((snap) => {
-    if (snap.exists()) {
+    if (snap.exists) {
       _isRemote = true;
       appliquerDonnees(snap.data());
       _rAllOrig();
@@ -124,7 +124,7 @@ async function initFirebase() {
   document.title = 'Fallout Paris — ' + JOUEUR_ID;
   try {
     const snap = await db.collection('joueurs').doc(JOUEUR_ID).get();
-    if (snap.exists()) {
+    if (snap.exists) {
       appliquerDonnees(snap.data());
     } else {
       // Nouveau joueur — créer le document avec les valeurs par défaut
