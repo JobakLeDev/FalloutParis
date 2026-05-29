@@ -77,6 +77,7 @@ const DB = {
     {n:'Road Leathers',t:'CLOTHING',ph:1,en:0,rad:0,z:'Body',w:2},
     {n:'Tough Clothing',t:'CLOTHING',ph:1,en:1,rad:0,z:'Body',w:3},
     {n:'Vault Jumpsuit',t:'CLOTHING',ph:0,en:0,rad:2,z:'Body',w:1},
+    {n:'Vault 74 Jumpsuit',t:'CLOTHING',ph:0,en:0,rad:2,z:'Body',w:1},
     // ---- OUTFIT (protège toutes les zones) ----
     {n:'Brotherhood of Steel Fatigues',t:'OUTFIT',ph:2,en:2,rad:2,z:'Body',w:4},
     {n:"Brotherhood Scribe's Armor",t:'OUTFIT',ph:1,en:2,rad:2,z:'Body',w:4},
