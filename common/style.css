@@ -120,7 +120,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .bl{display:flex;justify-content:space-between;font-size:9px;margin-bottom:2px;}
 .bl .bv{color:var(--tb);font-family:'Oswald',sans-serif;font-size:12px;}
 .bt{height:12px;background:#060d06;border:1px solid var(--b);overflow:hidden;}
-.bf{height:100%;transition:width 0.3s;}
+.bf{height:100%;}
 .bf::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent,transparent 4px,rgba(0,0,0,0.2) 4px,rgba(0,0,0,0.2) 5px);}
 .bf{position:relative;}
 .hp-ok{background:var(--g);}
@@ -220,6 +220,8 @@ hr.fo{border:none;border-top:1px solid var(--b);margin:6px 0;}
 .itag.DRINK{border-color:#2a4a6a;color:#5a8ab0;}
 .itag.DRUGS{border-color:#6a4a8a;color:#a87ad8;}
 .itag.STUFF{border-color:var(--b2);color:var(--td);}
+.itag.CLOTHING{border-color:#3a5a7a;color:#6a9aba;}
+.itag.OUTFIT{border-color:#5a3a7a;color:#9a6aba;}
 .iname{font-size:9px;color:var(--td);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .iname.eq{color:var(--tb);}
 .ieff{font-size:7px;color:#3a5a3a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
