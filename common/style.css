@@ -7,7 +7,7 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--t);font-family:'Share Tech Mono',monospace;min-height:100vh;background-image:var(--sc);}
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 50% 20%,#182818 0%,#0c150c 65%);z-index:-1;}
-.pip{max-width:1600px;margin:0 auto;padding:16px;}
+.pip{max-width:1600px;margin:0 auto;padding:16px;zoom:1.25;}
 
 /* HEADER */
 .hdr{background:var(--p2);border:1px solid var(--b2);padding:10px 16px;display:flex;align-items:center;gap:12px;position:relative;}
