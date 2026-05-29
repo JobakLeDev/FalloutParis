@@ -446,7 +446,7 @@ function rSkills(){
     SKILLS_DEF.slice(side*half,(side+1)*half).forEach(sk=>{
       const rg=char.skills[sk.key]||0,tg=char.taggedSkills.includes(sk.key);
       const av={S:SP().S,P:SP().P,E:SP().E,C:SP().C,I:SP().I,A:SP().A,L:SP().L}[sk.attr]||5;
-      el.innerHTML+=`<div class="skrow" onclick="openMoSk('${sk.key}','${sk.name}')"><span class="sk-star">${tg?'★':''}</span><span class="sk-nm">${sk.name}</span><span class="sk-at">[${sk.attr}]</span><span class="sk-rg${tg?' tg':rg===0?' z':''}">${rg||'—'}</span><span class="sk-tn">TN ${av+rg}</span></div>`;
+      el.innerHTML+=`<div class="skrow" style="cursor:default"><span class="sk-star">${tg?'★':''}</span><span class="sk-nm">${sk.name}</span><span class="sk-at">[${sk.attr}]</span><span class="sk-rg${tg?' tg':rg===0?' z':''}">${rg||'—'}</span><span class="sk-tn">TN ${av+rg+(tg?2:0)}</span></div>`;
     });
   });
 }
@@ -459,8 +459,10 @@ function rPerks(){
   Object.entries(PERKS_DEF).forEach(([name,def])=>{
     const rk=char.perks[name]||0,act=rk>0;
     const trig=(name==='Nerd Rage!'&&nerd)||(name==='Adrenalin Rush'&&adr);
-    el.innerHTML+=`<div class="pkcard${trig?' trig':act?' act':''}" onclick="cyclePerk('${name}')"><div class="row" style="justify-content:space-between"><span class="pkname${trig?' trig':act?' act':''}">${name}</span><span class="pkrk${act?' act':''}">${rk}/${def.max}</span></div><div class="pkdesc">${def.desc}</div></div>`;
+    if(!act) return; // n'afficher que les perks actives
+    el.innerHTML+=`<div class="pkcard${trig?' trig':act?' act':''}"><div class="row" style="justify-content:space-between"><span class="pkname${trig?' trig':act?' act':''}">${name}</span><span class="pkrk${act?' act':''}">${rk}/${def.max}</span></div><div class="pkdesc">${def.desc}</div></div>`;
   });
+  if(!el.innerHTML) el.innerHTML='<div style="font-size:9px;color:var(--td);padding:6px">Aucune perk active</div>';
 }
 
 function rPerkEff(){
