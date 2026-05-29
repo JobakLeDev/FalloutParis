@@ -14,7 +14,6 @@ const firebaseConfig = {
 const fbApp = firebase.initializeApp(firebaseConfig);
 const db = fbApp.firestore();
 
-// ID joueur depuis l'URL
 const JOUEUR_ID = new URLSearchParams(window.location.search).get('id') || 'joueur1';
 
 // ---- Indicateur de statut ----
@@ -34,29 +33,33 @@ function setStatus(msg, color) {
 // ---- Appliquer les données Firebase sur char ----
 function appliquerDonnees(data) {
   if (!data) return;
-  if (data.nom       !== undefined) char.name      = data.nom;
-  if (data.origine   !== undefined) char.origine   = data.origine;
-  if (data.niveau    !== undefined) char.niveau    = data.niveau;
-  if (data.xp        !== undefined) char.xp        = data.xp;
-  if (data.hp        !== undefined) char.hp        = data.hp;
-  if (data.rad       !== undefined) char.rad       = data.rad;
-  if (data.momentum  !== undefined) char.momentum  = data.momentum;
-  if (data.powerArmor!== undefined) char.powerArmor= data.powerArmor;
-  if (data.special   !== undefined) char.special   = data.special;
-  if (data.perks     !== undefined) char.perks     = { ...char.perks, ...data.perks };
-  if (data.skills    !== undefined) char.skills    = data.skills;
+  if (data.nom        !== undefined) char.name       = data.nom;
+  if (data.origine    !== undefined) char.origine    = data.origine;
+  if (data.niveau     !== undefined) char.niveau     = data.niveau;
+  if (data.xp         !== undefined) char.xp         = data.xp;
+  if (data.hp         !== undefined) char.hp         = data.hp;
+  if (data.rad        !== undefined) char.rad        = data.rad;
+  if (data.momentum   !== undefined) char.momentum   = data.momentum;
+  if (data.powerArmor !== undefined) char.powerArmor = data.powerArmor;
+  if (data.special    !== undefined) char.special    = data.special;
+  if (data.perks      !== undefined) char.perks      = { ...char.perks, ...data.perks };
+  if (data.skills     !== undefined) char.skills     = data.skills;
   if (data.taggedSkills !== undefined) char.taggedSkills = data.taggedSkills;
-  if (data.inventory !== undefined) char.inventory = data.inventory;
-  if (data.ammo      !== undefined) char.ammo      = data.ammo;
-  if (data.wounds    !== undefined) char.wounds    = data.wounds;
+  if (data.inventory  !== undefined) char.inventory  = data.inventory;
+  if (data.ammo       !== undefined) char.ammo       = data.ammo;
+  if (data.wounds     !== undefined) char.wounds     = data.wounds;
 }
 
-// ---- Mettre à jour l'affichage du nom dans le bandeau ----
-function afficherNom() {
-  const el = document.getElementById('name-inp');
-  if (!el) return;
-  const nom = char.name || JOUEUR_ID;
-  if (nom && nom !== '') el.textContent = nom.toUpperCase();
+// ---- Afficher nom et origine directement dans le DOM ----
+function afficherBandeau() {
+  const ni = document.getElementById('name-inp');
+  if (ni && char.name) ni.textContent = char.name.toUpperCase();
+
+  const mt = document.getElementById('meta');
+  if (mt && char.origine !== undefined) {
+    const xpNext = [0,100,300,600,1000,1500,2100,2800,3600,4500,5500,6600,7800,9100,10500,12000,13600,15300,17100,19000,21000];
+    mt.textContent = `LVL ${char.niveau||1} · ${char.origine||'—'} · ${char.xp||0}/${xpNext[Math.min(char.niveau||1,20)]} XP`;
+  }
 }
 
 // ---- Sauvegarder dans Firebase ----
@@ -67,22 +70,12 @@ function saveToFirebase() {
     try {
       setStatus('⟳ Sauvegarde...', '#e8a820');
       await db.collection('joueurs').doc(JOUEUR_ID).set({
-        nom:          char.name,
-        origine:      char.origine,
-        niveau:       char.niveau,
-        xp:           char.xp,
-        hp:           char.hp,
-        rad:          char.rad,
-        momentum:     char.momentum,
-        powerArmor:   char.powerArmor,
-        special:      char.special,
-        perks:        char.perks,
-        skills:       char.skills,
-        taggedSkills: char.taggedSkills,
-        inventory:    char.inventory,
-        ammo:         char.ammo,
-        wounds:       char.wounds,
-        lastUpdate:   Date.now(),
+        nom: char.name, origine: char.origine, niveau: char.niveau,
+        xp: char.xp, hp: char.hp, rad: char.rad,
+        momentum: char.momentum, powerArmor: char.powerArmor,
+        special: char.special, perks: char.perks, skills: char.skills,
+        taggedSkills: char.taggedSkills, inventory: char.inventory,
+        ammo: char.ammo, wounds: char.wounds, lastUpdate: Date.now(),
       }, { merge: true });
       setStatus('✓ Synchronisé', '#5dbe5d');
     } catch (e) {
@@ -92,12 +85,12 @@ function saveToFirebase() {
   }, 800);
 }
 
-// ---- Patch rAll pour déclencher la sauvegarde ----
+// ---- Patch rAll ----
 const _rAllOrig = rAll;
 let _isRemote = false;
 window.rAll = function() {
   _rAllOrig();
-  afficherNom();
+  afficherBandeau(); // toujours après rAll pour ne pas être écrasé
   if (!_isRemote) saveToFirebase();
 };
 
@@ -108,7 +101,7 @@ function startSync() {
       _isRemote = true;
       appliquerDonnees(snap.data());
       _rAllOrig();
-      afficherNom();
+      afficherBandeau();
       _isRemote = false;
       setStatus('✓ Synchronisé', '#5dbe5d');
     }
@@ -125,15 +118,8 @@ async function initFirebase() {
   try {
     const snap = await db.collection('joueurs').doc(JOUEUR_ID).get();
     if (snap.exists) {
-      const data = snap.data();
-      // Afficher le nom immédiatement depuis Firebase, sans attendre rAll
-      const ni = document.getElementById('name-inp');
-      if (ni && data.nom) ni.textContent = data.nom.toUpperCase();
-      const mt = document.getElementById('meta');
-      if (mt && data.origine) mt.textContent = `LVL ${data.niveau||1} · ${data.origine} · ${data.xp||0}/${data.niveau>=20?21000:[0,100,300,600,1000,1500,2100,2800,3600,4500][Math.min(data.niveau||1,9)]} XP`;
-      appliquerDonnees(data);
+      appliquerDonnees(snap.data());  // 1. charger dans char
     } else {
-      // Nouveau joueur — créer le document avec les valeurs par défaut
       await db.collection('joueurs').doc(JOUEUR_ID).set({
         nom: JOUEUR_ID, origine: '', niveau: 1, xp: 0,
         hp: 10, rad: 0, momentum: 0, powerArmor: false,
@@ -142,7 +128,8 @@ async function initFirebase() {
         wounds: char.wounds, lastUpdate: Date.now(),
       });
     }
-    rAll(); // déclenche aussi afficherNom via le patch
+    _rAllOrig();          // 2. render avec les données
+    afficherBandeau();    // 3. afficher nom/origine EN DERNIER
     startSync();
     setStatus('✓ ' + (char.name || JOUEUR_ID), '#5dbe5d');
   } catch (e) {
