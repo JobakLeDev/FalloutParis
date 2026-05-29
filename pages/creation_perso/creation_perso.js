@@ -28,7 +28,7 @@ async function creer(){
   try{
     await db.collection('joueurs').doc(id).set(data);
     showMsg(`✓ ${nom} créé ! Redirection vers la fiche...`,'ok');
-    setTimeout(()=>window.location.href=`../setup_perso/setup_perso.html?id=${id}`,1500);
+    setTimeout(()=>window.location.href=`/FalloutParis/pages/setup_perso/setup_perso.html?id=${id}`,1500);
   }catch(e){showMsg('Erreur : '+e.message,'err');}
 }
 

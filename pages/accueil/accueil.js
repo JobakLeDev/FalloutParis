@@ -47,7 +47,7 @@ async function connexion() {
     // Pas de code défini → on laisse passer (rétrocompatibilité)
     showMsg('Accès autorisé. Chargement...', 'ok');
     setTimeout(() => {
-      window.location.href = `../fiche_perso/fiche_perso.html?id=${id}`;
+      window.location.href = `/FalloutParis/pages/fiche_perso/fiche_perso.html?id=${id}`;
     }, 800);
 
   } catch(e) {

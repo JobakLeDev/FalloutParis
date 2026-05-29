@@ -49,7 +49,7 @@ async function init(){
     return;
   }
   const snap=await db.collection('joueurs').doc(JOUEUR_ID).get();
-  if(!snap.exists){window.location.href='../creation_perso/creation_perso.html';return;}
+  if(!snap.exists){window.location.href='/FalloutParis/pages/creation_perso/creation_perso.html';return;}
   charData=snap.data();
   sp={...charData.special}||{S:5,P:5,E:5,C:5,I:5,A:5,L:5};
   skills={...charData.skills}||{};
