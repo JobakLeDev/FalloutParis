@@ -87,7 +87,7 @@ function renderSpecial(){
     </div>`;
   });
   const total=Object.values(sp).reduce((a,b)=>a+b,0);
-  document.getElementById('sp-grid').innerHTML+=`<div class="sp-total">Total : <span>${total}</span> / 40 points</div>`;
+  const restants=40-total;document.getElementById('sp-grid').innerHTML+=`<div class="sp-total">Points restants : <span class="${restants<0?'over':''}">${restants}</span></div>`;
 }
 
 function renderSkills(){
@@ -134,8 +134,9 @@ function renderPerks(){
 function renderSummary(){
   const total=Object.values(sp).reduce((a,b)=>a+b,0);
   const elSp=document.getElementById('pts-special');
-  elSp.textContent=`${total} / 40`;
-  elSp.className='pts-val'+(total>40?' over':total===40?' warn':'');
+  const restants=40-total;
+  elSp.textContent=restants;
+  elSp.className='pts-val'+(restants<0?' over':restants===0?' warn':'');
 
   const tagCount=tagged.length;
   const elTag=document.getElementById('pts-tag');
@@ -153,7 +154,12 @@ function renderSummary(){
 }
 
 // ACTIONS
-function chSP(k,n){sp[k]=Math.max(1,Math.min(10,sp[k]+n));render();autoSave();}
+function chSP(k,n){
+  const total=Object.values(sp).reduce((a,b)=>a+b,0);
+  if(n>0 && total>=40) return; // plus de points disponibles
+  sp[k]=Math.max(4,Math.min(10,sp[k]+n));
+  render();autoSave();
+}
 function chSk(k,n){skills[k]=Math.max(0,Math.min(6,(skills[k]||0)+n));render();autoSave();}
 function toggleTag(k){
   if(tagged.includes(k)){tagged=tagged.filter(t=>t!==k);}
