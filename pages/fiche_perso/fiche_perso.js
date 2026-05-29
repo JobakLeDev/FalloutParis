@@ -4,7 +4,7 @@
 // ============================================================
 
 const char = {
-  name:'...',niveau:1,xp:0,origine:'...',
+  name:'',niveau:1,xp:0,origine:'',
   hp:3,rad:0,momentum:0,powerArmor:false,
   special:{S:9,P:5,E:8,C:5,I:5,A:5,L:5},
   perks:{},
