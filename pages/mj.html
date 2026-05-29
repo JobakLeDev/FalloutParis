@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fallout Paris — MJ</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+:root{--g:#5dbe5d;--gd:#3a7a3a;--gk:#1a3a1a;--bg:#0c150c;--p:#111d11;--p2:#162016;--b:#253825;--b2:#3a5c3a;--t:#7ed87e;--td:#4a7a4a;--tb:#b0f0b0;--am:#e8a820;--rd:#e04040;--rdk:#1a0505;--scan:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.12) 2px,rgba(0,0,0,0.12) 4px);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--t);font-family:'Share Tech Mono',monospace;min-height:100vh;padding:12px;background-image:var(--scan);}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 50% 20%,#182818 0%,#0c150c 70%);z-index:-1;}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--p2);border:1px solid var(--b2);margin-bottom:12px;position:relative;}
+.hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--g),transparent);}
+.hdr-title{font-family:'Oswald',sans-serif;font-size:18px;letter-spacing:3px;color:var(--g);}
+.hdr-title small{display:block;font-size:8px;letter-spacing:4px;color:var(--td);font-family:'Share Tech Mono',monospace;}
+.hdr-btns{display:flex;gap:8px;align-items:center;}
+.hbtn{background:transparent;border:1px solid var(--b2);color:var(--td);font-family:'Share Tech Mono',monospace;font-size:8px;padding:6px 12px;cursor:pointer;letter-spacing:2px;text-transform:uppercase;transition:all 0.1s;}
+.hbtn:hover{border-color:var(--g);color:var(--t);}
+.hbtn.danger{border-color:#3a1a1a;color:#6a3a3a;}
+.hbtn.danger:hover{border-color:var(--rd);color:var(--rd);}
+
+/* LOCK */
+.lock{position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;align-items:center;justify-content:center;}
+.lock-box{background:var(--p2);border:1px solid var(--b2);padding:30px;width:300px;text-align:center;}
+.lock-title{font-family:'Oswald',sans-serif;font-size:18px;letter-spacing:4px;color:var(--g);margin-bottom:16px;}
+.lock-input{width:100%;background:#060d06;border:1px solid var(--b2);color:var(--tb);font-family:'Share Tech Mono',monospace;font-size:24px;padding:10px;text-align:center;letter-spacing:8px;outline:none;margin-bottom:10px;}
+.lock-input:focus{border-color:var(--g);}
+.lock-btn{width:100%;background:var(--gk);border:1px solid var(--g);color:var(--tb);font-family:'Share Tech Mono',monospace;font-size:10px;padding:11px;cursor:pointer;letter-spacing:4px;}
+.lock-btn:hover{background:#1e4a1e;}
+.lock-err{font-size:9px;color:var(--rd);margin-top:8px;display:none;}
+
+/* SELECTION BAR */
+.sel-bar{display:flex;gap:8px;align-items:center;padding:8px 12px;background:var(--p2);border:1px solid var(--b2);margin-bottom:12px;}
+.sel-lbl{font-size:8px;color:var(--td);letter-spacing:2px;margin-right:4px;}
+.sel-btn{background:#060d06;border:1px solid var(--b);color:var(--td);font-family:'Share Tech Mono',monospace;font-size:8px;padding:4px 10px;cursor:pointer;letter-spacing:1px;transition:all 0.1s;}
+.sel-btn:hover{border-color:var(--g);color:var(--t);}
+.sel-count{font-size:9px;color:var(--td);margin-left:auto;}
+.sel-count span{color:var(--am);font-family:'Oswald',sans-serif;font-size:14px;}
+
+/* JOUEURS GRID */
+.joueurs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:12px;}
+.joueur-card{background:var(--p2);border:2px solid var(--b);padding:12px;cursor:pointer;transition:all 0.15s;position:relative;user-select:none;}
+.joueur-card:hover{border-color:var(--b2);}
+.joueur-card.selected{border-color:var(--g);background:#0d1f0d;}
+.joueur-card.critique{border-color:var(--rd);}
+.jc-name{font-family:'Oswald',sans-serif;font-size:16px;letter-spacing:2px;color:var(--tb);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;}
+.jc-badge{font-size:7px;padding:1px 5px;border:1px solid;letter-spacing:1px;}
+.jc-badge.ok{border-color:var(--gd);color:var(--g);}
+.jc-badge.blesse{border-color:var(--am);color:var(--am);}
+.jc-badge.critique{border-color:var(--rd);color:var(--rd);}
+.jc-stat{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;}
+.jc-stat-lbl{font-size:8px;color:var(--td);letter-spacing:1px;}
+.jc-stat-val{font-family:'Oswald',sans-serif;font-size:14px;color:var(--tb);}
+.jc-stat-val.danger{color:var(--rd);}
+.jc-stat-val.warn{color:var(--am);}
+.jc-bar{height:6px;background:#060d06;border:1px solid var(--b);margin-bottom:6px;overflow:hidden;}
+.jc-bar-fill{height:100%;}
+.jc-weap{font-size:8px;color:var(--td);margin-top:6px;padding-top:6px;border-top:1px solid var(--b);}
+.jc-link{position:absolute;top:8px;right:8px;font-size:7px;color:var(--gd);text-decoration:none;border:1px solid var(--b);padding:1px 5px;}
+.jc-link:hover{color:var(--g);border-color:var(--g);}
+.sel-indicator{position:absolute;top:8px;left:8px;width:10px;height:10px;border:1px solid var(--b2);background:#060d06;border-radius:50%;}
+.joueur-card.selected .sel-indicator{background:var(--g);border-color:var(--g);}
+
+/* ACTIONS */
+.actions-pnl{background:var(--p2);border:1px solid var(--b2);padding:12px;margin-bottom:12px;}
+.actions-title{font-size:8px;letter-spacing:4px;color:var(--td);text-transform:uppercase;border-bottom:1px solid var(--b);padding-bottom:5px;margin-bottom:10px;}
+.actions-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;}
+.action-group{background:#080f08;border:1px solid var(--b);padding:10px;}
+.action-group-title{font-size:7px;color:var(--td);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.action-row{display:flex;gap:5px;align-items:center;margin-bottom:5px;}
+.action-row:last-child{margin-bottom:0;}
+.action-input{width:55px;background:#060d06;border:1px solid var(--b2);color:var(--tb);font-family:'Oswald',sans-serif;font-size:16px;padding:3px 6px;text-align:center;outline:none;}
+.action-input:focus{border-color:var(--g);}
+.action-btn{flex:1;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:8px;padding:5px 6px;cursor:pointer;letter-spacing:1px;transition:all 0.1s;text-align:center;}
+.action-btn:hover{background:var(--gk);border-color:var(--g);color:var(--tb);}
+.action-btn.heal{border-color:var(--gd);}
+.action-btn.heal:hover{background:#0a1f0a;}
+.action-btn.dmg{border-color:#3a1a1a;}
+.action-btn.dmg:hover{background:var(--rdk);border-color:var(--rd);color:var(--rd);}
+.action-btn.xp{border-color:#3a3a1a;}
+.action-btn.xp:hover{background:#1a1a0a;border-color:var(--am);color:var(--am);}
+.action-btn.full{width:100%;}
+
+/* MSG */
+.msg-bar{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--p2);border:1px solid var(--g);padding:8px 20px;font-size:9px;color:var(--g);letter-spacing:2px;display:none;z-index:50;}
+
+/* STATUS */
+.status-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px;}
+</style>
+</head>
+<body>
+
+<!-- LOCK -->
+<div class="lock" id="lock">
+  <div class="lock-box">
+    <div class="lock-title">MAÎTRE DU JEU</div>
+    <input type="password" class="lock-input" id="lock-inp" placeholder="••••" maxlength="4" inputmode="numeric">
+    <button class="lock-btn" onclick="unlock()">ENTRER</button>
+    <div class="lock-err" id="lock-err">Code incorrect</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+
+  <div class="hdr">
+    <div><div class="hdr-title">FALLOUT PARIS<small>ÉCRAN MAÎTRE DU JEU</small></div></div>
+    <div class="hdr-btns">
+      <button class="hbtn" onclick="rafraichir()">↻ Rafraîchir</button>
+      <a class="hbtn" href="admin_perso/admin_perso.html">⚙ Admin persos</a>
+      <a class="hbtn" href="../../index.html">← Accueil</a>
+    </div>
+  </div>
+
+  <!-- SELECTION -->
+  <div class="sel-bar">
+    <span class="sel-lbl">SÉLECTION :</span>
+    <button class="sel-btn" onclick="selTous()">Tous</button>
+    <button class="sel-btn" onclick="selAucun()">Aucun</button>
+    <span class="sel-count">Sélectionnés : <span id="sel-count">0</span></span>
+  </div>
+
+  <!-- JOUEURS -->
+  <div class="joueurs-grid" id="joueurs-grid">
+    <div style="font-size:9px;color:var(--td);padding:20px">Chargement...</div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="actions-pnl">
+    <div class="actions-title">Actions rapides — sur les joueurs sélectionnés</div>
+    <div class="actions-grid">
+
+      <!-- DÉGÂTS -->
+      <div class="action-group">
+        <div class="action-group-title">⚔ Combat</div>
+        <div class="action-row">
+          <input type="number" class="action-input" id="val-dmg" value="1" min="1">
+          <button class="action-btn dmg" onclick="appliquer('dmg')">Infliger dégâts</button>
+        </div>
+        <div class="action-row">
+          <input type="number" class="action-input" id="val-heal" value="1" min="1">
+          <button class="action-btn heal" onclick="appliquer('heal')">Soigner</button>
+        </div>
+        <div class="action-row">
+          <button class="action-btn full" onclick="appliquer('fullheal')">✚ Soin complet</button>
+        </div>
+      </div>
+
+      <!-- RADIATION -->
+      <div class="action-group">
+        <div class="action-group-title">☢ Radiation</div>
+        <div class="action-row">
+          <input type="number" class="action-input" id="val-rad" value="1" min="1">
+          <button class="action-btn dmg" onclick="appliquer('rad')">Irradier</button>
+        </div>
+        <div class="action-row">
+          <input type="number" class="action-input" id="val-derad" value="4" min="1">
+          <button class="action-btn heal" onclick="appliquer('derad')">Soigner rad</button>
+        </div>
+        <div class="action-row">
+          <button class="action-btn full" onclick="appliquer('derad-full')">☢ Retirer tout</button>
+        </div>
+      </div>
+
+      <!-- XP -->
+      <div class="action-group">
+        <div class="action-group-title">★ Expérience</div>
+        <div class="action-row">
+          <input type="number" class="action-input" id="val-xp" value="100" min="1">
+          <button class="action-btn xp" onclick="appliquer('xp')">Donner XP</button>
+        </div>
+        <div class="action-row">
+          <button class="action-btn full xp" onclick="appliquer('xp-500')">+500 XP</button>
+        </div>
+        <div class="action-row">
+          <button class="action-btn full xp" onclick="appliquer('xp-1000')">+1000 XP</button>
+        </div>
+      </div>
+
+      <!-- REPOS -->
+      <div class="action-group">
+        <div class="action-group-title">⛺ Repos & Statuts</div>
+        <div class="action-row">
+          <button class="action-btn full heal" onclick="appliquer('repos-court')">Repos court (+END PV)</button>
+        </div>
+        <div class="action-row">
+          <button class="action-btn full heal" onclick="appliquer('repos-long')">Repos long (PV max)</button>
+        </div>
+        <div class="action-row">
+          <button class="action-btn full" onclick="appliquer('reset-wounds')">Effacer blessures</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="msg-bar" id="msg-bar"></div>
+
+<script>
+const MJ_CODE = '1234';
+const FICHE_URL = 'https://jobakledev.github.io/FalloutParis/pages/fiche_perso/fiche_perso.html';
+const XP_TABLE = [0,100,300,600,1000,1500,2100,2800,3600,4500,5500,6600,7800,9100,10500,12000,13600,15300,17100,19000,21000];
+
+const firebaseConfig={apiKey:"AIzaSyDcBgIX3n-Ft_HTTXYb-mAwLq2mh3CsqwU",authDomain:"fallout-paris.firebaseapp.com",projectId:"fallout-paris",storageBucket:"fallout-paris.firebasestorage.app",messagingSenderId:"1063413308699",appId:"1:1063413308699:web:09e0e13c2200283b22c7be"};
+const db = firebase.initializeApp(firebaseConfig).firestore();
+
+let joueurs = {}; // id -> data
+let selected = new Set();
+
+// ---- LOCK ----
+document.getElementById('lock-inp').addEventListener('keydown', e => { if(e.key==='Enter') unlock(); });
+function unlock(){
+  if(document.getElementById('lock-inp').value === MJ_CODE){
+    document.getElementById('lock').style.display='none';
+    document.getElementById('app').style.display='block';
+    startSync();
+  } else {
+    document.getElementById('lock-err').style.display='block';
+    document.getElementById('lock-inp').value='';
+  }
+}
+
+// ---- SYNC TEMPS RÉEL ----
+function startSync(){
+  db.collection('joueurs').onSnapshot(snap => {
+    snap.forEach(doc => { joueurs[doc.id] = {...doc.data(), _id: doc.id}; });
+    // Supprimer les persos supprimés
+    const ids = snap.docs.map(d=>d.id);
+    Object.keys(joueurs).forEach(id => { if(!ids.includes(id)) delete joueurs[id]; });
+    renderJoueurs();
+  });
+}
+
+function rafraichir(){
+  db.collection('joueurs').get().then(snap => {
+    joueurs = {};
+    snap.forEach(doc => { joueurs[doc.id] = {...doc.data(), _id: doc.id}; });
+    renderJoueurs();
+    showMsg('Données rafraîchies');
+  });
+}
+
+// ---- RENDER JOUEURS ----
+function renderJoueurs(){
+  const grid = document.getElementById('joueurs-grid');
+  const ids = Object.keys(joueurs);
+  if(!ids.length){ grid.innerHTML='<div style="font-size:9px;color:var(--td);padding:20px">Aucun personnage</div>'; return; }
+  grid.innerHTML = '';
+  ids.forEach(id => {
+    const d = joueurs[id];
+    const hpMax = (d.special?.L||5) + (d.special?.E||5) + Math.max(0,(d.niveau||1)-1) + (d.perks?.['Life Giver']||0)*(d.special?.E||5);
+    const pct = Math.round(Math.max(0,d.hp||0)/hpMax*100);
+    const statut = pct>=100?'ok':pct<30?'critique':'blesse';
+    const statutLbl = pct>=100?'OK':pct<30?'CRITIQUE':'BLESSÉ';
+    const sel = selected.has(id);
+    const weaps = (d.inventory||[]).filter(it=>it.equipped&&it.type==='WEAPON').map(it=>it.name).join(', ')||'—';
+    const barColor = pct<30?'var(--rd)':pct<60?'var(--am)':'var(--g)';
+    const blessures = d.wounds ? Object.entries(d.wounds).filter(([k,v])=>v).map(([k])=>k).join(', ') : '';
+
+    grid.innerHTML += `<div class="joueur-card${sel?' selected':''}${statut==='critique'?' critique':''}" onclick="toggleSel('${id}')">
+      <div class="sel-indicator"></div>
+      <a class="jc-link" href="${FICHE_URL}?id=${id}" target="_blank" onclick="event.stopPropagation()">↗ Fiche</a>
+      <div class="jc-name" style="margin-left:16px">${(d.nom||id).toUpperCase()}
+        <span class="jc-badge ${statut}">${statutLbl}</span>
+      </div>
+      <div class="jc-stat"><span class="jc-stat-lbl">PV</span><span class="jc-stat-val${pct<30?' danger':pct<60?' warn':''}">${d.hp||0} / ${hpMax}</span></div>
+      <div class="jc-bar"><div class="jc-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+      <div class="jc-stat"><span class="jc-stat-lbl">RAD</span><span class="jc-stat-val${(d.rad||0)>0?' warn':''}">${d.rad||0}</span></div>
+      <div class="jc-stat"><span class="jc-stat-lbl">LVL</span><span class="jc-stat-val">${d.niveau||1} — ${d.xp||0} XP</span></div>
+      <div class="jc-weap">🔫 ${weaps}${blessures?`<br>🩸 ${blessures}`:''}</div>
+    </div>`;
+  });
+  document.getElementById('sel-count').textContent = selected.size;
+}
+
+// ---- SÉLECTION ----
+function toggleSel(id){
+  if(selected.has(id)) selected.delete(id);
+  else selected.add(id);
+  renderJoueurs();
+}
+function selTous(){ selected = new Set(Object.keys(joueurs)); renderJoueurs(); }
+function selAucun(){ selected.clear(); renderJoueurs(); }
+
+// ---- ACTIONS ----
+async function appliquer(action){
+  if(!selected.size){ showMsg('Aucun joueur sélectionné !', true); return; }
+  const targets = [...selected];
+  const promises = targets.map(async id => {
+    const d = joueurs[id];
+    if(!d) return;
+    const hpMax = (d.special?.L||5)+(d.special?.E||5)+Math.max(0,(d.niveau||1)-1)+(d.perks?.['Life Giver']||0)*(d.special?.E||5);
+    let update = {};
+
+    if(action==='dmg'){
+      const v = parseInt(document.getElementById('val-dmg').value)||1;
+      update.hp = Math.max(0,(d.hp||0)-v);
+    }
+    else if(action==='heal'){
+      const v = parseInt(document.getElementById('val-heal').value)||1;
+      update.hp = Math.min(hpMax,(d.hp||0)+v);
+    }
+    else if(action==='fullheal'){
+      update.hp = hpMax;
+    }
+    else if(action==='rad'){
+      const v = parseInt(document.getElementById('val-rad').value)||1;
+      update.rad = Math.min(hpMax,(d.rad||0)+v);
+    }
+    else if(action==='derad'){
+      const v = parseInt(document.getElementById('val-derad').value)||4;
+      update.rad = Math.max(0,(d.rad||0)-v);
+    }
+    else if(action==='derad-full'){
+      update.rad = 0;
+    }
+    else if(action==='xp'){
+      const v = parseInt(document.getElementById('val-xp').value)||100;
+      let xp = (d.xp||0)+v;
+      let niveau = d.niveau||1;
+      while(niveau<20 && xp>=XP_TABLE[niveau]) { niveau++; }
+      update.xp = xp; update.niveau = niveau;
+    }
+    else if(action==='xp-500'){ 
+      let xp=(d.xp||0)+500,niveau=d.niveau||1;
+      while(niveau<20&&xp>=XP_TABLE[niveau])niveau++;
+      update.xp=xp;update.niveau=niveau;
+    }
+    else if(action==='xp-1000'){
+      let xp=(d.xp||0)+1000,niveau=d.niveau||1;
+      while(niveau<20&&xp>=XP_TABLE[niveau])niveau++;
+      update.xp=xp;update.niveau=niveau;
+    }
+    else if(action==='repos-court'){
+      const end = d.special?.E||5;
+      update.hp = Math.min(hpMax,(d.hp||0)+end);
+      update.rad = Math.max(0,(d.rad||0)-2);
+    }
+    else if(action==='repos-long'){
+      update.hp = hpMax;
+      update.rad = Math.max(0,Math.floor((d.rad||0)/2));
+    }
+    else if(action==='reset-wounds'){
+      update.wounds = {head:false,torso:false,armL:false,armR:false,legL:false,legR:false};
+    }
+
+    update.lastUpdate = Date.now();
+    await db.collection('joueurs').doc(id).update(update);
+  });
+
+  await Promise.all(promises);
+  const labels = {
+    dmg:'Dégâts infligés',heal:'Soins appliqués',fullheal:'Soin complet',
+    rad:'Radiation infligée',derad:'Radiation soignée','derad-full':'Radiation retirée',
+    xp:'XP donné','xp-500':'+500 XP','xp-1000':'+1000 XP',
+    'repos-court':'Repos court','repos-long':'Repos long','reset-wounds':'Blessures effacées'
+  };
+  showMsg(`✓ ${labels[action]||action} — ${targets.length} joueur(s)`);
+}
+
+function showMsg(txt, err=false){
+  const el = document.getElementById('msg-bar');
+  el.textContent = txt;
+  el.style.borderColor = err?'var(--rd)':'var(--g)';
+  el.style.color = err?'var(--rd)':'var(--g)';
+  el.style.display = 'block';
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>el.style.display='none', 2500);
+}
+</script>
+</body>
+</html>
