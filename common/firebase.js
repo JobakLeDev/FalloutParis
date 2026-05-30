@@ -191,8 +191,8 @@ function initCombatListener() {
     banner.style.borderBottomColor = isMonTour ? '#5dbe5d' : '#e04040';
 
     const tourText = isMonTour
-      ? '▶ C'EST TON TOUR !'
-      : 'Tour de ' + nomActif;
+      ? "▶ C'EST TON TOUR !"
+      : "Tour de " + nomActif;
     const tourColor = isMonTour ? '#5dbe5d' : '#e8a820';
 
     banner.innerHTML =
