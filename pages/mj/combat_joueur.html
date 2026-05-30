@@ -93,6 +93,7 @@
             <button class="j-d20-btn" id="j-d20-3" onclick="setNbDiceJ(3)">3D −1AP</button>
             <button class="j-d20-btn" id="j-d20-4" onclick="setNbDiceJ(4)">4D −3AP</button>
             <button class="j-d20-btn" id="j-d20-5" onclick="setNbDiceJ(5)">5D −6AP</button>
+            <button class="j-d20-btn" id="j-stacked-deck-btn" onclick="toggleStackedDeck()" title="Utiliser LCK comme attribut de base (−1 Luck)">🍀SD</button>
           </div>
           <div class="des-cols">
             <div class="des-col">
@@ -102,6 +103,7 @@
                 <button class="dice-btn" id="j-lance-btn" onclick="jLancer2D20()">2D20</button>
               </div>
               <div class="dice-result sm" id="j-dice-result">—</div>
+              <div id="j-miss-fortune" style="display:none;margin-top:3px"></div>
               <div id="j-convert-ap" style="display:none;margin-top:3px"></div>
             </div>
             <div class="des-col">
@@ -113,6 +115,22 @@
               <div class="dice-result sm" id="j-cd-result">—</div>
               <div id="j-bonus-dmg" style="display:none;margin-top:3px"></div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LUCK -->
+      <div class="pnl bottom-luck">
+        <div class="pnl-title">🍀 Luck</div>
+        <div class="j-luck-pool">
+          <div class="j-luck-dots" id="j-luck-dots"></div>
+          <span class="j-luck-val" id="j-luck-val">0</span><span style="font-size:7px;color:var(--td)">/<span id="j-luck-max">5</span></span>
+        </div>
+        <div style="margin-top:5px">
+          <button class="j-ap-spend-btn" id="j-lucky-timing-btn" onclick="luckyTimingJ()">⚡ Lucky Timing (−1)</button>
+          <div class="luck-draw-row" style="margin-top:3px">
+            <input type="text" id="j-luck-draw-inp" class="luck-draw-inp" placeholder="Détail favorable...">
+            <button class="j-ap-spend-btn" onclick="luckOfTheDrawJ()">🍀 Luck of the Draw (−1)</button>
           </div>
         </div>
       </div>

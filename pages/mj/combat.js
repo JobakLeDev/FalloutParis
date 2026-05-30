@@ -23,6 +23,8 @@ let nbDiceMJ = 2;   // Nombre de d20 sélectionnés
 let lastExcessMJ = 0;
 let lastSkKeyMJ = '';
 let lastInfoRequestTs = 0;
+let lastLuckyTimingTs = 0;
+let lastLuckDrawTs = 0;
 
 // WEAPONS_DB défini dans mj_shared.js
 
@@ -59,6 +61,23 @@ function deverrouiller(){
         banner.style.display = 'flex';
       }
       addLog('❓ ' + (data.infoRequest.joueur||'?') + ' demande une information !');
+    }
+    // Lucky Timing (déclenché par le joueur)
+    if(data.luckyTimingReq && data.luckyTimingReq.ts > lastLuckyTimingTs) {
+      lastLuckyTimingTs = data.luckyTimingReq.ts;
+      executeLuckyTiming(data.luckyTimingReq.id, data.luckyTimingReq.nom);
+      db.collection('combat').doc(COMBAT_DOC).update({luckyTimingReq:null}).catch(()=>{});
+    }
+    // Luck of the Draw
+    if(data.luckRequest && data.luckRequest.ts > lastLuckDrawTs) {
+      lastLuckDrawTs = data.luckRequest.ts;
+      addLog('🍀 '+data.luckRequest.joueur+' [Luck of the Draw] : "'+data.luckRequest.detail+'"');
+      const banner = document.getElementById('ap-info-banner');
+      const txt = document.getElementById('ap-info-text');
+      if(banner && txt) {
+        txt.textContent = data.luckRequest.joueur+' : Luck of the Draw — "'+data.luckRequest.detail+'"';
+        banner.style.display='flex';
+      }
     }
   });
   // Auto-sélectionner les joueurs transmis depuis mj.html
@@ -209,18 +228,25 @@ function depensePA(key, cout){
   return true;
 }
 
-function depenseLuck(id){
-  // Dépenser 1 point de Chance pour agir maintenant
+async function depenseLuck(id){
   const c = combattants[id]; if(!c) return;
   const d = c.data;
-  const luck = d.special?.L||5;
-  if(luck <= 0){ addLog('⚠ Plus de Chance !'); return; }
-  // Insérer le joueur juste après le combattant actif dans l'ordre
+  const luckPts = d.luck_points||0;
+  if(luckPts <= 0){ addLog('⚠ Plus de points de Luck !'); return; }
+  const newPts = luckPts-1;
+  await db.collection('joueurs').doc(id).update({luck_points:newPts, lastUpdate:Date.now()});
+  combattants[id].data.luck_points = newPts;
+  executeLuckyTiming(id, d.nom||id);
+}
+
+function executeLuckyTiming(id, nom){
+  const c = combattants[id];
   const idx = ordreInitiative.findIndex(x=>x.id===id);
   if(idx !== -1) ordreInitiative.splice(idx, 1);
-  ordreInitiative.splice(tourActif + 1, 0, {id, nom:(d.nom||id).toUpperCase(), type:'joueur', init:c.initiative, luck:true});
-  addLog('🍀 ' + (d.nom||id) + ' dépense 1 Chance pour agir maintenant !');
+  ordreInitiative.splice(tourActif+1, 0, {id, nom:nom.toUpperCase(), type:'joueur', init:c?.initiative||0, luck:true});
+  addLog('🍀 '+nom+' : Lucky Timing ! (−1 Luck)');
   renderTracker();
+  syncCombatToFirebase();
 }
 
 function useMajeure(key, withPA){
@@ -392,6 +418,7 @@ function renderJoueursCombat(){
         <div class="jc-stat"><span class="jc-sl">PV</span><span class="jc-sv${pct<30?' danger':pct<60?' warn':''}">${d.hp||0}/${hpMax}</span></div>
         <div class="jc-stat"><span class="jc-sl">RAD</span><span class="jc-sv${rad>0?' warn':''}">${rad}</span></div>
         <div class="jc-stat"><span class="jc-sl">LVL</span><span class="jc-sv">${d.niveau||1}</span></div>
+        <div class="jc-stat"><span class="jc-sl">LUCK</span><span class="jc-sv" style="color:var(--am)">${d.luck_points||0}/${d.special?.L||5}</span></div>
       </div>
       ${weapsEq.map(inv => {
         const db = WEAPONS_DB[inv.name]||{};

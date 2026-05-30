@@ -8,6 +8,10 @@ let nbDCActuel = 2;
 let nbDiceJ = 2;
 let lastExcessJ = 0;
 let lastSkKeyJ = '';
+let useStackedDeck = false;
+let currentArmeInfo = null;  // {nom, skKey, persoBonus, dmg}
+let lastRollDice = [];       // [{val, rerolled}]
+let lastRollTN = 0;
 
 function initJoueur(){
   const params = new URLSearchParams(window.location.search);
@@ -24,6 +28,7 @@ function initJoueur(){
     document.getElementById('hdr-nom').textContent = joueurData.nom || joueurId;
     document.getElementById('lien-fiche').href = '../fiche_perso/fiche_perso.html?id=' + joueurId;
     renderMaCarte();
+    renderLuckJoueur();
   });
 
   // Tous les joueurs (pour les coéquipiers)
@@ -49,6 +54,23 @@ function initJoueur(){
 
 // getHpMax, getTN définis dans mj_shared.js
 
+// ---- LUCK POOL (vue joueur) ----
+function renderLuckJoueur(){
+  const luckPts = joueurData?.luck_points || 0;
+  const lckMax  = joueurData?.special?.L  || 5;
+  const valEl = document.getElementById('j-luck-val');   if(valEl) valEl.textContent = luckPts;
+  const maxEl = document.getElementById('j-luck-max');   if(maxEl) maxEl.textContent = lckMax;
+  const dotsEl= document.getElementById('j-luck-dots');
+  if(dotsEl){
+    dotsEl.innerHTML='';
+    for(let i=0;i<lckMax;i++) dotsEl.innerHTML+=`<span class="j-luck-dot${i<luckPts?' on':''}"></span>`;
+  }
+  // Lucky Timing : disponible si pas mon tour
+  const isMoTour = combatState?.ordreInitiative?.[combatState.tourActif]?.id===joueurId;
+  const ltBtn = document.getElementById('j-lucky-timing-btn');
+  if(ltBtn){ ltBtn.disabled = isMoTour || luckPts < 1; ltBtn.style.opacity = (isMoTour||luckPts<1)?'0.35':'1'; }
+}
+
 // ---- RENDER PRINCIPAL ----
 function renderCombatJoueur(){
   if(!combatState) return;
@@ -57,6 +79,7 @@ function renderCombatJoueur(){
   renderMaCarte();
   renderActionsJoueur();
   renderAPPoolJoueur();
+  renderLuckJoueur();
   renderCoequipiers();
   renderTrackerJoueur();
   renderEnnemisJoueur();
@@ -119,6 +142,104 @@ async function donnerAPMJ(){
   catch(e){ console.error(e); }
 }
 
+// ---- STACKED DECK ----
+function toggleStackedDeck(){
+  const luckPts = joueurData?.luck_points||0;
+  if(!useStackedDeck && luckPts < 1) return;  // need luck to activate
+  useStackedDeck = !useStackedDeck;
+  const btn = document.getElementById('j-stacked-deck-btn');
+  if(btn) btn.classList.toggle('on', useStackedDeck);
+  if(!currentArmeInfo || !joueurData) return;
+  let tn;
+  if(useStackedDeck){
+    const lck = joueurData.special?.L||5;
+    const rang = joueurData.skills?.[currentArmeInfo.skKey]||0;
+    const tag  = joueurData.taggedSkills?.includes(currentArmeInfo.skKey)?2:0;
+    tn = lck+rang+tag+(currentArmeInfo.persoBonus?2:0);
+  } else {
+    tn = getTN(joueurData,currentArmeInfo.skKey).total+(currentArmeInfo.persoBonus?2:0);
+  }
+  document.getElementById('j-tn-val').value = tn;
+  const nomAff = currentArmeInfo.nom==='__unarmed__'?'Mains nues':currentArmeInfo.nom;
+  document.getElementById('mes-des-context').innerHTML =
+    `<b style="color:var(--tb)">${nomAff}</b> · ${currentArmeInfo.dmg} · TN <b style="color:var(--am)">${tn}</b>${useStackedDeck?' <span style="color:var(--am)">🍀 LCK</span>':''}`;
+}
+
+// ---- MISS FORTUNE ----
+function renderMissFortune(){
+  const el = document.getElementById('j-miss-fortune'); if(!el) return;
+  const luckPts = joueurData?.luck_points||0;
+  const already = lastRollDice.filter(d=>d.rerolled).length;
+  const canStill = lastRollDice.some(d=>!d.rerolled) && already < 3 && luckPts > 0;
+  if(!canStill || lastRollDice.length===0){ el.style.display='none'; return; }
+  let html = '<span style="font-size:7px;color:var(--td)">Miss Fortune (−1 Luck/dé) : </span>';
+  lastRollDice.forEach((die,i)=>{
+    const col = die.val<=lastRollTN?'var(--g)':'var(--rd)';
+    if(die.rerolled){
+      html+=`<span class="mf-die-btn rerolled" style="color:${col}">${die.val}↺</span>`;
+    } else {
+      html+=`<button class="mf-die-btn" style="color:${col}" onclick="missFortuneJ(${i})">${die.val} ↺</button>`;
+    }
+  });
+  el.style.display='block'; el.innerHTML=html;
+}
+
+async function missFortuneJ(diceIdx){
+  if(lastRollDice[diceIdx]?.rerolled) return;
+  const luckPts = joueurData?.luck_points||0;
+  if(luckPts<1) return;
+  const newPts = luckPts-1;
+  await db.collection('joueurs').doc(joueurId).update({luck_points:newPts, lastUpdate:Date.now()});
+  lastRollDice[diceIdx] = {val:Math.floor(Math.random()*20)+1, rerolled:true};
+  // Recalculer le résultat
+  const vals = lastRollDice.map(d=>d.val);
+  const tn   = lastRollTN;
+  let succes  = vals.filter(v=>v<=tn).length + vals.filter(v=>v===1).length;
+  const crits = vals.filter(v=>v===1).length;
+  const echec = succes<1;
+  const dcTotal = echec?0:nbDCActuel+Math.max(0,succes-1);
+  if(!echec) document.getElementById('j-nb-cd').value=dcTotal;
+  const col = succes===0?'var(--rd)':succes>1?'var(--g)':'var(--am)';
+  let r = lastRollDice.map(d=>{
+    const c=d.val<=tn?'var(--g)':'var(--rd)';
+    return `<span style="color:${c};font-size:16px;font-family:Oswald,sans-serif">${d.val}${d.rerolled?'↺':''}</span>`;
+  }).join('/');
+  r+=` <b style="color:${col}">${succes}s</b>`;
+  if(crits) r+=`<span style="color:var(--am)">+${crits}★</span>`;
+  if(echec) r+=` <span style="color:var(--rd)">ÉCHEC</span>`;
+  else r+=`→<b style="color:var(--am)">${dcTotal}DC</b>`;
+  document.getElementById('j-dice-result').innerHTML=r;
+  renderMissFortune();
+}
+
+// ---- LUCKY TIMING ----
+async function luckyTimingJ(){
+  if(!combatState) return;
+  const isMoTour = combatState.ordreInitiative?.[combatState.tourActif]?.id===joueurId;
+  if(isMoTour) return;
+  const luckPts = joueurData?.luck_points||0;
+  if(luckPts<1) return;
+  const newPts = luckPts-1;
+  await db.collection('joueurs').doc(joueurId).update({luck_points:newPts, lastUpdate:Date.now()});
+  await db.collection('combat').doc(COMBAT_DOC).update({
+    luckyTimingReq:{id:joueurId, nom:(joueurData?.nom||joueurId).toUpperCase(), ts:Date.now()}
+  }).catch(e=>console.error(e));
+}
+
+// ---- LUCK OF THE DRAW ----
+async function luckOfTheDrawJ(){
+  const detail = document.getElementById('j-luck-draw-inp')?.value?.trim();
+  if(!detail) return;
+  const luckPts = joueurData?.luck_points||0;
+  if(luckPts<1) return;
+  const newPts = luckPts-1;
+  await db.collection('joueurs').doc(joueurId).update({luck_points:newPts, lastUpdate:Date.now()});
+  await db.collection('combat').doc(COMBAT_DOC).update({
+    luckRequest:{joueur:joueurData?.nom||joueurId, detail, ts:Date.now()}
+  }).catch(e=>console.error(e));
+  const inp = document.getElementById('j-luck-draw-inp'); if(inp) inp.value='';
+}
+
 // ---- SÉLECTEUR D20 ----
 function setNbDiceJ(n){
   nbDiceJ = n;
@@ -174,7 +295,7 @@ function renderMaCarte(){
     const db2 = WEAPONS_DB[inv.name]||{};
     const tn = db2.sk ? getTN(d, db2.sk).total + (inv.persoBonus?2:0) : 0;
     const sel = armeSelectionnee===inv.name;
-    html += '<div class="jc-arme clickable'+(sel?' selected-arme':'')+'" onclick="selArme(\''+inv.name+'\','+tn+',\''+(db2.dmg||'2D')+'\')">';
+    html += '<div class="jc-arme clickable'+(sel?' selected-arme':'')+'" onclick="selArme(\''+inv.name+'\','+tn+',\''+(db2.dmg||'2D')+'\','+!!inv.persoBonus+')">';
     html += '<span class="jc-arme-name">'+inv.name+(inv.persoBonus?' ★':'')+'</span>';
     html += '<span class="jc-arme-stat">'+(db2.dmg||'?')+' · TN <b>'+tn+'</b>'+(db2.eff&&db2.eff!=='—'?' · '+db2.eff:'')+'</span>';
     html += '</div>';
@@ -329,15 +450,20 @@ function renderEnnemisJoueur(){
 }
 
 // ---- SÉLECTION ARME + DÉS ----
-function selArme(nom, tn, dmg){
+function selArme(nom, tn, dmg, persoBonus=false){
   armeSelectionnee = nom;
   nbDCActuel = parseInt(dmg)||2;
   lastSkKeyJ = nom==='__unarmed__' ? 'barehand' : (WEAPONS_DB[nom]?.sk||'');
+  currentArmeInfo = {nom, skKey:lastSkKeyJ, persoBonus, dmg};
+  useStackedDeck = false;
+  const btn=document.getElementById('j-stacked-deck-btn'); if(btn) btn.classList.remove('on');
   document.getElementById('j-tn-val').value = tn;
   renderMaCarte();
   const nomAff = nom==='__unarmed__'?'Mains nues':nom;
   document.getElementById('mes-des-context').innerHTML = '<b style="color:var(--tb)">'+nomAff+'</b> · '+dmg+' · TN <b style="color:var(--am)">'+tn+'</b>';
   document.getElementById('j-nb-cd').value = nbDCActuel;
+  lastRollDice=[];
+  const mf=document.getElementById('j-miss-fortune'); if(mf) mf.style.display='none';
 }
 
 async function jLancer2D20(){
@@ -367,7 +493,21 @@ async function jLancer2D20(){
   else r+='→<b style="color:var(--am)">'+dcTotal+'DC</b>';
   document.getElementById('j-dice-result').innerHTML = r;
 
+  // Stocker pour Miss Fortune + reset Stacked Deck
+  lastRollDice = dés.map(v=>({val:v, rerolled:false}));
+  lastRollTN = tn;
+  const wasStackedDeck = useStackedDeck;
+  useStackedDeck = false;
+  const sdBtn=document.getElementById('j-stacked-deck-btn'); if(sdBtn) sdBtn.classList.remove('on');
+
+  // Si Stacked Deck était actif, dépenser 1 Luck
+  if(wasStackedDeck){
+    const lp=joueurData?.luck_points||0;
+    if(lp>0) db.collection('joueurs').doc(joueurId).update({luck_points:lp-1,lastUpdate:Date.now()}).catch(()=>{});
+  }
+
   setNbDiceJ(2);
+  renderMissFortune();
 
   // Proposer conversion succès → AP groupe
   lastExcessJ = succesBonus;

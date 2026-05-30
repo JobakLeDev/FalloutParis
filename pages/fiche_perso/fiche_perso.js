@@ -13,6 +13,7 @@ const char = {
   inventory:[],
   ammo:[],
   wounds:{head:false,torso:false,armL:false,armR:false,legL:false,legR:false},
+  luck_points:0,
 };
 
 // ============================================================
@@ -220,6 +221,8 @@ function rHP(){
   const rf=document.getElementById('rad-f');if(rf)rf.style.width=rpct+'%';
   const rt=document.getElementById('rad-t');if(rt)rt.textContent=char.rad+'/'+max;
   const mr=document.getElementById('mini-rad');if(mr)mr.textContent=char.rad;
+  const ml=document.getElementById('mini-luck');if(ml)ml.textContent=char.luck_points||0;
+  const mlm=document.getElementById('mini-luck-max');if(mlm)mlm.textContent=SP().L;
   const xn=xpNext(),xpct=Math.round(char.xp/xn*100);
   const xf=document.getElementById('xp-f');if(xf)xf.style.width=Math.min(100,xpct)+'%';
   const xt=document.getElementById('xp-t');if(xt)xt.textContent=char.xp+'/'+xn;
@@ -491,6 +494,7 @@ function rPerkEff(){
 // ACTIONS — Interactions utilisateur
 // ============================================================
 
+function chLuck(n){char.luck_points=Math.max(0,Math.min(SP().L,(char.luck_points||0)+n));rAll();}
 function chHP(n){char.hp=Math.max(0,Math.min(hpMax(),char.hp+n));rAll();}
 function chHPd(add){const d=parseInt(document.getElementById('hpd')?.value)||1;chHP(add?d:-d);}
 function chRad(n){char.rad=Math.max(0,Math.min(hpMax(),char.rad+n));rAll();}

@@ -133,3 +133,22 @@
 /* Convert / bonus dmg (vue joueur) */
 .j-ap-convert-btn, .j-ap-dmg-btn { background: #0a160a; border: 1px solid var(--g); color: var(--g); font-family: 'Share Tech Mono', monospace; font-size: 7px; padding: 2px 5px; cursor: pointer; letter-spacing: 1px; margin-right: 2px; }
 .j-ap-dmg-btn { border-color: var(--am); color: var(--am); background: #16130a; }
+
+/* ---- PANEL LUCK ---- */
+.bottom-luck { flex: 0 0 auto; min-width: 160px; }
+.j-luck-pool { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
+.j-luck-dots { display: flex; gap: 2px; }
+.j-luck-dot  { width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--am); background: #060d06; transition: all 0.15s; }
+.j-luck-dot.on { background: var(--am); box-shadow: 0 0 3px var(--am); }
+.j-luck-val  { font-family: 'Oswald', sans-serif; font-size: 18px; color: var(--am); }
+.luck-draw-row { display: flex; flex-direction: column; gap: 2px; }
+.luck-draw-inp { background: #060d06; border: 1px solid var(--b2); color: var(--t); font-family: 'Share Tech Mono', monospace; font-size: 8px; padding: 2px 4px; outline: none; width: 100%; }
+.luck-draw-inp:focus { border-color: var(--am); }
+
+/* Stacked Deck bouton actif */
+#j-stacked-deck-btn.on { border-color: var(--am) !important; background: #1a160a !important; color: var(--am) !important; }
+
+/* Miss Fortune boutons */
+.mf-die-btn { background: #060d06; border: 1px solid var(--b2); color: var(--td); font-family: 'Share Tech Mono', monospace; font-size: 8px; padding: 1px 5px; cursor: pointer; margin-right: 3px; }
+.mf-die-btn:hover { border-color: var(--am); color: var(--am); }
+.mf-die-btn.rerolled { opacity: 0.4; cursor: default; }

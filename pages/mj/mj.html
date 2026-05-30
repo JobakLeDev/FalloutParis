@@ -112,6 +112,17 @@
           </div>
         </div>
 
+        <div class="action-group">
+          <div class="action-group-title">🍀 Luck</div>
+          <div class="action-row">
+            <button class="action-btn full" onclick="appliquer('luck-init')">Init Luck (= LCK)</button>
+          </div>
+          <div class="action-row">
+            <input type="number" class="action-input" id="val-luck-rec" value="1" min="1" max="10">
+            <button class="action-btn heal" onclick="appliquer('luck-recover')">Récupérer Luck</button>
+          </div>
+        </div>
+
         <!-- LANCEUR DE DÉS -->
         <div class="action-group" style="grid-column:1/-1">
           <div class="action-group-title">🎲 Lanceur de dés</div>
