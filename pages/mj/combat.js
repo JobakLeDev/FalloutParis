@@ -255,6 +255,7 @@ function renderEnnemis(){
       <div class="ennemi-dmg">
         <input type="number" class="dmg-inp" id="dmg-${e.id}" value="1" min="0">
         <button class="dmg-btn" onclick="dmgEnnemi(${e.id},parseInt(document.getElementById('dmg-${e.id}').value)||1)">Dégâts</button>
+        <button class="atq-btn" onclick="setAttaqueEnnemi(${e.id})">⚔ Attaquer</button>
       </div>
     </div>`;
   });
@@ -274,6 +275,42 @@ function renderInitiative(){
 
 // ---- DÉS ----
 function setActif(id){ joueurActif = joueurActif===id?null:id; armeActive=null; renderJoueursCombat(); updateDicePanel(); }
+
+function setAttaqueEnnemi(eid){
+  const e = ennemis.find(e=>e.id===eid); if(!e) return;
+  const panel = document.getElementById('dice-context');
+  // Parser le nb de DC depuis l'attaque ex: "3D" -> 3, "4D+poison" -> 4
+  const nbDC = parseInt(e.atq)||2;
+  panel._nbDC = nbDC;
+  panel._modeEnnemi = true;
+  panel._ennemNom = e.nom;
+
+  // Construire le TN de défense = AGI du joueur ciblé (ou TN fixe 10 si pas de cible)
+  const cibles = Object.values(combattants);
+  let html = '<div class="ctx-nom" style="color:var(--rd)">' + e.nom.toUpperCase() + ' attaque</div>';
+  html += '<div class="ctx-arme">ATQ : <b>' + e.atq + '</b> · RD : <b>' + e.rd + '</b></div>';
+  html += '<div class="ctx-diff" style="margin-top:4px">Cible :';
+  html += '<select id="cible-sel" onchange="majTNCible()" style="background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:9px;padding:2px 4px;outline:none;margin-left:6px">';
+  html += '<option value="">— Choisir —</option>';
+  cibles.forEach(c => {
+    const agi = c.data.special?.A||5;
+    html += '<option value="' + c.data._id + '">' + (c.data.nom||c.data._id).toUpperCase() + ' (AGI ' + agi + ')</option>';
+  });
+  html += '</select></div>';
+  html += '<div class="ctx-diff">Difficulté : <select id="diff-sel" onchange="majDC()" style="background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:9px;padding:2px 4px;outline:none"><option value="0">D0</option><option value="1" selected>D1</option><option value="2">D2</option><option value="3">D3</option></select></div>';
+  html += '<div id="dc-suggest" class="ctx-dc">DC : <b style="color:var(--rd)" id="dc-nb">' + nbDC + '</b> (' + e.atq + ')</div>';
+  document.getElementById('tn-val').value = 10;
+  panel.innerHTML = html;
+}
+
+function majTNCible(){
+  const sel = document.getElementById('cible-sel'); if(!sel) return;
+  const id = sel.value; if(!id) return;
+  const d = combattants[id]?.data; if(!d) return;
+  // TN défense = AGI du joueur (jet d'esquive D1 par défaut)
+  const agi = d.special?.A||5;
+  document.getElementById('tn-val').value = agi;
+}
 function setArme(id, arme){ joueurActif=id; armeActive=arme==='__unarmed__'?null:arme; renderJoueursCombat(); updateDicePanel(); }
 
 function updateDicePanel(){
@@ -363,8 +400,11 @@ function lancer2D20(){
   }
   document.getElementById('dice-result').innerHTML = resultHTML;
 
-  const nom = joueurActif?(combattants[joueurActif]?.data?.nom||joueurActif):'?';
-  addLog('🎲 '+nom+(armeActive?' ('+armeActive+')':'')+' TN'+tn+' D'+diff+': '+d1+'/'+d2+' = '+succes+'s → '+(echec?'ÉCHEC':dcTotal+'DC'));
+  const panel2 = document.getElementById('dice-context');
+  const nomLog = panel2._modeEnnemi ? (panel2._ennemNom||'Ennemi') : (joueurActif?(combattants[joueurActif]?.data?.nom||joueurActif):'?');
+  const armeLog = panel2._modeEnnemi ? '' : (armeActive?' ('+armeActive+')':'');
+  addLog('🎲 '+nomLog+armeLog+' TN'+tn+' D'+diff+': '+d1+'/'+d2+' = '+succes+'s → '+(echec?'ÉCHEC':dcTotal+'DC'));
+  panel2._modeEnnemi = false;
 }
 
 function lancerCD(){
