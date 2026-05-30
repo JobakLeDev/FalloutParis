@@ -72,7 +72,8 @@ function init(){
 }
 
 function deverrouiller(){
-  document.getElementById('lock').style.display='none';
+  const lock = document.getElementById('lock');
+  if(lock) lock.style.display='none';
   document.getElementById('app').style.display='block';
   chargerJoueurs();
   // Charger ennemis depuis sessionStorage si venant de mj.html
