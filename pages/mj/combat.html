@@ -32,41 +32,31 @@
   </div>
 
   <!-- COL 1 : JOUEURS -->
-  <div class="pnl" style="overflow-y:auto;max-height:calc(100vh - 80px)">
-    <div class="pnl-title">Joueurs</div>
-
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-      <div class="sel-joueurs-bar" id="sel-joueurs"></div>
+  <div class="pnl">
+    <div class="pnl-title">
+      Joueurs
       <button class="init-btn" onclick="lancerInitiative()">🎲 Initiative</button>
     </div>
-
+    <div class="sel-bar" id="sel-joueurs"></div>
     <div id="joueurs-combat"></div>
   </div>
 
   <!-- COL 2 : ENNEMIS -->
-  <div class="pnl" style="overflow-y:auto;max-height:calc(100vh - 80px)">
-    <div class="pnl-title">Ennemis</div>
-
-    <div id="ennemis-combat"></div>
-
-    <div class="add-ennemi">
-      <div class="ae-title">+ Ajouter ennemi</div>
-      <div class="ae-row"><span class="ae-lbl">Nom</span><input class="ae-inp" id="ennemi-nom" placeholder="Pillard..."></div>
-      <div class="ae-row"><span class="ae-lbl">PV</span><input class="ae-inp" id="ennemi-pv" placeholder="2D+4" value="2D+4"></div>
-      <div class="ae-row"><span class="ae-lbl">Atq</span><input class="ae-inp" id="ennemi-atq" placeholder="3D" value="3D"></div>
-      <div class="ae-row"><span class="ae-lbl">RD</span><input class="ae-inp" id="ennemi-rd" placeholder="0" value="0" type="number"></div>
-      <button class="ae-btn" onclick="ajouterEnnemi()">+ Ajouter</button>
+  <div class="pnl">
+    <div class="pnl-title">
+      Ennemis
+      <button class="add-ennemi-btn" onclick="ouvrirModalEnnemi()">+ Ajouter</button>
     </div>
+    <div id="ennemis-combat"></div>
   </div>
 
   <!-- COL 3 : DÉS + INITIATIVE + LOG -->
-  <div style="display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 80px);overflow-y:auto">
+  <div style="display:flex;flex-direction:column;gap:8px">
 
-    <!-- DÉS -->
     <div class="pnl">
       <div class="pnl-title">Jet de dés</div>
-      <div id="dice-context" style="min-height:40px;margin-bottom:8px;padding:6px;background:#060d06;border:1px solid var(--b);font-size:9px;color:var(--td)">
-        Sélectionne un joueur pour voir ses conditions de succès
+      <div id="dice-context" style="padding:5px;background:#060d06;border:1px solid var(--b);margin-bottom:6px;min-height:36px">
+        <span class="empty">Sélectionne un joueur puis une arme</span>
       </div>
       <div class="tn-row">
         <span class="tn-lbl">TN</span>
@@ -75,25 +65,21 @@
       </div>
       <div class="dice-result" id="dice-result">—</div>
       <div class="cd-row">
-        <span class="tn-lbl" style="font-size:7px;color:var(--td)">DC</span>
+        <span class="tn-lbl">DC</span>
         <input type="number" class="cd-inp" id="nb-cd" value="2" min="1" max="10">
         <button class="cd-btn" onclick="lancerCD()">Dés Combat</button>
       </div>
       <div class="dice-result" id="cd-result" style="margin-top:4px">—</div>
     </div>
 
-    <!-- INITIATIVE -->
     <div class="pnl">
-      <div class="pnl-title">Ordre d'initiative</div>
-      <div class="init-list" id="initiative-list">
-        <span style="font-size:9px;color:var(--td)">Lance l'initiative d'abord</span>
-      </div>
+      <div class="pnl-title">Initiative</div>
+      <div id="initiative-list"><span class="empty">Lance l'initiative d'abord</span></div>
     </div>
 
-    <!-- LOG -->
-    <div class="pnl" style="flex:1">
+    <div class="pnl">
       <div class="pnl-title">
-        Journal de combat
+        Journal
         <button class="log-clear" onclick="clearLog()">Effacer</button>
       </div>
       <div class="scr" id="combat-log"></div>
@@ -103,8 +89,32 @@
 
 </div>
 
+<!-- MODAL ENNEMI -->
+<div class="mo" id="mo-ennemi" style="display:none">
+  <div class="mbox">
+    <div class="mtitle">Ajouter ennemi</div>
+    <div class="mf">
+      <label>Ennemi</label>
+      <select id="mo-ennemi-nom"></select>
+    </div>
+    <div class="mf">
+      <label>Nombre</label>
+      <input type="number" id="mo-ennemi-nb" value="1" min="1" max="10">
+    </div>
+    <div class="mf">
+      <label>Niveau (1-5)</label>
+      <input type="number" id="mo-ennemi-lvl" value="1" min="1" max="5">
+    </div>
+    <div class="mbtns">
+      <button class="mbtn ok" onclick="ajouterEnnemisModal()">Ajouter</button>
+      <button class="mbtn cancel" onclick="fermerModalEnnemi()">Annuler</button>
+    </div>
+  </div>
+</div>
+
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="combat.js"></script>
+  <script>init();</script>
 </body>
 </html>
