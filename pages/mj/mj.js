@@ -186,6 +186,15 @@ function genCombat(){
 
   const totalXP = ennemisGeneres.reduce((a,e)=>a+e.xp,0);
 
+  // Stocker pour l'écran combat
+  const combatData = ennemisGeneres.map((e,i)=>({
+    id: Date.now()+i, nom:e.nom, pvd:e.pvd,
+    pvMax:rollDiceSimple(e.pvd), pvCur:0, atq:e.atq, rd:e.rd, xp:e.xp, initiative:null
+  }));
+  combatData.forEach(e=>e.pvCur=e.pvMax);
+  sessionStorage.setItem('combat_ennemis', JSON.stringify(combatData));
+  document.getElementById('btn-combat-wrap').style.display='block';
+
   document.getElementById('btn-combat-wrap').style.display='block';
   panel.innerHTML = `
     <div class="rencontre-header">⚔ COMBAT — ${zone.toUpperCase()}</div>
@@ -288,4 +297,20 @@ function lancerCD(){
   const el = document.getElementById('dice-result');
   el.style.display='block';
   el.innerHTML = `<span style="color:var(--td)">${nb}DC → </span>${resultats.join(' ')} <span style="color:var(--am);font-family:'Oswald',sans-serif;font-size:14px"> = ${dmg} dmg${effets>0?` + ${effets} Effet(s)`:''}</span>`;
+}
+
+function rollDiceSimple(expr){
+  const m = expr.match(/(\d+)D\+?(\d*)/i);
+  if(!m) return 10;
+  const nb=parseInt(m[1])||1, bonus=parseInt(m[2])||0;
+  let t=bonus; for(let i=0;i<nb;i++) t+=Math.floor(Math.random()*6)+1;
+  return t;
+}
+
+function rollDiceSimple(expr){
+  const m = expr.match(/(\d+)D\+?(\d*)/i);
+  if(!m) return 10;
+  const nb=parseInt(m[1])||1, bonus=parseInt(m[2])||0;
+  let t=bonus; for(let i=0;i<nb;i++) t+=Math.floor(Math.random()*6)+1;
+  return t;
 }
