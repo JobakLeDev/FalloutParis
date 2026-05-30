@@ -12,12 +12,12 @@ let selected = new Set();
 // TABLES DE RENCONTRES
 // ============================================================
 const ZONES = {
-  'Paris Centre': {danger:2, ennemis:['Pillard','Pillard Vétéran','Goule errante','Chien sauvage','Marchand hostile']},
-  'Paris Banlieue': {danger:3, ennemis:['Pillard Vétéran','Goule enragée','Super Mutant','Chien sauvage','Légion de Fer']},
-  'Métro': {danger:4, ennemis:['Goule enragée','Goule irradiée','Mite de vapeur','Pillard','Homme de main']},
-  'Zone Industrielle': {danger:3, ennemis:['Robot Protectron','Robot Assaultron','Pillard Vétéran','Super Mutant','Saccageur']},
-  'Égouts': {danger:4, ennemis:['Radscorpion','Mole Rat','Goule errante','Goule enragée','Mirelurk']},
-  'Zone Verte': {danger:2, ennemis:['Radstag','Brahmane sauvage','Chien sauvage','Pillard','Pillard Vétéran']},
+  'Paris Centre':     {danger:2, nbMin:1, nbMax:3, ennemis:['Pillard','Pillard Vétéran','Goule errante','Chien sauvage','Marchand hostile']},
+  'Paris Banlieue':   {danger:3, nbMin:2, nbMax:4, ennemis:['Pillard Vétéran','Goule enragée','Super Mutant','Chien sauvage','Légion de Fer']},
+  'Métro':            {danger:4, nbMin:3, nbMax:5, ennemis:['Goule enragée','Goule irradiée','Mite de vapeur','Pillard','Homme de main']},
+  'Zone Industrielle':{danger:3, nbMin:2, nbMax:4, ennemis:['Robot Protectron','Robot Assaultron','Pillard Vétéran','Super Mutant','Saccageur']},
+  'Égouts':           {danger:4, nbMin:3, nbMax:5, ennemis:['Radscorpion','Mole Rat','Goule errante','Goule enragée','Mirelurk']},
+  'Zone Verte':       {danger:2, nbMin:1, nbMax:2, ennemis:['Radstag','Brahmane sauvage','Chien sauvage','Pillard','Pillard Vétéran']},
 };
 
 const ENNEMIS_DB = {
@@ -69,6 +69,13 @@ function unlock(){
 // ============================================================
 // SYNC
 // ============================================================
+function updateNbEnnemis(){
+  const zone = document.getElementById('zone-sel').value;
+  const zoneData = ZONES[zone]; if(!zoneData) return;
+  const nb = Math.floor(Math.random()*(zoneData.nbMax-zoneData.nbMin+1))+zoneData.nbMin;
+  document.getElementById('nb-ennemis').value = nb;
+}
+
 function startSync(){
   db.collection('joueurs').onSnapshot(snap => {
     joueurs = {};
@@ -156,8 +163,10 @@ async function appliquer(action){
 // ============================================================
 function genCombat(){
   const zone = document.getElementById('zone-sel').value;
-  const nb = parseInt(document.getElementById('nb-ennemis').value)||3;
   const zoneData = ZONES[zone];
+  const nbMin = zoneData.nbMin||1, nbMax = zoneData.nbMax||3;
+  const nb = Math.floor(Math.random()*(nbMax-nbMin+1))+nbMin;
+  document.getElementById('nb-ennemis').value = nb;
   const panel = document.getElementById('rencontre-panel');
 
   const ennemisGeneres = [];
