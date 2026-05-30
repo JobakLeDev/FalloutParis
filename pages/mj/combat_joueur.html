@@ -30,64 +30,77 @@
 
   <!-- COMBAT ACTIF -->
   <div id="combat-actif" style="display:none">
+
+    <!-- GRILLE PRINCIPALE : fiche+coéq | ennemis | initiative -->
     <div class="cj-grid">
 
-      <!-- COL 1 : MA FICHE -->
-      <div>
+      <!-- COL GAUCHE : ma fiche + coéquipiers empilés -->
+      <div class="col-gauche">
         <div class="pnl" id="ma-carte">
           <div class="pnl-title">Ma fiche</div>
           <div id="ma-carte-content"><span class="empty">Chargement...</span></div>
         </div>
-      </div>
-
-      <!-- COL 2 : COÉQUIPIERS + ENNEMIS -->
-      <div>
-        <div class="pnl">
+        <div class="pnl" style="margin-top:8px">
           <div class="pnl-title">Coéquipiers</div>
           <div id="j-coequipiers"><span class="empty">Aucun coéquipier</span></div>
         </div>
-        <div class="pnl" style="margin-top:8px">
+      </div>
+
+      <!-- COL MILIEU : ennemis -->
+      <div class="col-milieu">
+        <div class="pnl" style="height:100%">
           <div class="pnl-title">Ennemis</div>
           <div id="j-ennemis"><span class="empty">Aucun ennemi</span></div>
         </div>
       </div>
 
-      <!-- COL 3 : ACTIONS + DÉS + INITIATIVE -->
-      <div>
-
-        <!-- ACTIONS -->
-        <div class="pnl">
-          <div class="pnl-title">Mes actions</div>
-          <div id="j-actions"><span class="empty">—</span></div>
-        </div>
-
-        <!-- DÉS -->
-        <div class="pnl" style="margin-top:8px">
-          <div class="pnl-title">Mes jets</div>
-          <div id="mes-des-context" class="des-ctx">Sélectionne une arme</div>
-          <div class="des-row">
-            <span class="tn-lbl">TN</span>
-            <input type="number" class="tn-inp" id="j-tn-val" value="10" min="1" max="20">
-            <button class="dice-btn" onclick="jLancer2D20()">2D20</button>
-          </div>
-          <div class="dice-result sm" id="j-dice-result">—</div>
-          <div class="des-row" style="margin-top:5px">
-            <span class="tn-lbl">DC</span>
-            <input type="number" class="cd-inp" id="j-nb-cd" value="2" min="1" max="10">
-            <button class="cd-btn" onclick="jLancerCD()">CD</button>
-          </div>
-          <div class="dice-result sm" id="j-cd-result" style="margin-top:3px">—</div>
-        </div>
-
-        <!-- INITIATIVE -->
-        <div class="pnl" style="margin-top:8px">
+      <!-- COL DROITE : initiative -->
+      <div class="col-droite">
+        <div class="pnl" style="height:100%">
           <div class="pnl-title">Initiative · R<span id="j-round">?</span></div>
           <div id="j-tracker"><span class="empty">En attente...</span></div>
         </div>
-
       </div>
 
     </div>
+
+    <!-- BARRE DU BAS : actions + dés -->
+    <div class="cj-bottom">
+
+      <!-- ACTIONS -->
+      <div class="pnl bottom-actions">
+        <div class="pnl-title">Mes actions</div>
+        <div id="j-actions"><span class="empty">—</span></div>
+      </div>
+
+      <!-- DÉS -->
+      <div class="pnl bottom-des">
+        <div class="pnl-title">Mes jets</div>
+        <div class="des-inner">
+          <div id="mes-des-context" class="des-ctx">Sélectionne une arme</div>
+          <div class="des-cols">
+            <div class="des-col">
+              <div class="des-row">
+                <span class="tn-lbl">TN</span>
+                <input type="number" class="tn-inp" id="j-tn-val" value="10" min="1" max="20">
+                <button class="dice-btn" onclick="jLancer2D20()">2D20</button>
+              </div>
+              <div class="dice-result sm" id="j-dice-result">—</div>
+            </div>
+            <div class="des-col">
+              <div class="des-row">
+                <span class="tn-lbl">DC</span>
+                <input type="number" class="cd-inp" id="j-nb-cd" value="2" min="1" max="10">
+                <button class="cd-btn" onclick="jLancerCD()">CD</button>
+              </div>
+              <div class="dice-result sm" id="j-cd-result">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 
 </div>

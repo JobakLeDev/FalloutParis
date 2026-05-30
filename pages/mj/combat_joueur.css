@@ -1,50 +1,104 @@
-/* Layout joueur : 3 colonnes — fiche | coéquipiers+ennemis | actions+dés+initiative */
-.cj-grid{display:grid;grid-template-columns:1fr 1fr 190px;gap:10px;}
+/* ============================================================
+   GRILLE PRINCIPALE : 3 colonnes
+   gauche (étroite) | milieu (flex) | droite (initiative)
+   ============================================================ */
+.cj-grid {
+  display: grid;
+  grid-template-columns: 260px 1fr 170px;
+  gap: 10px;
+  align-items: start;
+}
+.col-gauche  { display: flex; flex-direction: column; }
+.col-milieu  { }
+.col-droite  { }
 
-/* Bannière mon tour */
-.mon-tour-banner{background:var(--gk);border:1px solid var(--g);color:var(--g);font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:3px;text-align:center;padding:5px;margin-bottom:8px;animation:pulse 1.5s infinite;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.6;}}
+/* ============================================================
+   BARRE DU BAS : actions + dés côte à côte
+   ============================================================ */
+.cj-bottom {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  align-items: stretch;
+}
+.bottom-actions { flex: 0 0 auto; min-width: 220px; }
+.bottom-des     { flex: 1; }
+
+/* Layout interne des dés */
+.des-inner { display: flex; flex-direction: column; gap: 5px; }
+.des-ctx   { padding: 4px 6px; background: #060d06; border: 1px solid var(--b); font-size: 8px; color: var(--td); min-height: 24px; }
+.des-cols  { display: flex; gap: 16px; }
+.des-col   { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+.des-row   { display: flex; align-items: center; gap: 4px; }
+.dice-result.sm { font-size: 9px; padding: 3px 4px; min-height: 0; }
+
+/* ============================================================
+   BANNIÈRE MON TOUR
+   ============================================================ */
+.mon-tour-banner {
+  background: var(--gk); border: 1px solid var(--g); color: var(--g);
+  font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 3px;
+  text-align: center; padding: 4px; margin-bottom: 7px;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.6;} }
 
 /* Arme sélectionnée */
-.selected-arme{border-color:var(--g)!important;background:#0a180a!important;}
+.selected-arme { border-color: var(--g) !important; background: #0a180a !important; }
 
 /* Moi dans le tracker */
-.c-est-moi{background:#0d1a0d!important;}
-.c-est-moi .tracker-nom{color:var(--tb)!important;}
+.c-est-moi { background: #0d1a0d !important; }
+.c-est-moi .tracker-nom { color: var(--tb) !important; }
 
-/* Coéquipier card */
-.coeq-card{background:#080f08;border:1px solid var(--b);padding:5px 7px;margin-bottom:5px;}
-.coeq-card.tour-actif{border-color:var(--g);}
-.coeq-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;}
-.coeq-nom{font-size:9px;color:var(--tb);letter-spacing:1px;}
-.coeq-tour{font-size:8px;color:var(--g);}
-.coeq-bar{height:5px;background:#060d06;border:1px solid var(--b);margin-bottom:3px;}
-.coeq-stats{display:flex;gap:8px;font-size:8px;color:var(--td);}
-.coeq-stats b{font-family:'Oswald',sans-serif;font-size:11px;}
-.coeq-stats .danger{color:var(--rd);}
-.coeq-stats .warn{color:var(--am);}
+/* ============================================================
+   COÉQUIPIER CARDS (format compact)
+   ============================================================ */
+.coeq-card {
+  background: #080f08; border: 1px solid var(--b);
+  padding: 4px 6px; margin-bottom: 5px;
+}
+.coeq-card.tour-actif { border-color: var(--g); }
+.coeq-top  { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+.coeq-nom  { font-size: 9px; color: var(--tb); letter-spacing: 1px; }
+.coeq-bar  { height: 4px; background: #060d06; border: 1px solid var(--b); margin-bottom: 3px; overflow: hidden; }
+.coeq-stats { display: flex; gap: 8px; font-size: 8px; color: var(--td); }
+.coeq-stats b { font-family: 'Oswald', sans-serif; font-size: 11px; }
+.coeq-stats .danger { color: var(--rd); }
+.coeq-stats .warn   { color: var(--am); }
 
-/* Gestionnaire d'actions */
-.act-section{margin-bottom:6px;}
-.act-section-lbl{font-size:7px;color:var(--td);letter-spacing:2px;margin-bottom:3px;}
-.act-dots{display:flex;gap:3px;align-items:center;}
-.act-dot-j{width:14px;height:14px;border-radius:50%;border:1px solid var(--b2);background:#060d06;cursor:pointer;transition:all 0.1s;display:inline-flex;align-items:center;justify-content:center;font-size:7px;}
-.act-dot-j.on{background:var(--g);border-color:var(--g);color:#060d06;}
-.act-dot-j.maj.on{background:var(--am);border-color:var(--am);}
-.act-bonus-btn{font-size:7px;padding:1px 4px;border:1px solid var(--b2);color:var(--td);background:none;cursor:pointer;font-family:'Share Tech Mono',monospace;margin-left:4px;}
-.act-bonus-btn:hover{border-color:var(--g);color:var(--g);}
-.pa-row{display:flex;align-items:center;gap:4px;margin-top:5px;}
-.pa-lbl{font-size:7px;color:var(--td);letter-spacing:2px;flex:1;}
-.pa-btn-j{width:18px;height:18px;background:none;border:1px solid var(--b2);color:var(--td);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-.pa-btn-j:hover{border-color:var(--am);color:var(--am);}
-.pa-val-j{font-family:'Oswald',sans-serif;font-size:16px;color:var(--am);min-width:20px;text-align:center;}
+/* ============================================================
+   GESTIONNAIRE D'ACTIONS (barre du bas)
+   ============================================================ */
+.act-section     { margin-bottom: 5px; }
+.act-section-lbl { font-size: 7px; color: var(--td); letter-spacing: 2px; margin-bottom: 2px; }
+.act-dots        { display: flex; align-items: center; gap: 3px; }
+.act-dot-j {
+  width: 13px; height: 13px; border-radius: 50%;
+  border: 1px solid var(--b2); background: #060d06;
+  cursor: pointer; transition: all 0.1s;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 7px;
+}
+.act-dot-j.on           { background: var(--g);  border-color: var(--g);  color: #060d06; }
+.act-dot-j.maj.on       { background: var(--am); border-color: var(--am); color: #060d06; }
+.act-bonus-btn {
+  font-size: 7px; padding: 1px 4px;
+  border: 1px solid var(--b2); color: var(--td);
+  background: none; cursor: pointer;
+  font-family: 'Share Tech Mono', monospace; margin-left: 3px;
+}
+.act-bonus-btn:hover { border-color: var(--g); color: var(--g); }
+.pa-row    { display: flex; align-items: center; gap: 4px; margin-top: 4px; }
+.pa-lbl    { font-size: 7px; color: var(--td); letter-spacing: 2px; flex: 1; }
+.pa-btn-j  {
+  width: 17px; height: 17px; background: none;
+  border: 1px solid var(--b2); color: var(--td);
+  font-size: 11px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.pa-btn-j:hover { border-color: var(--am); color: var(--am); }
+.pa-val-j  { font-family: 'Oswald', sans-serif; font-size: 15px; color: var(--am); min-width: 18px; text-align: center; }
 
-/* Dés compacts */
-.des-ctx{padding:4px 5px;background:#060d06;border:1px solid var(--b);margin-bottom:5px;font-size:8px;color:var(--td);min-height:28px;line-height:1.4;}
-.des-row{display:flex;align-items:center;gap:4px;}
-.dice-result.sm{font-size:9px;padding:3px 4px;margin-top:3px;min-height:0;}
-
-/* Tracker compact (col droite) */
-#j-tracker .tracker-item{padding:3px 5px;}
-#j-tracker .tracker-nom{font-size:8px;}
-#j-tracker .tracker-init{font-size:8px;}
+/* Tracker compact (colonne droite) */
+#j-tracker .tracker-item  { padding: 2px 5px; }
+#j-tracker .tracker-nom   { font-size: 8px; }
+#j-tracker .tracker-init  { font-size: 8px; }
