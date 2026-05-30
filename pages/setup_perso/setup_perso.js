@@ -4,78 +4,8 @@ const db=firebase.initializeApp(firebaseConfig).firestore();
 const JOUEUR_ID=new URLSearchParams(window.location.search).get('id')||'';
 const BASE_URL='https://jobakledev.github.io/FalloutParis/pages/fiche_perso/fiche_perso.html';
 
-const SKILLS_DEF=[
-  {name:'Armes énergie',attr:'PER',key:'en_weapon'},{name:'Armes de CàC',attr:'FOR',key:'cac_weapon'},
-  {name:'Armes légères',attr:'AGI',key:'light_weapon'},{name:'Armes lourdes',attr:'END',key:'heavy_weapon'},
-  {name:'Athlétisme',attr:'FOR',key:'athletics'},{name:'Crochetage',attr:'PER',key:'lockpick'},
-  {name:'Discours',attr:'CHR',key:'speech'},{name:'Discrétion',attr:'AGI',key:'sneak'},
-  {name:'Explosifs',attr:'PER',key:'explosives'},{name:'Mains nues',attr:'FOR',key:'barehand'},
-  {name:'Médecine',attr:'INT',key:'medicine'},{name:'Pilotage',attr:'PER',key:'pilot'},
-  {name:'Projectiles',attr:'AGI',key:'throwing'},{name:'Réparation',attr:'INT',key:'repair'},
-  {name:'Sciences',attr:'INT',key:'science'},{name:'Survie',attr:'END',key:'survival'},
-  {name:'Troc',attr:'CHR',key:'barter'},
-];
-
-// Perks disponibles à la création (LVL 1) avec requirements
-// req: tableau de conditions {stat, min} — toutes doivent être remplies
-const PERKS_DEF={
-  'Adrenalin Rush':    {max:1,lvl:1,req:[{s:'S',min:7}],         desc:'Si PV < max : FOR = 10 pour tests FOR et mêlée.'},
-  'Action Boy/Girl':   {max:1,lvl:1,req:[],                       desc:'2e action majeure sans malus de difficulté.'},
-  'Awareness':         {max:1,lvl:1,req:[{s:'P',min:7}],          desc:'Viser portée Courte = Perforant 1 sur la prochaine attaque.'},
-  'Basher':            {max:1,lvl:1,req:[{s:'S',min:6}],          desc:'Attaque coup de crosse gagne Vicious.'},
-  'Better Criticals':  {max:1,lvl:1,req:[{s:'L',min:9}],          desc:'Dépenser 1 Chance = critique automatique.'},
-  'Big Leagues':       {max:1,lvl:1,req:[{s:'S',min:8}],          desc:'Attaque mêlée 2 mains gagne Vicious.'},
-  'Black Widow':       {max:1,lvl:1,req:[{s:'C',min:6}],          desc:'Relancer 1d20 tests CHA sur genre choisi. +1 dmg contre ce genre.'},
-  'Bloody Mess':       {max:1,lvl:1,req:[{s:'L',min:6}],          desc:'Coup critique : lancer 1 CD supplémentaire.'},
-  'Can Do!':           {max:1,lvl:1,req:[{s:'L',min:5}],          desc:'Fouiller un lieu avec nourriture = 1 item sup gratuit.'},
-  'Cap Collector':     {max:1,lvl:1,req:[{s:'C',min:5}],          desc:'±10% sur achats/ventes.'},
-  'Entomologist':      {max:1,lvl:1,req:[{s:'I',min:7}],          desc:'Attaque vs Insecte gagne Perforant 1.'},
-  'Faster Healing':    {max:1,lvl:1,req:[{s:'E',min:6}],          desc:'1er d20 sup gratuit pour soigner ses propres blessures.'},
-  'Finesse':           {max:1,lvl:1,req:[{s:'A',min:9}],          desc:'1x/rencontre relancer tous les CD d\'un jet de dégâts.'},
-  'Ghost':             {max:1,lvl:1,req:[{s:'P',min:5},{s:'A',min:6}], desc:'Dans l\'ombre : 1er d20 sup gratuit pour Discrétion.'},
-  'Grim Reaper\'s Sprint':{max:1,lvl:1,req:[{s:'L',min:8}],      desc:'Tuer un ennemi : lancer 1 CD, sur Effet +2 PA groupe.'},
-  'Gunslinger':        {max:2,lvl:2,req:[{s:'A',min:7}],          desc:'+1 dmg armes 1 main (FR≤2) par rang. Relancer localisation.'},
-  'Hacker':            {max:1,lvl:1,req:[{s:'I',min:8}],          desc:'Difficulté piratage -1.'},
-  'Heave Ho!':         {max:1,lvl:1,req:[{s:'S',min:8}],          desc:'1 PA = portée arme de jet +1 cran.'},
-  'Hunter':            {max:1,lvl:1,req:[{s:'E',min:6}],          desc:'Attaque vs Mammifère/Lézard/Insecte Mutant gagne Vicious.'},
-  'Infiltrator':       {max:1,lvl:1,req:[{s:'P',min:8}],          desc:'Relancer 1d20 lors du crochetage.'},
-  'Inspirational':     {max:1,lvl:1,req:[{s:'C',min:8}],          desc:'Réserve PA max groupe +1.'},
-  'Iron Fist':         {max:2,lvl:1,req:[{s:'S',min:6}],          desc:'Rang 1 : +1 dmg mains nues. Rang 2 : gagne Vicious.'},
-  'Junktown Jerky Vendor':{max:1,lvl:1,req:[{s:'C',min:8}],      desc:'Difficulté Baratin achat/vente -1.'},
-  'Jury Rigging':      {max:1,lvl:1,req:[],                        desc:'Réparer sans composants (temporaire, complication +1).'},
-  'Laser Commander':   {max:2,lvl:2,req:[{s:'P',min:8}],          desc:'+1 dmg armes énergie à distance par rang.'},
-  'Lead Belly':        {max:2,lvl:1,req:[{s:'E',min:6}],          desc:'Rang 1 : relancer CD radiation nourriture. Rang 2 : immunité.'},
-  'Light Step':        {max:1,lvl:1,req:[],                        desc:'Ignorer 1 complication AGI/PA. Relancer d20 évitement pièges.'},
-  'Master Thief':      {max:1,lvl:1,req:[{s:'P',min:8},{s:'A',min:9}], desc:'Difficulté détection lors vol/crochetage +1.'},
-  'Medic':             {max:1,lvl:1,req:[{s:'I',min:8}],          desc:'Relancer 1d20 lors de Premiers Secours.'},
-  'Moving Target':     {max:1,lvl:1,req:[{s:'A',min:6}],          desc:'Sprint : Défense +1 jusqu\'au prochain tour.'},
-  'Mysterious Stranger':{max:1,lvl:1,req:[{s:'L',min:7}],         desc:'Début de combat : dépenser 1 Chance, l\'Étranger peut intervenir.'},
-  'Nerd Rage!':        {max:3,lvl:2,req:[{s:'I',min:8}],          desc:'Si PV < 40% : +rang RD phys/én et +rang dmg.'},
-  'Night Person':      {max:1,lvl:1,req:[{s:'P',min:7}],          desc:'Pénalité obscurité -1.'},
-  'Ninja':             {max:1,lvl:1,req:[{s:'A',min:8}],          desc:'Attaque furtive mêlée/mains nues : +2 dmg (pas PA).'},
-  'Nuclear Physicist': {max:1,lvl:1,req:[{s:'I',min:9}],          desc:'Armes rad/Radioactif : +1 dmg rad par Effet. Cœurs fusion +3 charges.'},
-  'Paralyzing Palm':   {max:1,lvl:1,req:[{s:'S',min:8}],          desc:'Attaque mains nues ciblée gagne Étourdissement.'},
-  'Party Boy/Girl':    {max:1,lvl:1,req:[{s:'E',min:6},{s:'C',min:7}], desc:'Immunité dépendance alcool. Alcool : +2 PV.'},
-  'Pathfinder':        {max:1,lvl:1,req:[{s:'P',min:6},{s:'E',min:6}], desc:'Test PER+Survie réussi : temps trajet wilderness /2.'},
-  'Pharma Farma':      {max:1,lvl:1,req:[{s:'L',min:6}],          desc:'Fouiller lieu médical : 1 item sup gratuit.'},
-  'Piercing Strike':   {max:1,lvl:1,req:[{s:'S',min:7}],          desc:'Attaques mains nues/mêlée tranchantes gagnent Perforant 1.'},
-  'Pyromaniac':        {max:3,lvl:2,req:[{s:'E',min:6}],          desc:'+1 dmg armes feu par rang.'},
-  'Quick Draw':        {max:1,lvl:1,req:[{s:'A',min:6}],          desc:'Dégainer sans action mineure.'},
-  'Quick Hands':       {max:1,lvl:1,req:[{s:'A',min:8}],          desc:'2 PA = Cadence de Tir ×2 pour cette attaque.'},
-  'Rad Resistance':    {max:2,lvl:1,req:[{s:'E',min:8}],          desc:'+1 RD radiation sur toutes localisations par rang.'},
-  'Refractor':         {max:2,lvl:1,req:[{s:'P',min:6},{s:'L',min:7}], desc:'+1 RD énergie sur toutes localisations par rang.'},
-  'Rifleman':          {max:2,lvl:2,req:[{s:'A',min:7}],          desc:'+1 dmg armes 2 mains (FR≤2) par rang.'},
-  'Scoundrel':         {max:1,lvl:1,req:[{s:'C',min:7}],          desc:'Ignorer 1ère complication test CHA+Discours pour mentir.'},
-  'Shotgun Surgeon':   {max:1,lvl:1,req:[{s:'S',min:5},{s:'A',min:7}], desc:'Fusils à pompe gagnent Perforant 1.'},
-  'Size Matters':      {max:3,lvl:1,req:[{s:'E',min:7},{s:'A',min:6}], desc:'+1 dmg armes lourdes par rang.'},
-  'Slayer':            {max:1,lvl:1,req:[{s:'S',min:8}],          desc:'1 Chance = critique immédiat avec mains nues/mêlée.'},
-  'Smooth Talker':     {max:1,lvl:1,req:[{s:'C',min:6}],          desc:'Relancer 1d20 test opposé Baratin/Discours.'},
-  'Snake Eater':       {max:1,lvl:1,req:[{s:'E',min:7}],          desc:'+2 RD poison.'},
-  'Sniper':            {max:1,lvl:1,req:[{s:'P',min:8},{s:'A',min:6}], desc:'Viser + arme 2 mains Précise : choisir localisation sans malus.'},
-  'Solar Powered':     {max:1,lvl:1,req:[{s:'E',min:7}],          desc:'1h plein soleil : -1 rad.'},
-  'Steady Aim':        {max:1,lvl:1,req:[{s:'S',min:8},{s:'A',min:7}], desc:'Viser : relancer 1 d20 sur 1ère attaque ou tous les jets ce tour.'},
-  'Toughness':         {max:2,lvl:1,req:[{s:'E',min:6},{s:'L',min:6}], desc:'+1 RD physique sur toutes localisations par rang.'},
-};
+// SKILLS_DEF défini dans common/shared.js
+// PERKS_DEF chargé depuis /data/perks.json via common/db.js
 
 // ÉTAT
 let charData = {};
@@ -83,8 +13,6 @@ let sp = {S:5,P:5,E:5,C:5,I:5,A:5,L:5};
 let skills = {};
 let perks = {};
 let tagged = [];
-SKILLS_DEF.forEach(s=>skills[s.key]=0);
-Object.keys(PERKS_DEF).forEach(k=>perks[k]=0);
 
 function skillBudget(){ return 9 + sp.I; }
 function skillSpent(){ return Object.values(skills).reduce((a,b)=>a+b,0); }
@@ -268,4 +196,8 @@ async function terminer(){
 
 function showMsg(t,c){const e=document.getElementById('msg');e.textContent=t;e.className='msg '+c;e.style.display='block';setTimeout(()=>e.style.display='none',3000);}
 
-init();
+window.DB_READY.then(() => {
+  SKILLS_DEF.forEach(s => skills[s.key] = 0);
+  Object.keys(PERKS_DEF).forEach(k => perks[k] = 0);
+  init();
+});

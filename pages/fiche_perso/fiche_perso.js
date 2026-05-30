@@ -10,20 +10,15 @@ const char = {
   perks:{},
   skills:{en_weapon:0,cac_weapon:0,light_weapon:3,heavy_weapon:0,athletics:0,lockpick:0,speech:0,sneak:0,explosives:0,barehand:0,medicine:0,pilot:0,throwing:0,repair:0,science:0,survival:0,barter:0},
   taggedSkills:['light_weapon'],
-  // Inventaire unifié : chaque objet a name, type, qty, weight, equipped, zone (pour armures), persoBonus (pour armes)
   inventory:[],
   ammo:[],
   wounds:{head:false,torso:false,armL:false,armR:false,legL:false,legR:false},
 };
-Object.keys(PERKS_DEF).forEach(k=>char.perks[k]=0);
 
 // ============================================================
 // CALCULS
 // ============================================================
 const SP = () => char.special;
-
-// Init perks
-Object.keys(PERKS_DEF).forEach(k=>char.perks[k]=0);
 
 // ---- calculs.js ----
 // ============================================================
@@ -571,7 +566,10 @@ function openMoSk(key,name){_moSkKey=key;document.getElementById('mo-sk-t').text
 function saveSkill(){const v=Math.min(6,Math.max(0,parseInt(document.getElementById('mo-sk-v').value)||0));char.skills[_moSkKey]=v;const tg=document.getElementById('mo-sk-tag').value==='1';if(tg&&!char.taggedSkills.includes(_moSkKey))char.taggedSkills.push(_moSkKey);if(!tg)char.taggedSkills=char.taggedSkills.filter(k=>k!==_moSkKey);closeMo('mo-sk');rAll();}
 function closeMo(id){document.getElementById(id).classList.remove('on');}
 
-rAll();
+window.DB_READY.then(() => {
+  Object.keys(PERKS_DEF).forEach(k => { if (!char.perks[k]) char.perks[k] = 0; });
+  rAll();
+});
 
 // ============================================================
 //

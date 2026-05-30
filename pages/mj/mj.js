@@ -38,7 +38,7 @@ function unlock(){
     sessionStorage.setItem('mj_auth','1');
     document.getElementById('lock').style.display='none';
     document.getElementById('app').style.display='grid';
-    startSync();
+    window.DB_READY.then(startSync);
   } else {
     document.getElementById('lock-err').style.display='block';
     document.getElementById('lock-inp').value='';
@@ -49,7 +49,7 @@ function unlock(){
 if(sessionStorage.getItem('mj_auth')==='1'){
   document.getElementById('lock').style.display='none';
   document.getElementById('app').style.display='grid';
-  startSync();
+  window.DB_READY.then(startSync);
 }
 
 // ============================================================

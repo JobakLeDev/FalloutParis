@@ -1,0 +1,21 @@
+{
+  "Pillard":          {"pvd":"1D+2","atq":"3D",         "rd":0,"xp":25, "body":6, "mind":4,"desc":"Humain hostile basique. STR 5, AGI 5."},
+  "Pillard Vétéran":  {"pvd":"2D+4","atq":"4D",         "rd":1,"xp":50, "body":7, "mind":5,"desc":"Pillard expérimenté. STR 6, AGI 6. Arme améliorée."},
+  "Goule errante":    {"pvd":"2D+2","atq":"3D",         "rd":0,"xp":30, "body":5, "mind":3,"desc":"Goule lente et prévisible. END 6."},
+  "Goule enragée":    {"pvd":"2D+4","atq":"4D",         "rd":1,"xp":60, "body":8, "mind":2,"desc":"Goule agressive. AGI 8. Charge dès l'init."},
+  "Goule irradiée":   {"pvd":"3D+4","atq":"4D+rad",     "rd":2,"xp":80, "body":7, "mind":2,"desc":"Irradie au contact. RAD 2 par touche."},
+  "Chien sauvage":    {"pvd":"1D+2","atq":"2D",         "rd":0,"xp":15, "body":8, "mind":3,"desc":"Rapide. AGI 9. Priorité aux membres."},
+  "Super Mutant":     {"pvd":"3D+6","atq":"5D",         "rd":2,"xp":100,"body":10,"mind":4,"desc":"STR 10, END 8. Arme lourde. Résistant."},
+  "Mite de vapeur":   {"pvd":"2D+3","atq":"3D+brûlure", "rd":1,"xp":45, "body":6, "mind":2,"desc":"Crache vapeur brûlante. Zone Courte."},
+  "Radscorpion":      {"pvd":"3D+5","atq":"4D+poison",  "rd":3,"xp":90, "body":9, "mind":3,"desc":"Venin : 1D rad/tour. Carapace RD 3."},
+  "Mole Rat":         {"pvd":"1D+3","atq":"3D",         "rd":0,"xp":20, "body":5, "mind":2,"desc":"Attaque en groupe. Peut creuser."},
+  "Mirelurk":         {"pvd":"3D+6","atq":"4D",         "rd":4,"xp":110,"body":9, "mind":3,"desc":"Carapace très résistante devant. Dos RD 0."},
+  "Robot Protectron": {"pvd":"2D+4","atq":"3D laser",   "rd":3,"xp":70, "body":6, "mind":6,"desc":"Laser. Explose à mort (4D blast)."},
+  "Robot Assaultron": {"pvd":"3D+5","atq":"5D laser",   "rd":4,"xp":120,"body":8, "mind":7,"desc":"Très rapide. Rayon tête dévastateur."},
+  "Légion de Fer":    {"pvd":"2D+4","atq":"4D",         "rd":2,"xp":75, "body":7, "mind":6,"desc":"Organisation militaire. Tactique de groupe."},
+  "Saccageur":        {"pvd":"2D+3","atq":"3D",         "rd":1,"xp":40, "body":6, "mind":4,"desc":"Armure de fortune. Imprévisible."},
+  "Marchand hostile": {"pvd":"1D+4","atq":"3D",         "rd":0,"xp":35, "body":5, "mind":5,"desc":"Tendu, armé. Peut fuir si blessé."},
+  "Homme de main":    {"pvd":"2D+3","atq":"4D",         "rd":1,"xp":55, "body":7, "mind":5,"desc":"Mercenaire. STR 6, AGI 7. Bien équipé."},
+  "Brahmane sauvage": {"pvd":"2D+5","atq":"3D",         "rd":1,"xp":25, "body":7, "mind":2,"desc":"Charge si perturbé. Deux têtes."},
+  "Radstag":          {"pvd":"1D+3","atq":"2D",         "rd":0,"xp":10, "body":6, "mind":3,"desc":"Fuit en priorité. Attaque si acculé."}
+}

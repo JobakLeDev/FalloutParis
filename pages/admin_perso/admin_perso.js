@@ -24,25 +24,8 @@ function unlock(){
 }
 
 // ---- DONNÉES ----
-const SKILLS_DEF=[
-  {name:'Armes énergie',key:'en_weapon'},{name:'Armes de CàC',key:'cac_weapon'},
-  {name:'Armes légères',key:'light_weapon'},{name:'Armes lourdes',key:'heavy_weapon'},
-  {name:'Athlétisme',key:'athletics'},{name:'Crochetage',key:'lockpick'},
-  {name:'Discours',key:'speech'},{name:'Discrétion',key:'sneak'},
-  {name:'Explosifs',key:'explosives'},{name:'Mains nues',key:'barehand'},
-  {name:'Médecine',key:'medicine'},{name:'Pilotage',key:'pilot'},
-  {name:'Projectiles',key:'throwing'},{name:'Réparation',key:'repair'},
-  {name:'Sciences',key:'science'},{name:'Survie',key:'survival'},
-  {name:'Troc',key:'barter'},
-];
-const PERKS_DEF={
-  'Life Giver':{max:3},'Adrenalin Rush':{max:1},'Nerd Rage!':{max:3},
-  'Barbarian':{max:1},'Toughness':{max:3},'Snake Eater':{max:1},
-  'Refractor':{max:3},'Rad Resistance':{max:3},'Gunslinger':{max:2},
-  'Rifleman':{max:2},'Iron Fist':{max:2},'Laser Commander':{max:2},
-  'Size Matters':{max:2},'Better Criticals':{max:1},'Action Boy/Girl':{max:1},
-  'Awareness':{max:1},'Bloody Mess':{max:1},
-};
+// SKILLS_DEF défini dans common/shared.js
+// PERKS_DEF chargé depuis /data/perks.json via common/db.js
 const ALL_ITEMS=[
   // Armes
   {n:'Pipe Wrench',t:'WEAPON',w:0.9},{n:'.44 Pistol',t:'WEAPON',w:1.8},

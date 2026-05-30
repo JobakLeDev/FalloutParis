@@ -143,7 +143,9 @@ async function initFirebase() {
   }
 }
 
-initFirebase();
+window.DB_READY.then(() => {
+  initFirebase();
+});
 
 // ---- Listener combat temps réel ----
 function initCombatListener() {
@@ -197,4 +199,6 @@ function initCombatListener() {
 }
 
 // Lancer le listener combat après init Firebase
-initCombatListener();
+window.DB_READY.then(() => {
+  initCombatListener();
+});
