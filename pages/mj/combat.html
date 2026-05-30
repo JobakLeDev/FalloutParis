@@ -23,6 +23,7 @@
 <!-- APP -->
 <div id="app" style="display:none">
 
+  <!-- HEADER hors grid -->
   <div class="hdr">
     <div><div class="hdr-title">⚔ ÉCRAN DE COMBAT<small>Fallout Paris — MJ</small></div></div>
     <div class="hdr-btns">
@@ -31,63 +32,68 @@
     </div>
   </div>
 
-  <!-- COL 1 : JOUEURS -->
-  <div class="pnl">
-    <div class="pnl-title">
-      Joueurs
-      <button class="init-btn" onclick="lancerInitiative()">🎲 Initiative</button>
-    </div>
-    <div class="sel-bar" id="sel-joueurs"></div>
-    <div id="joueurs-combat"></div>
-  </div>
+  <!-- GRILLE 3 colonnes -->
+  <div class="combat-grid">
 
-  <!-- COL 2 : ENNEMIS -->
-  <div class="pnl">
-    <div class="pnl-title">
-      Ennemis
-      <button class="add-ennemi-btn" onclick="ouvrirModalEnnemi()">+ Ajouter</button>
-    </div>
-    <div id="ennemis-combat"></div>
-  </div>
-
-  <!-- COL 3 : DÉS + INITIATIVE + LOG -->
-  <div style="display:flex;flex-direction:column;gap:8px">
-
-    <div class="pnl">
-      <div class="pnl-title">Jet de dés</div>
-      <div id="dice-context" style="padding:5px;background:#060d06;border:1px solid var(--b);margin-bottom:6px;min-height:36px">
-        <span class="empty">Sélectionne un joueur puis une arme</span>
-      </div>
-      <div class="tn-row">
-        <span class="tn-lbl">TN</span>
-        <input type="number" class="tn-inp" id="tn-val" value="10" min="1" max="20">
-        <button class="dice-btn" onclick="lancer2D20()">2D20</button>
-      </div>
-      <div class="dice-result" id="dice-result">—</div>
-      <div class="cd-row">
-        <span class="tn-lbl">DC</span>
-        <input type="number" class="cd-inp" id="nb-cd" value="2" min="1" max="10">
-        <button class="cd-btn" onclick="lancerCD()">Dés Combat</button>
-      </div>
-      <div class="dice-result" id="cd-result" style="margin-top:4px">—</div>
-    </div>
-
-    <div class="pnl">
-      <div class="pnl-title">Initiative</div>
-      <div id="initiative-list"><span class="empty">Lance l'initiative d'abord</span></div>
-    </div>
-
+    <!-- COL 1 : JOUEURS -->
     <div class="pnl">
       <div class="pnl-title">
-        Journal
-        <button class="log-clear" onclick="clearLog()">Effacer</button>
+        Joueurs
+        <button class="init-btn" onclick="lancerInitiative()">🎲 Initiative</button>
       </div>
-      <div class="scr" id="combat-log"></div>
+      <div class="sel-bar" id="sel-joueurs"></div>
+      <div id="joueurs-combat"></div>
     </div>
 
-  </div>
+    <!-- COL 2 : ENNEMIS -->
+    <div class="pnl">
+      <div class="pnl-title">
+        Ennemis
+        <button class="add-ennemi-btn" onclick="ouvrirModalEnnemi()">+ Ajouter</button>
+      </div>
+      <div id="ennemis-combat"></div>
+    </div>
 
-</div>
+    <!-- COL 3 : DÉS + INITIATIVE + LOG -->
+    <div style="display:flex;flex-direction:column;gap:8px">
+
+      <div class="pnl">
+        <div class="pnl-title">Jet de dés</div>
+        <div id="dice-context" style="padding:5px;background:#060d06;border:1px solid var(--b);margin-bottom:6px;min-height:36px">
+          <span class="empty">Sélectionne un joueur puis une arme</span>
+        </div>
+        <div class="tn-row">
+          <span class="tn-lbl">TN</span>
+          <input type="number" class="tn-inp" id="tn-val" value="10" min="1" max="20">
+          <button class="dice-btn" onclick="lancer2D20()">2D20</button>
+        </div>
+        <div class="dice-result" id="dice-result">—</div>
+        <div class="cd-row">
+          <span class="tn-lbl">DC</span>
+          <input type="number" class="cd-inp" id="nb-cd" value="2" min="1" max="10">
+          <button class="cd-btn" onclick="lancerCD()">Dés Combat</button>
+        </div>
+        <div class="dice-result" id="cd-result" style="margin-top:4px">—</div>
+      </div>
+
+      <div class="pnl">
+        <div class="pnl-title">Initiative</div>
+        <div id="initiative-list"><span class="empty">Lance l'initiative d'abord</span></div>
+      </div>
+
+      <div class="pnl">
+        <div class="pnl-title">
+          Journal
+          <button class="log-clear" onclick="clearLog()">Effacer</button>
+        </div>
+        <div class="scr" id="combat-log"></div>
+      </div>
+
+    </div>
+
+  </div><!-- /combat-grid -->
+
+</div><!-- /app -->
 
 <!-- MODAL ENNEMI -->
 <div class="mo" id="mo-ennemi" style="display:none">
