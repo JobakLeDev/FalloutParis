@@ -246,3 +246,28 @@ function showMsg(txt, err=false){
   clearTimeout(el._t);
   el._t=setTimeout(()=>el.style.display='none',2500);
 }
+
+// ============================================================
+// LANCEUR DE DÉS
+// ============================================================
+function lancerDes(){
+  const nb = Math.min(20, parseInt(document.getElementById('dice-nb').value)||2);
+  const faces = Math.min(100, parseInt(document.getElementById('dice-faces').value)||20);
+  const resultats = Array.from({length:nb}, ()=>Math.floor(Math.random()*faces)+1);
+  const total = resultats.reduce((a,b)=>a+b,0);
+  const el = document.getElementById('dice-result');
+  el.style.display='block';
+  el.innerHTML = `<span style="color:var(--td)">${nb}D${faces} → </span>${resultats.join(' + ')} <span style="color:var(--am);font-family:'Oswald',sans-serif;font-size:16px"> = ${total}</span>`;
+}
+
+// Dés de Combat Fallout 2D20 : faces = 1,2,blank,blank,Effect,Effect
+function lancerCD(){
+  const nb = Math.min(10, parseInt(document.getElementById('dice-nb').value)||2);
+  const FACES_CD = ['1','2','—','—','⚡','⚡'];
+  const resultats = Array.from({length:nb}, ()=>FACES_CD[Math.floor(Math.random()*6)]);
+  const dmg = resultats.filter(f=>f==='1'||f==='2').reduce((a,f)=>a+parseInt(f),0);
+  const effets = resultats.filter(f=>f==='⚡').length;
+  const el = document.getElementById('dice-result');
+  el.style.display='block';
+  el.innerHTML = `<span style="color:var(--td)">${nb}DC → </span>${resultats.join(' ')} <span style="color:var(--am);font-family:'Oswald',sans-serif;font-size:14px"> = ${dmg} dmg${effets>0?` + ${effets} Effet(s)`:''}</span>`;
+}
