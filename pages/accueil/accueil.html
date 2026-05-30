@@ -11,9 +11,7 @@
   <link rel="stylesheet" href="accueil.css">
 </head>
 <body>
-
 <div class="container">
-
   <!-- HEADER -->
   <div class="header">
     <img src="../../img/VaultBoy.png" class="vaultboy-img" alt="Vault Boy">
@@ -21,11 +19,9 @@
     <div class="subtitle">FALLOUT ONLINE PLAY</div>
     <div class="tagline">WAR... WAR NEVER CHANGES.</div>
   </div>
-
   <!-- PANEL CONNEXION -->
   <div class="panel">
     <div class="ptitle">Connexion</div>
-
     <div class="field">
       <label>Identifiant</label>
       <input type="text" id="inp-id" placeholder="ton id..." autocomplete="off" autocorrect="off" spellcheck="false">
@@ -34,19 +30,14 @@
       <label>Code (4 chiffres)</label>
       <input type="password" id="inp-code" placeholder="••••" maxlength="4" inputmode="numeric">
     </div>
-
     <button class="btn-primary" onclick="connexion()">⟶ Accéder à ma fiche</button>
-
     <div class="sep">ou</div>
-
     <button class="btn-secondary" onclick="window.location.href='/FalloutParis/pages/creation_perso/creation_perso.html'">+ Nouveau personnage</button>
-
     <div class="msg" id="msg"></div>
     <div class="loading" id="loading">Connexion en cours<span class="dot-anim"></span></div>
   </div>
-
   <div class="footer">Fallout Paris · Vault 74 · v1.0</div>
-
+  <div style="text-align:center;margin-top:12px"><a href="../mj/mj.html" style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#4a7a4a;letter-spacing:3px;text-decoration:none;border:1px solid #253825;padding:4px 14px;transition:all 0.1s" onmouseover="this.style.color='#5dbe5d';this.style.borderColor='#5dbe5d'" onmouseout="this.style.color='#4a7a4a';this.style.borderColor='#253825'">⚙ ACCÈS MJ</a></div>
 </div>
   <script src="../../common/firebase.js" defer></script>
   <script src="accueil.js"></script>
