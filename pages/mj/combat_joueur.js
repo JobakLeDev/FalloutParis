@@ -5,6 +5,9 @@ let combatState = null;
 let tousJoueurs = {};
 let armeSelectionnee = null;
 let nbDCActuel = 2;
+let nbDiceJ = 2;
+let lastExcessJ = 0;
+let lastSkKeyJ = '';
 
 function initJoueur(){
   const params = new URLSearchParams(window.location.search);
@@ -53,9 +56,96 @@ function renderCombatJoueur(){
   document.getElementById('hdr-round').textContent = 'Round ' + (combatState.numRound||1);
   renderMaCarte();
   renderActionsJoueur();
+  renderAPPoolJoueur();
   renderCoequipiers();
   renderTrackerJoueur();
   renderEnnemisJoueur();
+}
+
+// ---- AP POOL (vue joueur) ----
+function renderAPPoolJoueur(){
+  const pool = combatState?.apPool || 0;
+  const valEl = document.getElementById('j-ap-val'); if(valEl) valEl.textContent = pool;
+  const dotsEl = document.getElementById('j-ap-dots');
+  if(dotsEl){
+    dotsEl.innerHTML = '';
+    for(let i=0;i<6;i++) dotsEl.innerHTML += '<span class="j-ap-dot'+(i<pool?' on':'')+'"></span>';
+  }
+  const btnsEl = document.getElementById('j-ap-spend-btns'); if(!btnsEl) return;
+  const ap = pool;
+  btnsEl.innerHTML =
+    `<button class="j-ap-spend-btn" onclick="bonusActionGroupeJ('min')" ${ap<1?'disabled':''}>+Action mineure (−1AP)</button>`+
+    `<button class="j-ap-spend-btn" onclick="bonusActionGroupeJ('maj')" ${ap<2?'disabled':''}>+Action majeure (−2AP)</button>`+
+    `<button class="j-ap-spend-btn" onclick="demanderInfoJ()" ${ap<1?'disabled':''}>❓ Obtenir info (−1AP)</button>`+
+    `<button class="j-ap-spend-btn" onclick="reduireTempsJ()" ${ap<2?'disabled':''}>⏱ Réduire temps (−2AP)</button>`+
+    `<button class="j-ap-spend-btn" onclick="donnerAPMJ()" ${ap<1?'disabled':''}>↑ Donner AP au MJ (−1AP)</button>`;
+}
+
+async function _updateAPGroupe(delta){
+  if(!db||!combatState) return;
+  const newVal = Math.max(0, Math.min(6, (combatState.apPool||0)+delta));
+  try { await db.collection('combat').doc(COMBAT_DOC).update({apPool: newVal}); }
+  catch(e){ console.error(e); }
+}
+
+async function bonusActionGroupeJ(type){
+  if(!combatState) return;
+  const cout = type==='min'?1:2;
+  if((combatState.apPool||0)<cout) return;
+  const s = combatState.actionsState?.[joueurId]; if(!s) return;
+  const upd = {apPool: (combatState.apPool||0)-cout};
+  upd['actionsState.'+joueurId+(type==='min'?'.mineure':'.majeure')] = Math.min((type==='min'?s.mineure:s.majeure)+1,2);
+  try { await db.collection('combat').doc(COMBAT_DOC).update(upd); }
+  catch(e){ console.error(e); }
+}
+
+async function demanderInfoJ(){
+  if(!combatState||(combatState.apPool||0)<1) return;
+  const nom = joueurData?.nom || joueurId;
+  const upd = {apPool:(combatState.apPool||0)-1, infoRequest:{joueur:nom, ts:Date.now()}};
+  try { await db.collection('combat').doc(COMBAT_DOC).update(upd); }
+  catch(e){ console.error(e); }
+}
+
+async function reduireTempsJ(){
+  if((combatState?.apPool||0)<2) return;
+  await _updateAPGroupe(-2);
+}
+
+async function donnerAPMJ(){
+  if(!combatState||(combatState.apPool||0)<1) return;
+  const upd = {apPool:(combatState.apPool||0)-1, mjApPool:(combatState.mjApPool||0)+1};
+  try { await db.collection('combat').doc(COMBAT_DOC).update(upd); }
+  catch(e){ console.error(e); }
+}
+
+// ---- SÉLECTEUR D20 ----
+function setNbDiceJ(n){
+  nbDiceJ = n;
+  [2,3,4,5].forEach(i=>{ const b=document.getElementById('j-d20-'+i); if(b) b.classList.toggle('on',i===n); });
+  const lb=document.getElementById('j-lance-btn'); if(lb) lb.textContent=n+'D20';
+}
+
+async function convertExcessToAPJ(){
+  if(lastExcessJ<=0) return;
+  const pool = combatState?.apPool||0;
+  const toAdd = Math.min(lastExcessJ, 6-pool);
+  if(toAdd<=0) return;
+  await _updateAPGroupe(toAdd);
+  lastExcessJ=0;
+  const el=document.getElementById('j-convert-ap'); if(el) el.style.display='none';
+}
+
+async function bonusDmgJ(n){
+  if((combatState?.apPool||0)<n) return;
+  await _updateAPGroupe(-n);
+  const vals=Array.from({length:n},()=>FACES_CD[Math.floor(Math.random()*6)]);
+  const dmg=vals.filter(v=>v==='1'||v==='2').reduce((a,v)=>a+parseInt(v),0);
+  const ef=vals.filter(v=>v==='★').length;
+  const extra=vals.map(v=>'<span style="color:'+(v==='★'?'var(--am)':v==='—'?'var(--td)':'var(--tb)')+';font-size:14px;font-family:Oswald,sans-serif">'+v+'</span>').join(' ');
+  const cd=document.getElementById('j-cd-result');
+  if(cd) cd.innerHTML+=' <span style="color:var(--am)">+['+extra+'] ='+dmg+'dmg'+(ef?' +'+ef+'⚡':'')+'</span>';
+  const el=document.getElementById('j-bonus-dmg'); if(el) el.style.display='none';
 }
 
 // ---- MA FICHE ----
@@ -242,6 +332,7 @@ function renderEnnemisJoueur(){
 function selArme(nom, tn, dmg){
   armeSelectionnee = nom;
   nbDCActuel = parseInt(dmg)||2;
+  lastSkKeyJ = nom==='__unarmed__' ? 'barehand' : (WEAPONS_DB[nom]?.sk||'');
   document.getElementById('j-tn-val').value = tn;
   renderMaCarte();
   const nomAff = nom==='__unarmed__'?'Mains nues':nom;
@@ -249,23 +340,58 @@ function selArme(nom, tn, dmg){
   document.getElementById('j-nb-cd').value = nbDCActuel;
 }
 
-function jLancer2D20(){
+async function jLancer2D20(){
   const tn = parseInt(document.getElementById('j-tn-val').value)||10;
-  const d1=Math.floor(Math.random()*20)+1, d2=Math.floor(Math.random()*20)+1;
-  let succes = [d1,d2].filter(v=>v<=tn).length + [d1,d2].filter(v=>v===1).length;
-  const crits = [d1,d2].filter(v=>v===1).length;
-  const echec = succes < 1;
-  const dcTotal = echec ? 0 : nbDCActuel + Math.max(0, succes-1);
+  const diff = 1;
+
+  // Coût AP groupe pour dés bonus
+  const apCost = [0,0,0,1,3,6][nbDiceJ]||0;
+  if(apCost>0){
+    if((combatState?.apPool||0)<apCost) return;
+    await _updateAPGroupe(-apCost);
+  }
+
+  const dés = Array.from({length:nbDiceJ},()=>Math.floor(Math.random()*20)+1);
+  let succes = dés.filter(v=>v<=tn).length + dés.filter(v=>v===1).length;
+  const crits = dés.filter(v=>v===1).length;
+  const echec = succes<diff;
+  const succesBonus = Math.max(0,succes-diff);
+  const dcTotal = echec?0:nbDCActuel+succesBonus;
   if(!echec) document.getElementById('j-nb-cd').value = dcTotal;
 
-  const col = succes===0?'var(--rd)':succes>1?'var(--g)':'var(--am)';
-  let r = '<span style="color:'+(d1<=tn?'var(--g)':'var(--rd)')+';font-size:16px;font-family:Oswald,sans-serif">'+d1+'</span>';
-  r += '/<span style="color:'+(d2<=tn?'var(--g)':'var(--rd)')+';font-size:16px;font-family:Oswald,sans-serif">'+d2+'</span>';
-  r += ' <b style="color:'+col+'">'+succes+'s</b>';
-  if(crits) r += '<span style="color:var(--am)">+'+crits+'★</span>';
-  if(echec) r += ' <span style="color:var(--rd)">ÉCHEC</span>';
-  else r += '→<b style="color:var(--am)">'+dcTotal+'DC</b>';
+  const col=succes===0?'var(--rd)':succes>1?'var(--g)':'var(--am)';
+  let r=dés.map(d=>'<span style="color:'+(d<=tn?'var(--g)':'var(--rd)')+';font-size:16px;font-family:Oswald,sans-serif">'+d+'</span>').join('/');
+  r+=' <b style="color:'+col+'">'+succes+'s</b>';
+  if(crits) r+='<span style="color:var(--am)">+'+crits+'★</span>';
+  if(echec) r+=' <span style="color:var(--rd)">ÉCHEC</span>';
+  else r+='→<b style="color:var(--am)">'+dcTotal+'DC</b>';
   document.getElementById('j-dice-result').innerHTML = r;
+
+  setNbDiceJ(2);
+
+  // Proposer conversion succès → AP groupe
+  lastExcessJ = succesBonus;
+  const cvEl=document.getElementById('j-convert-ap');
+  if(cvEl){
+    const pool=combatState?.apPool||0;
+    const toAdd=Math.min(succesBonus,6-pool);
+    if(!echec && toAdd>0){
+      cvEl.style.display='block';
+      cvEl.innerHTML='<button class="j-ap-convert-btn" onclick="convertExcessToAPJ()">+'+toAdd+' AP groupe</button>';
+    } else { cvEl.style.display='none'; }
+  }
+
+  // Proposer dégâts bonus mêlée/jet
+  const bdEl=document.getElementById('j-bonus-dmg');
+  if(bdEl){
+    const isMeleeThrow=['cac_weapon','barehand','throwing'].includes(lastSkKeyJ);
+    const pool=combatState?.apPool||0;
+    if(!echec && isMeleeThrow && pool>0){
+      let btns='<span style="font-size:7px;color:var(--td)">Dégâts bonus: </span>';
+      for(let n=1;n<=Math.min(3,pool);n++) btns+='<button class="j-ap-dmg-btn" onclick="bonusDmgJ('+n+')">+'+n+'D (−'+n+'AP)</button>';
+      bdEl.style.display='block'; bdEl.innerHTML=btns;
+    } else { bdEl.style.display='none'; }
+  }
 }
 
 function jLancerCD(){

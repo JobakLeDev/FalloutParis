@@ -112,3 +112,24 @@
 #j-tracker .tracker-item  { padding: 2px 5px; }
 #j-tracker .tracker-nom   { font-size: 8px; }
 #j-tracker .tracker-init  { font-size: 8px; }
+
+/* ---- AP GROUPE (vue joueur) ---- */
+.bottom-ap { flex: 0 0 auto; min-width: 140px; }
+.j-ap-pool { display: flex; align-items: center; gap: 5px; margin-bottom: 6px; }
+.j-ap-dots { display: flex; gap: 3px; }
+.j-ap-dot  { width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--b2); background: #060d06; transition: all 0.15s; }
+.j-ap-dot.on { background: var(--am); border-color: var(--am); box-shadow: 0 0 4px var(--am); }
+.j-ap-val  { font-family: 'Oswald', sans-serif; font-size: 18px; color: var(--am); }
+.j-ap-spend-btn { display: block; width: 100%; background: none; border: 1px solid var(--b2); color: var(--td); font-family: 'Share Tech Mono', monospace; font-size: 7px; padding: 2px 4px; cursor: pointer; letter-spacing: 1px; margin-bottom: 2px; text-align: left; }
+.j-ap-spend-btn:hover { border-color: var(--am); color: var(--am); }
+.j-ap-spend-btn:disabled { opacity: 0.3; cursor: default; }
+
+/* ---- SÉLECTEUR D20 (vue joueur) ---- */
+.j-d20-sel { display: flex; gap: 3px; margin-bottom: 5px; }
+.j-d20-btn { flex: 1; background: #060d06; border: 1px solid var(--b2); color: var(--td); font-family: 'Share Tech Mono', monospace; font-size: 7px; padding: 2px 1px; cursor: pointer; letter-spacing: 0; text-align: center; transition: all 0.1s; }
+.j-d20-btn:hover { border-color: var(--g); color: var(--t); }
+.j-d20-btn.on { border-color: var(--g); background: var(--gk); color: var(--tb); }
+
+/* Convert / bonus dmg (vue joueur) */
+.j-ap-convert-btn, .j-ap-dmg-btn { background: #0a160a; border: 1px solid var(--g); color: var(--g); font-family: 'Share Tech Mono', monospace; font-size: 7px; padding: 2px 5px; cursor: pointer; letter-spacing: 1px; margin-right: 2px; }
+.j-ap-dmg-btn { border-color: var(--am); color: var(--am); background: #16130a; }

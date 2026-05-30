@@ -25,6 +25,8 @@ async function syncCombatToFirebase(){
         id: e.id, nom: e.nom, pvCur: e.pvCur, pvMax: e.pvMax,
         atq: e.atq, rd: e.rd, initiative: e.initiative
       })),
+      apPool:   typeof apPool   !== 'undefined' ? apPool   : 0,
+      mjApPool: typeof mjApPool !== 'undefined' ? mjApPool : 0,
       lastUpdate: Date.now(),
     });
   } catch(e){ console.error('syncCombat:', e); }
@@ -32,5 +34,5 @@ async function syncCombatToFirebase(){
 
 async function stopCombat(){
   if(!db) return;
-  await db.collection('combat').doc(COMBAT_DOC).set({actif:false, lastUpdate:Date.now()});
+  await db.collection('combat').doc(COMBAT_DOC).set({actif:false, apPool:0, mjApPool:0, lastUpdate:Date.now()});
 }

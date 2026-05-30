@@ -22,6 +22,33 @@
     </div>
   </div>
 
+  <!-- BARRE AP GROUPE + MJ -->
+  <div class="ap-bar">
+    <div class="ap-section">
+      <span class="ap-bar-lbl">AP GROUPE</span>
+      <div class="ap-dots" id="ap-pool-dots"></div>
+      <span class="ap-bar-val" id="ap-pool-val">0</span><span class="ap-bar-lbl">/6</span>
+      <button class="ap-btn" onclick="chAPPool(-1)">−</button>
+      <button class="ap-btn" onclick="chAPPool(1)">+</button>
+    </div>
+    <div class="ap-sep"></div>
+    <div class="ap-section">
+      <span class="ap-bar-lbl">AP MJ</span>
+      <span class="ap-bar-val mj" id="mj-ap-val">0</span>
+      <button class="ap-btn" onclick="chMJAP(-1)">−</button>
+      <button class="ap-btn" onclick="chMJAP(1)">+</button>
+      <button class="ap-btn-sm" onclick="initMJPool()" title="1 AP par joueur en combat">Init</button>
+      <span class="ap-bar-lbl" style="margin-left:8px">Dépenses MJ :</span>
+      <button class="ap-btn-sm" onclick="mjBonusAction('min')" title="-1 AP MJ">+Min</button>
+      <button class="ap-btn-sm" onclick="mjBonusAction('maj')" title="-2 AP MJ">+Maj</button>
+    </div>
+    <div class="ap-sep"></div>
+    <div class="ap-section" id="ap-info-banner" style="display:none;color:var(--am);font-size:8px;letter-spacing:2px">
+      ❓ <span id="ap-info-text"></span>
+      <button class="ap-btn-sm" onclick="clearInfoRequest()">OK</button>
+    </div>
+  </div>
+
   <!-- GRILLE 3 colonnes -->
   <div class="combat-grid">
 
@@ -52,18 +79,26 @@
         <div id="dice-context" style="padding:5px;background:#060d06;border:1px solid var(--b);margin-bottom:6px;min-height:36px">
           <span class="empty">Sélectionne un joueur puis une arme</span>
         </div>
+        <div class="d20-sel-row">
+          <button class="d20-sel-btn on" id="d20-btn-2" onclick="setNbDiceMJ(2)">2D20</button>
+          <button class="d20-sel-btn" id="d20-btn-3" onclick="setNbDiceMJ(3)">3D −1AP</button>
+          <button class="d20-sel-btn" id="d20-btn-4" onclick="setNbDiceMJ(4)">4D −3AP</button>
+          <button class="d20-sel-btn" id="d20-btn-5" onclick="setNbDiceMJ(5)">5D −6AP</button>
+        </div>
         <div class="tn-row">
           <span class="tn-lbl">TN</span>
           <input type="number" class="tn-inp" id="tn-val" value="10" min="1" max="20">
-          <button class="dice-btn" onclick="lancer2D20()">2D20</button>
+          <button class="dice-btn" id="lance-btn" onclick="lancer2D20()">2D20</button>
         </div>
         <div class="dice-result" id="dice-result">—</div>
+        <div id="convert-ap-mj" style="display:none;margin-top:4px"></div>
         <div class="cd-row">
           <span class="tn-lbl">DC</span>
           <input type="number" class="cd-inp" id="nb-cd" value="2" min="1" max="10">
           <button class="cd-btn" onclick="lancerCD()">Dés Combat</button>
         </div>
         <div class="dice-result" id="cd-result" style="margin-top:4px">—</div>
+        <div id="bonus-dmg-mj" style="display:none;margin-top:4px"></div>
       </div>
 
       <div class="pnl">

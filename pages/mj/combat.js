@@ -11,11 +11,18 @@ let joueurActif = null;
 let armeActive = null;
 
 // ---- TRACKER DE TOUR ----
-let tourActif = null;       // index dans ordreInitiative
-let ordreInitiative = [];   // [{id, nom, type:'joueur'|'ennemi', init}]
+let tourActif = null;
+let ordreInitiative = [];
 let numRound = 0;
-// État des actions par combattant ce tour : {mineure:0-2, majeure:0-2, pa:X}
 let actionsState = {};
+
+// ---- AP POOLS ----
+let apPool = 0;     // Pool groupe partagé (max 6)
+let mjApPool = 0;   // Pool MJ (masqué des joueurs)
+let nbDiceMJ = 2;   // Nombre de d20 sélectionnés
+let lastExcessMJ = 0;
+let lastSkKeyMJ = '';
+let lastInfoRequestTs = 0;
 
 // WEAPONS_DB défini dans mj_shared.js
 
@@ -32,6 +39,28 @@ function init(){
 
 function deverrouiller(){
   chargerJoueurs();
+  // Listener pour apPool (mis à jour par les joueurs)
+  db.collection('combat').doc(COMBAT_DOC).onSnapshot(snap => {
+    if(!snap.exists) return;
+    const data = snap.data();
+    if(data.apPool !== undefined && data.apPool !== apPool) {
+      apPool = data.apPool; renderAPPool();
+    }
+    if(data.mjApPool !== undefined && data.mjApPool !== mjApPool) {
+      mjApPool = data.mjApPool; renderAPPool();
+    }
+    // Notification info joueur
+    if(data.infoRequest && data.infoRequest.ts > lastInfoRequestTs) {
+      lastInfoRequestTs = data.infoRequest.ts;
+      const banner = document.getElementById('ap-info-banner');
+      const txt = document.getElementById('ap-info-text');
+      if(banner && txt) {
+        txt.textContent = (data.infoRequest.joueur||'?') + ' demande une information !';
+        banner.style.display = 'flex';
+      }
+      addLog('❓ ' + (data.infoRequest.joueur||'?') + ' demande une information !');
+    }
+  });
   // Auto-sélectionner les joueurs transmis depuis mj.html
   const storedJoueurs = sessionStorage.getItem('combat_joueurs');
   if(storedJoueurs){
@@ -450,7 +479,81 @@ function majTNCible(){
   document.getElementById('tn-val').value = d.special?.A||5;
 }
 
-function setArme(id, arme){ joueurActif=id; armeActive=arme==='__unarmed__'?null:arme; renderJoueursCombat(); updateDicePanel(); }
+function setArme(id, arme){
+  joueurActif=id;
+  armeActive=arme==='__unarmed__'?null:arme;
+  lastSkKeyMJ = arme==='__unarmed__' ? 'barehand' : (WEAPONS_DB[arme]?.sk||'');
+  renderJoueursCombat(); updateDicePanel();
+}
+
+// ---- GESTION AP POOL ----
+function renderAPPool(){
+  const el=document.getElementById('ap-pool-val'); if(el) el.textContent=apPool;
+  const mj=document.getElementById('mj-ap-val'); if(mj) mj.textContent=mjApPool;
+  const dots=document.getElementById('ap-pool-dots');
+  if(dots){ dots.innerHTML=''; for(let i=0;i<6;i++) dots.innerHTML+=`<span class="ap-dot${i<apPool?' on':''}"></span>`; }
+}
+
+async function _writeAP(){
+  if(!db) return;
+  try { await db.collection('combat').doc(COMBAT_DOC).update({apPool, mjApPool}); }
+  catch(e){ console.error(e); }
+}
+
+function chAPPool(delta){
+  apPool = Math.max(0, Math.min(6, apPool+delta));
+  renderAPPool(); _writeAP();
+}
+function chMJAP(delta){
+  mjApPool = Math.max(0, mjApPool+delta);
+  renderAPPool(); _writeAP();
+}
+function initMJPool(){
+  const nbJ = Object.keys(combattants).length;
+  mjApPool = Math.max(1, nbJ);
+  renderAPPool(); _writeAP();
+  addLog('🎯 Pool AP MJ initialisé à '+mjApPool);
+}
+function mjBonusAction(type){
+  const cout = type==='min'?1:2;
+  if(mjApPool<cout){ addLog('⚠ AP MJ insuffisants'); return; }
+  mjApPool-=cout; renderAPPool(); _writeAP();
+  addLog('⚡ MJ +action '+(type==='min'?'mineure (-1AP MJ)':'majeure (-2AP MJ)'));
+}
+function clearInfoRequest(){
+  const b=document.getElementById('ap-info-banner'); if(b) b.style.display='none';
+  if(db) db.collection('combat').doc(COMBAT_DOC).update({infoRequest:null}).catch(()=>{});
+}
+
+// ---- SÉLECTEUR D20 ----
+function setNbDiceMJ(n){
+  nbDiceMJ=n;
+  [2,3,4,5].forEach(i=>{ const b=document.getElementById('d20-btn-'+i); if(b) b.classList.toggle('on',i===n); });
+  const lb=document.getElementById('lance-btn'); if(lb) lb.textContent=n+'D20';
+}
+
+function convertExcessToAPMJ(){
+  if(lastExcessMJ<=0) return;
+  const toAdd=Math.min(lastExcessMJ,6-apPool);
+  if(toAdd<=0){ addLog('⚠ Pool AP groupe plein !'); return; }
+  chAPPool(toAdd);
+  addLog('✦ '+toAdd+' succès excéd. → AP groupe (total: '+apPool+')');
+  lastExcessMJ=0;
+  const el=document.getElementById('convert-ap-mj'); if(el) el.style.display='none';
+}
+
+function bonusDmgMJ(n){
+  if(apPool<n){ addLog('⚠ AP groupe insuffisants'); return; }
+  chAPPool(-n);
+  const vals=Array.from({length:n},()=>FACES_CD[Math.floor(Math.random()*6)]);
+  const dmg=vals.filter(v=>v==='1'||v==='2').reduce((a,v)=>a+parseInt(v),0);
+  const ef=vals.filter(v=>v==='★').length;
+  const extra=vals.map(v=>'<span style="color:'+(v==='★'?'var(--am)':v==='—'?'var(--td)':'var(--tb)')+';font-size:14px;font-family:Oswald,sans-serif">'+v+'</span>').join(' ');
+  const cd=document.getElementById('cd-result');
+  if(cd) cd.innerHTML+=' <span style="color:var(--am)">+['+extra+'] ='+dmg+'dmg'+(ef?' +'+ef+'⚡':'')+'</span>';
+  addLog('⚡ +'+n+'DC bonus (-'+n+' AP groupe): '+dmg+'dmg'+(ef?' +'+ef+'⚡':''));
+  const el=document.getElementById('bonus-dmg-mj'); if(el) el.style.display='none';
+}
 
 function updateDicePanel(){
   const panel = document.getElementById('dice-context');
@@ -502,30 +605,61 @@ function lancer2D20(){
   const diff = parseInt(document.getElementById('diff-sel')?.value)||1;
   const panel = document.getElementById('dice-context');
   const basedc = panel._nbDC||2;
-  const d1=Math.floor(Math.random()*20)+1, d2=Math.floor(Math.random()*20)+1;
-  let succes = [d1,d2].filter(v=>v<=tn).length + [d1,d2].filter(v=>v===1).length;
-  const crits = [d1,d2].filter(v=>v===1).length;
-  const echec = succes < diff;
-  const succesBonus = Math.max(0, succes-diff);
-  const dcTotal = echec ? 0 : basedc+succesBonus;
+  const modeEnnemi = panel._modeEnnemi;
+
+  // Dépenser AP groupe pour dés bonus
+  const apCost = [0,0,0,1,3,6][nbDiceMJ]||0;
+  if(apCost>0){
+    if(apPool<apCost){ addLog('⚠ AP groupe insuffisants (besoin '+apCost+')'); return; }
+    chAPPool(-apCost);
+  }
+
+  const dés = Array.from({length:nbDiceMJ},()=>Math.floor(Math.random()*20)+1);
+  let succes = dés.filter(v=>v<=tn).length + dés.filter(v=>v===1).length;
+  const crits = dés.filter(v=>v===1).length;
+  const echec = succes<diff;
+  const succesBonus = Math.max(0,succes-diff);
+  const dcTotal = echec?0:basedc+succesBonus;
   if(!echec) document.getElementById('nb-cd').value = dcTotal;
 
-  const col = succes===0?'var(--rd)':succes>diff?'var(--g)':'var(--am)';
-  let r = '';
-  r += '<span style="color:'+(d1<=tn?'var(--g)':'var(--rd)')+';font-family:Oswald,sans-serif;font-size:18px">'+d1+'</span>';
-  r += '<span style="color:var(--td)"> / </span>';
-  r += '<span style="color:'+(d2<=tn?'var(--g)':'var(--rd)')+';font-family:Oswald,sans-serif;font-size:18px">'+d2+'</span>';
-  r += '<span style="color:var(--td)"> → </span>';
-  r += '<b style="color:'+col+';font-family:Oswald,sans-serif;font-size:16px">'+succes+' succès</b>';
-  if(crits) r += ' <span style="color:var(--am)">+'+crits+'★</span>';
-  if(echec) r += ' <span style="color:var(--rd)">— ÉCHEC</span>';
-  else { r += ' → <b style="color:var(--am)">'+dcTotal+'DC</b>'; if(succesBonus>0) r += ' <span style="color:var(--td)">(+'+succesBonus+')</span>'; }
+  const col=succes===0?'var(--rd)':succes>diff?'var(--g)':'var(--am)';
+  let r=dés.map(d=>'<span style="color:'+(d<=tn?'var(--g)':'var(--rd)')+';font-family:Oswald,sans-serif;font-size:18px">'+d+'</span>').join('<span style="color:var(--td)"> / </span>');
+  r+='<span style="color:var(--td)"> → </span>';
+  r+='<b style="color:'+col+';font-family:Oswald,sans-serif;font-size:16px">'+succes+' succès</b>';
+  if(crits) r+=' <span style="color:var(--am)">+'+crits+'★</span>';
+  if(echec) r+=' <span style="color:var(--rd)">— ÉCHEC</span>';
+  else { r+=' → <b style="color:var(--am)">'+dcTotal+'DC</b>'; if(succesBonus>0) r+=' <span style="color:var(--td)">(+'+succesBonus+')</span>'; }
   document.getElementById('dice-result').innerHTML = r;
 
-  const nomLog = panel._modeEnnemi?(panel._ennemNom||'Ennemi'):(joueurActif?(combattants[joueurActif]?.data?.nom||joueurActif):'?');
-  const armeLog = panel._modeEnnemi?'':(armeActive?' ('+armeActive+')':'');
-  addLog('🎲 '+nomLog+armeLog+' TN'+tn+' D'+diff+': '+d1+'/'+d2+' = '+succes+'s → '+(echec?'ÉCHEC':dcTotal+'DC'));
-  panel._modeEnnemi = false;
+  const nomLog=modeEnnemi?(panel._ennemNom||'Ennemi'):(joueurActif?(combattants[joueurActif]?.data?.nom||joueurActif):'?');
+  const armeLog=modeEnnemi?'':(armeActive?' ('+armeActive+')':'');
+  addLog('🎲 '+nomLog+armeLog+' '+nbDiceMJ+'D20 TN'+tn+' D'+diff+': '+dés.join('/')+' = '+succes+'s → '+(echec?'ÉCHEC':dcTotal+'DC'));
+  panel._modeEnnemi=false;
+
+  // Réinitialiser sélecteur
+  setNbDiceMJ(2);
+
+  // Proposer conversion succès → AP groupe
+  lastExcessMJ = succesBonus;
+  const cvEl=document.getElementById('convert-ap-mj');
+  if(cvEl){
+    const toAdd=Math.min(succesBonus,6-apPool);
+    if(!echec && toAdd>0){
+      cvEl.style.display='block';
+      cvEl.innerHTML='<button class="ap-convert-btn" onclick="convertExcessToAPMJ()">+'+toAdd+' AP groupe ('+succesBonus+' succès excéd.)</button>';
+    } else { cvEl.style.display='none'; }
+  }
+
+  // Proposer dégâts bonus si attaque mêlée/jet réussie
+  const bdEl=document.getElementById('bonus-dmg-mj');
+  if(bdEl){
+    const isMeleeThrow=['cac_weapon','barehand','throwing'].includes(lastSkKeyMJ);
+    if(!echec && isMeleeThrow && apPool>0 && !modeEnnemi){
+      let btns='<span style="font-size:7px;color:var(--td)">Dégâts bonus: </span>';
+      for(let n=1;n<=Math.min(3,apPool);n++) btns+='<button class="ap-dmg-btn" onclick="bonusDmgMJ('+n+')">+'+n+'D (−'+n+'AP)</button>';
+      bdEl.style.display='block'; bdEl.innerHTML=btns;
+    } else { bdEl.style.display='none'; }
+  }
 }
 
 function lancerCD(){

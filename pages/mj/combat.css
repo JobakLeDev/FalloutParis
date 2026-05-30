@@ -152,3 +152,30 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .fin-tour-btn{width:100%;background:var(--gk);border:1px solid var(--g);color:var(--tb);font-family:'Share Tech Mono',monospace;font-size:8px;padding:7px;cursor:pointer;letter-spacing:2px;margin-top:6px;text-transform:uppercase;}
 .fin-tour-btn:hover{background:#1e4a1e;}
 .tour-actif{box-shadow:0 0 0 1px var(--g);}
+
+/* ---- BARRE AP ---- */
+.ap-bar{display:flex;align-items:center;gap:12px;padding:5px 10px;background:var(--p2);border:1px solid var(--b2);margin-bottom:8px;flex-wrap:wrap;}
+.ap-section{display:flex;align-items:center;gap:5px;}
+.ap-sep{width:1px;height:20px;background:var(--b2);}
+.ap-bar-lbl{font-size:7px;color:var(--td);letter-spacing:2px;}
+.ap-bar-val{font-family:'Oswald',sans-serif;font-size:16px;color:var(--am);}
+.ap-bar-val.mj{color:var(--rd);}
+.ap-btn{background:none;border:1px solid var(--b2);color:var(--td);font-size:11px;width:18px;height:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.ap-btn:hover{border-color:var(--am);color:var(--am);}
+.ap-btn-sm{background:none;border:1px solid var(--b2);color:var(--td);font-family:'Share Tech Mono',monospace;font-size:7px;padding:2px 5px;cursor:pointer;letter-spacing:1px;}
+.ap-btn-sm:hover{border-color:var(--g);color:var(--g);}
+.ap-dots{display:flex;gap:3px;align-items:center;}
+.ap-dot{width:10px;height:10px;border-radius:50%;border:1px solid var(--b2);background:#060d06;transition:all 0.15s;}
+.ap-dot.on{background:var(--am);border-color:var(--am);box-shadow:0 0 4px var(--am);}
+
+/* ---- SÉLECTEUR D20 ---- */
+.d20-sel-row{display:flex;gap:3px;margin-bottom:5px;}
+.d20-sel-btn{flex:1;background:#060d06;border:1px solid var(--b2);color:var(--td);font-family:'Share Tech Mono',monospace;font-size:7px;padding:3px 2px;cursor:pointer;letter-spacing:0;text-align:center;transition:all 0.1s;}
+.d20-sel-btn:hover{border-color:var(--g);color:var(--t);}
+.d20-sel-btn.on{border-color:var(--g);background:var(--gk);color:var(--tb);}
+
+/* ---- CONVERT / BONUS DMG ---- */
+.ap-convert-btn,.ap-dmg-btn{background:#0a160a;border:1px solid var(--g);color:var(--g);font-family:'Share Tech Mono',monospace;font-size:7px;padding:2px 7px;cursor:pointer;letter-spacing:1px;margin-right:3px;}
+.ap-convert-btn:hover{background:var(--gk);}
+.ap-dmg-btn{border-color:var(--am);color:var(--am);}
+.ap-dmg-btn:hover{background:#1a160a;}

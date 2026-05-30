@@ -73,19 +73,36 @@
         <div id="j-actions"><span class="empty">—</span></div>
       </div>
 
+      <!-- AP GROUPE -->
+      <div class="pnl bottom-ap">
+        <div class="pnl-title">AP Groupe</div>
+        <div class="j-ap-pool">
+          <div class="j-ap-dots" id="j-ap-dots"></div>
+          <span class="j-ap-val" id="j-ap-val">0</span><span style="font-size:7px;color:var(--td)">/6</span>
+        </div>
+        <div id="j-ap-spend-btns"></div>
+      </div>
+
       <!-- DÉS -->
       <div class="pnl bottom-des">
         <div class="pnl-title">Mes jets</div>
         <div class="des-inner">
           <div id="mes-des-context" class="des-ctx">Sélectionne une arme</div>
+          <div class="j-d20-sel">
+            <button class="j-d20-btn on" id="j-d20-2" onclick="setNbDiceJ(2)">2D20</button>
+            <button class="j-d20-btn" id="j-d20-3" onclick="setNbDiceJ(3)">3D −1AP</button>
+            <button class="j-d20-btn" id="j-d20-4" onclick="setNbDiceJ(4)">4D −3AP</button>
+            <button class="j-d20-btn" id="j-d20-5" onclick="setNbDiceJ(5)">5D −6AP</button>
+          </div>
           <div class="des-cols">
             <div class="des-col">
               <div class="des-row">
                 <span class="tn-lbl">TN</span>
                 <input type="number" class="tn-inp" id="j-tn-val" value="10" min="1" max="20">
-                <button class="dice-btn" onclick="jLancer2D20()">2D20</button>
+                <button class="dice-btn" id="j-lance-btn" onclick="jLancer2D20()">2D20</button>
               </div>
               <div class="dice-result sm" id="j-dice-result">—</div>
+              <div id="j-convert-ap" style="display:none;margin-top:3px"></div>
             </div>
             <div class="des-col">
               <div class="des-row">
@@ -94,6 +111,7 @@
                 <button class="cd-btn" onclick="jLancerCD()">CD</button>
               </div>
               <div class="dice-result sm" id="j-cd-result">—</div>
+              <div id="j-bonus-dmg" style="display:none;margin-top:3px"></div>
             </div>
           </div>
         </div>
