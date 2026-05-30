@@ -1,8 +1,6 @@
 const MJ_CODE = '1234';
 const FICHE_URL = 'https://jobakledev.github.io/FalloutParis/pages/fiche_perso/fiche_perso.html';
-const XP_TABLE = [0,100,300,600,1000,1500,2100,2800,3600,4500,5500,6600,7800,9100,10500,12000,13600,15300,17100,19000,21000];
-
-const firebaseConfig={apiKey:"AIzaSyDcBgIX3n-Ft_HTTXYb-mAwLq2mh3CsqwU",authDomain:"fallout-paris.firebaseapp.com",projectId:"fallout-paris",storageBucket:"fallout-paris.firebasestorage.app",messagingSenderId:"1063413308699",appId:"1:1063413308699:web:09e0e13c2200283b22c7be"};
+// firebaseConfig, XP_TABLE définis dans common/shared.js
 const db = firebase.initializeApp(firebaseConfig).firestore();
 
 let joueurs = {};
@@ -20,27 +18,7 @@ const ZONES = {
   'Zone Verte':       {danger:2, nbMin:1, nbMax:2, ennemis:['Radstag','Brahmane sauvage','Chien sauvage','Pillard','Pillard Vétéran']},
 };
 
-const ENNEMIS_DB = {
-  'Pillard':          {pvd:'1D+2',atq:'3D',rd:0,desc:'Humain hostile basique. STR 5, AGI 5.',xp:25},
-  'Pillard Vétéran':  {pvd:'2D+4',atq:'4D',rd:1,desc:'Pillard expérimenté. STR 6, AGI 6. Arme améliorée.',xp:50},
-  'Goule errante':    {pvd:'2D+2',atq:'3D',rd:0,desc:'Goule lente et prévisible. END 6.',xp:30},
-  'Goule enragée':    {pvd:'2D+4',atq:'4D',rd:1,desc:'Goule agressive. AGI 8. Charge dès l\'init.',xp:60},
-  'Goule irradiée':   {pvd:'3D+4',atq:'4D+rad',rd:2,desc:'Irradie au contact. RAD 2 par touche.',xp:80},
-  'Chien sauvage':    {pvd:'1D+2',atq:'2D',rd:0,desc:'Rapide. AGI 9. Priorité aux membres.',xp:15},
-  'Super Mutant':     {pvd:'3D+6',atq:'5D',rd:2,desc:'STR 10, END 8. Arme lourde. Résistant.',xp:100},
-  'Mite de vapeur':   {pvd:'2D+3',atq:'3D+brûlure',rd:1,desc:'Crache vapeur brûlante. Zone Courte.',xp:45},
-  'Radscorpion':      {pvd:'3D+5',atq:'4D+poison',rd:3,desc:'Venin : 1D rad/tour. Carapace RD 3.',xp:90},
-  'Mole Rat':         {pvd:'1D+3',atq:'3D',rd:0,desc:'Attaque en groupe. Peut creuser.',xp:20},
-  'Mirelurk':         {pvd:'3D+6',atq:'4D',rd:4,desc:'Carapace très résistante devant. Dos RD 0.',xp:110},
-  'Robot Protectron': {pvd:'2D+4',atq:'3D laser',rd:3,desc:'Laser. Explose à mort (4D blast).',xp:70},
-  'Robot Assaultron': {pvd:'3D+5',atq:'5D laser',rd:4,desc:'Très rapide. Rayon tête dévastateur.',xp:120},
-  'Légion de Fer':    {pvd:'2D+4',atq:'4D',rd:2,desc:'Organisation militaire. Tactique de groupe.',xp:75},
-  'Saccageur':        {pvd:'2D+3',atq:'3D',rd:1,desc:'Armure de fortune. Imprévisible.',xp:40},
-  'Marchand hostile': {pvd:'1D+4',atq:'3D',rd:0,desc:'Tendu, armé. Peut fuir si blessé.',xp:35},
-  'Homme de main':    {pvd:'2D+3',atq:'4D',rd:1,desc:'Mercenaire. STR 6, AGI 7. Bien équipé.',xp:55},
-  'Brahmane sauvage': {pvd:'2D+5',atq:'3D',rd:1,desc:'Charge si perturbé. Deux têtes.',xp:25},
-  'Radstag':          {pvd:'1D+3',atq:'2D',rd:0,desc:'Fuit en priorité. Attaque si acculé.',xp:10},
-};
+// ENNEMIS_DB défini dans mj_shared.js (fusionné avec body+mind+desc, 'Légion de Fer' corrigé)
 
 const EVENEMENTS_DEPLACEMENT = [
   {pct:40, type:'calme',    label:'Calme',      desc:'Le groupe se déplace sans encombre.'},
@@ -102,7 +80,7 @@ function renderJoueurs(){
   grid.innerHTML = '';
   ids.forEach(id => {
     const d = joueurs[id];
-    const hpMax = (d.special?.L||5)+(d.special?.E||5)+Math.max(0,(d.niveau||1)-1)+(d.perks?.['Life Giver']||0)*(d.special?.E||5);
+    const hpMax = getHpMax(d);
     const pct = Math.round(Math.max(0,d.hp||0)/hpMax*100);
     const statut = pct>=100?'ok':pct<30?'critique':'blesse';
     const statutLbl = pct>=100?'OK':pct<30?'CRITIQUE':'BLESSÉ';
@@ -141,7 +119,7 @@ async function appliquer(action){
   if(!selected.size){ showMsg('Aucun joueur sélectionné !', true); return; }
   const promises = [...selected].map(async id => {
     const d = joueurs[id]; if(!d) return;
-    const hpMax = (d.special?.L||5)+(d.special?.E||5)+Math.max(0,(d.niveau||1)-1)+(d.perks?.['Life Giver']||0)*(d.special?.E||5);
+    const hpMax = getHpMax(d);
     let upd = {};
     if(action==='dmg')       upd.hp = Math.max(0,(d.hp||0)-parseInt(document.getElementById('val-dmg').value||1));
     else if(action==='heal') upd.hp = Math.min(hpMax,(d.hp||0)+parseInt(document.getElementById('val-heal').value||1));
@@ -189,7 +167,7 @@ function genCombat(){
   // Stocker pour l'écran combat
   const combatData = ennemisGeneres.map((e,i)=>({
     id: Date.now()+i, nom:e.nom, pvd:e.pvd,
-    pvMax:rollDiceSimple(e.pvd), pvCur:0, atq:e.atq, rd:e.rd, xp:e.xp, initiative:null
+    pvMax:rollDice(e.pvd), pvCur:0, atq:e.atq, rd:e.rd, xp:e.xp, initiative:null
   }));
   combatData.forEach(e=>e.pvCur=e.pvMax);
   sessionStorage.setItem('combat_ennemis', JSON.stringify(combatData));
@@ -291,21 +269,14 @@ function lancerDes(){
 // Dés de Combat Fallout 2D20 : faces = 1,2,blank,blank,Effect,Effect
 function lancerCD(){
   const nb = Math.min(10, parseInt(document.getElementById('dice-nb').value)||2);
-  const FACES_CD = ['1','2','—','—','⚡','⚡'];
   const resultats = Array.from({length:nb}, ()=>FACES_CD[Math.floor(Math.random()*6)]);
   const dmg = resultats.filter(f=>f==='1'||f==='2').reduce((a,f)=>a+parseInt(f),0);
-  const effets = resultats.filter(f=>f==='⚡').length;
+  const effets = resultats.filter(f=>f==='★').length;
   const el = document.getElementById('dice-result');
   el.style.display='block';
   el.innerHTML = `<span style="color:var(--td)">${nb}DC → </span>${resultats.join(' ')} <span style="color:var(--am);font-family:'Oswald',sans-serif;font-size:14px"> = ${dmg} dmg${effets>0?` + ${effets} Effet(s)`:''}</span>`;
 }
 
-function rollDiceSimple(expr){
-  const m = expr.match(/(\d+)D\+?(\d*)/i);
-  if(!m) return 10;
-  const nb=parseInt(m[1])||1, bonus=parseInt(m[2])||0;
-  let t=bonus; for(let i=0;i<nb;i++) t+=Math.floor(Math.random()*6)+1;
-  return t;
-}
+// rollDice défini dans mj_shared.js
 
 

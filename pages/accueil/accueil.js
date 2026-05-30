@@ -1,11 +1,4 @@
-const firebaseConfig = {
-  apiKey: "AIzaSyDcBgIX3n-Ft_HTTXYb-mAwLq2mh3CsqwU",
-  authDomain: "fallout-paris.firebaseapp.com",
-  projectId: "fallout-paris",
-  storageBucket: "fallout-paris.firebasestorage.app",
-  messagingSenderId: "1063413308699",
-  appId: "1:1063413308699:web:09e0e13c2200283b22c7be"
-};
+// firebaseConfig défini dans common/shared.js
 const fbApp = firebase.initializeApp(firebaseConfig);
 const db = fbApp.firestore();
 

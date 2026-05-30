@@ -1,18 +1,4 @@
-const firebaseConfig={apiKey:"AIzaSyDcBgIX3n-Ft_HTTXYb-mAwLq2mh3CsqwU",authDomain:"fallout-paris.firebaseapp.com",projectId:"fallout-paris",storageBucket:"fallout-paris.firebasestorage.app",messagingSenderId:"1063413308699",appId:"1:1063413308699:web:09e0e13c2200283b22c7be"};
-const COMBAT_DOC = 'fallout-paris';
-const FACES_CD = ['1','2','—','—','★','★'];
-const SK_ATTR = {en_weapon:'P',cac_weapon:'S',light_weapon:'A',heavy_weapon:'E',athletics:'S',lockpick:'P',speech:'C',sneak:'A',explosives:'P',barehand:'S',medicine:'I',pilot:'P',throwing:'A',repair:'I',science:'I',survival:'E',barter:'C'};
-const WEAPONS_DB = {
-  'Ripper':{dmg:'4D',eff:'Vicious',sk:'cac_weapon'},'Pipe Wrench':{dmg:'3D',eff:'—',sk:'cac_weapon'},
-  'Combat Knife':{dmg:'3D',eff:'Piercing 1',sk:'cac_weapon'},'Sledgehammer':{dmg:'5D',eff:'—',sk:'cac_weapon'},
-  'Baseball Bat':{dmg:'3D',eff:'—',sk:'cac_weapon'},'Machete':{dmg:'3D',eff:'Piercing 1',sk:'cac_weapon'},
-  '.44 Pistol':{dmg:'6D',eff:'—',sk:'light_weapon'},'10mm Pistol':{dmg:'4D',eff:'—',sk:'light_weapon'},
-  'Pipe Gun':{dmg:'3D',eff:'—',sk:'light_weapon'},'Pipe Revolver':{dmg:'4D',eff:'—',sk:'light_weapon'},
-  'Pipe Bolt-Action':{dmg:'6D',eff:'Piercing 1',sk:'light_weapon'},'Hunting Rifle':{dmg:'7D',eff:'—',sk:'light_weapon'},
-  'Double-Barrel Shotgun':{dmg:'5D',eff:'Spread,Vicious',sk:'light_weapon'},
-  'Laser Pistol':{dmg:'4D',eff:'—',sk:'en_weapon'},'Laser Rifle':{dmg:'7D',eff:'—',sk:'en_weapon'},
-  'Mains nues':{dmg:'2D',eff:'—',sk:'barehand'},'Knuckles':{dmg:'3D',eff:'—',sk:'barehand'},
-};
+// firebaseConfig, COMBAT_DOC, FACES_CD, SK_ATTR, WEAPONS_DB définis dans common/shared.js et mj_shared.js
 
 let db, joueurData = null, joueurId = null;
 let combatState = null;
@@ -51,17 +37,7 @@ function initJoueur(){
   });
 }
 
-function getHpMax(d){
-  return (d.special?.L||5)+(d.special?.E||5)+Math.max(0,(d.niveau||1)-1)+(d.perks?.['Life Giver']||0)*(d.special?.E||5);
-}
-
-function getTN(d, skKey){
-  const attr = SK_ATTR[skKey]||'A';
-  const map = {S:d.special?.S||5,P:d.special?.P||5,E:d.special?.E||5,C:d.special?.C||5,I:d.special?.I||5,A:d.special?.A||5,L:d.special?.L||5};
-  const rang = d.skills?.[skKey]||0;
-  const tag = d.taggedSkills?.includes(skKey)?2:0;
-  return map[attr]+rang+tag;
-}
+// getHpMax, getTN définis dans mj_shared.js
 
 function renderMaCarte(){
   const el = document.getElementById('ma-carte-content'); if(!el||!joueurData) return;
@@ -98,7 +74,7 @@ function renderMaCarte(){
   html += '<div style="margin-top:6px">';
   weaps.forEach(inv => {
     const db2 = WEAPONS_DB[inv.name]||{};
-    const tn = db2.sk ? getTN(d, db2.sk) + (inv.persoBonus?2:0) : 0;
+    const tn = db2.sk ? getTN(d, db2.sk).total + (inv.persoBonus?2:0) : 0;
     const sel = armeSelectionnee===inv.name;
     html += '<div class="jc-arme clickable'+(sel?' selected-arme':'')+'" onclick="selArme(\''+inv.name+'\','+tn+',\''+(db2.dmg||'2D')+'\')">';
     html += '<span class="jc-arme-name">'+inv.name+(inv.persoBonus?' ★':'')+'</span>';
@@ -106,7 +82,7 @@ function renderMaCarte(){
     html += '</div>';
   });
   // Mains nues
-  const tnUnarmed = getTN(d,'barehand');
+  const tnUnarmed = getTN(d,'barehand').total;
   html += '<div class="jc-arme clickable'+(armeSelectionnee==='__unarmed__'?' selected-arme':'')+'" onclick="selArme(\'__unarmed__\','+tnUnarmed+',\'2D\')">';
   html += '<span class="jc-arme-name" style="color:var(--td)">👊 Mains nues</span>';
   html += '<span class="jc-arme-stat">2D · TN <b>'+tnUnarmed+'</b></span>';

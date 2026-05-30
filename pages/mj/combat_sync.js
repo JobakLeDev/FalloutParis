@@ -3,7 +3,7 @@
 // Partagé entre combat.html (MJ) et combat_joueur.html
 // ============================================================
 
-const COMBAT_DOC = 'fallout-paris'; // document dans collection 'combat'
+// COMBAT_DOC défini dans mj_shared.js
 
 // ---- MJ : écrire l'état du combat dans Firebase ----
 async function syncCombatToFirebase(){

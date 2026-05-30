@@ -2,7 +2,7 @@
 const MJ_CODE = '1234'; // ← CHANGE CE CODE !
 const BASE_URL = 'https://jobakledev.github.io/FalloutParis/pages/fiche_perso/fiche_perso.html';
 
-const firebaseConfig={apiKey:"AIzaSyDcBgIX3n-Ft_HTTXYb-mAwLq2mh3CsqwU",authDomain:"fallout-paris.firebaseapp.com",projectId:"fallout-paris",storageBucket:"fallout-paris.firebasestorage.app",messagingSenderId:"1063413308699",appId:"1:1063413308699:web:09e0e13c2200283b22c7be"};
+// firebaseConfig défini dans common/shared.js
 const db=firebase.initializeApp(firebaseConfig).firestore();
 
 // ---- LOCK ----

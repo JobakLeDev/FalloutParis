@@ -121,15 +121,7 @@ function utiliserItem(i){
 }
 
 
-function rCharge2(){
-  const cur=chargeActuelle(),max=chargeMax();
-  const pct=Math.min(100,Math.round(cur/max*100));
-  const el=document.getElementById('ch-txt2');
-  if(el)el.textContent=`${cur} / ${max} kg`;
-  const cf=document.getElementById('ch-f2');
-  if(cf){cf.style.width=pct+'%';cf.style.background=`var(--${pct>90?'rd':pct>70?'am':'g'})`;}
-}
-function rAll(){rSpecial();rGenWeap();rHP();rMeta();rStatus();rWeapEq();rAmmo();rPerkRD();rLocs();rLocsGen();rInventory();rSkills();rPerks();rPerkEff();rCharge();rCharge2();}
+function rAll(){rSpecial();rGenWeap();rHP();rMeta();rStatus();rWeapEq();rAmmo();rPerkRD();rLocs();rLocsGen();rInventory();rSkills();rPerks();rPerkEff();rCharge();}
 
 function rSpecial(){
   const ORDER=['S','P','E','C','I','A','L'];
