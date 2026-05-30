@@ -119,3 +119,36 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 /* DIFFICULTÉ & DC */
 .ctx-diff{font-size:8px;color:var(--td);margin:4px 0;display:flex;align-items:center;gap:6px;}
 .ctx-dc{font-size:8px;color:var(--td);margin-bottom:4px;}
+
+/* TRACKER DE TOUR */
+.tracker-round{font-size:8px;color:var(--td);letter-spacing:3px;text-align:center;padding:3px 0;margin-bottom:6px;border-bottom:1px solid var(--b);}
+.tracker-round b{color:var(--am);font-family:'Oswald',sans-serif;font-size:14px;}
+.tracker-item{padding:5px 6px;margin-bottom:4px;border:1px solid var(--b);background:#080f08;transition:all 0.1s;}
+.tracker-item.actif{border-color:var(--g);background:#0a1a0a;}
+.tracker-item.ennemi{border-color:#2a1010;background:#0f0808;}
+.tracker-item.ennemi.actif{border-color:var(--rd);}
+.tracker-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.tracker-nom{font-size:9px;color:var(--tb);}
+.tracker-item.actif .tracker-nom{color:var(--g);}
+.tracker-item.ennemi .tracker-nom{color:#e07070;}
+.tracker-item.ennemi.actif .tracker-nom{color:var(--rd);}
+.tracker-init{font-family:'Oswald',sans-serif;font-size:13px;color:var(--am);}
+.tracker-actions{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
+.act-group{display:flex;align-items:center;gap:2px;}
+.act-lbl{font-size:6px;color:var(--td);letter-spacing:1px;margin-right:2px;}
+.act-dot{width:10px;height:10px;border-radius:50%;border:1px solid var(--b2);background:#060d06;cursor:pointer;display:inline-block;transition:all 0.1s;}
+.act-dot.on{background:var(--g);border-color:var(--g);}
+.act-dot.maj{border-radius:2px;}
+.act-dot.maj.on{background:var(--am);border-color:var(--am);}
+.pa-group{gap:3px;}
+.pa-btn{background:none;border:1px solid var(--b2);color:var(--td);font-size:9px;width:16px;height:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
+.pa-btn:hover{border-color:var(--g);color:var(--t);}
+.pa-val{font-family:'Oswald',sans-serif;font-size:14px;color:var(--am);min-width:16px;text-align:center;}
+.luck-btn{background:none;border:none;font-size:11px;cursor:pointer;padding:0 2px;opacity:0.7;}
+.luck-btn:hover{opacity:1;}
+.tracker-extra{display:flex;gap:4px;margin-top:4px;}
+.xbtn{flex:1;background:#060d06;border:1px solid var(--b2);color:var(--td);font-family:'Share Tech Mono',monospace;font-size:7px;padding:3px 4px;cursor:pointer;letter-spacing:1px;}
+.xbtn:hover{border-color:var(--am);color:var(--am);}
+.fin-tour-btn{width:100%;background:var(--gk);border:1px solid var(--g);color:var(--tb);font-family:'Share Tech Mono',monospace;font-size:8px;padding:7px;cursor:pointer;letter-spacing:2px;margin-top:6px;text-transform:uppercase;}
+.fin-tour-btn:hover{background:#1e4a1e;}
+.tour-actif{box-shadow:0 0 0 1px var(--g);}
