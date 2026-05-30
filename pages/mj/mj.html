@@ -161,15 +161,12 @@
           </select>
         </div>
         <div class="ctrl-row">
-          <span class="ctrl-lbl">Ennemis</span>
-          <input type="number" class="ctrl-input" id="nb-ennemis" value="3" min="1" max="10">
-        </div>
-        <div class="ctrl-row">
           <span class="ctrl-lbl">Unités dépl.</span>
           <input type="number" class="ctrl-input" id="nb-unites" value="1" min="1" max="20">
         </div>
       </div>
 
+      <input type="hidden" id="nb-ennemis" value="3">
       <div class="gen-btns">
         <button class="gen-btn" onclick="genCombat()">⚔ Générer combat</button>
         <button class="gen-btn dep" onclick="genDeplacement()">🚶 Déplacement</button>
