@@ -343,27 +343,30 @@ function lancer2D20(){
   const panel = document.getElementById('dice-context');
   const basedc = panel._nbDC||2;
   const d1=Math.floor(Math.random()*20)+1, d2=Math.floor(Math.random()*20)+1;
-  const vals=[d1,d2];
-  let succes = vals.filter(v=>v<=tn).length + vals.filter(v=>v===1).length;
-  const crits = vals.filter(v=>v===1).length;
-  const col = succes===0?'var(--rd)':succes>diff?'var(--g)':'var(--am)';
+  let succes = [d1,d2].filter(v=>v<=tn).length + [d1,d2].filter(v=>v===1).length;
+  const crits = [d1,d2].filter(v=>v===1).length;
   const echec = succes < diff;
-
-  // Calcul DC : base arme + succès bonus (au-delà de la difficulté)
   const succesBonus = Math.max(0, succes - diff);
   const dcTotal = echec ? 0 : basedc + succesBonus;
   if(!echec) document.getElementById('nb-cd').value = dcTotal;
 
-  document.getElementById('dice-result').innerHTML =
-    `<span style="color:${d1<=tn?'var(--g)':'var(--rd)'};font-family:Oswald,sans-serif;font-size:18px">${d1}</span>
-     <span style="color:var(--td)"> / </span>
-     <span style="color:${d2<=tn?'var(--g)':'var(--rd)'};font-family:Oswald,sans-serif;font-size:18px">${d2}</span>
-     <span style="color:var(--td)"> → </span>
-     <b style="color:${col};font-family:Oswald,sans-serif;font-size:16px">${succes} succès</b>
-     ${crits?`<span style="color:var(--am)"> +${crits}★</span>`:''}
-     ${echec?`<span style="color:var(--rd)"> — ÉCHEC</span>`:`<span style="color:var(--td)"> → </span><b style="color:var(--am)">${dcTotal}DC</b>${succesBonus>0?`<span style="color:var(--td)"> (+${succesBonus})</span>`:''}`}`;
+  const col = succes===0?'var(--rd)':succes>diff?'var(--g)':'var(--am)';
+  let resultHTML = '';
+  resultHTML += '<span style="color:'+(d1<=tn?'var(--g)':'var(--rd)')+';font-family:Oswald,sans-serif;font-size:18px">'+d1+'</span>';
+  resultHTML += '<span style="color:var(--td)"> / </span>';
+  resultHTML += '<span style="color:'+(d2<=tn?'var(--g)':'var(--rd)')+';font-family:Oswald,sans-serif;font-size:18px">'+d2+'</span>';
+  resultHTML += '<span style="color:var(--td)"> → </span>';
+  resultHTML += '<b style="color:'+col+';font-family:Oswald,sans-serif;font-size:16px">'+succes+' succès</b>';
+  if(crits) resultHTML += ' <span style="color:var(--am)">+'+crits+'★</span>';
+  if(echec) resultHTML += ' <span style="color:var(--rd)">— ÉCHEC</span>';
+  else {
+    resultHTML += ' <span style="color:var(--td)">→</span> <b style="color:var(--am)">'+dcTotal+'DC</b>';
+    if(succesBonus>0) resultHTML += ' <span style="color:var(--td)">(+'+succesBonus+')</span>';
+  }
+  document.getElementById('dice-result').innerHTML = resultHTML;
+
   const nom = joueurActif?(combattants[joueurActif]?.data?.nom||joueurActif):'?';
-  addLog(`🎲 ${nom}${armeActive?' ('+armeActive+')':''} TN${tn} D${diff}: ${d1}/${d2} = ${succes}s → ${echec?'ÉCHEC':dcTotal+'DC'}`);
+  addLog('🎲 '+nom+(armeActive?' ('+armeActive+')':'')+' TN'+tn+' D'+diff+': '+d1+'/'+d2+' = '+succes+'s → '+(echec?'ÉCHEC':dcTotal+'DC'));
 }
 
 function lancerCD(){
