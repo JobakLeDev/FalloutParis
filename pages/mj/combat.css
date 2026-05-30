@@ -113,3 +113,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .scr::-webkit-scrollbar{width:3px;}
 .scr::-webkit-scrollbar-thumb{background:var(--gd);}
 .empty{font-size:8px;color:var(--td);padding:8px;display:block;}
+
+/* DIFFICULTÉ & DC */
+.ctx-diff{font-size:8px;color:var(--td);margin:4px 0;display:flex;align-items:center;gap:6px;}
+.ctx-dc{font-size:8px;color:var(--td);margin-bottom:4px;}
