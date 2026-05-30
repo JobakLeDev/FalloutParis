@@ -392,6 +392,7 @@ function renderCombat(){
 }
 
 function getHpMax(d){
+  if(!d||!d.special) return 10;
   return (d.special?.L||5)+(d.special?.E||5)+Math.max(0,(d.niveau||1)-1)+(d.perks?.['Life Giver']||0)*(d.special?.E||5);
 }
 
@@ -409,6 +410,7 @@ function renderJoueursCombat(){
   if(!ids.length){ el.innerHTML='<div class="empty">Aucun joueur — sélectionner ci-dessus</div>'; return; }
   ids.forEach(id => {
     const {data:d, initiative} = combattants[id];
+    if(!d) return;
     const hpMax = getHpMax(d);
     const pct = Math.round(Math.max(0,d.hp||0)/hpMax*100);
     const barColor = pct<30?'var(--rd)':pct<60?'var(--am)':'var(--g)';
