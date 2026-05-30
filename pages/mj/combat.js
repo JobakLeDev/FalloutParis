@@ -30,6 +30,9 @@ const WEAPONS_DB = {
   'Laser Rifle':{t:'Energy',dmg:'7D',eff:'—',fr:1,rng:'L',sk:'en_weapon'},
   'Flamer':{t:'Big Guns',dmg:'5D',eff:'Persistent,Spread',fr:2,rng:'C',sk:'heavy_weapon'},
   'Minigun':{t:'Big Guns',dmg:'3D',eff:'Spread',fr:6,rng:'M',sk:'heavy_weapon'},
+  'Mains nues':{t:'Unarmed',dmg:'2D',eff:'—',fr:'—',rng:'—',sk:'barehand'},
+  'Knuckles':{t:'Unarmed',dmg:'3D',eff:'—',fr:'—',rng:'—',sk:'barehand'},
+  'Boxing Glove':{t:'Unarmed',dmg:'3D',eff:'Stun',fr:'—',rng:'—',sk:'barehand'},
 };
 
 const ENNEMIS_DB = {
@@ -237,6 +240,10 @@ function renderJoueursCombat(){
           <span class="jc-arme-stat">${db.dmg||'?'} · FR${db.fr??'—'}${tn?` · <b>TN${tn.total}</b>`:''}${db.eff&&db.eff!=='—'?` · <span style="color:var(--am)">${db.eff}</span>`:''}</span>
         </div>`;
       }).join('')}
+      <div class="jc-arme${isActif?' clickable':''}" ${isActif?`onclick="event.stopPropagation();setArme('${id}','__unarmed__')"`:''}">
+        <span class="jc-arme-name" style="color:var(--td)">👊 Mains nues</span>
+        <span class="jc-arme-stat">2D · TN ${getTN(d,'barehand').total}</span>
+      </div>
     </div>`;
   });
 }
@@ -284,7 +291,7 @@ function renderInitiative(){
 
 // ---- DÉS ----
 function setActif(id){ joueurActif = joueurActif===id?null:id; armeActive=null; renderJoueursCombat(); updateDicePanel(); }
-function setArme(id, arme){ joueurActif=id; armeActive=arme; renderJoueursCombat(); updateDicePanel(); }
+function setArme(id, arme){ joueurActif=id; armeActive=arme==='__unarmed__'?null:arme; renderJoueursCombat(); updateDicePanel(); }
 
 function updateDicePanel(){
   const panel = document.getElementById('dice-context');
@@ -292,38 +299,86 @@ function updateDicePanel(){
   const d = combattants[joueurActif]?.data; if(!d) return;
   let html = `<div class="ctx-nom">${(d.nom||joueurActif).toUpperCase()}</div>`;
   if(armeActive){
-    const db = WEAPONS_DB[armeActive];
+    const dbw = WEAPONS_DB[armeActive];
     const inv = (d.inventory||[]).find(i=>i.name===armeActive);
-    if(db?.sk){
-      const tn = getTN(d,db.sk);
+    if(dbw?.sk){
+      const tn = getTN(d,dbw.sk);
       const tnFinal = tn.total + (inv?.persoBonus?2:0);
-      html += `<div class="ctx-arme">${armeActive} · <b>${db.dmg}</b>${db.eff&&db.eff!=='—'?` · <span style="color:var(--am)">${db.eff}</span>`:''}</div>`;
+      const nbDC = parseInt(dbw.dmg)||2;
+      html += `<div class="ctx-arme">${armeActive} · <b>${dbw.dmg}</b>${dbw.eff&&dbw.eff!=='—'?` · <span style="color:var(--am)">${dbw.eff}</span>`:''}</div>`;
       html += `<div class="ctx-tn">TN <b style="color:var(--tb);font-size:14px">${tnFinal}</b> = ${tn.attrVal}+${tn.rang}${tn.tag?'+2(TAG)':''}${inv?.persoBonus?'+2(★)':''}</div>`;
+      html += `<div class="ctx-diff">
+        Difficulté :
+        <select id="diff-sel" onchange="majDC()" style="background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:9px;padding:2px 4px;outline:none">
+          <option value="0">D0</option><option value="1" selected>D1</option><option value="2">D2</option><option value="3">D3</option>
+        </select>
+      </div>`;
+      html += `<div id="dc-suggest" class="ctx-dc">DC suggérés : <b style="color:var(--am)" id="dc-nb">${nbDC}</b> (${dbw.dmg} de base)</div>`;
       document.getElementById('tn-val').value = tnFinal;
+      // Stocker infos pour majDC
+      panel._nbDC = nbDC;
     }
   } else {
-    html += '<div class="empty" style="margin-top:4px">Clique sur une arme</div>';
+    // Mains nues
+    const for_ = d.special?.S||5;
+    const rang = d.skills?.barehand||0;
+    const tag = d.taggedSkills?.includes('barehand')?2:0;
+    const tnUnarmed = for_+rang+tag;
+    html += `<div class="ctx-arme">Mains nues · <b>2D</b></div>`;
+    html += `<div class="ctx-tn">TN <b style="color:var(--tb);font-size:14px">${tnUnarmed}</b> = ${for_}(FOR)+${rang}${tag?'+2(TAG)':''}</div>`;
+    html += `<div class="ctx-diff">
+      Difficulté :
+      <select id="diff-sel" onchange="majDC()" style="background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:9px;padding:2px 4px;outline:none">
+        <option value="0">D0</option><option value="1" selected>D1</option><option value="2">D2</option><option value="3">D3</option>
+      </select>
+    </div>`;
+    html += `<div id="dc-suggest" class="ctx-dc">DC suggérés : <b style="color:var(--am)" id="dc-nb">2</b> (2D base)</div>`;
+    document.getElementById('tn-val').value = tnUnarmed;
+    panel._nbDC = 2;
   }
   panel.innerHTML = html;
 }
 
+function majDC(){
+  const diff = parseInt(document.getElementById('diff-sel')?.value)||1;
+  const panel = document.getElementById('dice-context');
+  const base = panel._nbDC||2;
+  // succes bonus = succes obtenus - difficulté, chaque bonus = +1DC
+  // Ici on montre juste la base + bonus estimé si 2 succès
+  const bonus = Math.max(0, 2 - diff); // ex: 2 succès sur D1 = 1 bonus
+  const suggest = base + bonus;
+  const el = document.getElementById('dc-nb');
+  if(el) el.textContent = suggest + (bonus>0?` (+${bonus} bonus estimé)`:'');
+  document.getElementById('nb-cd').value = suggest;
+}
+
 function lancer2D20(){
   const tn = parseInt(document.getElementById('tn-val').value)||10;
+  const diff = parseInt(document.getElementById('diff-sel')?.value)||1;
+  const panel = document.getElementById('dice-context');
+  const basedc = panel._nbDC||2;
   const d1=Math.floor(Math.random()*20)+1, d2=Math.floor(Math.random()*20)+1;
   const vals=[d1,d2];
-  let succes = vals.filter(v=>v<=tn).length;
+  let succes = vals.filter(v=>v<=tn).length + vals.filter(v=>v===1).length;
   const crits = vals.filter(v=>v===1).length;
-  succes += crits;
-  const col = succes===0?'var(--rd)':succes>=3?'var(--g)':'var(--am)';
+  const col = succes===0?'var(--rd)':succes>diff?'var(--g)':'var(--am)';
+  const echec = succes < diff;
+
+  // Calcul DC : base arme + succès bonus (au-delà de la difficulté)
+  const succesBonus = Math.max(0, succes - diff);
+  const dcTotal = echec ? 0 : basedc + succesBonus;
+  if(!echec) document.getElementById('nb-cd').value = dcTotal;
+
   document.getElementById('dice-result').innerHTML =
     `<span style="color:${d1<=tn?'var(--g)':'var(--rd)'};font-family:Oswald,sans-serif;font-size:18px">${d1}</span>
      <span style="color:var(--td)"> / </span>
      <span style="color:${d2<=tn?'var(--g)':'var(--rd)'};font-family:Oswald,sans-serif;font-size:18px">${d2}</span>
      <span style="color:var(--td)"> → </span>
      <b style="color:${col};font-family:Oswald,sans-serif;font-size:16px">${succes} succès</b>
-     ${crits?`<span style="color:var(--am)"> +${crits}★</span>`:''}`;
+     ${crits?`<span style="color:var(--am)"> +${crits}★</span>`:''}
+     ${echec?`<span style="color:var(--rd)"> — ÉCHEC</span>`:`<span style="color:var(--td)"> → </span><b style="color:var(--am)">${dcTotal}DC</b>${succesBonus>0?`<span style="color:var(--td)"> (+${succesBonus})</span>`:'}</span>`};
   const nom = joueurActif?(combattants[joueurActif]?.data?.nom||joueurActif):'?';
-  addLog(`🎲 ${nom}${armeActive?' ('+armeActive+')':''} TN${tn}: ${d1}/${d2} = ${succes}s${crits?' +'+crits+'★':''}`);
+  addLog(`🎲 ${nom}${armeActive?' ('+armeActive+')':''} TN${tn} D${diff}: ${d1}/${d2} = ${succes}s → ${echec?'ÉCHEC':dcTotal+'DC'}`);
 }
 
 function lancerCD(){
