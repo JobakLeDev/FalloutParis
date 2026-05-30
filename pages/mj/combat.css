@@ -21,8 +21,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .hbtn{background:transparent;border:1px solid var(--b2);color:var(--td);font-family:'Share Tech Mono',monospace;font-size:7px;padding:4px 9px;cursor:pointer;letter-spacing:2px;text-decoration:none;display:inline-block;transition:all 0.1s;}
 .hbtn:hover{border-color:var(--g);color:var(--t);}
 
-/* LAYOUT 3 colonnes */
-#app{display:grid;grid-template-columns:1fr 1fr 260px;gap:8px;align-items:start;}
+/* LAYOUT */
+.combat-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 260px;gap:8px;align-items:start;}
+.jc-card,.ennemi-card{max-width:100%;}
 
 /* PANNEAU */
 .pnl{background:var(--p2);border:1px solid var(--b2);padding:8px;}
