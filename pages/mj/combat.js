@@ -65,25 +65,10 @@ const SK_ATTR = {
 const FACES_CD = ['1','2','—','—','★','★'];
 
 // ---- INIT ----
-document.getElementById('lock-inp').addEventListener('keydown', e=>{ if(e.key==='Enter') unlock(); });
-
 function init(){
   const app = firebase.initializeApp(firebaseConfig);
   db = app.firestore();
-  // Check session après init Firebase
-  if(sessionStorage.getItem('mj_auth')==='1'){
-    deverrouiller();
-  }
-}
-
-function unlock(){
-  if(document.getElementById('lock-inp').value===MJ_CODE){
-    sessionStorage.setItem('mj_auth','1');
-    deverrouiller();
-  } else {
-    document.getElementById('lock-err').style.display='block';
-    document.getElementById('lock-inp').value='';
-  }
+  deverrouiller();
 }
 
 function deverrouiller(){
