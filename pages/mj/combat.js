@@ -42,6 +42,7 @@ let joueurActif = null;
 document.getElementById('lock-inp').addEventListener('keydown', e=>{ if(e.key==='Enter') unlock(); });
 function unlock(){
   if(document.getElementById('lock-inp').value===MJ_CODE){
+    sessionStorage.setItem('mj_auth','1');
     document.getElementById('lock').style.display='none';
     document.getElementById('app').style.display='block';
     chargerJoueurs();
@@ -49,6 +50,12 @@ function unlock(){
     document.getElementById('lock-err').style.display='block';
     document.getElementById('lock-inp').value='';
   }
+}
+
+if(sessionStorage.getItem('mj_auth')==='1'){
+  document.getElementById('lock').style.display='none';
+  document.getElementById('app').style.display='block';
+  chargerJoueurs();
 }
 
 // ---- CHARGEMENT ----
