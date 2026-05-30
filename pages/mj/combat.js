@@ -162,6 +162,7 @@ function lancerInitiative(){
   addLog('⚔ Round ' + numRound + ' — ' + ordreInitiative[0].nom + ' commence !');
   renderCombat();
   renderTracker();
+  syncCombatToFirebase();
 }
 
 function finDeTour(){
@@ -195,6 +196,7 @@ function finDeTour(){
 
   renderCombat();
   renderTracker();
+  syncCombatToFirebase();
 }
 
 function depensePA(key, cout){
@@ -243,12 +245,14 @@ function useMineure(key, withPA){
     s.mineure--;
   }
   renderTracker();
+  syncCombatToFirebase();
 }
 
 function chPA(key, delta){
   const s = actionsState[key]; if(!s) return;
   s.pa = Math.max(0, s.pa + delta);
   renderTracker();
+  syncCombatToFirebase();
 }
 
 function renderTracker(){
@@ -301,6 +305,7 @@ function renderTracker(){
   });
 
   html += '<button class="fin-tour-btn" onclick="finDeTour()">➤ Fin de tour</button>';
+  html += '<button class="fin-tour-btn" style="background:var(--rdk);border-color:var(--rd);color:var(--rd);margin-top:3px" onclick="finCombat()">✕ Fin du combat</button>';
   el.innerHTML = html;
 }
 
@@ -606,3 +611,13 @@ function addLog(msg){
   el.innerHTML = log.map(l=>'<div class="log-line">'+l+'</div>').join('');
 }
 function clearLog(){ log=[]; document.getElementById('combat-log').innerHTML=''; }
+
+function finCombat(){
+  ordreInitiative = [];
+  actionsState = {};
+  tourActif = 0;
+  numRound = 0;
+  stopCombat();
+  addLog('🏁 Combat terminé.');
+  renderTracker();
+}

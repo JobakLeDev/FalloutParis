@@ -1,0 +1,13 @@
+/* Layout joueur : 2 colonnes */
+.cj-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+/* Bannière mon tour */
+.mon-tour-banner{background:var(--gk);border:1px solid var(--g);color:var(--g);font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:3px;text-align:center;padding:6px;margin-bottom:8px;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.6;}}
+
+/* Arme sélectionnée */
+.selected-arme{border-color:var(--g)!important;background:#0a180a!important;}
+
+/* Moi dans le tracker */
+.c-est-moi{background:#0d1a0d!important;}
+.c-est-moi .tracker-nom{color:var(--tb)!important;}
