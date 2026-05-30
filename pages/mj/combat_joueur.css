@@ -1,10 +1,14 @@
 /* ============================================================
    GRILLE PRINCIPALE : 3 colonnes
-   gauche (étroite) | milieu (flex) | droite (initiative)
+   gauche | milieu (ennemis) | droite (initiative)
    ============================================================ */
+#combat-actif {
+  max-width: 1400px;
+  margin: 0 auto;
+}
 .cj-grid {
   display: grid;
-  grid-template-columns: 320px 1fr 240px;
+  grid-template-columns: 300px 1fr 230px;
   gap: 10px;
   align-items: start;
 }
