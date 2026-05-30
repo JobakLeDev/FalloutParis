@@ -22,7 +22,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .hbtn:hover{border-color:var(--g);color:var(--t);}
 
 /* LAYOUT */
-.combat-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 260px;gap:8px;align-items:start;}
+.combat-grid{display:grid;grid-template-columns:minmax(0,320px) minmax(0,320px) 260px;gap:8px;align-items:start;}
 .jc-card,.ennemi-card{max-width:100%;}
 
 /* PANNEAU */
