@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fallout Paris — Combat</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../common/style.css">
+  <link rel="stylesheet" href="combat.css">
+  <link rel="stylesheet" href="combat_joueur.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div><div class="hdr-title">⚔ COMBAT<small id="hdr-nom">Fallout Paris</small></div></div>
+    <div class="hdr-btns">
+      <span id="hdr-round" style="font-size:9px;color:var(--am);letter-spacing:2px"></span>
+      <a class="hbtn" id="lien-fiche" href="#">↗ Ma fiche</a>
+    </div>
+  </div>
+
+  <!-- ATTENTE -->
+  <div id="attente" style="text-align:center;padding:40px;color:var(--td);font-size:10px;letter-spacing:2px">
+    En attente du début du combat...<br>
+    <span style="font-size:8px;opacity:0.5;margin-top:8px;display:block">Cette page se met à jour automatiquement</span>
+  </div>
+
+  <!-- COMBAT ACTIF -->
+  <div id="combat-actif" style="display:none">
+    <div class="cj-grid">
+
+      <!-- COL 1 : MON TOUR + MES STATS -->
+      <div>
+        <!-- MA CARTE -->
+        <div class="pnl" id="ma-carte">
+          <div class="pnl-title">Ma fiche</div>
+          <div id="ma-carte-content"><span class="empty">Chargement...</span></div>
+        </div>
+
+        <!-- MES DÉS -->
+        <div class="pnl" style="margin-top:8px">
+          <div class="pnl-title">Mes jets</div>
+          <div id="mes-des-context" style="padding:5px;background:#060d06;border:1px solid var(--b);margin-bottom:6px;min-height:36px;font-size:9px;color:var(--td)">
+            Sélectionne une arme ci-dessus
+          </div>
+          <div class="tn-row">
+            <span class="tn-lbl">TN</span>
+            <input type="number" class="tn-inp" id="j-tn-val" value="10" min="1" max="20">
+            <button class="dice-btn" onclick="jLancer2D20()">2D20</button>
+          </div>
+          <div class="dice-result" id="j-dice-result">—</div>
+          <div class="cd-row" style="margin-top:6px">
+            <span class="tn-lbl">DC</span>
+            <input type="number" class="cd-inp" id="j-nb-cd" value="2" min="1" max="10">
+            <button class="cd-btn" onclick="jLancerCD()">Dés Combat</button>
+          </div>
+          <div class="dice-result" id="j-cd-result" style="margin-top:4px">—</div>
+        </div>
+      </div>
+
+      <!-- COL 2 : TRACKER + ENNEMIS -->
+      <div>
+        <!-- TRACKER -->
+        <div class="pnl">
+          <div class="pnl-title">Ordre d'initiative — Round <span id="j-round">?</span></div>
+          <div id="j-tracker"><span class="empty">En attente...</span></div>
+        </div>
+
+        <!-- ENNEMIS -->
+        <div class="pnl" style="margin-top:8px">
+          <div class="pnl-title">Ennemis</div>
+          <div id="j-ennemis"><span class="empty">Aucun ennemi</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="combat_joueur.js"></script>
+  <script>document.addEventListener('DOMContentLoaded', initJoueur);</script>
+</body>
+</html>
