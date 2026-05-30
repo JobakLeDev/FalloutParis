@@ -80,6 +80,18 @@ function init(){
 
 function deverrouiller(){
   chargerJoueurs();
+  // Auto-sélectionner les joueurs transmis depuis mj.html
+  const storedJoueurs = sessionStorage.getItem('combat_joueurs');
+  if(storedJoueurs){
+    try{
+      const ids = JSON.parse(storedJoueurs);
+      ids.forEach(id => {
+        // On attend que joueurs soit chargé — on stocke les IDs pour après
+        combattants[id] = {data: null, initiative: null, _pending: true};
+      });
+      sessionStorage.removeItem('combat_joueurs');
+    }catch(e){}
+  }
   const stored = sessionStorage.getItem('combat_ennemis');
   if(stored){
     try{
@@ -97,7 +109,16 @@ async function chargerJoueurs(){
   const snap = await db.collection('joueurs').get();
   joueurs = {};
   snap.forEach(doc => { joueurs[doc.id] = {...doc.data(), _id:doc.id}; });
+  // Résoudre les combattants en attente (transmis depuis mj.html)
+  Object.keys(combattants).forEach(id => {
+    if(combattants[id]._pending && joueurs[id]){
+      combattants[id] = {data: joueurs[id], initiative: null};
+    } else if(combattants[id]._pending){
+      delete combattants[id]; // joueur introuvable
+    }
+  });
   renderSelJoueurs();
+  renderCombat();
 }
 
 function renderSelJoueurs(){

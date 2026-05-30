@@ -55,8 +55,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .jc-bar{height:5px;background:#060d06;border:1px solid var(--b);margin-bottom:5px;overflow:hidden;}
 .jc-bar-fill{height:100%;}
 .jc-weap{font-size:7px;color:var(--td);margin-top:5px;padding-top:5px;border-top:1px solid var(--b);}
-.jc-link{position:absolute;top:6px;right:6px;font-size:7px;color:var(--gd);text-decoration:none;border:1px solid var(--b);padding:1px 4px;}
-.jc-link:hover{color:var(--g);border-color:var(--g);}
+.jc-link-bottom{display:block;text-align:center;margin-top:6px;font-size:7px;color:var(--gd);text-decoration:none;border:1px solid var(--b);padding:2px 0;letter-spacing:1px;}
+.jc-link-bottom:hover{color:var(--g);border-color:var(--g);}
 .sel-indicator{position:absolute;top:6px;left:6px;width:8px;height:8px;border:1px solid var(--b2);background:#060d06;border-radius:50%;}
 .joueur-card.selected .sel-indicator{background:var(--g);border-color:var(--g);}
 

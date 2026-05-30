@@ -113,8 +113,7 @@ function renderJoueurs(){
 
     grid.innerHTML += `<div class="joueur-card${sel?' selected':''}${statut==='critique'?' critique':''}" onclick="toggleSel('${id}')">
       <div class="sel-indicator"></div>
-      <a class="jc-link" href="${FICHE_URL}?id=${id}" target="_blank" onclick="event.stopPropagation()">↗ Fiche</a>
-      <div class="jc-name" style="margin-left:16px">${(d.nom||id).toUpperCase()}
+      <div class="jc-name">${(d.nom||id).toUpperCase()}
         <span class="jc-badge ${statut}">${statutLbl}</span>
       </div>
       <div class="jc-stat"><span class="jc-stat-lbl">PV</span><span class="jc-stat-val${pct<30?' danger':pct<60?' warn':''}">${d.hp||0} / ${hpMax}</span></div>
@@ -122,6 +121,7 @@ function renderJoueurs(){
       <div class="jc-stat"><span class="jc-stat-lbl">RAD</span><span class="jc-stat-val${(d.rad||0)>0?' warn':''}">${d.rad||0}</span></div>
       <div class="jc-stat"><span class="jc-stat-lbl">LVL</span><span class="jc-stat-val">${d.niveau||1} · ${d.xp||0} XP</span></div>
       <div class="jc-weap">🔫 ${weaps}${blessures?`<br>🩸 ${blessures}`:''}</div>
+      <a class="jc-link-bottom" href="${FICHE_URL}?id=${id}" target="_blank" onclick="event.stopPropagation()">↗ Fiche</a>
     </div>`;
   });
   document.getElementById('sel-count').textContent = selected.size;
@@ -193,6 +193,7 @@ function genCombat(){
   }));
   combatData.forEach(e=>e.pvCur=e.pvMax);
   sessionStorage.setItem('combat_ennemis', JSON.stringify(combatData));
+  sessionStorage.setItem('combat_joueurs', JSON.stringify([...selected]));
   document.getElementById('btn-combat-wrap').style.display='block';
 
   document.getElementById('btn-combat-wrap').style.display='block';
@@ -307,10 +308,4 @@ function rollDiceSimple(expr){
   return t;
 }
 
-function rollDiceSimple(expr){
-  const m = expr.match(/(\d+)D\+?(\d*)/i);
-  if(!m) return 10;
-  const nb=parseInt(m[1])||1, bonus=parseInt(m[2])||0;
-  let t=bonus; for(let i=0;i<nb;i++) t+=Math.floor(Math.random()*6)+1;
-  return t;
-}
+
