@@ -361,7 +361,7 @@ function lancer2D20(){
      <span style="color:var(--td)"> → </span>
      <b style="color:${col};font-family:Oswald,sans-serif;font-size:16px">${succes} succès</b>
      ${crits?`<span style="color:var(--am)"> +${crits}★</span>`:''}
-     ${echec?`<span style="color:var(--rd)"> — ÉCHEC</span>`:`<span style="color:var(--td)"> → </span><b style="color:var(--am)">${dcTotal}DC</b>${succesBonus>0?`<span style="color:var(--td)"> (+${succesBonus})</span>`:'}</span>`};
+     ${echec?`<span style="color:var(--rd)"> — ÉCHEC</span>`:`<span style="color:var(--td)"> → </span><b style="color:var(--am)">${dcTotal}DC</b>${succesBonus>0?`<span style="color:var(--td)"> (+${succesBonus})</span>`:''}`}`;
   const nom = joueurActif?(combattants[joueurActif]?.data?.nom||joueurActif):'?';
   addLog(`🎲 ${nom}${armeActive?' ('+armeActive+')':''} TN${tn} D${diff}: ${d1}/${d2} = ${succes}s → ${echec?'ÉCHEC':dcTotal+'DC'}`);
 }
