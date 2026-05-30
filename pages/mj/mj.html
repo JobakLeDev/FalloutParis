@@ -23,11 +23,12 @@
 <!-- APP -->
 <div id="app" style="display:none">
 
-  <!-- HEADER (full width) -->
+  <!-- HEADER -->
   <div class="hdr">
     <div><div class="hdr-title">FALLOUT PARIS<small>ÉCRAN MAÎTRE DU JEU</small></div></div>
     <div class="hdr-btns">
       <button class="hbtn" onclick="location.reload()">↻ Rafraîchir</button>
+      <a class="hbtn" href="combat.html" style="border-color:#e04040;color:#e04040">⚔ Écran Combat</a>
       <a class="hbtn" href="../admin_perso/admin_perso.html">⚙ Admin persos</a>
       <a class="hbtn" href="../../index.html">← Accueil</a>
     </div>
@@ -111,6 +112,32 @@
           </div>
         </div>
 
+        <!-- LANCEUR DE DÉS -->
+        <div class="action-group" style="grid-column:1/-1">
+          <div class="action-group-title">🎲 Lanceur de dés</div>
+          <div class="action-row">
+            <input type="number" class="action-input" id="dice-nb" value="2" min="1" max="12" style="width:45px">
+            <span style="font-size:11px;color:var(--td);padding:0 4px">D</span>
+            <input type="number" class="action-input" id="dice-faces" value="20" min="2" max="100" style="width:50px">
+            <button class="action-btn" onclick="lancerDes()" style="flex:1">Lancer</button>
+            <button class="action-btn" onclick="lancerCD()" style="flex:1;border-color:var(--am);color:var(--am)">Dés Combat</button>
+          </div>
+          <div id="dice-result" style="font-size:10px;color:var(--tb);margin-top:4px;min-height:18px;padding:3px 6px;background:#060d06;border:1px solid var(--b);display:none;letter-spacing:1px"></div>
+        </div>
+
+        <!-- LANCEUR DE DÉS -->
+        <div class="action-group" style="grid-column:1/-1">
+          <div class="action-group-title">🎲 Lanceur de dés</div>
+          <div class="action-row">
+            <input type="number" class="action-input" id="dice-nb" value="2" min="1" max="12" style="width:45px">
+            <span style="font-size:11px;color:var(--td);padding:0 4px">D</span>
+            <input type="number" class="action-input" id="dice-faces" value="20" min="2" max="100" style="width:50px">
+            <button class="action-btn" onclick="lancerDes()" style="flex:1">Lancer</button>
+            <button class="action-btn" onclick="lancerCD()" style="flex:1;border-color:var(--am);color:var(--am)">Dés Combat</button>
+          </div>
+          <div id="dice-result" style="font-size:10px;color:var(--tb);margin-top:4px;min-height:18px;padding:3px 6px;background:#060d06;border:1px solid var(--b);display:none;letter-spacing:1px"></div>
+        </div>
+
       </div>
     </div>
 
@@ -149,6 +176,14 @@
       </div>
 
       <div id="rencontre-panel"></div>
+
+      <!-- Bouton vers écran combat, visible après génération -->
+      <div id="btn-combat-wrap" style="display:none;margin-top:10px">
+        <a id="btn-vers-combat" href="combat.html" class="gen-btn" style="display:block;text-align:center;text-decoration:none;border-color:var(--rd);color:var(--rd);background:var(--rdk)">
+          ⚔ Ouvrir l'écran combat
+        </a>
+      </div>
+
     </div>
   </div>
 
