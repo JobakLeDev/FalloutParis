@@ -17,17 +17,23 @@
    ============================================================ */
 .cj-bottom {
   display: flex;
+  flex-direction: row;
   gap: 10px;
   margin-top: 10px;
   align-items: stretch;
 }
-.bottom-actions { flex: 0 0 auto; min-width: 220px; }
+.bottom-actions { flex: 0 0 auto; }
 .bottom-des     { flex: 1; }
 
+/* Actions — contenu horizontal */
+#j-actions       { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding-top: 2px; }
+.act-h-group     { display: flex; align-items: center; gap: 4px; }
+.act-sep         { width: 1px; height: 22px; background: var(--b); }
+
 /* Layout interne des dés */
-.des-inner { display: flex; flex-direction: column; gap: 5px; }
-.des-ctx   { padding: 4px 6px; background: #060d06; border: 1px solid var(--b); font-size: 8px; color: var(--td); min-height: 24px; }
-.des-cols  { display: flex; gap: 16px; }
+.des-inner { display: flex; align-items: center; gap: 12px; }
+.des-ctx   { flex: 0 0 auto; max-width: 180px; padding: 4px 6px; background: #060d06; border: 1px solid var(--b); font-size: 8px; color: var(--td); min-height: 24px; }
+.des-cols  { display: flex; gap: 16px; flex: 1; }
 .des-col   { display: flex; flex-direction: column; gap: 3px; flex: 1; }
 .des-row   { display: flex; align-items: center; gap: 4px; }
 .dice-result.sm { font-size: 9px; padding: 3px 4px; min-height: 0; }

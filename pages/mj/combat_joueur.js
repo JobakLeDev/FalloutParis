@@ -112,20 +112,20 @@ function renderActionsJoueur(){
   ).join('');
 
   el.innerHTML =
-    '<div class="act-section">' +
-      '<div class="act-section-lbl">MINEURES</div>' +
-      '<div class="act-dots">' + minDots +
-        '<button class="act-bonus-btn" onclick="actionBonusJoueur(\'min\')" title="-1 PA">+Min</button>' +
-      '</div>' +
+    '<div class="act-h-group">' +
+      '<span class="act-section-lbl">MIN</span>' +
+      '<div class="act-dots">' + minDots + '</div>' +
+      '<button class="act-bonus-btn" onclick="actionBonusJoueur(\'min\')" title="-1 PA">+Min</button>' +
     '</div>' +
-    '<div class="act-section">' +
-      '<div class="act-section-lbl">MAJEURES</div>' +
-      '<div class="act-dots">' + majDots +
-        '<button class="act-bonus-btn" onclick="actionBonusJoueur(\'maj\')" title="-2 PA">+Maj</button>' +
-      '</div>' +
+    '<div class="act-sep"></div>' +
+    '<div class="act-h-group">' +
+      '<span class="act-section-lbl">MAJ</span>' +
+      '<div class="act-dots">' + majDots + '</div>' +
+      '<button class="act-bonus-btn" onclick="actionBonusJoueur(\'maj\')" title="-2 PA">+Maj</button>' +
     '</div>' +
-    '<div class="pa-row">' +
-      '<span class="pa-lbl">PA</span>' +
+    '<div class="act-sep"></div>' +
+    '<div class="act-h-group">' +
+      '<span class="act-section-lbl">PA</span>' +
       '<button class="pa-btn-j" onclick="chPAJoueur(-1)">−</button>' +
       '<span class="pa-val-j">' + s.pa + '</span>' +
       '<button class="pa-btn-j" onclick="chPAJoueur(1)">+</button>' +
@@ -182,6 +182,11 @@ function renderCoequipiers(){
     const hpMax = getHpMax(d);
     const pct = Math.round(Math.max(0, d.hp||0) / hpMax * 100);
     const bc = pct<30?'var(--rd)':pct<60?'var(--am)':'var(--g)';
+    const weaps = (d.inventory||[]).filter(it=>it.equipped&&it.type==='WEAPON');
+    const weapsTxt = weaps.map(w=>{
+      const db2 = WEAPONS_DB[w.name]||{};
+      return w.name + (db2.dmg?' <span style="color:var(--am)">'+db2.dmg+'</span>':'');
+    }).join(' · ') || '<span style="color:#2a4a2a">—</span>';
     return '<div class="coeq-card'+(isTour?' tour-actif':'')+'">' +
       '<div class="coeq-top">' +
         '<span class="coeq-nom">'+(isTour?'▶ ':'')+c.nom+'</span>' +
@@ -191,6 +196,7 @@ function renderCoequipiers(){
         '<span>PV <b class="'+(pct<30?'danger':pct<60?'warn':'')+'">'+d.hp+'/'+hpMax+'</b></span>' +
         (d.rad>0 ? '<span>RAD <b class="warn">'+d.rad+'</b></span>' : '') +
       '</div>' +
+      '<div style="font-size:7px;color:var(--td);margin-top:3px">'+weapsTxt+'</div>' +
     '</div>';
   }).join('');
 }
