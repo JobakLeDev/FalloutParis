@@ -227,6 +227,11 @@ function renderJoueursCombat(){
         <span class="jc-arme-name" style="color:var(--td)">👊 Mains nues</span>
         <span class="jc-arme-stat">2D · TN ${getTN(d,'barehand').total}</span>
       </div>
+      <div class="ennemi-dmg" style="margin-top:5px">
+        <input type="number" class="dmg-inp" id="jdmg-${id}" value="1" min="0">
+        <button class="dmg-btn" onclick="event.stopPropagation();dmgJoueur('${id}',parseInt(document.getElementById('jdmg-${id}').value)||1)">Dégâts</button>
+        <button class="dmg-btn" style="border-color:var(--gd);color:var(--g)" onclick="event.stopPropagation();soignJoueur('${id}',parseInt(document.getElementById('jdmg-${id}').value)||1)">Soins</button>
+      </div>
     </div>`;
   });
 }
@@ -418,6 +423,27 @@ function lancerCD(){
      <b style="color:var(--am)">${dmg}dmg</b>${ef?` <span style="color:var(--am)">+${ef}⚡</span>`:''}`;
   const nom = joueurActif?(combattants[joueurActif]?.data?.nom||joueurActif):'?';
   addLog(`💥 ${nom} ${nb}DC: ${dmg}dmg${ef?' +'+ef+'⚡':''}`);
+}
+
+// ---- DÉGÂTS JOUEURS ----
+async function dmgJoueur(id, val){
+  const d = combattants[id]?.data; if(!d) return;
+  const hpMax = getHpMax(d);
+  const newHp = Math.max(0, (d.hp||0) - val);
+  await db.collection('joueurs').doc(id).update({hp: newHp, lastUpdate: Date.now()});
+  combattants[id].data.hp = newHp;
+  addLog('💥 ' + (d.nom||id) + ' : ' + (d.hp||0) + '→' + newHp + ' PV (-' + val + ')');
+  renderJoueursCombat();
+}
+
+async function soignJoueur(id, val){
+  const d = combattants[id]?.data; if(!d) return;
+  const hpMax = getHpMax(d);
+  const newHp = Math.min(hpMax, (d.hp||0) + val);
+  await db.collection('joueurs').doc(id).update({hp: newHp, lastUpdate: Date.now()});
+  combattants[id].data.hp = newHp;
+  addLog('✚ ' + (d.nom||id) + ' : ' + (d.hp||0) + '→' + newHp + ' PV (+' + val + ')');
+  renderJoueursCombat();
 }
 
 // ---- LOG ----
