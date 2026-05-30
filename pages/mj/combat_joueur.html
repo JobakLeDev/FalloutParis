@@ -32,48 +32,59 @@
   <div id="combat-actif" style="display:none">
     <div class="cj-grid">
 
-      <!-- COL 1 : MON TOUR + MES STATS -->
+      <!-- COL 1 : MA FICHE -->
       <div>
-        <!-- MA CARTE -->
         <div class="pnl" id="ma-carte">
           <div class="pnl-title">Ma fiche</div>
           <div id="ma-carte-content"><span class="empty">Chargement...</span></div>
         </div>
-
-        <!-- MES DÉS -->
-        <div class="pnl" style="margin-top:8px">
-          <div class="pnl-title">Mes jets</div>
-          <div id="mes-des-context" style="padding:5px;background:#060d06;border:1px solid var(--b);margin-bottom:6px;min-height:36px;font-size:9px;color:var(--td)">
-            Sélectionne une arme ci-dessus
-          </div>
-          <div class="tn-row">
-            <span class="tn-lbl">TN</span>
-            <input type="number" class="tn-inp" id="j-tn-val" value="10" min="1" max="20">
-            <button class="dice-btn" onclick="jLancer2D20()">2D20</button>
-          </div>
-          <div class="dice-result" id="j-dice-result">—</div>
-          <div class="cd-row" style="margin-top:6px">
-            <span class="tn-lbl">DC</span>
-            <input type="number" class="cd-inp" id="j-nb-cd" value="2" min="1" max="10">
-            <button class="cd-btn" onclick="jLancerCD()">Dés Combat</button>
-          </div>
-          <div class="dice-result" id="j-cd-result" style="margin-top:4px">—</div>
-        </div>
       </div>
 
-      <!-- COL 2 : TRACKER + ENNEMIS -->
+      <!-- COL 2 : COÉQUIPIERS + ENNEMIS -->
       <div>
-        <!-- TRACKER -->
         <div class="pnl">
-          <div class="pnl-title">Ordre d'initiative — Round <span id="j-round">?</span></div>
-          <div id="j-tracker"><span class="empty">En attente...</span></div>
+          <div class="pnl-title">Coéquipiers</div>
+          <div id="j-coequipiers"><span class="empty">Aucun coéquipier</span></div>
         </div>
-
-        <!-- ENNEMIS -->
         <div class="pnl" style="margin-top:8px">
           <div class="pnl-title">Ennemis</div>
           <div id="j-ennemis"><span class="empty">Aucun ennemi</span></div>
         </div>
+      </div>
+
+      <!-- COL 3 : ACTIONS + DÉS + INITIATIVE -->
+      <div>
+
+        <!-- ACTIONS -->
+        <div class="pnl">
+          <div class="pnl-title">Mes actions</div>
+          <div id="j-actions"><span class="empty">—</span></div>
+        </div>
+
+        <!-- DÉS -->
+        <div class="pnl" style="margin-top:8px">
+          <div class="pnl-title">Mes jets</div>
+          <div id="mes-des-context" class="des-ctx">Sélectionne une arme</div>
+          <div class="des-row">
+            <span class="tn-lbl">TN</span>
+            <input type="number" class="tn-inp" id="j-tn-val" value="10" min="1" max="20">
+            <button class="dice-btn" onclick="jLancer2D20()">2D20</button>
+          </div>
+          <div class="dice-result sm" id="j-dice-result">—</div>
+          <div class="des-row" style="margin-top:5px">
+            <span class="tn-lbl">DC</span>
+            <input type="number" class="cd-inp" id="j-nb-cd" value="2" min="1" max="10">
+            <button class="cd-btn" onclick="jLancerCD()">CD</button>
+          </div>
+          <div class="dice-result sm" id="j-cd-result" style="margin-top:3px">—</div>
+        </div>
+
+        <!-- INITIATIVE -->
+        <div class="pnl" style="margin-top:8px">
+          <div class="pnl-title">Initiative · R<span id="j-round">?</span></div>
+          <div id="j-tracker"><span class="empty">En attente...</span></div>
+        </div>
+
       </div>
 
     </div>
