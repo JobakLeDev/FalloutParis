@@ -68,16 +68,20 @@ function shiftedBounds() {
   return L.latLngBounds([sw.lat, sw.lng - dLng], [ne.lat, ne.lng - dLng]);
 }
 
-// Recadre sur Paris (décalé) et fige le dézoom. inside=true → Paris remplit
-// toute la largeur (pas de bande noire), en rognant un peu le haut/bas.
-function lockParis() {
+// Recadre sur Paris. Format navigable : zoomé pour pouvoir scroller N-S (et E-O)
+// dans tout Paris ; le dézoom est bloqué au « remplissage largeur » (pas de vide).
+// resetView=true recentre la vue (init seulement, pas au resize).
+function lockParis(resetView) {
   map.invalidateSize();
   map.setMinZoom(0);
-  const z = map.getBoundsZoom(PARIS_BOUNDS, true); // remplit le cadre (couvre, pas de noir)
-  map.setMinZoom(z);
-  const b = shiftedBounds();
-  map.setMaxBounds(b);
-  map.setView(b.getCenter(), z, { animate: false });
+  const zFill = map.getBoundsZoom(PARIS_BOUNDS, true); // Paris remplit la largeur
+  map.setMinZoom(zFill);                                // dézoom min = pas de vide
+  map.setMaxBounds(PARIS_BOUNDS.pad(0.02));             // pan libre dans tout Paris
+  map.options.maxBoundsViscosity = 1.0;
+  if (resetView) {
+    const z = Math.min(zFill + 0.6, 16);               // un cran plus serré → marge de scroll N-S
+    map.setView(shiftedBounds().getCenter(), z, { animate: false });
+  }
 }
 
 function buildMap() {
@@ -115,9 +119,9 @@ function buildMap() {
   map.on('popupclose', () => { if (!reopening) openItem = null; });
   map.on('move zoom moveend zoomend', drawFog);
 
-  lockParis();
-  setTimeout(lockParis, 300);                 // re-cadrage si conteneur (iframe) pas encore dimensionné
-  window.addEventListener('resize', () => { if (currentTab === 'paris') lockParis(); });
+  lockParis(true);
+  setTimeout(() => lockParis(true), 300);      // re-cadrage si conteneur (iframe) pas encore dimensionné
+  window.addEventListener('resize', () => { if (currentTab === 'paris') lockParis(false); });
 
   updateModeUI();
 
