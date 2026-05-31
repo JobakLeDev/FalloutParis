@@ -8,7 +8,7 @@
 // Firestore interdit les tableaux imbriqués → polygones en [{lat,lng}].
 // ============================================================
 
-const IMG_SRC = '../../img/paris%20fallout.jpg';
+const IMG_SRC = '../../img/paris.png';
 const MJ_CODE = '1234';
 
 const POI_TYPES = {
