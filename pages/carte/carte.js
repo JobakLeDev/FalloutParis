@@ -38,11 +38,15 @@ let fdb, map, mapW = 0, mapH = 0, VISION_RADIUS = 0;
 let fogOverlay = null;
 let editMode = false, addingPOI = false, drawingZone = null;
 let mapData = { pois: [], zones: [], tokens: {}, fog: {} };
+let lieux = [];            // [{id, name, image, pois:[]}] — plans de bâtiments
+let lieuActif = null;      // lieu sélectionné dans l'onglet LIEUX
+let mapLieu = null;        // instance Leaflet pour les lieux
 let joueurs = {};
 let zoneLayer, poiLayer, tokenLayer;
 const poiMarkers = {}, zonePolys = {};
 let openItem = null, reopening = false;            // popup ouvert (pour le réouvrir après render)
 let zoneFormCtx = null;                            // {polygon} (création) ou {zone} (édition)
+let currentTab = 'paris';
 
 function init() {
   if (embed) document.body.classList.add('embed');
@@ -82,6 +86,10 @@ function buildMap() {
       mapData = { pois: d.pois || [], zones: normZones(d.zones), tokens: d.tokens || {}, fog: d.fog || {} };
       renderAll();
     });
+    fdb.collection('carte').doc('lieux').onSnapshot(s => {
+      lieux = (s.exists ? s.data().lieux : null) || [];
+      if (currentTab === 'lieux') renderLieux();
+    });
   });
 }
 
@@ -99,6 +107,74 @@ function visibleFor(item) {
 }
 function anyRevealed(item) {
   return item.revealed === true || (Array.isArray(item.revealedFor) && item.revealedFor.length > 0);
+}
+
+// ============================================================
+// ONGLETS DE CARTE
+// ============================================================
+function switchMapTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.map-tab').forEach((el, i) => el.classList.toggle('on', ['paris', 'lieux'][i] === tab));
+  const pw = document.getElementById('map-paris-wrap');
+  const lw = document.getElementById('map-lieux-wrap');
+  const pt = document.getElementById('mjp-paris-tools');
+  const lt = document.getElementById('mjp-lieux-tools');
+  const da = document.getElementById('draw-actions');
+  if (tab === 'paris') {
+    if (pw) pw.style.display = 'flex';
+    if (lw) lw.style.display = 'none';
+    if (pt) pt.style.display = 'block';
+    if (lt) lt.style.display = 'none';
+    if (map) setTimeout(() => map.invalidateSize(), 50);
+  } else {
+    if (pw) pw.style.display = 'none';
+    if (lw) lw.style.display = 'flex';
+    if (pt) pt.style.display = 'none';
+    if (lt) lt.style.display = 'block';
+    if (da) da.style.display = 'none';
+    addingPOI = false; cancelDrawZone();
+    renderLieux();
+    if (mapLieu) setTimeout(() => mapLieu.invalidateSize(), 50);
+  }
+}
+
+function ajouterLieu() {
+  const name = prompt('Nom du lieu :'); if (!name) return;
+  const image = prompt('Chemin de l\'image (ex: ../../img/plan_metro.jpg) :', '../../img/') || '';
+  const newLieu = { id: 'l' + Date.now(), name, image, pois: [] };
+  lieux.push(newLieu);
+  fdb.collection('carte').doc('lieux').set({ lieux });
+  ouvrirLieu(newLieu.id);
+  switchMapTab('lieux');
+}
+
+function renderLieux() {
+  const el = document.getElementById('lieux-list'); if (!el) return;
+  if (!lieux.length) { el.innerHTML = '<span class="empty">Aucun lieu configuré</span>'; return; }
+  el.innerHTML = lieux.map(l =>
+    `<button class="lieu-btn${lieuActif?.id === l.id ? ' on' : ''}" onclick="ouvrirLieu('${l.id}')">${l.name}</button>`
+  ).join('');
+}
+
+function ouvrirLieu(id) {
+  const l = lieux.find(x => x.id === id); if (!l) return;
+  lieuActif = l;
+  const ph = document.getElementById('lieux-placeholder');
+  const mapDiv = document.getElementById('map-lieux');
+  if (!l.image) { if (ph) ph.style.display = 'flex'; renderLieux(); return; }
+  if (ph) ph.style.display = 'none';
+  if (mapLieu) { mapLieu.remove(); mapLieu = null; }
+  const img = new Image();
+  img.onload = () => {
+    const w = img.naturalWidth, h = img.naturalHeight;
+    mapLieu = L.map(mapDiv, { crs: L.CRS.Simple, minZoom: -6, maxZoom: 4, zoomSnap: 0.25, attributionControl: false });
+    const bounds = [[0, 0], [h, w]];
+    L.imageOverlay(l.image, bounds).addTo(mapLieu);
+    mapLieu.fitBounds(bounds);
+    mapLieu.setMaxBounds(L.latLngBounds(bounds).pad(0.3));
+  };
+  img.src = l.image;
+  renderLieux();
 }
 
 // ---- AUTH MJ ----

@@ -22,15 +22,42 @@
     </div>
   </div>
 
-  <div id="map"></div>
+  <!-- ONGLETS DE CARTE -->
+  <div id="map-tabs">
+    <button class="map-tab on" onclick="switchMapTab('paris')">🗺 PARIS</button>
+    <button class="map-tab" onclick="switchMapTab('lieux')">🏛 LIEUX</button>
+  </div>
+
+  <!-- ONGLET PARIS -->
+  <div id="map-paris-wrap">
+    <div id="map"></div>
+  </div>
+
+  <!-- ONGLET LIEUX -->
+  <div id="map-lieux-wrap" style="display:none">
+    <div id="lieux-sidebar">
+      <div class="mjp-title">Lieux</div>
+      <div id="lieux-list"><span class="empty">Aucun lieu configuré</span></div>
+    </div>
+    <div id="map-lieux"></div>
+    <div id="lieux-placeholder">
+      <span>Sélectionne un lieu dans la liste</span>
+      <small>Les plans de bâtiments apparaîtront ici</small>
+    </div>
+  </div>
 
   <!-- PANNEAU MJ -->
   <div id="mj-panel" style="display:none">
     <div class="mjp-section" id="mjp-tools" style="display:none">
       <div class="mjp-title">Édition</div>
-      <button class="mjp-btn" id="btn-add-poi" onclick="toggleAddPOI()">📍 Ajouter POI</button>
-      <button class="mjp-btn" id="btn-draw-zone" onclick="toggleDrawZone()">▱ Dessiner zone</button>
-      <button class="mjp-btn" onclick="placerJetons()">⊕ Placer jetons</button>
+      <div id="mjp-paris-tools">
+        <button class="mjp-btn" id="btn-add-poi" onclick="toggleAddPOI()">📍 Ajouter POI</button>
+        <button class="mjp-btn" id="btn-draw-zone" onclick="toggleDrawZone()">▱ Dessiner zone</button>
+        <button class="mjp-btn" onclick="placerJetons()">⊕ Placer jetons</button>
+      </div>
+      <div id="mjp-lieux-tools" style="display:none">
+        <button class="mjp-btn" onclick="ajouterLieu()">🏛 Ajouter un lieu</button>
+      </div>
       <div id="draw-actions" style="display:none;margin-top:5px">
         <button class="mjp-btn ok" onclick="finishDrawZone()">✓ Terminer</button>
         <button class="mjp-btn cancel" onclick="cancelDrawZone()">✗ Annuler</button>
