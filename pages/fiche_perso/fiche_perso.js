@@ -84,7 +84,7 @@ function sw(tab){
 }
 function swInv(sub){
   document.querySelectorAll('.inv-tab').forEach((el,i)=>{
-    el.classList.toggle('on',['all','weap','armor','aid','misc'][i]===sub);
+    el.classList.toggle('on',['all','weap','armor','aid','misc','ammo'][i]===sub);
   });
   document.querySelectorAll('.inv-content').forEach(el=>el.classList.remove('on'));
   document.getElementById('inv-'+sub).classList.add('on');
@@ -313,7 +313,7 @@ function rLocs(){
 // --- INVENTAIRE ---
 function rInventory(){
   populateSelects();
-  rInvAll();rInvWeap();rInvArmor();rInvAid();rInvMisc();rCharge();
+  rInvAll();rInvWeap();rInvArmor();rInvAid();rInvMisc();rInvAmmo();rCharge();
 }
 
 function populateSelects(){
@@ -331,6 +331,14 @@ function populateSelects(){
     items.forEach(it=>el.innerHTML+=`<option value="${it.n}">${it.n}</option>`);
     el.value=cur;
   });
+  // Sélecteur munitions (DB.ammo = tableau de strings)
+  const am=document.getElementById('add-sel-ammo');
+  if(am){
+    const cur=am.value;
+    am.innerHTML='<option value="">+ Calibre...</option>';
+    (DB.ammo||[]).forEach(cal=>am.innerHTML+=`<option value="${cal}">${cal}</option>`);
+    am.value=cur;
+  }
 }
 
 function invRow(it,i,cols,cells){
@@ -433,6 +441,30 @@ function rInvMisc(){
   });
 }
 
+function rInvAmmo(){
+  const el=document.getElementById('inv-ammo-list');if(!el)return;
+  el.innerHTML='';
+  if(!char.ammo.length){ el.innerHTML='<div style="font-size:9px;color:var(--td);padding:12px;text-align:center">Aucune munition</div>'; return; }
+  char.ammo.forEach((a,i)=>{
+    el.innerHTML+=`<div class="amrow"><span class="amcal">${a.cal}</span>
+      <div class="row"><div class="row" style="gap:2px"><button class="ambtn" onclick="chAmmo(${i},-10)">−10</button><button class="ambtn" onclick="chAmmo(${i},-1)">−</button></div>
+      <span class="amqty">${a.qty}</span>
+      <div class="row" style="gap:2px"><button class="ambtn" onclick="chAmmo(${i},1)">+</button><button class="ambtn" onclick="chAmmo(${i},10)">+10</button></div>
+      <button class="ambtn" onclick="rmAmmo(${i})" style="color:var(--td);font-size:8px">✕</button></div></div>`;
+  });
+}
+
+function addAmmoSel(){
+  const sel=document.getElementById('add-sel-ammo');
+  const cal=sel?.value?.trim();
+  if(!cal)return;
+  // Éviter les doublons : si le calibre existe déjà, ne rien créer
+  if(char.ammo.some(a=>a.cal===cal)){ sel.value=''; swInv('ammo'); return; }
+  char.ammo.push({cal,qty:0});
+  sel.value='';
+  rAll();
+}
+
 function rCharge(){
   const cur=chargeActuelle(),max=chargeMax();
   const pct=Math.min(100,Math.round(cur/max*100));
@@ -506,9 +538,9 @@ function addXP(n){
 function setMom(i){char.momentum=(i<char.momentum)?i:i+1;rMom();}
 function tWound(k){char.wounds[k]=!char.wounds[k];rLocs();}
 function cyclePerk(n){char.perks[n]=((char.perks[n]||0)+1)%((PERKS_DEF[n]?.max||1)+1);rAll();}
-function chAmmo(i,n){char.ammo[i].qty=Math.max(0,char.ammo[i].qty+n);rAmmo();}
-function rmAmmo(i){char.ammo.splice(i,1);rAmmo();}
-function addAmmo(){const inp=document.getElementById('am-new');if(!inp?.value.trim())return;char.ammo.push({cal:inp.value.trim(),qty:0});inp.value='';rAmmo();}
+function chAmmo(i,n){char.ammo[i].qty=Math.max(0,char.ammo[i].qty+n);rAll();}
+function rmAmmo(i){char.ammo.splice(i,1);rAll();}
+function addAmmo(){const inp=document.getElementById('am-new');if(!inp?.value.trim())return;char.ammo.push({cal:inp.value.trim(),qty:0});inp.value='';rAll();}
 function togglePA(){char.powerArmor=!char.powerArmor;document.getElementById('pa-btn').textContent=`Power Armor : ${char.powerArmor?'ON':'OFF'}`;rAll();}
 function toggleAtout(name){const it=char.inventory.find(i=>i.name===name&&i.type==='WEAPON');if(it)it.persoBonus=!it.persoBonus;rAll();}
 

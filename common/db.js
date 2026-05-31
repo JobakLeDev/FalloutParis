@@ -22,7 +22,8 @@ window.DB_READY = Promise.all([
   _fetch('enemies.json'),
   _fetch('perks.json'),
   _fetch('npc.json'),
-]).then(([weapons, armor, items, enemies, perks, npc]) => {
+  _fetch('ammo.json'),
+]).then(([weapons, armor, items, enemies, perks, npc, ammo]) => {
 
   window.DB = {
     weapons,
@@ -31,6 +32,7 @@ window.DB_READY = Promise.all([
     drinks: items.drinks || [],
     drugs:  items.drugs  || [],
     stuff:  items.stuff  || [],
+    ammo:   ammo         || [],
   };
 
   window.PERKS_DEF   = perks;
@@ -48,6 +50,6 @@ window.DB_READY = Promise.all([
 }).catch(err => {
   console.error('DB_READY failed:', err);
   // Fallback : résoudre quand même pour ne pas bloquer l'app
-  window.DB = { weapons: [], armor: [], food: [], drinks: [], drugs: [], stuff: [] };
+  window.DB = { weapons: [], armor: [], food: [], drinks: [], drugs: [], stuff: [], ammo: [] };
   window.PERKS_DEF = {}; window.ENNEMIS_DB = {}; window.WEAPONS_DB = {};
 });
