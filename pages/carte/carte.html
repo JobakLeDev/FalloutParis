@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fallout Paris — Carte</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="../../common/style.css">
+  <link rel="stylesheet" href="carte.css">
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div><div class="hdr-title">🗺 CARTE — PARIS<small>Fallout Paris</small></div></div>
+    <div class="hdr-btns">
+      <button class="hbtn" id="edit-btn" onclick="toggleEdit()">✎ Éditer zones</button>
+      <button class="hbtn" onclick="exportPositions()">⬇ Exporter positions</button>
+      <a class="hbtn" href="../mj/mj.html">← MJ</a>
+      <a class="hbtn" href="../../index.html">Accueil</a>
+    </div>
+  </div>
+
+  <div id="edit-hint">Mode édition : glisse les marqueurs sur la carte. Positions sauvegardées automatiquement (ce navigateur).</div>
+
+  <div id="map"></div>
+
+  <!-- Message si image manquante -->
+  <div id="carte-msg">
+    ⚠ Image de carte introuvable.<br>
+    <span>Dépose <code>paris fallout.jpg</code> dans <code>/img/</code> (ou modifie <code>IMG_SRC</code> dans carte.js).</span>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="../../common/db.js"></script>
+  <script src="carte.js"></script>
+</body>
+</html>

@@ -63,6 +63,10 @@ function populateZoneSelectors(){
   }).join(''));
   set('var-sel', '<option value="">Aucune variation</option>'+Object.keys(window.ZONE_VARIATIONS||{}).map(k=>`<option value="${k}">${VARIATION_LABELS[k]||k}</option>`).join(''));
   set('threat-sel', Object.keys(window.ZONE_THREAT||{}).map(k=>`<option value="${k}"${k==='normal'?' selected':''}>${THREAT_LABELS[k]||k}</option>`).join(''));
+  // Pré-sélection depuis l'URL (?zone=metro, depuis la carte)
+  const z = new URLSearchParams(location.search).get('zone');
+  const zs = document.getElementById('zone-sel');
+  if(z && zs && window.ZONES_DB?.[z]){ zs.value = z; document.getElementById('rencontre-panel')?.scrollIntoView({behavior:'smooth'}); }
 }
 
 // Lit les 4 sélecteurs → opts pour resolveZonePool
