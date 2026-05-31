@@ -176,7 +176,13 @@ rollEncounter(pool)                                         // → nom tiré (ou
 generateEncounters(zoneKey, opts, count, excludeNone)       // → [noms]
 zonePoolProbabilities(zoneKey, opts)                        // → [{nom, poids, pct}] (aperçu)
 ```
-DRAFT en cours : certains noms de pool (Marchand, Mongrel, Republic Patrol, NNFP Militant…) n'ont pas encore de fiche dans `enemies.json` — `enemyInstanceFromDB` renvoie `null` pour eux (ignorés en combat). `zone_threat.json` est une 1re ébauche (menace = fréquence via `none`). Pas encore branché à l'UI mj.html.
+DRAFT en cours : certains noms de pool (Marchand, Mongrel, Republic Patrol, NNFP Militant…) n'ont pas encore de fiche dans `enemies.json` — ignorés (créneau vide) sauf si une occupation faction est active (alors générés via rôles). `zone_threat.json` est une 1re ébauche (menace = fréquence via `none`).
+
+**Branché à l'UI `mj.html`** (panneau Rencontres & Déplacements) :
+- Sélecteurs zone / occupation / variation / menace (peuplés par `populateZoneSelectors()` depuis les DB)
+- `genRencontre()` : N créneaux (`#nb-slots`), chaque jet sur le pool résolu → créature (`enemyInstanceFromDB`) ou unité de faction (`generateFactionUnit` si occupation) ou rien (none) → stocké en sessionStorage → écran combat
+- `apercuPool()` : aperçu des probabilités du pool résolu (réglage des poids)
+- `genDeplacement()` : événement de trajet, risque ∝ unités + menace ; un combat déclenché appelle `genRencontre()`
 
 ### Factions (`factions.json` / `window.FACTIONS`)
 6 factions Fallout Paris. **La clé de faction === clé `zone_occupation`** (republique, commune, nnfp, reseau, zazous, ultras) → une faction qui occupe une zone injecte ses unités dans le pool de rencontres.

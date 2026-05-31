@@ -8,17 +8,15 @@ let selected = new Set();
 
 // ============================================================
 // TABLES DE RENCONTRES
+// Zones, variations, occupation, menace, factions → chargés via db.js.
+// Moteur (resolveZonePool, rollEncounter, generateFactionUnit) dans zones.js.
 // ============================================================
-const ZONES = {
-  'Paris Centre':     {danger:2, nbMin:1, nbMax:3, ennemis:['Raider','Raider Psycho','Feral Ghoul','Chien sauvage','Wastelander']},
-  'Paris Banlieue':   {danger:3, nbMin:2, nbMax:4, ennemis:['Raider Veteran','Feral Ghoul','Super Mutant','Mutant Hound','Gunner']},
-  'Métro':            {danger:4, nbMin:3, nbMax:5, ennemis:['Feral Ghoul','Glowing One','Radroach','Mole Rat','Raider Scaver']},
-  'Zone Industrielle':{danger:3, nbMin:2, nbMax:4, ennemis:['Protectron','Assaultron','Eyebot','Super Mutant','Mercenary']},
-  'Égouts':           {danger:4, nbMin:3, nbMax:5, ennemis:['Radscorpion','Mole Rat','Mirelurk Hatchling','Mirelurk','Bloatfly']},
-  'Zone Verte':       {danger:2, nbMin:1, nbMax:2, ennemis:['Radstag','Brahmane sauvage','Chien sauvage','Bloodbug','Stingwing']},
-};
+const VARIATION_LABELS = {irradiated:'Irradiée', abandoned:'Abandonnée', occupied:'Occupée', dark:'Sombre', flooded:'Inondée'};
+const THREAT_LABELS    = {calme:'Calme', normal:'Normal', eleve:'Élevé', extreme:'Extrême'};
+const OCC_LABELS       = {neutral:'Neutre'};
+const THREAT_DANGER    = {calme:1, normal:2, eleve:3, extreme:4};
 
-// ENNEMIS_DB défini dans mj_shared.js (fusionné avec body+mind+desc, 'Légion de Fer' corrigé)
+// ENNEMIS_DB / FACTIONS / ZONES_DB… définis via mj_shared.js + common/db.js
 
 const EVENEMENTS_DEPLACEMENT = [
   {pct:40, type:'calme',    label:'Calme',      desc:'Le groupe se déplace sans encombre.'},
@@ -55,11 +53,27 @@ if(sessionStorage.getItem('mj_auth')==='1'){
 // ============================================================
 // SYNC
 // ============================================================
-function updateNbEnnemis(){
-  const zone = document.getElementById('zone-sel').value;
-  const zoneData = ZONES[zone]; if(!zoneData) return;
-  const nb = Math.floor(Math.random()*(zoneData.nbMax-zoneData.nbMin+1))+zoneData.nbMin;
-  document.getElementById('nb-ennemis').value = nb;
+// Remplit les sélecteurs zone / occupation / variation / menace depuis les DB
+function populateZoneSelectors(){
+  const set = (id, html) => { const el=document.getElementById(id); if(el) el.innerHTML=html; };
+  set('zone-sel', Object.entries(window.ZONES_DB||{}).map(([k,v])=>`<option value="${k}">${v.label||k}</option>`).join(''));
+  set('occ-sel', Object.keys(window.ZONE_OCCUPATION||{}).map(k=>{
+    const lbl = window.FACTIONS?.[k]?.label || OCC_LABELS[k] || k;
+    return `<option value="${k}"${k==='neutral'?' selected':''}>${lbl}</option>`;
+  }).join(''));
+  set('var-sel', '<option value="">Aucune variation</option>'+Object.keys(window.ZONE_VARIATIONS||{}).map(k=>`<option value="${k}">${VARIATION_LABELS[k]||k}</option>`).join(''));
+  set('threat-sel', Object.keys(window.ZONE_THREAT||{}).map(k=>`<option value="${k}"${k==='normal'?' selected':''}>${THREAT_LABELS[k]||k}</option>`).join(''));
+}
+
+// Lit les 4 sélecteurs → opts pour resolveZonePool
+function getRencontreOpts(){
+  const g = id => document.getElementById(id)?.value || '';
+  return {
+    zone: g('zone-sel'),
+    occupation: g('occ-sel') || undefined,
+    variation: g('var-sel') || undefined,
+    threat: g('threat-sel') || undefined,
+  };
 }
 
 function startSync(){
@@ -68,6 +82,7 @@ function startSync(){
     snap.forEach(doc => { joueurs[doc.id] = {...doc.data(), _id: doc.id}; });
     renderJoueurs();
   });
+  populateZoneSelectors();
   renderCombatsActifs();
 }
 
@@ -149,42 +164,78 @@ async function appliquer(action){
 }
 
 // ============================================================
-// GÉNÉRATION DE COMBAT
+// GÉNÉRATION DE RENCONTRE (zones pondérées + factions)
 // ============================================================
-function genCombat(){
-  const zone = document.getElementById('zone-sel').value;
-  const zoneData = ZONES[zone];
-  const nbMin = zoneData.nbMin||1, nbMax = zoneData.nbMax||3;
-  const nb = Math.floor(Math.random()*(nbMax-nbMin+1))+nbMin;
-  document.getElementById('nb-ennemis').value = nb;
+function _ctxTags(opts){
+  const t = [];
+  if(opts.occupation && opts.occupation!=='neutral') t.push(window.FACTIONS?.[opts.occupation]?.label || opts.occupation);
+  if(opts.variation) t.push(VARIATION_LABELS[opts.variation]||opts.variation);
+  if(opts.threat && opts.threat!=='normal') t.push('Menace '+(THREAT_LABELS[opts.threat]||opts.threat));
+  return t.join(' · ');
+}
+
+// Aperçu des probabilités du pool résolu (pour le réglage des poids)
+function apercuPool(){
+  const opts = getRencontreOpts();
+  if(!opts.zone || !window.ZONES_DB?.[opts.zone]) return;
+  const probs = zonePoolProbabilities(opts.zone, opts);
   const panel = document.getElementById('rencontre-panel');
+  document.getElementById('btn-combat-wrap').style.display='none';
+  panel.innerHTML = `<div class="rencontre-header">📊 ${window.ZONES_DB[opts.zone].label}</div>`
+    + `<div class="rencontre-sub">${_ctxTags(opts)||'Pool de base'}</div>`
+    + probs.map(p=>`<div style="display:flex;justify-content:space-between;font-size:9px;padding:2px 4px;border-bottom:1px solid var(--b)">
+        <span style="color:${p.nom==='none'?'var(--td)':'var(--t)'}">${p.nom==='none'?'— pas de rencontre':p.nom}</span>
+        <span style="color:var(--am)">${p.pct}%</span></div>`).join('');
+}
+
+// Génère une rencontre : N jets sur le pool résolu (none = créneau vide)
+function genRencontre(){
+  const opts = getRencontreOpts();
+  if(!opts.zone || !window.ZONES_DB?.[opts.zone]){ showMsg('Zone invalide', true); return; }
+  const slots = Math.max(1, parseInt(document.getElementById('nb-slots')?.value)||4);
+  const pool = resolveZonePool(opts.zone, opts);
+  const panel = document.getElementById('rencontre-panel');
+  const zoneLabel = window.ZONES_DB[opts.zone].label || opts.zone;
 
   const combatData = [];
-  for(let i=0;i<nb;i++){
-    const nom = zoneData.ennemis[Math.floor(Math.random()*zoneData.ennemis.length)];
-    const inst = enemyInstanceFromDB(nom, 1);
-    if(!inst) continue;
-    inst.id = Date.now()+i;
-    combatData.push(inst);
+  for(let i=0;i<slots;i++){
+    const name = rollEncounter(pool);
+    if(!name || name==='none') continue;
+    let inst = null;
+    if(window.ENNEMIS_DB?.[name]){
+      inst = enemyInstanceFromDB(name, 1);
+    } else if(opts.occupation && opts.occupation!=='neutral' && window.FACTIONS?.[opts.occupation]){
+      // nom sans fiche → unité générée de la faction occupante
+      inst = generateFactionUnit(opts.occupation, {});
+    }
+    if(inst){ inst.id = Date.now()+i; combatData.push(inst); }
   }
 
-  const totalXP = combatData.reduce((a,e)=>a+e.xp,0);
+  if(!combatData.length){
+    sessionStorage.removeItem('combat_ennemis');
+    document.getElementById('btn-combat-wrap').style.display='none';
+    panel.innerHTML = `<div class="rencontre-header">🌿 ${zoneLabel}</div>`
+      + (_ctxTags(opts)?`<div class="rencontre-sub">${_ctxTags(opts)}</div>`:'')
+      + `<div class="event-calme">✓ AUCUNE RENCONTRE<br><span>La zone est calme.</span></div>`;
+    return;
+  }
 
-  // Stocker pour l'écran combat
+  const totalXP = combatData.reduce((a,e)=>a+(e.xp||0),0);
   sessionStorage.setItem('combat_ennemis', JSON.stringify(combatData));
   sessionStorage.setItem('combat_joueurs', JSON.stringify([...selected]));
   document.getElementById('btn-combat-wrap').style.display='block';
 
   panel.innerHTML = `
-    <div class="rencontre-header">⚔ COMBAT — ${zone.toUpperCase()}</div>
-    <div class="rencontre-sub">Danger : ${'▮'.repeat(zoneData.danger)}${'▯'.repeat(5-zoneData.danger)} · XP total : ${totalXP}</div>
+    <div class="rencontre-header">⚔ ${zoneLabel}</div>
+    <div class="rencontre-sub">${_ctxTags(opts)?_ctxTags(opts)+' · ':''}${combatData.length} ennemi(s) · XP total : ${totalXP}</div>
     ${combatData.map((e,i)=>{
-      const def = ENNEMIS_DB[e.nom] || {};
+      const def = window.ENNEMIS_DB?.[e.nom] || {};
+      const col = e.factionColor || 'var(--rd)';
       return `
-    <div class="ennemi-card">
-      <div class="ennemi-name">${i+1}. ${e.nom}${def.level?` <span style="font-size:7px;color:var(--td)">Niv.${def.level}${def.category&&def.category!=='normal'?' '+def.category:''}</span>`:''}</div>
+    <div class="ennemi-card" style="border-left:3px solid ${col}">
+      <div class="ennemi-name">${i+1}. ${e.nom} <span style="font-size:7px;color:var(--td)">Niv.${e.level||'?'}${e.category&&e.category!=='normal'?' '+e.category:''}</span></div>
       <div class="ennemi-stats">PV : <b>${e.pvMax}</b> · Atq : <b>${e.atq}</b> · RD : <b>${e.rd}</b>${e.eff?` · <span style="color:var(--am)">${e.eff}</span>`:''}</div>
-      <div class="ennemi-desc">${def.desc||''}</div>
+      ${def.desc?`<div class="ennemi-desc">${def.desc}</div>`:''}
       <div class="ennemi-xp">XP : ${e.xp}</div>
     </div>`;}).join('')}
     <div class="rencontre-actions">
@@ -193,7 +244,8 @@ function genCombat(){
 }
 
 async function lancerCombat(){
-  const zone = document.getElementById('zone-sel')?.value || '';
+  const zk = document.getElementById('zone-sel')?.value || '';
+  const zone = window.ZONES_DB?.[zk]?.label || zk;
   const joueurIds = JSON.parse(sessionStorage.getItem('combat_joueurs') || '[]');
   const ennemisData = JSON.parse(sessionStorage.getItem('combat_ennemis') || '[]');
   const btn = document.getElementById('btn-vers-combat');
@@ -217,22 +269,23 @@ function donnerXPCombat(xp){
 // ============================================================
 function genDeplacement(){
   const unite = parseInt(document.getElementById('nb-unites').value)||1;
-  const zone = document.getElementById('zone-sel').value;
-  const danger = ZONES[zone]?.danger||2;
+  const opts = getRencontreOpts();
+  const zoneLabel = window.ZONES_DB?.[opts.zone]?.label || opts.zone;
+  const danger = THREAT_DANGER[opts.threat] || 2;
   const panel = document.getElementById('rencontre-panel');
 
-  // Probabilité d'événement augmente avec distance et danger
-  const pctEvent = Math.min(95, 20 + (unite*5) + (danger*5));
+  // Probabilité d'événement augmente avec distance et niveau de menace
+  const pctEvent = Math.min(95, 20 + (unite*5) + (danger*8));
   const roll = Math.random()*100;
 
-  let html = `<div class="rencontre-header">🚶 DÉPLACEMENT — ${zone.toUpperCase()}</div>
-    <div class="rencontre-sub">${unite} unité(s) · Risque calculé : <b>${pctEvent}%</b></div>
+  let html = `<div class="rencontre-header">🚶 DÉPLACEMENT — ${zoneLabel}</div>
+    <div class="rencontre-sub">${unite} unité(s)${opts.threat&&opts.threat!=='normal'?' · '+(THREAT_LABELS[opts.threat]||opts.threat):''} · Risque calculé : <b>${pctEvent}%</b></div>
     <div class="deplacement-roll">Jet : <b>${Math.round(roll)}</b> / 100</div>`;
 
   if(roll > pctEvent){
     html += `<div class="event-calme">✓ DÉPLACEMENT SANS ENCOMBRE<br><span>Le groupe arrive à destination.</span></div>`;
+    document.getElementById('btn-combat-wrap').style.display='none';
   } else {
-    // Choisir un événement selon les probabilités
     const r2 = Math.random()*100;
     let cumul=0, evt=EVENEMENTS_DEPLACEMENT[0];
     for(const e of EVENEMENTS_DEPLACEMENT){
@@ -247,10 +300,7 @@ function genDeplacement(){
     </div>`;
 
     if(evt.type==='combat'||evt.type==='danger'){
-      const nb = evt.type==='danger'?Math.floor(Math.random()*2)+3:Math.floor(Math.random()*2)+1;
-      document.getElementById('nb-ennemis').value = nb + (evt.type==='danger'?1:0);
-      html += `<button class="r-btn" onclick="genCombat()" style="margin-top:8px">⚔ Générer le combat (${nb} ennemis)</button>`;
-      document.getElementById('btn-combat-wrap').style.display='block';
+      html += `<button class="r-btn" onclick="genRencontre()" style="margin-top:8px">⚔ Générer la rencontre</button>`;
     }
   }
 
