@@ -1,0 +1,112 @@
+{
+  "republique": {
+    "label": "La République",
+    "tier": "principale",
+    "category": "étatique",
+    "color": "#4a7ba6",
+    "structure": "hiérarchisée",
+    "militarized": "élevé",
+    "presence": ["grandes villes"],
+    "valeurs": ["stabilité", "administration", "reconstruction"],
+    "traits": [
+      "Organisation étatique centralisée",
+      "Communication fluviale et aérienne",
+      "Très hiérarchisée"
+    ],
+    "units": ["Republic Patrol", "Republic Soldier"],
+    "desc": "Organisation étatique centralisée, présente dans les grandes villes. Communication fluviale et aérienne. Cherche la stabilité, l'administration et la reconstruction."
+  },
+  "commune": {
+    "label": "La Commune",
+    "tier": "principale",
+    "category": "populaire",
+    "color": "#b03a2e",
+    "structure": "horizontale",
+    "militarized": "moyen",
+    "presence": ["certains quartiers"],
+    "valeurs": ["autonomie", "solidarité", "autogestion"],
+    "traits": [
+      "Organisation populaire locale",
+      "Communautés autonomes",
+      "Structure horizontale",
+      "Très implantée dans certains quartiers"
+    ],
+    "units": ["Commune Militia", "Worker Patrol"],
+    "desc": "Organisation populaire locale faite de communautés autonomes à structure horizontale. Très implantée dans certains quartiers."
+  },
+  "nnfp": {
+    "label": "Nouveau Nouveau Front Populaire",
+    "abbr": "NNFP",
+    "tier": "principale",
+    "category": "politique",
+    "color": "#d68910",
+    "structure": "organisation de masse",
+    "militarized": "moyen",
+    "presence": ["ancrage populaire"],
+    "valeurs": ["idéologie", "mobilisation", "propagande"],
+    "traits": [
+      "Coalition politique / militante post-apo",
+      "Très idéologique",
+      "Fort ancrage populaire",
+      "Propagande importante",
+      "Organisation de masse"
+    ],
+    "units": ["NNFP Militant", "NNFP Patrol"],
+    "desc": "Coalition politique et militante post-apocalyptique, très idéologique, à fort ancrage populaire. Propagande importante, organisation de masse."
+  },
+  "reseau": {
+    "label": "Le Réseau",
+    "tier": "intermediaire",
+    "category": "clandestin",
+    "color": "#7d3c98",
+    "structure": "clandestine",
+    "militarized": "faible",
+    "presence": ["métro", "souterrains"],
+    "valeurs": ["information", "espionnage", "contrôle des flux"],
+    "traits": [
+      "Infrastructure clandestine",
+      "Métro et communication",
+      "Technologie et messagerie",
+      "Espionnage",
+      "Contrôle des flux d'information"
+    ],
+    "units": ["Reseau Agent", "Eyebot"],
+    "desc": "Infrastructure clandestine reposant sur le métro, la communication et la technologie. Spécialisée dans l'espionnage, la messagerie et le contrôle des flux d'information."
+  },
+  "zazous": {
+    "label": "Les Zazous",
+    "tier": "intermediaire",
+    "category": "culturel",
+    "color": "#f1c40f",
+    "structure": "informelle",
+    "militarized": "faible",
+    "presence": ["clubs", "quartiers culturels"],
+    "valeurs": ["culture", "liberté", "contre-culture"],
+    "traits": [
+      "Culture, jazz et mode",
+      "Couleurs et style",
+      "Contre-culture",
+      "Moins militarisés"
+    ],
+    "units": ["Zazou Gang"],
+    "desc": "Mouvement de contre-culture autour du jazz, de la mode et des couleurs. Peu militarisé, ancré dans la vie nocturne et artistique."
+  },
+  "ultras": {
+    "label": "Les Ultras",
+    "tier": "intermediaire",
+    "category": "criminel",
+    "color": "#5d6d7e",
+    "structure": "bandes structurées",
+    "militarized": "élevé",
+    "presence": ["territoires mobiles"],
+    "valeurs": ["territoire", "force", "culture de bande"],
+    "traits": [
+      "Violence organisée",
+      "Territoire et groupes structurés",
+      "Culture de bande",
+      "Très mobiles"
+    ],
+    "units": ["Ultra Patrol"],
+    "desc": "Violence organisée structurée en bandes mobiles disputant des territoires. Forte culture de bande."
+  }
+}
