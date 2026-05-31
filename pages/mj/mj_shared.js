@@ -31,6 +31,34 @@ function rollDice(expr) {
   return total;
 }
 
+// Construit une instance de combat depuis une fiche ennemi (nouveau schéma officiel)
+// Retourne {nom, pvMax, pvCur, atq, rd, initiative, xp, body, mind, tn, dmgType, eff, dr, defense, level, category}
+function enemyInstanceFromDB(nom, lvl = 1) {
+  const e = window.ENNEMIS_DB?.[nom]; if (!e) return null;
+  const L = Math.max(1, parseInt(lvl) || 1);
+  const scale = 1 + (L - 1) * 0.25;
+  const hp = Math.round((e.hp || 6) * scale);
+  const atk = (e.attacks && e.attacks[0]) || {};
+  const phys = (e.dr && typeof e.dr.phys === 'number') ? e.dr.phys + Math.floor((L - 1) / 2) : (e.dr?.phys ?? 0);
+  return {
+    nom,
+    pvMax: hp, pvCur: hp,
+    atq: (atk.dmg != null ? atk.dmg : 3) + 'D',
+    rd: phys,
+    initiative: e.initiative || ((e.attrs?.body || 6) + (e.attrs?.mind || 4)),
+    xp: (e.xp || 0) * L,
+    body: e.attrs?.body || 6,
+    mind: e.attrs?.mind || 4,
+    tn: atk.tn ?? null,
+    dmgType: atk.dmgType || 'physical',
+    eff: atk.eff || '',
+    dr: e.dr || { phys, energy: 0, rad: 0, poison: 0 },
+    defense: e.defense ?? 1,
+    level: e.level ?? L,
+    category: e.category || 'normal'
+  };
+}
+
 // XP d'un PNJ selon son niveau et sa catégorie (window.NPC_XP chargé via db.js)
 // cat : 'normal' | 'mighty' | 'legendary'  — extrapole au-delà du niveau 20
 function getNpcXP(level, cat = 'normal') {

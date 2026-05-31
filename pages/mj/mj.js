@@ -159,36 +159,34 @@ function genCombat(){
   document.getElementById('nb-ennemis').value = nb;
   const panel = document.getElementById('rencontre-panel');
 
-  const ennemisGeneres = [];
+  const combatData = [];
   for(let i=0;i<nb;i++){
     const nom = zoneData.ennemis[Math.floor(Math.random()*zoneData.ennemis.length)];
-    const db = ENNEMIS_DB[nom]||{pvd:'2D',atq:'3D',rd:0,desc:'Ennemi inconnu.',xp:50};
-    ennemisGeneres.push({nom, ...db});
+    const inst = enemyInstanceFromDB(nom, 1);
+    if(!inst) continue;
+    inst.id = Date.now()+i;
+    combatData.push(inst);
   }
 
-  const totalXP = ennemisGeneres.reduce((a,e)=>a+e.xp,0);
+  const totalXP = combatData.reduce((a,e)=>a+e.xp,0);
 
   // Stocker pour l'écran combat
-  const combatData = ennemisGeneres.map((e,i)=>({
-    id: Date.now()+i, nom:e.nom, pvd:e.pvd,
-    pvMax:rollDice(e.pvd), pvCur:0, atq:e.atq, rd:e.rd, xp:e.xp, initiative:null
-  }));
-  combatData.forEach(e=>e.pvCur=e.pvMax);
   sessionStorage.setItem('combat_ennemis', JSON.stringify(combatData));
   sessionStorage.setItem('combat_joueurs', JSON.stringify([...selected]));
   document.getElementById('btn-combat-wrap').style.display='block';
 
-  document.getElementById('btn-combat-wrap').style.display='block';
   panel.innerHTML = `
     <div class="rencontre-header">⚔ COMBAT — ${zone.toUpperCase()}</div>
     <div class="rencontre-sub">Danger : ${'▮'.repeat(zoneData.danger)}${'▯'.repeat(5-zoneData.danger)} · XP total : ${totalXP}</div>
-    ${ennemisGeneres.map((e,i)=>`
+    ${combatData.map((e,i)=>{
+      const def = ENNEMIS_DB[e.nom] || {};
+      return `
     <div class="ennemi-card">
-      <div class="ennemi-name">${i+1}. ${e.nom}</div>
-      <div class="ennemi-stats">PV : <b>${e.pvd}</b> · Atq : <b>${e.atq}</b> · RD : <b>${e.rd}</b></div>
-      <div class="ennemi-desc">${e.desc}</div>
+      <div class="ennemi-name">${i+1}. ${e.nom}${def.level?` <span style="font-size:7px;color:var(--td)">Niv.${def.level}${def.category&&def.category!=='normal'?' '+def.category:''}</span>`:''}</div>
+      <div class="ennemi-stats">PV : <b>${e.pvMax}</b> · Atq : <b>${e.atq}</b> · RD : <b>${e.rd}</b>${e.eff?` · <span style="color:var(--am)">${e.eff}</span>`:''}</div>
+      <div class="ennemi-desc">${def.desc||''}</div>
       <div class="ennemi-xp">XP : ${e.xp}</div>
-    </div>`).join('')}
+    </div>`;}).join('')}
     <div class="rencontre-actions">
       <button class="r-btn" onclick="donnerXPCombat(${totalXP})">✓ Donner ${totalXP} XP aux sélectionnés</button>
     </div>`;

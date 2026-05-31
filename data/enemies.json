@@ -1,21 +1,191 @@
 {
-  "Pillard":          {"pvd":"1D+2","atq":"3D",         "rd":0,"xp":25, "body":6, "mind":4,"desc":"Humain hostile basique. STR 5, AGI 5."},
-  "Pillard Vétéran":  {"pvd":"2D+4","atq":"4D",         "rd":1,"xp":50, "body":7, "mind":5,"desc":"Pillard expérimenté. STR 6, AGI 6. Arme améliorée."},
-  "Goule errante":    {"pvd":"2D+2","atq":"3D",         "rd":0,"xp":30, "body":5, "mind":3,"desc":"Goule lente et prévisible. END 6."},
-  "Goule enragée":    {"pvd":"2D+4","atq":"4D",         "rd":1,"xp":60, "body":8, "mind":2,"desc":"Goule agressive. AGI 8. Charge dès l'init."},
-  "Goule irradiée":   {"pvd":"3D+4","atq":"4D+rad",     "rd":2,"xp":80, "body":7, "mind":2,"desc":"Irradie au contact. RAD 2 par touche."},
-  "Chien sauvage":    {"pvd":"1D+2","atq":"2D",         "rd":0,"xp":15, "body":8, "mind":3,"desc":"Rapide. AGI 9. Priorité aux membres."},
-  "Super Mutant":     {"pvd":"3D+6","atq":"5D",         "rd":2,"xp":100,"body":10,"mind":4,"desc":"STR 10, END 8. Arme lourde. Résistant."},
-  "Mite de vapeur":   {"pvd":"2D+3","atq":"3D+brûlure", "rd":1,"xp":45, "body":6, "mind":2,"desc":"Crache vapeur brûlante. Zone Courte."},
-  "Radscorpion":      {"pvd":"3D+5","atq":"4D+poison",  "rd":3,"xp":90, "body":9, "mind":3,"desc":"Venin : 1D rad/tour. Carapace RD 3."},
-  "Mole Rat":         {"pvd":"1D+3","atq":"3D",         "rd":0,"xp":20, "body":5, "mind":2,"desc":"Attaque en groupe. Peut creuser."},
-  "Mirelurk":         {"pvd":"3D+6","atq":"4D",         "rd":4,"xp":110,"body":9, "mind":3,"desc":"Carapace très résistante devant. Dos RD 0."},
-  "Robot Protectron": {"pvd":"2D+4","atq":"3D laser",   "rd":3,"xp":70, "body":6, "mind":6,"desc":"Laser. Explose à mort (4D blast)."},
-  "Robot Assaultron": {"pvd":"3D+5","atq":"5D laser",   "rd":4,"xp":120,"body":8, "mind":7,"desc":"Très rapide. Rayon tête dévastateur."},
-  "Légion de Fer":    {"pvd":"2D+4","atq":"4D",         "rd":2,"xp":75, "body":7, "mind":6,"desc":"Organisation militaire. Tactique de groupe."},
-  "Saccageur":        {"pvd":"2D+3","atq":"3D",         "rd":1,"xp":40, "body":6, "mind":4,"desc":"Armure de fortune. Imprévisible."},
-  "Marchand hostile": {"pvd":"1D+4","atq":"3D",         "rd":0,"xp":35, "body":5, "mind":5,"desc":"Tendu, armé. Peut fuir si blessé."},
-  "Homme de main":    {"pvd":"2D+3","atq":"4D",         "rd":1,"xp":55, "body":7, "mind":5,"desc":"Mercenaire. STR 6, AGI 7. Bien équipé."},
-  "Brahmane sauvage": {"pvd":"2D+5","atq":"3D",         "rd":1,"xp":25, "body":7, "mind":2,"desc":"Charge si perturbé. Deux têtes."},
-  "Radstag":          {"pvd":"1D+3","atq":"2D",         "rd":0,"xp":10, "body":6, "mind":3,"desc":"Fuit en priorité. Attaque si acculé."}
+  "Bloodbug": {
+    "level": 5, "type": "Insecte muté", "category": "normal", "xp": 38,
+    "attrs": { "body": 6, "mind": 5, "melee": 1, "guns": null, "other": 2 },
+    "hp": 9, "initiative": 11, "defense": 2,
+    "dr": { "phys": 0, "energy": 0, "rad": "immune", "poison": "immune" },
+    "attacks": [
+      { "name": "Proboscis", "attr": "body", "skill": "melee", "tn": 9, "dmg": 5, "dmgType": "physical", "eff": "" }
+    ],
+    "abilities": [
+      { "name": "Vol", "desc": "Se déplace librement dans les airs, ignore les obstacles et terrains difficiles au sol, peut traverser les zones « vides » au-dessus du champ de bataille. Doit dépenser au moins une action mineure de mouvement par tour. Si mis à terre : 3 dés Stun (physique), +2 dés par zone au-dessus du sol." },
+      { "name": "Petit", "desc": "Plus petit que la plupart des personnages. PV = Body + ½ niveau (arrondi sup.), Défense +1. Tué par toute touche infligeant une Blessure." },
+      { "name": "Immunisé aux radiations", "desc": "Réduit tous les dégâts de radiation à 0, ne subit aucun effet de radiation." }
+    ],
+    "inventory": [
+      { "name": "Dépeçage", "desc": "Test END + Survie difficulté 0 : 1 portion de viande de bloodbug + 1 matériau peu commun." }
+    ],
+    "desc": "Moustique muté rencontré en essaim près des eaux stagnantes et des charognes. Corps brun-rouge de près de 60 cm, proboscis perçant capable de transpercer certaines armures. Crache du sang irradié pour aveugler ses victimes avant de les piquer."
+  },
+  "Pillard": {
+    "level": 3, "type": "Humain", "category": "normal", "xp": 25,
+    "attrs": { "body": 6, "mind": 4, "melee": 2, "guns": 2, "other": 1 },
+    "hp": 6, "initiative": 10, "defense": 1,
+    "dr": { "phys": 0, "energy": 0, "rad": 0, "poison": 0 },
+    "attacks": [ { "name": "Arme", "attr": "body", "skill": "guns", "tn": 6, "dmg": 3, "dmgType": "physical", "eff": "" } ],
+    "abilities": [],
+    "desc": "Humain hostile basique. STR 5, AGI 5."
+  },
+  "Pillard Vétéran": {
+    "level": 6, "type": "Humain", "category": "normal", "xp": 50,
+    "attrs": { "body": 7, "mind": 5, "melee": 2, "guns": 3, "other": 2 },
+    "hp": 11, "initiative": 12, "defense": 1,
+    "dr": { "phys": 1, "energy": 0, "rad": 0, "poison": 0 },
+    "attacks": [ { "name": "Arme améliorée", "attr": "body", "skill": "guns", "tn": 7, "dmg": 4, "dmgType": "physical", "eff": "" } ],
+    "abilities": [],
+    "desc": "Pillard expérimenté. STR 6, AGI 6. Arme améliorée."
+  },
+  "Goule errante": {
+    "level": 4, "type": "Goule", "category": "normal", "xp": 30,
+    "attrs": { "body": 5, "mind": 3, "melee": 2, "guns": null, "other": 1 },
+    "hp": 9, "initiative": 8, "defense": 1,
+    "dr": { "phys": 0, "energy": 0, "rad": "immune", "poison": 0 },
+    "attacks": [ { "name": "Griffes", "attr": "body", "skill": "melee", "tn": 5, "dmg": 3, "dmgType": "physical", "eff": "" } ],
+    "abilities": [],
+    "desc": "Goule lente et prévisible. END 6."
+  },
+  "Goule enragée": {
+    "level": 8, "type": "Goule", "category": "normal", "xp": 60,
+    "attrs": { "body": 8, "mind": 2, "melee": 3, "guns": null, "other": 1 },
+    "hp": 11, "initiative": 10, "defense": 2,
+    "dr": { "phys": 1, "energy": 0, "rad": "immune", "poison": 0 },
+    "attacks": [ { "name": "Charge", "attr": "body", "skill": "melee", "tn": 8, "dmg": 4, "dmgType": "physical", "eff": "" } ],
+    "abilities": [],
+    "desc": "Goule agressive. AGI 8. Charge dès l'init."
+  },
+  "Goule irradiée": {
+    "level": 11, "type": "Goule", "category": "normal", "xp": 80,
+    "attrs": { "body": 7, "mind": 2, "melee": 3, "guns": null, "other": 2 },
+    "hp": 15, "initiative": 9, "defense": 1,
+    "dr": { "phys": 2, "energy": 0, "rad": "immune", "poison": 0 },
+    "attacks": [ { "name": "Griffes irradiées", "attr": "body", "skill": "melee", "tn": 7, "dmg": 4, "dmgType": "radiation", "eff": "Radioactive" } ],
+    "abilities": [],
+    "desc": "Irradie au contact. RAD 2 par touche."
+  },
+  "Chien sauvage": {
+    "level": 2, "type": "Animal", "category": "normal", "xp": 15,
+    "attrs": { "body": 8, "mind": 3, "melee": 2, "guns": null, "other": 1 },
+    "hp": 6, "initiative": 11, "defense": 2,
+    "dr": { "phys": 0, "energy": 0, "rad": 0, "poison": 0 },
+    "attacks": [ { "name": "Morsure", "attr": "body", "skill": "melee", "tn": 8, "dmg": 2, "dmgType": "physical", "eff": "" } ],
+    "abilities": [],
+    "desc": "Rapide. AGI 9. Priorité aux membres."
+  },
+  "Super Mutant": {
+    "level": 14, "type": "Super Mutant", "category": "notable", "xp": 100,
+    "attrs": { "body": 10, "mind": 4, "melee": 3, "guns": 3, "other": 2 },
+    "hp": 17, "initiative": 14, "defense": 1,
+    "dr": { "phys": 2, "energy": 1, "rad": "immune", "poison": 0 },
+    "attacks": [ { "name": "Arme lourde", "attr": "body", "skill": "guns", "tn": 10, "dmg": 5, "dmgType": "physical", "eff": "" } ],
+    "abilities": [],
+    "desc": "STR 10, END 8. Arme lourde. Résistant."
+  },
+  "Mite de vapeur": {
+    "level": 6, "type": "Insecte muté", "category": "normal", "xp": 45,
+    "attrs": { "body": 6, "mind": 2, "melee": 2, "guns": null, "other": 2 },
+    "hp": 10, "initiative": 8, "defense": 1,
+    "dr": { "phys": 1, "energy": 0, "rad": 0, "poison": 0 },
+    "attacks": [ { "name": "Vapeur brûlante", "attr": "body", "skill": "other", "tn": 6, "dmg": 3, "dmgType": "energy", "eff": "Persistent" } ],
+    "abilities": [],
+    "desc": "Crache vapeur brûlante. Zone Courte."
+  },
+  "Radscorpion": {
+    "level": 12, "type": "Animal muté", "category": "notable", "xp": 90,
+    "attrs": { "body": 9, "mind": 3, "melee": 3, "guns": null, "other": 2 },
+    "hp": 16, "initiative": 12, "defense": 1,
+    "dr": { "phys": 3, "energy": 1, "rad": "immune", "poison": "immune" },
+    "attacks": [ { "name": "Dard", "attr": "body", "skill": "melee", "tn": 9, "dmg": 4, "dmgType": "poison", "eff": "Persistent" } ],
+    "abilities": [],
+    "desc": "Venin : 1D rad/tour. Carapace RD 3."
+  },
+  "Mole Rat": {
+    "level": 2, "type": "Animal muté", "category": "normal", "xp": 20,
+    "attrs": { "body": 5, "mind": 2, "melee": 2, "guns": null, "other": 1 },
+    "hp": 7, "initiative": 7, "defense": 1,
+    "dr": { "phys": 0, "energy": 0, "rad": 0, "poison": 0 },
+    "attacks": [ { "name": "Morsure", "attr": "body", "skill": "melee", "tn": 5, "dmg": 3, "dmgType": "physical", "eff": "" } ],
+    "abilities": [],
+    "desc": "Attaque en groupe. Peut creuser."
+  },
+  "Mirelurk": {
+    "level": 15, "type": "Animal muté", "category": "notable", "xp": 110,
+    "attrs": { "body": 9, "mind": 3, "melee": 3, "guns": null, "other": 2 },
+    "hp": 17, "initiative": 12, "defense": 1,
+    "dr": { "phys": 4, "energy": 1, "rad": "immune", "poison": 1 },
+    "attacks": [ { "name": "Pince", "attr": "body", "skill": "melee", "tn": 9, "dmg": 4, "dmgType": "physical", "eff": "" } ],
+    "abilities": [ { "name": "Carapace frontale", "desc": "RD physique 4 de face, 0 dans le dos. Viser le dos pour ignorer la carapace." } ],
+    "desc": "Carapace très résistante devant. Dos RD 0."
+  },
+  "Robot Protectron": {
+    "level": 9, "type": "Robot", "category": "normal", "xp": 70,
+    "attrs": { "body": 6, "mind": 6, "melee": 1, "guns": 3, "other": 2 },
+    "hp": 11, "initiative": 12, "defense": 1,
+    "dr": { "phys": 3, "energy": 2, "rad": "immune", "poison": "immune" },
+    "attacks": [ { "name": "Laser", "attr": "mind", "skill": "guns", "tn": 6, "dmg": 3, "dmgType": "energy", "eff": "" } ],
+    "abilities": [ { "name": "Explosion", "desc": "Explose à sa destruction : 4 dés de zone (blast) sur les cibles adjacentes." } ],
+    "desc": "Laser. Explose à mort (4D blast)."
+  },
+  "Robot Assaultron": {
+    "level": 16, "type": "Robot", "category": "notable", "xp": 120,
+    "attrs": { "body": 8, "mind": 7, "melee": 3, "guns": 4, "other": 3 },
+    "hp": 16, "initiative": 15, "defense": 2,
+    "dr": { "phys": 4, "energy": 2, "rad": "immune", "poison": "immune" },
+    "attacks": [ { "name": "Rayon tête", "attr": "mind", "skill": "guns", "tn": 8, "dmg": 5, "dmgType": "energy", "eff": "Piercing 2" } ],
+    "abilities": [ { "name": "Rapide", "desc": "Très rapide. Rayon de tête dévastateur après une charge." } ],
+    "desc": "Très rapide. Rayon tête dévastateur."
+  },
+  "Légion de Fer": {
+    "level": 10, "type": "Humain", "category": "normal", "xp": 75,
+    "attrs": { "body": 7, "mind": 6, "melee": 3, "guns": 3, "other": 2 },
+    "hp": 11, "initiative": 13, "defense": 1,
+    "dr": { "phys": 2, "energy": 1, "rad": 0, "poison": 0 },
+    "attacks": [ { "name": "Arme de service", "attr": "body", "skill": "guns", "tn": 7, "dmg": 4, "dmgType": "physical", "eff": "" } ],
+    "abilities": [ { "name": "Tactique de groupe", "desc": "Organisation militaire : bonus quand plusieurs membres attaquent la même cible." } ],
+    "desc": "Organisation militaire. Tactique de groupe."
+  },
+  "Saccageur": {
+    "level": 5, "type": "Humain", "category": "normal", "xp": 40,
+    "attrs": { "body": 6, "mind": 4, "melee": 2, "guns": 2, "other": 1 },
+    "hp": 10, "initiative": 10, "defense": 1,
+    "dr": { "phys": 1, "energy": 0, "rad": 0, "poison": 0 },
+    "attacks": [ { "name": "Arme de fortune", "attr": "body", "skill": "melee", "tn": 6, "dmg": 3, "dmgType": "physical", "eff": "" } ],
+    "abilities": [],
+    "desc": "Armure de fortune. Imprévisible."
+  },
+  "Marchand hostile": {
+    "level": 5, "type": "Humain", "category": "normal", "xp": 35,
+    "attrs": { "body": 5, "mind": 5, "melee": 1, "guns": 2, "other": 2 },
+    "hp": 8, "initiative": 10, "defense": 1,
+    "dr": { "phys": 0, "energy": 0, "rad": 0, "poison": 0 },
+    "attacks": [ { "name": "Pistolet", "attr": "body", "skill": "guns", "tn": 5, "dmg": 3, "dmgType": "physical", "eff": "" } ],
+    "abilities": [ { "name": "Fuite", "desc": "Tente de fuir s'il est blessé." } ],
+    "desc": "Tendu, armé. Peut fuir si blessé."
+  },
+  "Homme de main": {
+    "level": 7, "type": "Humain", "category": "normal", "xp": 55,
+    "attrs": { "body": 7, "mind": 5, "melee": 2, "guns": 3, "other": 2 },
+    "hp": 10, "initiative": 12, "defense": 1,
+    "dr": { "phys": 1, "energy": 0, "rad": 0, "poison": 0 },
+    "attacks": [ { "name": "Arme", "attr": "body", "skill": "guns", "tn": 7, "dmg": 4, "dmgType": "physical", "eff": "" } ],
+    "abilities": [],
+    "desc": "Mercenaire. STR 6, AGI 7. Bien équipé."
+  },
+  "Brahmane sauvage": {
+    "level": 3, "type": "Animal", "category": "normal", "xp": 25,
+    "attrs": { "body": 7, "mind": 2, "melee": 2, "guns": null, "other": 1 },
+    "hp": 12, "initiative": 9, "defense": 1,
+    "dr": { "phys": 1, "energy": 0, "rad": 0, "poison": 0 },
+    "attacks": [ { "name": "Charge", "attr": "body", "skill": "melee", "tn": 7, "dmg": 3, "dmgType": "physical", "eff": "" } ],
+    "abilities": [],
+    "desc": "Charge si perturbé. Deux têtes."
+  },
+  "Radstag": {
+    "level": 1, "type": "Animal", "category": "normal", "xp": 10,
+    "attrs": { "body": 6, "mind": 3, "melee": 1, "guns": null, "other": 1 },
+    "hp": 7, "initiative": 9, "defense": 2,
+    "dr": { "phys": 0, "energy": 0, "rad": 0, "poison": 0 },
+    "attacks": [ { "name": "Bois", "attr": "body", "skill": "melee", "tn": 6, "dmg": 2, "dmgType": "physical", "eff": "" } ],
+    "abilities": [],
+    "desc": "Fuit en priorité. Attaque si acculé."
+  }
 }

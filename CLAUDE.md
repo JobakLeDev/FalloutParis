@@ -45,7 +45,7 @@ FalloutParis/
 │   ├── ammo_loot.json                 → table loot 2D20 munitions [{min,max,ammo,base,cd,mult,scavenger?}]
 │   ├── npc_xp.json                    → XP par niveau PNJ {perLevel[{lvl,normal,mighty,legendary}], above20}
 │   ├── items.json                     → {food,drinks,drugs,stuff}
-│   ├── enemies.json                   → ENNEMIS_DB {pvd,atq,rd,xp,body,mind,desc}
+│   ├── enemies.json                   → ENNEMIS_DB format officiel (voir schéma ennemis)
 │   ├── perks.json                     → 57 perks {max,lvl,req[],desc}
 │   └── npc.json                       → PNJ nommés (structure vide à remplir)
 ├── common/
@@ -106,7 +106,7 @@ DB.ammo[]      // types de munitions (array de strings) — calibres dispo
 window.DB          // objet ci-dessus
 window.DB_READY    // Promise — attendre avant tout init
 window.PERKS_DEF   // {nom: {max, lvl, req[], desc}} — 57 perks
-window.ENNEMIS_DB  // {nom: {pvd, atq, rd, xp, body, mind, desc}} — 19 ennemis
+window.ENNEMIS_DB  // {nom: fiche officielle} — voir schéma ennemis ci-dessous
 window.WEAPONS_DB  // {nom: {t, dmg, eff, fr, rng, sk}} — construit depuis weapons.json
 window.NPC_DB      // array PNJ nommés
 window.AMMO_LOOT   // table loot munitions 2D20 [{min,max,ammo,base,cd,mult,scavenger?}]
@@ -137,7 +137,27 @@ getHpMax(d)    // calcul PV max depuis données joueur Firebase
 rollDice(expr) // lance un dé type '2D+4', retourne int
 getTN(d,skKey) // retourne {total, attrVal, rang, tag}
 getNpcXP(level, cat) // XP PNJ par niveau — cat: 'normal'|'mighty'|'legendary', extrapole >20
+enemyInstanceFromDB(nom, lvl) // construit une instance de combat depuis ENNEMIS_DB
 ```
+
+### Schéma ennemi (`enemies.json` / `ENNEMIS_DB`)
+Format officiel Fallout 2D20 (fiches du livre). Construit des **instances de combat** via `enemyInstanceFromDB()`.
+```javascript
+"Bloodbug": {
+  level, type, category:'normal'|'notable'|'legendary', xp,
+  attrs: {body, mind, melee, guns, other},  // null si non applicable
+  hp,            // PV fixes (pas en dés)
+  initiative,    // = body + mind
+  defense,
+  dr: {phys, energy, rad, poison},          // nombre OU "immune"
+  attacks: [{name, attr, skill, tn, dmg, dmgType, eff}],  // dmg = nb dés de combat
+  abilities: [{name, desc}],                // capacités spéciales
+  inventory: [{name, desc}],                // optionnel (dépeçage…)
+  desc
+}
+```
+`enemyInstanceFromDB(nom, lvl)` → instance combat : `{nom, pvMax, pvCur, atq:'XD', rd, initiative, xp, body, mind, tn, dmgType, eff, dr, defense, level, category}`.
+Scaling niveau : `hp ×(1+(lvl-1)·0.25)`, `rd phys +⌊(lvl-1)/2⌋`. Les 19 ennemis homebrew ont été convertis (valeurs approximatives, jouables).
 
 ---
 
