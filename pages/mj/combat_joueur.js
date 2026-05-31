@@ -33,7 +33,8 @@ let useStackedDeck = false;
 let currentArmeInfo = null;  // {nom, skKey, persoBonus, dmg}
 let lastRollDice = [];       // [{val, rerolled}]
 let lastRollTN = 0;
-let actionState = null;       // doc combats/{combatId}/actions/{joueurId}
+let aimRerolled = false;      // true si le re-roll Aim a déjà été utilisé ce lancer
+let actionState = null;       // extrait de combatState.actionsDeclarees[joueurId]
 let selectedActionDraft = null; // {category, type, desc} — action en cours de saisie
 
 function initJoueur(){
@@ -209,6 +210,74 @@ function renderMissFortune(){
     }
   });
   el.style.display='block'; el.innerHTML=html;
+}
+
+// ---- AIM RE-ROLL ----
+function renderAimReroll(){
+  const el = document.getElementById('j-aim-reroll'); if(!el) return;
+  const hasAim = (actionState?.mineure?.used || []).includes('Aim');
+  if(!hasAim || lastRollDice.length === 0){ el.style.display='none'; return; }
+  if(aimRerolled){
+    el.style.display='block';
+    el.innerHTML='<span style="font-size:7px;color:var(--gd)">🎯 Aim utilisé</span>';
+    return;
+  }
+  let html = '<span style="font-size:7px;color:var(--g)">🎯 Aim — relancer 1 dé : </span>';
+  lastRollDice.forEach((die, i) => {
+    const col = die.val <= lastRollTN ? 'var(--g)' : 'var(--rd)';
+    html += '<button class="mf-die-btn" style="color:' + col + '" onclick="aimRelancerDe(' + i + ')">' + die.val + ' ↺</button>';
+  });
+  el.style.display='block'; el.innerHTML=html;
+}
+
+function aimRelancerDe(idx){
+  if(aimRerolled || !lastRollDice[idx]) return;
+  aimRerolled = true;
+  lastRollDice[idx] = { val: Math.floor(Math.random()*20)+1, rerolled: false };
+
+  const vals = lastRollDice.map(d => d.val);
+  const tn = lastRollTN;
+  let succes = vals.filter(v=>v<=tn).length + vals.filter(v=>v===1).length;
+  const crits = vals.filter(v=>v===1).length;
+  const echec = succes < 1;
+  const succesBonus = Math.max(0, succes-1);
+  const dcTotal = echec ? 0 : nbDCActuel + succesBonus;
+  if(!echec) document.getElementById('j-nb-cd').value = dcTotal;
+
+  const col = succes===0?'var(--rd)':succes>1?'var(--g)':'var(--am)';
+  let r = lastRollDice.map((d, i) => {
+    const c = d.val<=tn?'var(--g)':'var(--rd)';
+    const marker = i===idx ? '🎯' : (d.rerolled ? '↺' : '');
+    return '<span style="color:'+c+';font-size:16px;font-family:Oswald,sans-serif">'+d.val+marker+'</span>';
+  }).join('/');
+  r += ' <b style="color:'+col+'">'+succes+'s</b>';
+  if(crits) r += '<span style="color:var(--am)">+'+crits+'★</span>';
+  if(echec) r += ' <span style="color:var(--rd)">ÉCHEC</span>';
+  else r += '→<b style="color:var(--am)">'+dcTotal+'DC</b>';
+  document.getElementById('j-dice-result').innerHTML = r;
+
+  lastExcessJ = succesBonus;
+  const cvEl = document.getElementById('j-convert-ap');
+  if(cvEl){
+    const pool = combatState?.apPool||0;
+    const toAdd = Math.min(succesBonus, 6-pool);
+    if(!echec && toAdd>0){
+      cvEl.style.display='block';
+      cvEl.innerHTML='<button class="j-ap-convert-btn" onclick="convertExcessToAPJ()">+'+toAdd+' AP groupe</button>';
+    } else cvEl.style.display='none';
+  }
+  const bdEl = document.getElementById('j-bonus-dmg');
+  if(bdEl){
+    const isMeleeThrow = ['cac_weapon','barehand','throwing'].includes(lastSkKeyJ);
+    const pool = combatState?.apPool||0;
+    if(!echec && isMeleeThrow && pool>0){
+      let btns = '<span style="font-size:7px;color:var(--td)">Dégâts bonus: </span>';
+      for(let n=1;n<=Math.min(3,pool);n++) btns+='<button class="j-ap-dmg-btn" onclick="bonusDmgJ('+n+')">+'+n+'D (−'+n+'AP)</button>';
+      bdEl.style.display='block'; bdEl.innerHTML=btns;
+    } else bdEl.style.display='none';
+  }
+  renderAimReroll();
+  renderMissFortune();
 }
 
 async function missFortuneJ(diceIdx){
@@ -494,6 +563,7 @@ function selArme(nom, tn, dmg, persoBonus=false){
 }
 
 async function jLancer2D20(){
+  aimRerolled = false; // reset au début de chaque nouveau lancer
   const tn = parseInt(document.getElementById('j-tn-val').value)||10;
   const diff = 1;
 
@@ -535,6 +605,7 @@ async function jLancer2D20(){
 
   setNbDiceJ(2);
   renderMissFortune();
+  renderAimReroll();
 
   // Proposer conversion succès → AP groupe
   lastExcessJ = succesBonus;
