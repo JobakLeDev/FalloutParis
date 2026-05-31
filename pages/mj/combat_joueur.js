@@ -34,6 +34,8 @@ let currentArmeInfo = null;  // {nom, skKey, persoBonus, dmg}
 let lastRollDice = [];       // [{val, rerolled}]
 let lastRollTN = 0;
 let aimRerolled = false;      // true si le re-roll Aim a déjà été utilisé ce lancer
+let cibleAttaque = '';        // nom de l'ennemi ciblé (sélecteur)
+let lastAttackResultTs = 0;   // dédup notification résultat attaque
 let actionState = null;       // extrait de combatState.actionsDeclarees[joueurId]
 let selectedActionDraft = null; // {category, type, desc} — action en cours de saisie
 
@@ -106,6 +108,7 @@ function renderCombatJoueur(){
   renderMaCarte();
   renderActionsJoueur();
   renderActionsDeclarees();
+  renderDiceAccess();
   renderAPPoolJoueur();
   renderLuckJoueur();
   renderCoequipiers();
@@ -768,6 +771,51 @@ async function dismissRefused(category){
   } catch(e){ console.error(e); }
 }
 
+// ---- ACCÈS AUX DÉS (conditionné par validation de l'attaque) ----
+function renderDiceAccess(){
+  const attackValidated = (actionState?.majeure?.used || []).includes('Attack');
+  const lockEl  = document.getElementById('j-dice-lock');
+  const cibleEl = document.getElementById('j-cible-wrap');
+  const arEl    = document.getElementById('j-attack-result');
+
+  if(lockEl) lockEl.style.display = attackValidated ? 'none' : 'flex';
+
+  // Activer/désactiver les boutons de lancer
+  ['j-lance-btn','j-d20-2','j-d20-3','j-d20-4','j-d20-5','j-stacked-deck-btn'].forEach(id => {
+    const b = document.getElementById(id); if(b) b.disabled = !attackValidated;
+  });
+  const cdBtn = document.querySelector('.cd-btn');
+  if(cdBtn) cdBtn.disabled = !attackValidated;
+
+  // Réinitialiser le résultat si Attack plus dans used
+  if(!attackValidated){
+    if(cibleEl){ cibleEl.style.display='none'; cibleEl.innerHTML=''; }
+    if(arEl){ arEl.style.display='none'; arEl.innerHTML=''; }
+    return;
+  }
+
+  // Sélecteur de cible
+  if(!cibleEl) return;
+  cibleEl.style.display = 'block';
+  const ennemis = (combatState?.ennemis || []).filter(e => e.pvCur > 0);
+  const prevVal = document.getElementById('j-cible-sel')?.value || '';
+  if(!ennemis.length){
+    cibleEl.innerHTML = '<span style="font-size:7px;color:var(--td)">Aucun ennemi vivant</span>';
+    cibleAttaque = '';
+    return;
+  }
+  cibleEl.innerHTML = '<div style="display:flex;align-items:center;gap:5px">'
+    + '<span style="font-size:7px;color:var(--td)">Cible :</span>'
+    + '<select id="j-cible-sel" style="flex:1;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:monospace;font-size:7px;padding:2px 4px;outline:none">'
+    + ennemis.map(e => '<option value="'+e.nom+'"'+(e.nom===prevVal?' selected':'')+'>'+e.nom+' ('+e.pvCur+'/'+e.pvMax+' PV)</option>').join('')
+    + '</select></div>';
+  const sel = document.getElementById('j-cible-sel');
+  if(sel){
+    cibleAttaque = sel.value;
+    sel.onchange = () => { cibleAttaque = sel.value; };
+  }
+}
+
 function jLancerCD(){
   const nb = parseInt(document.getElementById('j-nb-cd').value)||2;
   const vals = Array.from({length:nb},()=>FACES_CD[Math.floor(Math.random()*6)]);
@@ -776,4 +824,22 @@ function jLancerCD(){
   document.getElementById('j-cd-result').innerHTML =
     vals.map(v=>'<span style="color:'+(v.includes('⚡')?'var(--am)':v==='—'?'var(--td)':'var(--tb)')+';font-size:14px;font-family:Oswald,sans-serif">'+v+'</span>').join(' ')
     +' <b style="color:var(--am)">'+dmg+'dmg</b>'+(ef?' <span style="color:var(--am)">+'+ef+'⚡</span>':'');
+
+  // Résultat narratif
+  const nom = joueurData?.nom || joueurId;
+  const cible = cibleAttaque ? ' à <b style="color:var(--rd)">'+cibleAttaque+'</b>' : '';
+  const arEl = document.getElementById('j-attack-result');
+  if(arEl){
+    arEl.style.display = 'block';
+    arEl.innerHTML = '<div style="font-size:9px;color:var(--tb);padding:4px 6px;border:1px solid var(--g);background:#060d06;margin-top:2px">'
+      + '⚔ <b>'+nom+'</b> inflige <b style="color:var(--am)">'+dmg+' dmg</b>'+(ef?' <span style="color:var(--am)">+'+ef+'⚡</span>':'')
+      + cible + '</div>';
+  }
+
+  // Envoyer au MJ pour son log
+  if(db && combatId){
+    db.collection(COMBATS_COLL).doc(combatId).update({
+      attackResult: { joueur: joueurId, nom, cible: cibleAttaque, dmg, ef, ts: Date.now() }
+    }).catch(()=>{});
+  }
 }

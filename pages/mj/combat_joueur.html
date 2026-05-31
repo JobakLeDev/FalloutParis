@@ -89,6 +89,12 @@
         <div class="pnl-title">Mes jets</div>
         <div class="des-inner">
           <div id="mes-des-context" class="des-ctx">Sélectionne une arme</div>
+          <!-- Verrou : visible tant qu'Attack n'est pas validée -->
+          <div id="j-dice-lock" style="display:flex;align-items:center;justify-content:center;padding:10px;border:1px dashed var(--b2);color:var(--td);font-size:8px;letter-spacing:1px;text-align:center;margin-bottom:5px">
+            ⚔ Déclare une <b style="color:var(--am)">Attaque</b> validée par le MJ
+          </div>
+          <!-- Sélecteur de cible : visible quand Attack validée -->
+          <div id="j-cible-wrap" style="display:none;margin-bottom:5px"></div>
           <div class="j-d20-sel">
             <button class="j-d20-btn on" id="j-d20-2" onclick="setNbDiceJ(2)">2D20</button>
             <button class="j-d20-btn" id="j-d20-3" onclick="setNbDiceJ(3)">3D −1AP</button>
@@ -118,6 +124,8 @@
               <div id="j-bonus-dmg" style="display:none;margin-top:3px"></div>
             </div>
           </div>
+          <!-- Résultat narratif de l'attaque -->
+          <div id="j-attack-result" style="display:none;margin-top:5px"></div>
         </div>
       </div>
 
