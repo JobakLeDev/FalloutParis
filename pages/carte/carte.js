@@ -57,10 +57,21 @@ function init() {
   buildMap();
 }
 
+// Bornes de Paris intra-muros — délimitent la carte (pan + dézoom bloqués)
+const PARIS_BOUNDS = L.latLngBounds([48.8156, 2.2241], [48.9022, 2.4699]);
+
+// Recadre sur Paris et fige le dézoom au niveau « Paris entier »
+function lockParis() {
+  map.setMinZoom(0);
+  map.invalidateSize();
+  map.fitBounds(PARIS_BOUNDS);
+  map.setMinZoom(map.getZoom());      // impossible de dézoomer au-delà de Paris
+}
+
 function buildMap() {
   map = L.map('map', {
-    center: [48.8566, 2.3522], zoom: 13,
-    minZoom: 10, maxZoom: 18, zoomSnap: 0.25,
+    zoomSnap: 0.25, maxZoom: 17,
+    maxBounds: PARIS_BOUNDS, maxBoundsViscosity: 1.0,  // défilement bloqué aux bords
     attributionControl: false,
   });
 
@@ -91,6 +102,10 @@ function buildMap() {
   map.on('click', onMapClick);
   map.on('popupclose', () => { if (!reopening) openItem = null; });
   map.on('move zoom moveend zoomend', drawFog);
+
+  lockParis();
+  setTimeout(lockParis, 300);                 // re-cadrage si conteneur (iframe) pas encore dimensionné
+  window.addEventListener('resize', () => { if (currentTab === 'paris') lockParis(); });
 
   updateModeUI();
 
@@ -130,7 +145,7 @@ async function loadGeoJsonLayers() {
   try {
     const data = await fetch(GEOJSON_BASE + 'rails.geojson').then(r => r.json());
     L.geoJSON(data, { pane: 'railsPane',
-      style: { color: '#66DD66', weight: 1.0, opacity: 0.7, dashArray: '5 3', fill: false },
+      style: { color: '#9DF09D', weight: 1.0, opacity: 0.8, dashArray: '5 3', fill: false },
     }).addTo(map);
   } catch(e) { console.warn('rails.geojson non chargé', e); }
 }

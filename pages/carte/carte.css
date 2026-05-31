@@ -23,9 +23,9 @@ body.embed #mj-panel{display:none !important;}
 .map-tab.on{color:var(--g);border-bottom-color:var(--g);background:var(--p2);}
 body.embed #map-tabs{padding:0;}
 
-/* PARIS */
-#map-paris-wrap{flex:1;display:flex;flex-direction:column;min-height:0;}
-#map{flex:1;background:#071307;min-height:0;position:relative;}
+/* PARIS — carte dans un cadre fermé, contenue dans l'écran */
+#map-paris-wrap{flex:1;display:flex;flex-direction:column;min-height:0;padding:8px;overflow:hidden;}
+#map{flex:1;background:#071307;min-height:0;position:relative;border:1px solid var(--b2);box-shadow:inset 0 0 30px rgba(0,0,0,0.6),0 0 0 1px #060d06;overflow:hidden;}
 .leaflet-container{background:#071307;font-family:'Share Tech Mono',monospace;}
 /* Scanlines CRT par-dessus la carte */
 #map::after{content:'';position:absolute;inset:0;z-index:360;pointer-events:none;
