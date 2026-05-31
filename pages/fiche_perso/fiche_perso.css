@@ -1,11 +1,10 @@
 /* Styles spécifiques fiche_perso — voir common/style.css pour les styles partagés */
 
-/* Onglet CARTE : contenu contraint, pas de scroll de page
-   Le .pip a transform:scale(1.25) → diviser par 1.25 pour obtenir la hauteur layout */
+/* Onglet CARTE : contenu contraint, pas de scroll de page.
+   Plus de transform:scale → hauteur layout directe. */
 #tc-carte {
-  margin: -12px;                           /* annuler le padding du .body */
-  height: calc((100vh - 130px) / 1.25);   /* 130px = header+tabs visuels */
-  min-height: 380px;
+  margin: -1rem;                  /* annuler le padding du .body (1rem) */
+  height: clamp(24rem, 68vh, 60rem);
   overflow: hidden;
 }
 #tc-carte iframe {
