@@ -1,0 +1,21 @@
+{
+  "civilian":       { "baseId": "Raider",              "label": "Civil",            "spawnWeight": 20, "tags": ["civilian", "common"] },
+  "militia":        { "baseId": "Raider",              "label": "Milicien",         "spawnWeight": 30, "tags": ["military", "common"] },
+  "soldier":        { "baseId": "Raider",              "label": "Soldat",           "spawnWeight": 40, "tags": ["military"] },
+  "scout":          { "baseId": "Raider Scaver",       "label": "Éclaireur",        "spawnWeight": 20, "tags": ["recon", "military"] },
+  "veteran":        { "baseId": "Raider Veteran",      "label": "Vétéran",          "spawnWeight": 15, "tags": ["military", "elite"] },
+  "heavy":          { "baseId": "Brotherhood Paladin", "label": "Lourd",            "spawnWeight": 8,  "tags": ["heavy", "elite"] },
+  "officer":        { "baseId": "Raider Boss",         "label": "Officier",         "spawnWeight": 5,  "tags": ["leader", "elite"] },
+  "commander":      { "baseId": "Brotherhood Elder",   "label": "Commandant",       "spawnWeight": 2,  "tags": ["leader", "boss"] },
+  "technician":     { "baseId": "Brotherhood Scribe",  "label": "Technicien",       "spawnWeight": 12, "tags": ["tech"] },
+  "pilot":          { "baseId": "Brotherhood Lancer",  "label": "Pilote",           "spawnWeight": 4,  "tags": ["tech", "military"] },
+  "merchant":       { "baseId": "Raider",              "label": "Marchand",         "spawnWeight": 12, "tags": ["civilian", "trade"] },
+  "smuggler":       { "baseId": "Raider Scaver",       "label": "Contrebandier",    "spawnWeight": 10, "tags": ["trade", "criminal"] },
+  "gang_member":    { "baseId": "Raider",              "label": "Membre de gang",   "spawnWeight": 35, "tags": ["criminal"] },
+  "enforcer":       { "baseId": "Raider Psycho",       "label": "Exécuteur",        "spawnWeight": 12, "tags": ["criminal", "elite"] },
+  "agent":          { "baseId": "Synth",               "label": "Agent",            "spawnWeight": 8,  "tags": ["secret", "recon"] },
+  "special_agent":  { "baseId": "Synth Courser",       "label": "Agent spécial",    "spawnWeight": 2,  "tags": ["secret", "elite"] },
+  "robot_support":  { "baseId": "Protectron",          "label": "Robot support",    "spawnWeight": 12, "tags": ["robot"] },
+  "robot_security": { "baseId": "Assaultron",          "label": "Robot sécurité",   "spawnWeight": 4,  "tags": ["robot", "elite"] },
+  "robot_heavy":    { "baseId": "Sentry Bot",          "label": "Robot lourd",      "spawnWeight": 1,  "tags": ["robot", "boss"] }
+}

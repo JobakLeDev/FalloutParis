@@ -69,3 +69,55 @@ function zonePoolProbabilities(zoneKey, opts = {}) {
     .map(([nom, poids]) => ({ nom, poids, pct: Math.round(poids / total * 1000) / 10 }))
     .sort((a, b) => b.poids - a.poids);
 }
+
+// ============================================================
+// GÉNÉRATION D'UNITÉS PAR FACTION
+// Une faction recrute des rôles (factions.json: roles[]). Chaque rôle
+// (npc_roles.json) a un baseId = fiche stats à réutiliser depuis enemies.json.
+// L'unité générée = instance du baseId, relabellisée avec la faction.
+// ============================================================
+
+// Pool de rôles d'une faction, pondéré par spawnWeight {roleKey: poids}
+function factionRolePool(factionKey, filterTags = null) {
+  const f = window.FACTIONS?.[factionKey]; if (!f) return {};
+  const pool = {};
+  (f.roles || []).forEach(rk => {
+    const r = window.NPC_ROLES?.[rk];
+    if (!r) return;
+    if (filterTags && !filterTags.some(t => (r.tags || []).includes(t))) return;
+    pool[rk] = r.spawnWeight || 1;
+  });
+  return pool;
+}
+
+// Génère une unité pour une faction : tire un rôle pondéré, instancie son
+// baseId, et applique l'identité de faction. Retourne une instance de combat
+// enrichie {..., faction, factionColor, role, roleLabel, tags} ou null.
+// opts = { lvl?, filterTags? }
+function generateFactionUnit(factionKey, opts = {}) {
+  const f = window.FACTIONS?.[factionKey]; if (!f) return null;
+  const pool = factionRolePool(factionKey, opts.filterTags || null);
+  const roleKey = rollEncounter(pool);
+  if (!roleKey || roleKey === 'none') return null;
+  const role = window.NPC_ROLES?.[roleKey]; if (!role) return null;
+  const inst = (typeof enemyInstanceFromDB === 'function')
+    ? enemyInstanceFromDB(role.baseId, opts.lvl || 1) : null;
+  if (!inst) return null;
+  inst.nom = role.label + ' (' + (f.label || factionKey) + ')';
+  inst.faction = factionKey;
+  inst.factionColor = f.color || null;
+  inst.role = roleKey;
+  inst.roleLabel = role.label;
+  inst.tags = role.tags || [];
+  return inst;
+}
+
+// Génère un groupe de N unités d'une faction (chacune avec un id unique).
+function generateFactionSquad(factionKey, count = 1, opts = {}) {
+  const out = [];
+  for (let i = 0; i < count; i++) {
+    const u = generateFactionUnit(factionKey, opts);
+    if (u) { u.id = Date.now() + i; out.push(u); }
+  }
+  return out;
+}
