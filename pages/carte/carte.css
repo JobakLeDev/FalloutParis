@@ -25,8 +25,11 @@ body.embed #map-tabs{padding:0;}
 
 /* PARIS */
 #map-paris-wrap{flex:1;display:flex;flex-direction:column;min-height:0;}
-#map{flex:1;background:#060d06;min-height:0;}
-.leaflet-container{background:#060d06;font-family:'Share Tech Mono',monospace;}
+#map{flex:1;background:#071307;min-height:0;position:relative;}
+.leaflet-container{background:#071307;font-family:'Share Tech Mono',monospace;}
+/* Scanlines CRT par-dessus la carte */
+#map::after{content:'';position:absolute;inset:0;z-index:360;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,0.04) 0px,rgba(0,0,0,0.04) 1px,transparent 1px,transparent 3px);}
 
 /* LIEUX */
 #map-lieux-wrap{flex:1;display:flex;min-height:0;}

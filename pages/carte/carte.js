@@ -64,12 +64,21 @@ function buildMap() {
     attributionControl: false,
   });
 
-  // Fond CartoDB Dark Matter (noir/gris, aucune clé API requise)
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19, subdomains: 'abcd',
-  }).addTo(map);
+  // Fond plein PipBoy — pas de tuiles (pas de noms de rues)
+  // Les panes GeoJSON reçoivent chacun leur filtre CSS de glow
+  const SVG_LOOK = ' contrast(1.25) brightness(0.9)';
+  const mkPane = (name, z, glow) => {
+    map.createPane(name);
+    const p = map.getPane(name);
+    p.style.zIndex = z;
+    p.style.pointerEvents = 'none';
+    p.style.filter = glow + SVG_LOOK;
+  };
+  mkPane('seinePane',  200, 'drop-shadow(0 0 2px rgba(85,255,136,0.25))');
+  mkPane('routesPane', 201, 'drop-shadow(0 0 2px rgba(140,255,140,0.35))');
+  mkPane('railsPane',  202, 'drop-shadow(0 0 1.5px rgba(140,255,140,0.25))');
 
-  // Couches GeoJSON Paris
+  // Couches GeoJSON Paris (PipBoy style)
   loadGeoJsonLayers();
 
   zoneLayer  = L.layerGroup().addTo(map);
@@ -103,20 +112,33 @@ function buildMap() {
 }
 
 async function loadGeoJsonLayers() {
-  // Seine (51 ko)
+  // Seine — eau vert sombre + liseré vert vif
   try {
     const data = await fetch(GEOJSON_BASE + 'seine.geojson').then(r => r.json());
-    L.geoJSON(data, {
-      style: { color: '#1a4a6a', weight: 5, opacity: 0.75, fillColor: '#0d2e44', fillOpacity: 0.55 },
+    L.geoJSON(data, { pane: 'seinePane',
+      style: { color: '#4CFF77', weight: 1.6, opacity: 0.75, fillColor: '#0E2A0E', fillOpacity: 0.6 },
     }).addTo(map);
   } catch(e) { console.warn('seine.geojson non chargé', e); }
-  // Rails / métro (2,3 Mo) — chargé après la Seine
+  // Routes — réseau vert clair PipBoy
+  try {
+    const data = await fetch(GEOJSON_BASE + 'routes.geojson').then(r => r.json());
+    L.geoJSON(data, { pane: 'routesPane',
+      style: f => ({ color: '#B8FFB8', weight: isMajorRoad(f) ? 1.4 : 0.7, opacity: 0.85, fill: false }),
+    }).addTo(map);
+  } catch(e) { console.warn('routes.geojson non chargé', e); }
+  // Rails / métro — vert pointillé
   try {
     const data = await fetch(GEOJSON_BASE + 'rails.geojson').then(r => r.json());
-    L.geoJSON(data, {
-      style: { color: '#3a3520', weight: 2, opacity: 0.65, dashArray: '6 3' },
+    L.geoJSON(data, { pane: 'railsPane',
+      style: { color: '#66DD66', weight: 1.0, opacity: 0.7, dashArray: '5 3', fill: false },
     }).addTo(map);
   } catch(e) { console.warn('rails.geojson non chargé', e); }
+}
+
+// Route principale ? (selon le tag OSM highway)
+function isMajorRoad(f) {
+  const h = f?.properties?.highway || '';
+  return /motorway|trunk|primary|secondary/.test(h);
 }
 
 async function saveData() {
@@ -529,7 +551,7 @@ function cancelDrawZone() {
   setHint('');
 }
 function placerJetons() {
-  const c = { lat: mapH / 2, lng: mapW / 2 }; let n = 0;
+  const ctr = map.getCenter(); const c = { lat: ctr.lat, lng: ctr.lng }; let n = 0;
   Object.keys(joueurs).forEach(id => { if (!mapData.tokens[id]) { mapData.tokens[id] = { ...c }; n++; } });
   if (n) saveData();
   setHint(n ? n + ' jeton(s) placé(s) au centre — active l\'édition pour les déplacer.' : 'Tous les jetons existent déjà.');
