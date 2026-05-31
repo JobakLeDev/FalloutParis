@@ -163,7 +163,7 @@ function initCombatListener() {
       if(b) b.style.display = 'none';
       return;
     }
-    _combatUnsub = db.collection('combats').doc(combatId).onSnapshot(snap => {
+    _combatUnsub = db.collection('combat').doc(combatId).onSnapshot(snap => {
       const data = snap.exists ? snap.data() : null;
       let banner = document.getElementById('combat-banner');
 
