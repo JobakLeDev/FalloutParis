@@ -212,6 +212,7 @@ function renderCombatJoueur(){
   renderActionsJoueur();
   renderActionsDeclarees();
   renderDiceAccess();
+  refreshDesContext();
   renderAPPoolJoueur();
   renderLuckJoueur();
   renderCoequipiers();
@@ -499,7 +500,11 @@ function renderMaCarte(){
     const sel = armeSelectionnee===inv.name;
     html += '<div class="jc-arme clickable'+(sel?' selected-arme':'')+'" onclick="selArme(\''+inv.name+'\','+tn+',\''+(db2.dmg||'2D')+'\','+!!inv.persoBonus+')">';
     html += '<span class="jc-arme-name">'+inv.name+(inv.persoBonus?' ★':'')+'</span>';
-    html += '<span class="jc-arme-stat">'+(db2.dmg||'?')+' · TN <b>'+tn+'</b>'+(db2.eff&&db2.eff!=='—'?' · '+db2.eff:'')+'</span>';
+    { const at = db2.a && db2.a!=='-' ? db2.a : null;
+      const ae = at ? (d.ammo||[]).find(a=>a.cal===at) : null;
+      const aq = ae ? ae.qty : (at ? 0 : null);
+      const ammoHtml = aq!==null ? ' · <span style="color:'+(aq>0?'var(--am)':'var(--rd)')+'">🔫'+aq+'</span>' : '';
+      html += '<span class="jc-arme-stat">'+(db2.dmg||'?')+' · TN <b>'+tn+'</b>'+(db2.eff&&db2.eff!=='—'&&db2.eff!=='–'?' · '+db2.eff:'')+ammoHtml+'</span>'; }
     html += '</div>';
   });
   const tnUnarmed = getTN(d,'barehand').total;
@@ -668,26 +673,56 @@ function renderEnnemisJoueur(){
 }
 
 // ---- SÉLECTION ARME + DÉS ----
+function refreshDesContext(){
+  if(!currentArmeInfo || !joueurData) return;
+  const {nom, dmg, ammoType} = currentArmeInfo;
+  const nomAff = nom === '__unarmed__' ? 'Mains nues' : nom;
+  const hasAmmo = ammoType && ammoType !== '-';
+  const ammoEntry = hasAmmo ? (joueurData.ammo||[]).find(a => a.cal === ammoType) : null;
+  const qty = ammoEntry ? ammoEntry.qty : (hasAmmo ? 0 : null);
+  const tn = document.getElementById('j-tn-val')?.value || '?';
+  const ammoHtml = qty !== null
+    ? ' · <span style="color:'+(qty>0?'var(--am)':'var(--rd)')+'">🔫 '+qty+' '+ammoType+'</span>'
+    : '';
+  const el = document.getElementById('mes-des-context');
+  if(el) el.innerHTML = '<b style="color:var(--tb)">'+nomAff+'</b> · '+dmg+' · TN <b style="color:var(--am)">'+tn+'</b>'+ammoHtml;
+}
+
 function selArme(nom, tn, dmg, persoBonus=false){
   armeSelectionnee = nom;
   nbDCActuel = parseInt(dmg)||2;
   lastSkKeyJ = nom==='__unarmed__' ? 'barehand' : (WEAPONS_DB[nom]?.sk||'');
-  currentArmeInfo = {nom, skKey:lastSkKeyJ, persoBonus, dmg, eff: nom==='__unarmed__' ? '' : (WEAPONS_DB[nom]?.eff||'')};
+  const ammoType = nom==='__unarmed__' ? '' : (WEAPONS_DB[nom]?.a||'');
+  currentArmeInfo = {nom, skKey:lastSkKeyJ, persoBonus, dmg, eff: nom==='__unarmed__' ? '' : (WEAPONS_DB[nom]?.eff||''), ammoType};
   useStackedDeck = false;
   const btn=document.getElementById('j-stacked-deck-btn'); if(btn) btn.classList.remove('on');
   document.getElementById('j-tn-val').value = tn;
   renderMaCarte();
-  const nomAff = nom==='__unarmed__'?'Mains nues':nom;
-  document.getElementById('mes-des-context').innerHTML = '<b style="color:var(--tb)">'+nomAff+'</b> · '+dmg+' · TN <b style="color:var(--am)">'+tn+'</b>';
+  refreshDesContext();
   document.getElementById('j-nb-cd').value = nbDCActuel;
   lastRollDice=[];
   const mf=document.getElementById('j-miss-fortune'); if(mf) mf.style.display='none';
 }
 
 async function jLancer2D20(){
-  aimRerolled = false; // reset au début de chaque nouveau lancer
+  aimRerolled = false;
   const tn = parseInt(document.getElementById('j-tn-val').value)||10;
   const diff = 1;
+
+  // Vérification et déduction des munitions (armes à distance uniquement)
+  const ammoType = currentArmeInfo?.ammoType;
+  const needsAmmo = ammoType && ammoType !== '-';
+  if(needsAmmo){
+    const ammoEntry = (joueurData?.ammo||[]).find(a => a.cal === ammoType);
+    if(!ammoEntry || ammoEntry.qty <= 0){
+      document.getElementById('j-dice-result').innerHTML =
+        '<span style="color:var(--rd)">⚠ Plus de munitions ('+ammoType+')</span>';
+      return;
+    }
+    ammoEntry.qty = Math.max(0, ammoEntry.qty - 1);
+    db.collection('joueurs').doc(joueurId).update({ammo: joueurData.ammo, lastUpdate: Date.now()}).catch(()=>{});
+    refreshDesContext();
+  }
 
   // Coût AP groupe pour dés bonus
   const apCost = [0,0,0,1,3,6][nbDiceJ]||0;
