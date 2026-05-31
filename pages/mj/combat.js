@@ -93,12 +93,11 @@ function deverrouiller(){
         banner.style.display='flex';
       }
     }
-  });
-  // Listener actions déclarées (subcollection)
-  db.collection(COMBATS_COLL).doc(currentCombatId).collection('actions').onSnapshot(snap => {
-    actionsJoueurs = {};
-    snap.forEach(doc => { actionsJoueurs[doc.id] = doc.data(); });
-    renderActionsMJ();
+    // Actions déclarées (champ dans le doc principal, pas de subcollection)
+    if(data.actionsDeclarees){
+      actionsJoueurs = data.actionsDeclarees;
+      renderActionsMJ();
+    }
   });
 
   // Auto-sélectionner les joueurs transmis depuis mj.html
@@ -242,14 +241,12 @@ function lancerInitiative(){
     db.collection('joueurs').doc(id).update({ combatId: currentCombatId }).catch(()=>{});
   });
 
-  // Initialiser les docs d'actions pour chaque joueur dans la subcollection
+  // Initialiser actionsDeclarees pour chaque joueur dans le doc principal
+  const adInit = {};
   Object.keys(combattants).forEach(id => {
-    db.collection(COMBATS_COLL).doc(currentCombatId).collection('actions').doc(id).set({
-      mineure: {used:[], pending:null},
-      majeure: {used:[], pending:null},
-      mouvement_used: false
-    }).catch(()=>{});
+    adInit['actionsDeclarees.' + id] = { mineure:{used:[],pending:null}, majeure:{used:[],pending:null}, mouvement_used:false };
   });
+  if(Object.keys(adInit).length) db.collection(COMBATS_COLL).doc(currentCombatId).update(adInit).catch(()=>{});
 
   renderCombat();
   renderTracker();
@@ -262,11 +259,9 @@ function finDeTour(){
 
   // Reset déclarations d'actions du combattant qui vient de jouer
   if(current.type === 'joueur' && db && currentCombatId){
-    db.collection(COMBATS_COLL).doc(currentCombatId).collection('actions').doc(current.id).set({
-      mineure: {used:[], pending:null},
-      majeure: {used:[], pending:null},
-      mouvement_used: false
-    }).catch(()=>{});
+    const upd = {};
+    upd['actionsDeclarees.' + current.id] = { mineure:{used:[],pending:null}, majeure:{used:[],pending:null}, mouvement_used:false };
+    db.collection(COMBATS_COLL).doc(currentCombatId).update(upd).catch(()=>{});
   }
 
   // Réinitialiser actions du combattant suivant
@@ -891,11 +886,11 @@ async function validerAction(jId, cat){
   const nom = combattants[jId]?.data?.nom || jId;
   const isMovement = ['Move','Sprint'].includes(p.type);
   const upd = {};
-  upd[cat + '.used'] = [...(data[cat].used || []), p.type];
-  upd[cat + '.pending'] = null;
-  if(isMovement) upd.mouvement_used = true;
+  upd['actionsDeclarees.' + jId + '.' + cat + '.used'] = [...(data[cat].used || []), p.type];
+  upd['actionsDeclarees.' + jId + '.' + cat + '.pending'] = null;
+  if(isMovement) upd['actionsDeclarees.' + jId + '.mouvement_used'] = true;
   try {
-    await db.collection(COMBATS_COLL).doc(currentCombatId).collection('actions').doc(jId).update(upd);
+    await db.collection(COMBATS_COLL).doc(currentCombatId).update(upd);
     // Décrémenter le compteur de dot dans actionsState
     const s = actionsState[jId];
     if(s){
@@ -915,10 +910,10 @@ async function refuserAction(jId, cat){
   const key = jId + '_' + cat;
   const raison = document.getElementById('ri-' + key)?.value?.trim() || '';
   const upd = {};
-  upd[cat + '.pending.status'] = 'refused';
-  upd[cat + '.pending.refusalReason'] = raison;
+  upd['actionsDeclarees.' + jId + '.' + cat + '.pending.status'] = 'refused';
+  upd['actionsDeclarees.' + jId + '.' + cat + '.pending.refusalReason'] = raison;
   try {
-    await db.collection(COMBATS_COLL).doc(currentCombatId).collection('actions').doc(jId).update(upd);
+    await db.collection(COMBATS_COLL).doc(currentCombatId).update(upd);
     addLog('✗ ' + nom + ' : ' + p.type + ' (' + cat + ') refusée' + (raison ? ' — ' + raison : ''));
   } catch(e){ console.error(e); }
 }

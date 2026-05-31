@@ -71,15 +71,10 @@ function initJoueur(){
       return;
     }
     combatState = snap.data();
+    actionState = combatState?.actionsDeclarees?.[joueurId] || null;
     document.getElementById('attente').style.display='none';
     document.getElementById('combat-actif').style.display='block';
     renderCombatJoueur();
-  });
-
-  // Déclarations d'actions (subcollection)
-  db.collection(COMBATS_COLL).doc(combatId).collection('actions').doc(joueurId).onSnapshot(snap => {
-    actionState = snap.exists ? snap.data() : null;
-    renderActionsDeclarees();
   });
 }
 
@@ -681,9 +676,9 @@ async function submitActionDeclaree(){
   const { category, type } = selectedActionDraft;
   const details = document.getElementById('j-action-details')?.value?.trim() || '';
   const upd = {};
-  upd[category + '.pending'] = { type, details, requestedAt: Date.now(), status: 'waiting' };
+  upd['actionsDeclarees.' + joueurId + '.' + category + '.pending'] = { type, details, requestedAt: Date.now(), status: 'waiting' };
   try {
-    await db.collection(COMBATS_COLL).doc(combatId).collection('actions').doc(joueurId).set(upd, {merge:true});
+    await db.collection(COMBATS_COLL).doc(combatId).update(upd);
     selectedActionDraft = null;
   } catch(e){ console.error(e); }
 }
@@ -696,9 +691,9 @@ function cancelActionDeclaree(){
 async function dismissRefused(category){
   if(!db) return;
   const upd = {};
-  upd[category + '.pending'] = null;
+  upd['actionsDeclarees.' + joueurId + '.' + category + '.pending'] = null;
   try {
-    await db.collection(COMBATS_COLL).doc(combatId).collection('actions').doc(joueurId).set(upd, {merge:true});
+    await db.collection(COMBATS_COLL).doc(combatId).update(upd);
   } catch(e){ console.error(e); }
 }
 
