@@ -13,18 +13,35 @@
 
   <!-- HEADER -->
   <div class="hdr">
-    <div><div class="hdr-title">🗺 CARTE — PARIS<small>Fallout Paris</small></div></div>
+    <div><div class="hdr-title">🗺 CARTE — PARIS<small id="hdr-mode">Vue joueur</small></div></div>
     <div class="hdr-btns">
-      <button class="hbtn" id="edit-btn" onclick="toggleEdit()">✎ Éditer zones</button>
-      <button class="hbtn" onclick="exportPositions()">⬇ Exporter positions</button>
+      <button class="hbtn" id="mj-btn" onclick="demanderMJ()">🔑 Mode MJ</button>
+      <button class="hbtn" id="edit-btn" onclick="toggleEdit()" style="display:none">✎ Édition</button>
       <a class="hbtn" href="../mj/mj.html">← MJ</a>
       <a class="hbtn" href="../../index.html">Accueil</a>
     </div>
   </div>
 
-  <div id="edit-hint">Mode édition : glisse les marqueurs sur la carte. Positions sauvegardées automatiquement (ce navigateur).</div>
-
   <div id="map"></div>
+
+  <!-- PANNEAU MJ -->
+  <div id="mj-panel" style="display:none">
+    <div class="mjp-section" id="mjp-tools" style="display:none">
+      <div class="mjp-title">Édition</div>
+      <button class="mjp-btn" id="btn-add-poi" onclick="toggleAddPOI()">📍 Ajouter POI</button>
+      <button class="mjp-btn" id="btn-draw-zone" onclick="toggleDrawZone()">▱ Dessiner zone</button>
+      <button class="mjp-btn" onclick="placerJetons()">⊕ Placer jetons</button>
+      <div id="draw-actions" style="display:none;margin-top:5px">
+        <button class="mjp-btn ok" onclick="finishDrawZone()">✓ Terminer</button>
+        <button class="mjp-btn cancel" onclick="cancelDrawZone()">✗ Annuler</button>
+      </div>
+      <div class="mjp-hint" id="mjp-hint"></div>
+    </div>
+    <div class="mjp-section">
+      <div class="mjp-title">Position des joueurs</div>
+      <div id="player-zones"><span class="empty">…</span></div>
+    </div>
+  </div>
 
   <!-- Message si image manquante -->
   <div id="carte-msg">
@@ -33,6 +50,9 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="../../common/shared.js"></script>
   <script src="../../common/db.js"></script>
   <script src="carte.js"></script>
 </body>
