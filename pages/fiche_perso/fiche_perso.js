@@ -502,7 +502,6 @@ function rPerkEff(){
 // ACTIONS — Interactions utilisateur
 // ============================================================
 
-function chLuck(n){char.luck_points=Math.max(0,Math.min(SP().L,(char.luck_points||0)+n));rAll();}
 function chHP(n){char.hp=Math.max(0,Math.min(hpMax(),char.hp+n));rAll();}
 function chHPd(add){const d=parseInt(document.getElementById('hpd')?.value)||1;chHP(add?d:-d);}
 function chRad(n){char.rad=Math.max(0,Math.min(hpMax(),char.rad+n));rAll();}
