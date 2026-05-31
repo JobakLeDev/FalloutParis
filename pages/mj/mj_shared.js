@@ -39,7 +39,11 @@ function enemyInstanceFromDB(nom, lvl = 1) {
   const scale = 1 + (L - 1) * 0.25;
   const hp = Math.round((e.hp || 6) * scale);
   const atk = (e.attacks && e.attacks[0]) || {};
-  const phys = (e.dr && typeof e.dr.phys === 'number') ? e.dr.phys + Math.floor((L - 1) / 2) : (e.dr?.phys ?? 0);
+  // dr.phys peut être un nombre, ou une string (RD localisée : "4 tête / 3 jambes...")
+  let phys;
+  if (typeof e.dr?.phys === 'number') phys = e.dr.phys + Math.floor((L - 1) / 2);
+  else if (typeof e.dr?.phys === 'string') phys = parseInt(e.dr.phys) || 0;
+  else phys = 0;
   return {
     nom,
     pvMax: hp, pvCur: hp,

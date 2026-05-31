@@ -1,191 +1,3549 @@
 {
   "Bloodbug": {
-    "level": 5, "type": "Insecte muté", "category": "normal", "xp": 38,
-    "attrs": { "body": 6, "mind": 5, "melee": 1, "guns": null, "other": 2 },
-    "hp": 9, "initiative": 11, "defense": 2,
-    "dr": { "phys": 0, "energy": 0, "rad": "immune", "poison": "immune" },
+    "level": 5,
+    "type": "Insecte muté",
+    "category": "swarm",
+    "xp": 38,
+    "attrs": {
+      "body": 6,
+      "mind": 5,
+      "melee": 1,
+      "guns": null,
+      "other": 2
+    },
+    "hp": 9,
+    "initiative": 11,
+    "defense": 2,
+    "dr": {
+      "phys": 0,
+      "energy": 0,
+      "rad": "immune",
+      "poison": "immune"
+    },
     "attacks": [
-      { "name": "Proboscis", "attr": "body", "skill": "melee", "tn": 9, "dmg": 5, "dmgType": "physical", "eff": "" }
+      {
+        "name": "Proboscis",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 9,
+        "dmg": 5,
+        "dmgType": "physical",
+        "eff": ""
+      }
     ],
     "abilities": [
-      { "name": "Vol", "desc": "Se déplace librement dans les airs, ignore les obstacles et terrains difficiles au sol, peut traverser les zones « vides » au-dessus du champ de bataille. Doit dépenser au moins une action mineure de mouvement par tour. Si mis à terre : 3 dés Stun (physique), +2 dés par zone au-dessus du sol." },
-      { "name": "Petit", "desc": "Plus petit que la plupart des personnages. PV = Body + ½ niveau (arrondi sup.), Défense +1. Tué par toute touche infligeant une Blessure." },
-      { "name": "Immunisé aux radiations", "desc": "Réduit tous les dégâts de radiation à 0, ne subit aucun effet de radiation." }
+      {
+        "name": "Vol",
+        "desc": "Se déplace librement dans les airs, ignore obstacles et terrains difficiles au sol, peut traverser les zones « vides ». Doit dépenser ≥1 action mineure de mouvement par tour. Si mis à terre : 3 dés Stun (physique), +2 dés par zone au-dessus du sol."
+      },
+      {
+        "name": "Petit",
+        "desc": "PV = Body + ½ niveau (arr. sup.), Défense +1. Tué par toute touche infligeant une Blessure."
+      },
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous les dégâts de radiation à 0, ne subit aucun effet de radiation."
+      }
     ],
     "inventory": [
-      { "name": "Dépeçage", "desc": "Test END + Survie difficulté 0 : 1 portion de viande de bloodbug + 1 matériau peu commun." }
+      {
+        "name": "Dépeçage",
+        "desc": "Test END + Survie diff. 0 : 1 portion de viande de bloodbug + 1 matériau peu commun."
+      }
     ],
-    "desc": "Moustique muté rencontré en essaim près des eaux stagnantes et des charognes. Corps brun-rouge de près de 60 cm, proboscis perçant capable de transpercer certaines armures. Crache du sang irradié pour aveugler ses victimes avant de les piquer."
+    "desc": "Moustique muté rencontré en essaim près des eaux stagnantes et charognes. Crache du sang irradié pour aveugler ses victimes avant de les piquer."
   },
-  "Pillard": {
-    "level": 3, "type": "Humain", "category": "normal", "xp": 25,
-    "attrs": { "body": 6, "mind": 4, "melee": 2, "guns": 2, "other": 1 },
-    "hp": 6, "initiative": 10, "defense": 1,
-    "dr": { "phys": 0, "energy": 0, "rad": 0, "poison": 0 },
-    "attacks": [ { "name": "Arme", "attr": "body", "skill": "guns", "tn": 6, "dmg": 3, "dmgType": "physical", "eff": "" } ],
-    "abilities": [],
-    "desc": "Humain hostile basique. STR 5, AGI 5."
+  "Bloatfly": {
+    "level": 2,
+    "type": "Insecte muté",
+    "category": "swarm",
+    "xp": 17,
+    "attrs": {
+      "body": 5,
+      "mind": 4,
+      "melee": 1,
+      "guns": null,
+      "other": 2
+    },
+    "hp": 6,
+    "initiative": 9,
+    "defense": 2,
+    "dr": {
+      "phys": 0,
+      "energy": 0,
+      "rad": "immune",
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Dard de larve",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 6,
+        "dmg": 4,
+        "dmgType": "physical",
+        "eff": "Radioactive"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Vol",
+        "desc": "Se déplace librement dans les airs, ignore obstacles et terrains difficiles. Doit dépenser ≥1 action mineure de mouvement par tour. Si mis à terre : 3 dés Stun, +2 dés par zone au-dessus du sol."
+      },
+      {
+        "name": "Petit",
+        "desc": "PV = Body + ½ niveau (arr. sup.), Défense +1. Tué par toute touche infligeant une Blessure."
+      },
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous les dégâts de radiation à 0, aucun effet de radiation."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Dépeçage",
+        "desc": "Test END + Survie diff. 0 : 1 portion de viande de bloatfly + 1 matériau peu commun."
+      }
+    ],
+    "desc": "Mouche pré-Guerre transformée par les radiations en nuisible bouffi et mortel. Attaque à distance avec des larves-darts. Souvent en essaim de 4, agressif et tenace."
   },
-  "Pillard Vétéran": {
-    "level": 6, "type": "Humain", "category": "normal", "xp": 50,
-    "attrs": { "body": 7, "mind": 5, "melee": 2, "guns": 3, "other": 2 },
-    "hp": 11, "initiative": 12, "defense": 1,
-    "dr": { "phys": 1, "energy": 0, "rad": 0, "poison": 0 },
-    "attacks": [ { "name": "Arme améliorée", "attr": "body", "skill": "guns", "tn": 7, "dmg": 4, "dmgType": "physical", "eff": "" } ],
-    "abilities": [],
-    "desc": "Pillard expérimenté. STR 6, AGI 6. Arme améliorée."
-  },
-  "Goule errante": {
-    "level": 4, "type": "Goule", "category": "normal", "xp": 30,
-    "attrs": { "body": 5, "mind": 3, "melee": 2, "guns": null, "other": 1 },
-    "hp": 9, "initiative": 8, "defense": 1,
-    "dr": { "phys": 0, "energy": 0, "rad": "immune", "poison": 0 },
-    "attacks": [ { "name": "Griffes", "attr": "body", "skill": "melee", "tn": 5, "dmg": 3, "dmgType": "physical", "eff": "" } ],
-    "abilities": [],
-    "desc": "Goule lente et prévisible. END 6."
-  },
-  "Goule enragée": {
-    "level": 8, "type": "Goule", "category": "normal", "xp": 60,
-    "attrs": { "body": 8, "mind": 2, "melee": 3, "guns": null, "other": 1 },
-    "hp": 11, "initiative": 10, "defense": 2,
-    "dr": { "phys": 1, "energy": 0, "rad": "immune", "poison": 0 },
-    "attacks": [ { "name": "Charge", "attr": "body", "skill": "melee", "tn": 8, "dmg": 4, "dmgType": "physical", "eff": "" } ],
-    "abilities": [],
-    "desc": "Goule agressive. AGI 8. Charge dès l'init."
-  },
-  "Goule irradiée": {
-    "level": 11, "type": "Goule", "category": "normal", "xp": 80,
-    "attrs": { "body": 7, "mind": 2, "melee": 3, "guns": null, "other": 2 },
-    "hp": 15, "initiative": 9, "defense": 1,
-    "dr": { "phys": 2, "energy": 0, "rad": "immune", "poison": 0 },
-    "attacks": [ { "name": "Griffes irradiées", "attr": "body", "skill": "melee", "tn": 7, "dmg": 4, "dmgType": "radiation", "eff": "Radioactive" } ],
-    "abilities": [],
-    "desc": "Irradie au contact. RAD 2 par touche."
-  },
-  "Chien sauvage": {
-    "level": 2, "type": "Animal", "category": "normal", "xp": 15,
-    "attrs": { "body": 8, "mind": 3, "melee": 2, "guns": null, "other": 1 },
-    "hp": 6, "initiative": 11, "defense": 2,
-    "dr": { "phys": 0, "energy": 0, "rad": 0, "poison": 0 },
-    "attacks": [ { "name": "Morsure", "attr": "body", "skill": "melee", "tn": 8, "dmg": 2, "dmgType": "physical", "eff": "" } ],
-    "abilities": [],
-    "desc": "Rapide. AGI 9. Priorité aux membres."
-  },
-  "Super Mutant": {
-    "level": 14, "type": "Super Mutant", "category": "notable", "xp": 100,
-    "attrs": { "body": 10, "mind": 4, "melee": 3, "guns": 3, "other": 2 },
-    "hp": 17, "initiative": 14, "defense": 1,
-    "dr": { "phys": 2, "energy": 1, "rad": "immune", "poison": 0 },
-    "attacks": [ { "name": "Arme lourde", "attr": "body", "skill": "guns", "tn": 10, "dmg": 5, "dmgType": "physical", "eff": "" } ],
-    "abilities": [],
-    "desc": "STR 10, END 8. Arme lourde. Résistant."
-  },
-  "Mite de vapeur": {
-    "level": 6, "type": "Insecte muté", "category": "normal", "xp": 45,
-    "attrs": { "body": 6, "mind": 2, "melee": 2, "guns": null, "other": 2 },
-    "hp": 10, "initiative": 8, "defense": 1,
-    "dr": { "phys": 1, "energy": 0, "rad": 0, "poison": 0 },
-    "attacks": [ { "name": "Vapeur brûlante", "attr": "body", "skill": "other", "tn": 6, "dmg": 3, "dmgType": "energy", "eff": "Persistent" } ],
-    "abilities": [],
-    "desc": "Crache vapeur brûlante. Zone Courte."
+  "Radroach": {
+    "level": 1,
+    "type": "Insecte muté",
+    "category": "swarm",
+    "xp": 10,
+    "attrs": {
+      "body": 5,
+      "mind": 4,
+      "melee": 1,
+      "guns": null,
+      "other": 2
+    },
+    "hp": 6,
+    "initiative": 9,
+    "defense": 2,
+    "dr": {
+      "phys": 0,
+      "energy": 0,
+      "rad": "immune",
+      "poison": "immune"
+    },
+    "attacks": [
+      {
+        "name": "Morsure",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 6,
+        "dmg": 1,
+        "dmgType": "physical",
+        "eff": "Radioactive"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous les dégâts de radiation à 0, aucun effet de radiation."
+      },
+      {
+        "name": "Immunisé au poison",
+        "desc": "Réduit tous les dégâts de poison à 0, aucun effet de poison."
+      },
+      {
+        "name": "Petit",
+        "desc": "PV = Body + ½ niveau (arr. sup.), Défense +1. Tué par toute touche infligeant une Blessure."
+      },
+      {
+        "name": "Sournois",
+        "desc": "TN de 10 pour les tests de Discrétion, +1d20 sur les attaques furtives."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Dépeçage",
+        "desc": "Test END + Survie diff. 0 : 1 portion de viande de radroach."
+      }
+    ],
+    "desc": "Cafard radioactif géant infestant ruines et décharges. Facile en petit nombre, mais un essaim peut submerger les imprudents."
   },
   "Radscorpion": {
-    "level": 12, "type": "Animal muté", "category": "notable", "xp": 90,
-    "attrs": { "body": 9, "mind": 3, "melee": 3, "guns": null, "other": 2 },
-    "hp": 16, "initiative": 12, "defense": 1,
-    "dr": { "phys": 3, "energy": 1, "rad": "immune", "poison": "immune" },
-    "attacks": [ { "name": "Dard", "attr": "body", "skill": "melee", "tn": 9, "dmg": 4, "dmgType": "poison", "eff": "Persistent" } ],
-    "abilities": [],
-    "desc": "Venin : 1D rad/tour. Carapace RD 3."
+    "level": 7,
+    "type": "Arachnide muté",
+    "category": "elite",
+    "xp": 74,
+    "attrs": {
+      "body": 7,
+      "mind": 5,
+      "melee": 5,
+      "guns": null,
+      "other": 3
+    },
+    "hp": 21,
+    "initiative": 12,
+    "defense": 1,
+    "dr": {
+      "phys": 4,
+      "energy": 3,
+      "rad": "immune",
+      "poison": "immune"
+    },
+    "attacks": [
+      {
+        "name": "Pince",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 11,
+        "dmg": 4,
+        "dmgType": "physical",
+        "eff": "Vicious"
+      },
+      {
+        "name": "Dard",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 11,
+        "dmg": 3,
+        "dmgType": "poison",
+        "eff": "Persistent"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous les dégâts de radiation à 0, aucun effet de radiation."
+      },
+      {
+        "name": "Immunisé au poison",
+        "desc": "Réduit tous les dégâts de poison à 0, aucun effet de poison."
+      },
+      {
+        "name": "Grand",
+        "desc": "+1 PV par niveau, Défense −1 (min 1). Coup critique seulement si une attaque inflige 7+ dégâts (après RD), au lieu de 5+."
+      },
+      {
+        "name": "Fouisseur",
+        "desc": "Action majeure pour s'enterrer : invisible et inciblable, creuse 2 zones par action majeure. Émerge avec une action mineure. Ne peut creuser pierre, métal ou bois."
+      },
+      {
+        "name": "Point faible",
+        "desc": "Si l'attaquant vise la tête, ignore la RD (sauf touche aléatoire sur la tête)."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Dépeçage",
+        "desc": "Test END + Survie diff. 1 : 2 dés de viande de radscorpion. Sur Effet : 1 matériau Rare, ou un œuf de radscorpion sur 2 Effets."
+      }
+    ],
+    "desc": "Scorpion empereur muté à taille de petite voiture. Corps blindé, pinces puissantes, dard venimeux et vitesse fulgurante. Rivalise en dangerosité avec le deathclaw."
   },
-  "Mole Rat": {
-    "level": 2, "type": "Animal muté", "category": "normal", "xp": 20,
-    "attrs": { "body": 5, "mind": 2, "melee": 2, "guns": null, "other": 1 },
-    "hp": 7, "initiative": 7, "defense": 1,
-    "dr": { "phys": 0, "energy": 0, "rad": 0, "poison": 0 },
-    "attacks": [ { "name": "Morsure", "attr": "body", "skill": "melee", "tn": 5, "dmg": 3, "dmgType": "physical", "eff": "" } ],
-    "abilities": [],
-    "desc": "Attaque en groupe. Peut creuser."
-  },
-  "Mirelurk": {
-    "level": 15, "type": "Animal muté", "category": "notable", "xp": 110,
-    "attrs": { "body": 9, "mind": 3, "melee": 3, "guns": null, "other": 2 },
-    "hp": 17, "initiative": 12, "defense": 1,
-    "dr": { "phys": 4, "energy": 1, "rad": "immune", "poison": 1 },
-    "attacks": [ { "name": "Pince", "attr": "body", "skill": "melee", "tn": 9, "dmg": 4, "dmgType": "physical", "eff": "" } ],
-    "abilities": [ { "name": "Carapace frontale", "desc": "RD physique 4 de face, 0 dans le dos. Viser le dos pour ignorer la carapace." } ],
-    "desc": "Carapace très résistante devant. Dos RD 0."
-  },
-  "Robot Protectron": {
-    "level": 9, "type": "Robot", "category": "normal", "xp": 70,
-    "attrs": { "body": 6, "mind": 6, "melee": 1, "guns": 3, "other": 2 },
-    "hp": 11, "initiative": 12, "defense": 1,
-    "dr": { "phys": 3, "energy": 2, "rad": "immune", "poison": "immune" },
-    "attacks": [ { "name": "Laser", "attr": "mind", "skill": "guns", "tn": 6, "dmg": 3, "dmgType": "energy", "eff": "" } ],
-    "abilities": [ { "name": "Explosion", "desc": "Explose à sa destruction : 4 dés de zone (blast) sur les cibles adjacentes." } ],
-    "desc": "Laser. Explose à mort (4D blast)."
-  },
-  "Robot Assaultron": {
-    "level": 16, "type": "Robot", "category": "notable", "xp": 120,
-    "attrs": { "body": 8, "mind": 7, "melee": 3, "guns": 4, "other": 3 },
-    "hp": 16, "initiative": 15, "defense": 2,
-    "dr": { "phys": 4, "energy": 2, "rad": "immune", "poison": "immune" },
-    "attacks": [ { "name": "Rayon tête", "attr": "mind", "skill": "guns", "tn": 8, "dmg": 5, "dmgType": "energy", "eff": "Piercing 2" } ],
-    "abilities": [ { "name": "Rapide", "desc": "Très rapide. Rayon de tête dévastateur après une charge." } ],
-    "desc": "Très rapide. Rayon tête dévastateur."
-  },
-  "Légion de Fer": {
-    "level": 10, "type": "Humain", "category": "normal", "xp": 75,
-    "attrs": { "body": 7, "mind": 6, "melee": 3, "guns": 3, "other": 2 },
-    "hp": 11, "initiative": 13, "defense": 1,
-    "dr": { "phys": 2, "energy": 1, "rad": 0, "poison": 0 },
-    "attacks": [ { "name": "Arme de service", "attr": "body", "skill": "guns", "tn": 7, "dmg": 4, "dmgType": "physical", "eff": "" } ],
-    "abilities": [ { "name": "Tactique de groupe", "desc": "Organisation militaire : bonus quand plusieurs membres attaquent la même cible." } ],
-    "desc": "Organisation militaire. Tactique de groupe."
-  },
-  "Saccageur": {
-    "level": 5, "type": "Humain", "category": "normal", "xp": 40,
-    "attrs": { "body": 6, "mind": 4, "melee": 2, "guns": 2, "other": 1 },
-    "hp": 10, "initiative": 10, "defense": 1,
-    "dr": { "phys": 1, "energy": 0, "rad": 0, "poison": 0 },
-    "attacks": [ { "name": "Arme de fortune", "attr": "body", "skill": "melee", "tn": 6, "dmg": 3, "dmgType": "physical", "eff": "" } ],
-    "abilities": [],
-    "desc": "Armure de fortune. Imprévisible."
-  },
-  "Marchand hostile": {
-    "level": 5, "type": "Humain", "category": "normal", "xp": 35,
-    "attrs": { "body": 5, "mind": 5, "melee": 1, "guns": 2, "other": 2 },
-    "hp": 8, "initiative": 10, "defense": 1,
-    "dr": { "phys": 0, "energy": 0, "rad": 0, "poison": 0 },
-    "attacks": [ { "name": "Pistolet", "attr": "body", "skill": "guns", "tn": 5, "dmg": 3, "dmgType": "physical", "eff": "" } ],
-    "abilities": [ { "name": "Fuite", "desc": "Tente de fuir s'il est blessé." } ],
-    "desc": "Tendu, armé. Peut fuir si blessé."
-  },
-  "Homme de main": {
-    "level": 7, "type": "Humain", "category": "normal", "xp": 55,
-    "attrs": { "body": 7, "mind": 5, "melee": 2, "guns": 3, "other": 2 },
-    "hp": 10, "initiative": 12, "defense": 1,
-    "dr": { "phys": 1, "energy": 0, "rad": 0, "poison": 0 },
-    "attacks": [ { "name": "Arme", "attr": "body", "skill": "guns", "tn": 7, "dmg": 4, "dmgType": "physical", "eff": "" } ],
-    "abilities": [],
-    "desc": "Mercenaire. STR 6, AGI 7. Bien équipé."
+  "Stingwing": {
+    "level": 5,
+    "type": "Insecte muté",
+    "category": "swarm",
+    "xp": 38,
+    "attrs": {
+      "body": 6,
+      "mind": 5,
+      "melee": 3,
+      "guns": null,
+      "other": 2
+    },
+    "hp": 9,
+    "initiative": 11,
+    "defense": 3,
+    "dr": {
+      "phys": 0,
+      "energy": 0,
+      "rad": "immune",
+      "poison": "immune"
+    },
+    "attacks": [
+      {
+        "name": "Dard barbelé",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 9,
+        "dmg": 2,
+        "dmgType": "physical",
+        "eff": "Persistent, Poison"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous les dégâts de radiation à 0, aucun effet de radiation."
+      },
+      {
+        "name": "Immunisé au poison",
+        "desc": "Réduit tous les dégâts de poison à 0, aucun effet de poison."
+      },
+      {
+        "name": "Petit",
+        "desc": "PV = Body + ½ niveau (arr. sup.), Défense +1. Tué par toute touche infligeant une Blessure."
+      },
+      {
+        "name": "Vol",
+        "desc": "Se déplace librement dans les airs, ignore obstacles et terrains difficiles. Doit dépenser ≥1 action mineure de mouvement par tour. Si mis à terre : 3 dés Stun, +2 dés par zone au-dessus du sol."
+      },
+      {
+        "name": "Piqué (Dive-Bomb)",
+        "desc": "S'il entre en Allonge et fait une attaque de mêlée le même tour, relance 1d20 sur l'attaque. Après l'attaque, peut dépenser 1 PA pour se déplacer d'une zone."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Dépeçage",
+        "desc": "Test END + Survie diff. 0 : 1 portion de viande de stingwing."
+      }
+    ],
+    "desc": "Mouche-scorpion pré-Guerre mutée, rapide et agile, au dard venimeux. Niche au sol comme en hauteur ; attaque en essaim si dérangée."
   },
   "Brahmane sauvage": {
-    "level": 3, "type": "Animal", "category": "normal", "xp": 25,
-    "attrs": { "body": 7, "mind": 2, "melee": 2, "guns": null, "other": 1 },
-    "hp": 12, "initiative": 9, "defense": 1,
-    "dr": { "phys": 1, "energy": 0, "rad": 0, "poison": 0 },
-    "attacks": [ { "name": "Charge", "attr": "body", "skill": "melee", "tn": 7, "dmg": 3, "dmgType": "physical", "eff": "" } ],
-    "abilities": [],
-    "desc": "Charge si perturbé. Deux têtes."
+    "level": 3,
+    "type": "Mammifère muté",
+    "category": "normal",
+    "xp": 24,
+    "attrs": {
+      "body": 6,
+      "mind": 4,
+      "melee": 1,
+      "guns": null,
+      "other": 2
+    },
+    "hp": 9,
+    "initiative": 10,
+    "defense": 1,
+    "dr": {
+      "phys": 1,
+      "energy": 0,
+      "rad": "immune",
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Coup de tête",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 6,
+        "dmg": 4,
+        "dmgType": "physical",
+        "eff": ""
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous les dégâts de radiation à 0, aucun effet de radiation."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Dépeçage",
+        "desc": "Test END + Survie diff. 0 : 1 portion de viande de brahmine + 2 matériaux peu communs."
+      }
+    ],
+    "desc": "Bovin muté à deux têtes, omniprésent dans les terres désolées. Produit lait, viande et cuir ; docile, souvent élevé ou utilisé comme bête de somme."
+  },
+  "Chien sauvage": {
+    "level": 3,
+    "type": "Mammifère muté",
+    "category": "swarm",
+    "xp": 24,
+    "attrs": {
+      "body": 6,
+      "mind": 4,
+      "melee": 3,
+      "guns": null,
+      "other": 2
+    },
+    "hp": 9,
+    "initiative": 10,
+    "defense": 1,
+    "dr": {
+      "phys": 0,
+      "energy": 0,
+      "rad": "immune",
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Morsure",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 8,
+        "dmg": 4,
+        "dmgType": "physical",
+        "eff": ""
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Sens aiguisés",
+        "desc": "Sens très développés : détecte ce que les autres ne perçoivent pas, réduit de 1 la difficulté des tests PER (min 0)."
+      },
+      {
+        "name": "Féroce",
+        "desc": "Créature sauvage et agressive qui attaque à vue."
+      },
+      {
+        "name": "Agressif",
+        "desc": "En entrant en scène, génère 1 Point d'Action (pool MJ si ennemi)."
+      },
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous les dégâts de radiation à 0, aucun effet de radiation."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Dépeçage",
+        "desc": "Test END + Survie diff. 0 : 1 portion de viande de chien errant."
+      }
+    ],
+    "desc": "Variante mutée et galeuse du chien (mongrel). Meutes enragées et irradiées qui chargent leur proie sans hésiter."
+  },
+  "Chien": {
+    "level": 3,
+    "type": "Mammifère",
+    "category": "swarm",
+    "xp": 24,
+    "attrs": {
+      "body": 5,
+      "mind": 5,
+      "melee": 3,
+      "guns": null,
+      "other": 2
+    },
+    "hp": 8,
+    "initiative": 10,
+    "defense": 1,
+    "dr": {
+      "phys": 0,
+      "energy": 0,
+      "rad": 0,
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Morsure",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 8,
+        "dmg": 4,
+        "dmgType": "physical",
+        "eff": ""
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Sens aiguisés",
+        "desc": "Sens très développés : détecte ce que les autres ne perçoivent pas, réduit de 1 la difficulté des tests PER (min 0)."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Dépeçage",
+        "desc": "Test END + Survie diff. 0 : 1 portion de viande de chien."
+      }
+    ],
+    "desc": "Chien des terres désolées, non muté, proche de ses ancêtres pré-Guerre. Certains sont amicaux, d'autres errent en meutes hostiles."
+  },
+  "Mutant Hound": {
+    "level": 4,
+    "type": "Mammifère muté",
+    "category": "normal",
+    "xp": 31,
+    "attrs": {
+      "body": 9,
+      "mind": 5,
+      "melee": 3,
+      "guns": null,
+      "other": 1
+    },
+    "hp": 10,
+    "initiative": 10,
+    "defense": 1,
+    "dr": {
+      "phys": 1,
+      "energy": 1,
+      "rad": "immune",
+      "poison": "immune"
+    },
+    "attacks": [
+      {
+        "name": "Morsure",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 9,
+        "dmg": 3,
+        "dmgType": "physical",
+        "eff": ""
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous les dégâts de radiation à 0, aucun effet de radiation."
+      },
+      {
+        "name": "Immunisé au poison",
+        "desc": "Réduit tous les dégâts de poison à 0, aucun effet de poison."
+      },
+      {
+        "name": "Sens aiguisés",
+        "desc": "Sens très développés : détecte ce que les autres ne perçoivent pas, réduit de 1 la difficulté des tests PER (min 0)."
+      },
+      {
+        "name": "Hurlement d'alerte",
+        "desc": "Au 1er round, en action majeure : chaque super mutant ou Mutant Hound à portée Longue gagne une 2e action mineure à son prochain tour. Une fois par combat par PNJ."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Dépeçage",
+        "desc": "Test END + Survie diff. 1 : 1 portion de viande de Mutant Hound, +1 par PA dépensé. Sur Effet : 1 matériau commun."
+      }
+    ],
+    "desc": "Chien muté par le V.E.F., bien plus grand et agressif qu'un chien normal, peau verdâtre et glabre. Presque toujours aux côtés des super mutants comme chiens de garde."
+  },
+  "Mole Rat": {
+    "level": 2,
+    "type": "Mammifère muté",
+    "category": "swarm",
+    "xp": 17,
+    "attrs": {
+      "body": 5,
+      "mind": 4,
+      "melee": 2,
+      "guns": null,
+      "other": 2
+    },
+    "hp": 7,
+    "initiative": 9,
+    "defense": 1,
+    "dr": {
+      "phys": 1,
+      "energy": 0,
+      "rad": "immune",
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Morsure",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 7,
+        "dmg": 4,
+        "dmgType": "physical",
+        "eff": "Piercing"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Fouisseur",
+        "desc": "Action majeure pour s'enterrer afin de fuir et préparer son attaque. Au tour suivant, action mineure pour émerger n'importe où à portée Moyenne. Pour 1 PA : +1 dé de combat à la morsure après émergence."
+      },
+      {
+        "name": "Sens aiguisés",
+        "desc": "Sens très développés : détecte ce que les autres ne perçoivent pas, réduit de 1 la difficulté des tests PER (min 0), y compris détecter les créatures en surface depuis sous terre."
+      },
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous les dégâts de radiation à 0, aucun effet de radiation."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Dépeçage",
+        "desc": "Test END + Survie diff. 0 : 1 portion de viande de mole rat + 1 matériau commun."
+      }
+    ],
+    "desc": "Rat-taupe muté de la taille d'un chien, vivant en meute. Sa capacité à creuser lui donne l'effet de surprise ; vorace et imprévisible."
+  },
+  "Mirelurk Hatchling": {
+    "level": 1,
+    "type": "Crustacé muté",
+    "category": "swarm",
+    "xp": 10,
+    "attrs": {
+      "body": 4,
+      "mind": 4,
+      "melee": 1,
+      "guns": null,
+      "other": 1
+    },
+    "hp": 5,
+    "initiative": 8,
+    "defense": 2,
+    "dr": {
+      "phys": 0,
+      "energy": 0,
+      "rad": "immune",
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Pinces",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 5,
+        "dmg": 3,
+        "dmgType": "physical",
+        "eff": ""
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous les dégâts de radiation à 0, aucun effet de radiation."
+      },
+      {
+        "name": "Petit",
+        "desc": "PV = Body + ½ niveau (arr. sup.), Défense +1. Tué par toute touche infligeant une Blessure."
+      },
+      {
+        "name": "Aquatique",
+        "desc": "Nage et plonge indéfiniment sans respirer. Aucune difficulté supplémentaire sous l'eau."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Dépeçage",
+        "desc": "Test END + Survie diff. 0 : 1 portion de viande de mirelurk."
+      }
+    ],
+    "desc": "Jeune mirelurk fraîchement éclos, à carapace molle, de la taille d'un radroach. Facile à abattre seul, mais pondu en masse."
+  },
+  "Mirelurk": {
+    "level": 7,
+    "type": "Crustacé muté",
+    "category": "normal",
+    "xp": 45,
+    "attrs": {
+      "body": 7,
+      "mind": 5,
+      "melee": 4,
+      "guns": null,
+      "other": 3
+    },
+    "hp": 14,
+    "initiative": 12,
+    "defense": 1,
+    "dr": {
+      "phys": 4,
+      "energy": 2,
+      "rad": "immune",
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Pinces",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 11,
+        "dmg": 6,
+        "dmgType": "physical",
+        "eff": ""
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous les dégâts de radiation à 0, aucun effet de radiation."
+      },
+      {
+        "name": "Petit point faible",
+        "desc": "Le corps est blindé (RD 4) mais la face est un point faible (RD 1), petite et difficile à toucher : traitée comme Défense 2. Défense +1 (2) si on vise la face."
+      },
+      {
+        "name": "Aquatique",
+        "desc": "Nage et plonge indéfiniment sans respirer. Aucune difficulté supplémentaire sous l'eau."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Dépeçage",
+        "desc": "Test END + Survie diff. 0 : 2 dés de viande de mirelurk. Par Effet : 1 viande de mirelurk à carapace molle."
+      }
+    ],
+    "desc": "Le plus commun de la famille des mirelurks : crustacé en forme de limule aux pinces capables de briser des os. Vit près des grandes étendues d'eau."
+  },
+  "Mirelurk Hunter": {
+    "level": 12,
+    "type": "Crustacé muté",
+    "category": "elite",
+    "xp": 88,
+    "attrs": {
+      "body": 8,
+      "mind": 6,
+      "melee": 5,
+      "guns": null,
+      "other": 4
+    },
+    "hp": 20,
+    "initiative": 14,
+    "defense": 1,
+    "dr": {
+      "phys": 4,
+      "energy": 2,
+      "rad": "immune",
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Pinces",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 14,
+        "dmg": 9,
+        "dmgType": "physical",
+        "eff": ""
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous les dégâts de radiation à 0, aucun effet de radiation."
+      },
+      {
+        "name": "Petit point faible",
+        "desc": "Le corps est blindé (RD 4) mais la face est un point faible (RD 2), petite et difficile à toucher : traitée comme Défense 2. Défense +1 (2) si on vise la face."
+      },
+      {
+        "name": "Aquatique",
+        "desc": "Nage et plonge indéfiniment sans respirer. Aucune difficulté supplémentaire sous l'eau."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Dépeçage",
+        "desc": "Test END + Survie diff. 0 : 2 dés de viande de mirelurk. Par Effet : 1 viande de mirelurk à carapace molle."
+      }
+    ],
+    "desc": "Descend plutôt du homard que du crabe : allure allongée, queue évasée, pinces puissantes. Plus agressif, carapace plus résistante, crache un acide sur sa proie."
+  },
+  "Mirelurk Queen": {
+    "level": 19,
+    "type": "Crustacé muté",
+    "category": "boss",
+    "xp": 137,
+    "attrs": {
+      "body": 12,
+      "mind": 6,
+      "melee": 5,
+      "guns": null,
+      "other": 4
+    },
+    "hp": 50,
+    "initiative": 18,
+    "defense": 1,
+    "dr": {
+      "phys": 10,
+      "energy": 7,
+      "rad": "immune",
+      "poison": 9
+    },
+    "attacks": [
+      {
+        "name": "Pinces",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 17,
+        "dmg": 12,
+        "dmgType": "physical",
+        "eff": "Vicious"
+      },
+      {
+        "name": "Jet d'acide",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 17,
+        "dmg": 10,
+        "dmgType": "radiation",
+        "eff": "Piercing"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Ponte de larves",
+        "desc": "1× par round, le MJ peut dépenser 4 PA en action majeure pour faire apparaître 4 larves de mirelurk. La queen ne peut alors pas attaquer en action majeure ce round."
+      },
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous les dégâts de radiation à 0, aucun effet de radiation."
+      },
+      {
+        "name": "Immunisé à la peur",
+        "desc": "Ne peut être intimidée ni menacée ; ignore ou attaque quiconque tente."
+      },
+      {
+        "name": "Petit point faible",
+        "desc": "Corps blindé (RD 10) mais la face est un point faible (RD 5), traitée comme Défense 2."
+      },
+      {
+        "name": "Aquatique",
+        "desc": "Nage et plonge indéfiniment sans respirer. Aucune difficulté supplémentaire sous l'eau."
+      },
+      {
+        "name": "Grand",
+        "desc": "+1 PV par niveau, Défense −1 (min 1). Coup critique seulement si une attaque inflige 7+ dégâts (après RD), au lieu de 5+."
+      },
+      {
+        "name": "Agressif",
+        "desc": "En entrant en scène, génère 1 Point d'Action (pool MJ si ennemi)."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Pillage",
+        "desc": "À sa mort : 4d20 capsules dans son corps/repaire, et 4 dés de combat — pour chaque Effet, 1 lancer sur la table de junk. Peut contenir jusqu'à 3 armes et 3d20 munitions adaptées."
+      },
+      {
+        "name": "Dépeçage",
+        "desc": "Test END + Survie diff. 0 : 5 portions de viande de mirelurk reine."
+      }
+    ],
+    "desc": "Variante rare et gigantesque de mirelurk, atteignant la taille d'un béhémoth. Carapace quasi impénétrable, face vulnérable, crache de l'acide et lâche des essaims de larves."
+  },
+  "Deathclaw": {
+    "level": 11,
+    "type": "Reptile muté",
+    "category": "boss",
+    "xp": 81,
+    "attrs": {
+      "body": 9,
+      "mind": 5,
+      "melee": 5,
+      "guns": null,
+      "other": 3
+    },
+    "hp": 20,
+    "initiative": 14,
+    "defense": 2,
+    "dr": {
+      "phys": 6,
+      "energy": 9,
+      "rad": "immune",
+      "poison": 9
+    },
+    "attacks": [
+      {
+        "name": "Griffes",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 14,
+        "dmg": 6,
+        "dmgType": "physical",
+        "eff": "Piercing"
+      },
+      {
+        "name": "Charge (Slam)",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 6,
+        "dmg": 4,
+        "dmgType": "physical",
+        "eff": "Stun"
+      },
+      {
+        "name": "Objet lourd",
+        "attr": "body",
+        "skill": "guns",
+        "tn": 9,
+        "dmg": 4,
+        "dmgType": "physical",
+        "eff": "Stun",
+        "range": "M"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous les dégâts de radiation à 0, aucun effet de radiation."
+      },
+      {
+        "name": "Grand",
+        "desc": "+1 PV par niveau, Défense −1 (min 1). Coup critique seulement si une attaque inflige 7+ dégâts (après RD), au lieu de 5+."
+      },
+      {
+        "name": "Sens aiguisés",
+        "desc": "Sens très développés : détecte ce que les autres ne perçoivent pas, réduit de 1 la difficulté des tests PER (min 0)."
+      },
+      {
+        "name": "Lacération (Rend)",
+        "desc": "Peut rendre une attaque de Griffes plus mortelle en augmentant sa difficulté de +1 : si réussie, +2 dés de dégâts."
+      },
+      {
+        "name": "Point faible",
+        "desc": "Si l'attaquant vise le torse, ignore la RD (sauf touche aléatoire sur la tête)."
+      },
+      {
+        "name": "Force colossale",
+        "desc": "Capable de soulever et lancer des objets aussi gros qu'une voiture."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Dépeçage",
+        "desc": "Test END + Survie diff. 1 : 2 dés de portions de viande de deathclaw."
+      }
+    ],
+    "desc": "Machine à tuer issue du génie génétique pré-Guerre, griffes et cornes acérées, plus rapide que la plupart des créatures de sa taille. Une tanière de deathclaws est presque une condamnation à mort."
+  },
+  "Yao Guai": {
+    "level": 14,
+    "type": "Mammifère muté",
+    "category": "elite",
+    "xp": 102,
+    "attrs": {
+      "body": 9,
+      "mind": 6,
+      "melee": 5,
+      "guns": null,
+      "other": 4
+    },
+    "hp": 37,
+    "initiative": 15,
+    "defense": 1,
+    "dr": {
+      "phys": 2,
+      "energy": 1,
+      "rad": "immune",
+      "poison": 2
+    },
+    "attacks": [
+      {
+        "name": "Griffes",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 14,
+        "dmg": 9,
+        "dmgType": "physical",
+        "eff": "Vicious"
+      },
+      {
+        "name": "Morsure",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 14,
+        "dmg": 10,
+        "dmgType": "physical",
+        "eff": "Piercing"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous les dégâts de radiation à 0, aucun effet de radiation."
+      },
+      {
+        "name": "Grand",
+        "desc": "+1 PV par niveau, Défense −1 (min 1). Coup critique seulement si une attaque inflige 7+ dégâts (après RD), au lieu de 5+."
+      },
+      {
+        "name": "Agressif",
+        "desc": "En entrant en scène, génère 1 Point d'Action (pool MJ si ennemi)."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Dépeçage",
+        "desc": "Test END + Survie diff. 1 : 2 dés de portions de viande de yao guai. Sur Effet : 2 matériaux communs."
+      }
+    ],
+    "desc": "Ce qu'il reste de la population d'ours après la Grande Guerre. Griffes allongées, masse musculaire accrue, morsure puissante. Territorial ; s'attaque même aux deathclaws."
+  },
+  "Super Mutant": {
+    "level": 5,
+    "type": "Humain muté",
+    "category": "normal",
+    "xp": 38,
+    "attrs": {
+      "body": 9,
+      "mind": 5,
+      "melee": 4,
+      "guns": 3,
+      "other": 3
+    },
+    "hp": 12,
+    "initiative": 10,
+    "defense": 1,
+    "dr": {
+      "phys": 2,
+      "energy": 2,
+      "rad": 0,
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Frappe désarmée",
+        "attr": "str",
+        "skill": "unarmed",
+        "tn": 11,
+        "dmg": 4,
+        "dmgType": "physical",
+        "eff": ""
+      },
+      {
+        "name": "Planche",
+        "attr": "str",
+        "skill": "melee weapons",
+        "tn": 13,
+        "dmg": 6,
+        "dmgType": "physical",
+        "eff": "",
+        "special": "Two-Handed"
+      },
+      {
+        "name": "Fusil à verrou artisanal",
+        "attr": "agi",
+        "skill": "small guns",
+        "tn": 8,
+        "dmg": 5,
+        "dmgType": "physical",
+        "eff": "Piercing",
+        "range": "M",
+        "fireRate": 0,
+        "special": "Two-Handed"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Barbare",
+        "desc": "+2 aux résistances Physique et Énergie, déjà inclus."
+      },
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous les dégâts radiation à 0."
+      },
+      {
+        "name": "Immunisé au poison",
+        "desc": "Réduit tous les dégâts poison à 0."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Fusil à verrou artisanal, planche, ossements humains assortis, richesse 1."
+      }
+    ],
+    "desc": "Humain muté massif, vert et brutal, souvent rencontré en groupe ou accompagné de chiens mutants."
   },
   "Radstag": {
-    "level": 1, "type": "Animal", "category": "normal", "xp": 10,
-    "attrs": { "body": 6, "mind": 3, "melee": 1, "guns": null, "other": 1 },
-    "hp": 7, "initiative": 9, "defense": 2,
-    "dr": { "phys": 0, "energy": 0, "rad": 0, "poison": 0 },
-    "attacks": [ { "name": "Bois", "attr": "body", "skill": "melee", "tn": 6, "dmg": 2, "dmgType": "physical", "eff": "" } ],
+    "level": 5,
+    "type": "Mammifère muté",
+    "category": "normal",
+    "xp": 38,
+    "attrs": {
+      "body": 5,
+      "mind": 5,
+      "melee": 3,
+      "guns": null,
+      "other": 2
+    },
+    "hp": 10,
+    "initiative": 10,
+    "defense": 1,
+    "dr": {
+      "phys": 1,
+      "energy": 0,
+      "rad": "immune",
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Bois",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 8,
+        "dmg": 5,
+        "dmgType": "physical",
+        "eff": "Piercing"
+      }
+    ],
     "abilities": [],
-    "desc": "Fuit en priorité. Attaque si acculé."
+    "inventory": [
+      {
+        "name": "Dépeçage",
+        "desc": "Test END + Survie diff. 0 : 2 dés de viande de radstag. Sur Effet : 1 peau de radstag."
+      }
+    ],
+    "desc": "Cerf muté à deux têtes (comme la brahmine) et deux pattes atrophiées sur le poitrail. Se déplace en troupeau, docile sauf s'il est menacé."
+  },
+  "Feral Ghoul": {
+    "level": 3,
+    "type": "Humain muté",
+    "category": "swarm",
+    "xp": 10,
+    "attrs": {
+      "body": 5,
+      "mind": 5,
+      "melee": 3,
+      "guns": null,
+      "other": 2
+    },
+    "hp": 8,
+    "initiative": 10,
+    "defense": 1,
+    "dr": {
+      "phys": 0,
+      "energy": 0,
+      "rad": "immune",
+      "poison": "immune"
+    },
+    "attacks": [
+      {
+        "name": "Attaque sauvage",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 8,
+        "dmg": 3,
+        "dmgType": "physical radioactive",
+        "eff": ""
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Feral",
+        "desc": "Ignore persuasion. Se dirige vers l'ennemi le plus proche. Peut être attiré par lumière forte ou bruit."
+      },
+      {
+        "name": "Goule",
+        "desc": "Récupère 1 HP par 3 dégâts radiations subis."
+      },
+      {
+        "name": "Faire le mort",
+        "desc": "PER + Survie diff 2 pour repérer une goule immobile."
+      },
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous dégâts radiation à 0."
+      },
+      {
+        "name": "Immunisé au poison",
+        "desc": "Réduit tous dégâts poison à 0."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Récupération",
+        "desc": "2 dés d'objets junk récupérables."
+      }
+    ],
+    "desc": "Humains transformés par irradiation extrême, agressifs et quasi dénués de raison."
+  },
+  "Glowing One": {
+    "level": 9,
+    "type": "Humain muté",
+    "category": "elite",
+    "xp": 67,
+    "attrs": {
+      "body": 8,
+      "mind": 5,
+      "melee": 5,
+      "guns": null,
+      "other": 3
+    },
+    "hp": 21,
+    "initiative": 12,
+    "defense": 1,
+    "dr": {
+      "phys": 4,
+      "energy": 3,
+      "rad": "immune",
+      "poison": "immune"
+    },
+    "attacks": [
+      {
+        "name": "Attaque sauvage",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 12,
+        "dmg": 7,
+        "dmgType": "physical radioactive",
+        "eff": ""
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Impulsion radioactive",
+        "desc": "Inflige 5 dégâts radiation à tout dans portée C. Si ≥3 dégâts infligés, les goules vaincues reviennent à 1 HP."
+      },
+      {
+        "name": "Rayonnant",
+        "desc": "Inflige automatiquement 2 dégâts radiation à portée Contact. Les attaques mêlée gagnent Radioactif."
+      },
+      {
+        "name": "Feral",
+        "desc": "Ignore persuasion. Se dirige vers l'ennemi le plus proche."
+      },
+      {
+        "name": "Goule",
+        "desc": "Récupère 1 HP par 3 dégâts radiations."
+      },
+      {
+        "name": "Faire le mort",
+        "desc": "PER + Survie diff 2 pour repérer."
+      },
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit dégâts radiation à 0."
+      },
+      {
+        "name": "Immunisé au poison",
+        "desc": "Réduit dégâts poison à 0."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Récupération",
+        "desc": "2 dés d'objets junk."
+      }
+    ],
+    "desc": "Goule saturée de radiations servant souvent de conduit vivant aux zones contaminées."
+  },
+  "Assaultron": {
+    "level": 13,
+    "type": "Robot",
+    "category": "elite",
+    "xp": 95,
+    "attrs": {
+      "body": 9,
+      "mind": 6,
+      "melee": 5,
+      "guns": 5,
+      "other": 4
+    },
+    "hp": 22,
+    "initiative": 15,
+    "defense": 1,
+    "dr": {
+      "phys": 3,
+      "energy": 3,
+      "rad": "immune",
+      "poison": "immune"
+    },
+    "attacks": [
+      {
+        "name": "Attaque désarmée",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 14,
+        "dmg": 9,
+        "dmgType": "physical",
+        "eff": ""
+      },
+      {
+        "name": "Laser",
+        "attr": "body",
+        "skill": "guns",
+        "tn": 14,
+        "dmg": 9,
+        "dmgType": "energy",
+        "eff": "Vicious",
+        "range": "L"
+      },
+      {
+        "name": "Auto-destruction",
+        "attr": "body",
+        "skill": "guns",
+        "tn": 14,
+        "dmg": 6,
+        "dmgType": "physical",
+        "eff": "Blast"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Robot",
+        "desc": "Immunisé à la faim, soif, suffocation, poison et radiation. Ne guérit pas naturellement : doit être réparé."
+      },
+      {
+        "name": "Immunisé au poison",
+        "desc": "Réduit tous les dégâts poison à 0."
+      },
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous les dégâts radiation à 0."
+      },
+      {
+        "name": "Immunisé aux maladies",
+        "desc": "Ne subit aucun effet de maladie."
+      },
+      {
+        "name": "Sens aiguisés",
+        "desc": "Réduit de 1 la difficulté des tests PER pour détecter créatures ou objets."
+      },
+      {
+        "name": "Auto-destruction",
+        "desc": "S'il perd ses deux bras ou jambes, ou tombe à moitié de ses PV max ou moins, se dirige vers l'ennemi le plus proche et utilise son action majeure pour s'auto-détruire."
+      },
+      {
+        "name": "Vision nocturne",
+        "desc": "Voit dans l'obscurité complète et ignore les difficultés dues à la faible lumière."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Récupération",
+        "desc": "INT + Science diff. 1 : 3 dés de cellules à fusion, +1 dé par PA dépensé. Chaque Effet donne 1 matériau peu commun."
+      }
+    ],
+    "desc": "Robot militaire rapide et dangereux, spécialisé dans l'assaut direct, les attaques laser et l'auto-destruction."
+  },
+  "Eyebot": {
+    "level": 2,
+    "type": "Robot",
+    "category": "swarm",
+    "xp": 17,
+    "attrs": {
+      "body": 5,
+      "mind": 4,
+      "melee": 0,
+      "guns": 3,
+      "other": 1
+    },
+    "hp": 5,
+    "initiative": 9,
+    "defense": 2,
+    "dr": {
+      "phys": 2,
+      "energy": 2,
+      "rad": "immune",
+      "poison": "immune"
+    },
+    "attacks": [
+      {
+        "name": "Laser",
+        "attr": "body",
+        "skill": "guns",
+        "tn": 8,
+        "dmg": 4,
+        "dmgType": "energy",
+        "eff": "",
+        "range": "M"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Robot",
+        "desc": "Immunisé à la faim, soif, suffocation, poison et radiation. Ne guérit pas naturellement : doit être réparé."
+      },
+      {
+        "name": "Immunisé au poison",
+        "desc": "Réduit tous les dégâts poison à 0."
+      },
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous les dégâts radiation à 0."
+      },
+      {
+        "name": "Immunisé aux maladies",
+        "desc": "Ne subit aucun effet de maladie."
+      },
+      {
+        "name": "Petit",
+        "desc": "PV = Body + ½ niveau arrondi sup., Défense +1. Tué par toute touche infligeant une Blessure."
+      },
+      {
+        "name": "Transmission radio",
+        "desc": "Peut recevoir, envoyer et diffuser des transmissions radio audibles à longue portée."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Récupération",
+        "desc": "INT + Science diff. 1 : 2 dés de matériaux communs. Chaque Effet donne 1 matériau peu commun."
+      }
+    ],
+    "desc": "Petit robot flottant de reconnaissance et de diffusion radio, souvent utilisé pour propagande, surveillance ou patrouille."
+  },
+  "Mister Handy": {
+    "level": 6,
+    "type": "Robot",
+    "category": "normal",
+    "xp": 90,
+    "attrs": {
+      "body": 6,
+      "mind": 7,
+      "melee": 3,
+      "guns": 1,
+      "other": 3
+    },
+    "hp": 15,
+    "initiative": 17,
+    "defense": 1,
+    "dr": {
+      "phys": 1,
+      "energy": 1,
+      "rad": "immune",
+      "poison": "immune"
+    },
+    "attacks": [
+      {
+        "name": "Pince",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 9,
+        "dmg": 3,
+        "dmgType": "physical",
+        "eff": "",
+        "range": "C"
+      },
+      {
+        "name": "Scie circulaire",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 9,
+        "dmg": 3,
+        "dmgType": "physical",
+        "eff": "Piercing",
+        "range": "C"
+      },
+      {
+        "name": "Lance-flammes",
+        "attr": "agi",
+        "skill": "energy weapons",
+        "tn": 9,
+        "dmg": 3,
+        "dmgType": "energy",
+        "eff": "Persistent",
+        "range": "C",
+        "fireRate": 1
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Robot",
+        "desc": "Immunisé à la faim, soif, suffocation, poison et radiation. Ne guérit pas naturellement : doit être réparé."
+      },
+      {
+        "name": "Immunisé au poison",
+        "desc": "Réduit tous les dégâts poison à 0."
+      },
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous les dégâts radiation à 0."
+      },
+      {
+        "name": "Immunisé aux maladies",
+        "desc": "Ne subit aucun effet de maladie."
+      },
+      {
+        "name": "Mister Handy",
+        "desc": "Vision à 360°, capteurs améliorés, réduit de 1 la difficulté des tests PER liés à l'odorat. Se déplace en vol stationnaire et ignore les terrains difficiles au sol."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Récupération",
+        "desc": "INT + Science diff. 1 : 2d20 unités de carburant lance-flammes, 2 dés de matériaux communs +1 dé par PA dépensé. Chaque Effet donne 1 matériau peu commun."
+      }
+    ],
+    "desc": "Robot domestique multifonction pré-Guerre, capable de réparation, cuisine, entretien et combat léger."
+  },
+  "Protectron": {
+    "level": 3,
+    "type": "Robot",
+    "category": "normal",
+    "xp": 24,
+    "attrs": {
+      "body": 5,
+      "mind": 5,
+      "melee": 2,
+      "guns": 2,
+      "other": 2
+    },
+    "hp": 8,
+    "initiative": 10,
+    "defense": 1,
+    "dr": {
+      "phys": 4,
+      "energy": 3,
+      "rad": "immune",
+      "poison": "immune"
+    },
+    "attacks": [
+      {
+        "name": "Griffes",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 7,
+        "dmg": 3,
+        "dmgType": "physical",
+        "eff": ""
+      },
+      {
+        "name": "Lasers de bras",
+        "attr": "body",
+        "skill": "guns",
+        "tn": 7,
+        "dmg": 3,
+        "dmgType": "energy",
+        "eff": "Burst, Piercing 1",
+        "range": "C",
+        "fireRate": 4
+      },
+      {
+        "name": "Auto-destruction",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 7,
+        "dmg": 6,
+        "dmgType": "physical",
+        "eff": "Blast"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Robot",
+        "desc": "Immunisé à la faim, soif, suffocation, poison et radiation. Ne guérit pas naturellement : doit être réparé."
+      },
+      {
+        "name": "Immunisé au poison",
+        "desc": "Réduit tous les dégâts poison à 0."
+      },
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous les dégâts radiation à 0."
+      },
+      {
+        "name": "Immunisé aux maladies",
+        "desc": "Ne subit aucun effet de maladie."
+      },
+      {
+        "name": "Lasers de bras",
+        "desc": "Si un bras est blessé, la cadence passe à 2. Si les deux bras sont blessés, il ne peut plus attaquer avec ses lasers."
+      },
+      {
+        "name": "Décharge totale",
+        "desc": "Une fois par combat, peut tirer une volée de lasers. Cadence +4, dégâts 7 dés, gagne Burst sans dépense de munition. Si un bras est blessé, dégâts réduits à 5."
+      },
+      {
+        "name": "Auto-destruction",
+        "desc": "S'il perd ses deux bras ou tombe à moitié de ses PV max ou moins, se dirige vers l'ennemi le plus proche et s'auto-détruit."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Récupération",
+        "desc": "INT + Science diff. 1 : 2 dés de matériaux communs, +1 dé par PA dépensé. Chaque Effet donne 1 matériau peu commun."
+      }
+    ],
+    "desc": "Robot de service robuste, lent mais très résistant, utilisé dans les stations, bureaux, chantiers et abris."
+  },
+  "Sentry Bot": {
+    "level": 15,
+    "type": "Robot",
+    "category": "elite",
+    "xp": 109,
+    "attrs": {
+      "body": 10,
+      "mind": 6,
+      "melee": 4,
+      "guns": 5,
+      "other": 4
+    },
+    "hp": 40,
+    "initiative": 16,
+    "defense": 1,
+    "dr": {
+      "phys": 6,
+      "energy": 5,
+      "rad": "immune",
+      "poison": "immune"
+    },
+    "attacks": [
+      {
+        "name": "Minigun",
+        "attr": "body",
+        "skill": "guns",
+        "tn": 15,
+        "dmg": 5,
+        "dmgType": "physical",
+        "eff": "Burst, Spread, Gatling",
+        "range": "M",
+        "fireRate": 5
+      },
+      {
+        "name": "Attaque désarmée",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 14,
+        "dmg": 8,
+        "dmgType": "physical",
+        "eff": "Vicious"
+      },
+      {
+        "name": "Lance-missiles",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 14,
+        "dmg": 11,
+        "dmgType": "physical",
+        "eff": "Blast",
+        "range": "L"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Robot",
+        "desc": "Immunisé à la faim, soif, suffocation, poison et radiation. Ne guérit pas naturellement : doit être réparé."
+      },
+      {
+        "name": "Immunisé au poison",
+        "desc": "Réduit tous les dégâts poison à 0."
+      },
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous les dégâts radiation à 0."
+      },
+      {
+        "name": "Immunisé aux maladies",
+        "desc": "Ne subit aucun effet de maladie."
+      },
+      {
+        "name": "Sens aiguisés",
+        "desc": "Réduit de 1 la difficulté des tests PER pour détecter créatures ou objets."
+      },
+      {
+        "name": "Agressif",
+        "desc": "En entrant en scène, génère 1 PA pour le camp auquel il appartient."
+      },
+      {
+        "name": "Auto-destruction",
+        "desc": "S'il perd ses deux bras ou tombe à moitié de ses PV max ou moins, se dirige vers l'ennemi le plus proche et s'auto-détruit."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Récupération",
+        "desc": "INT + Science diff. 1 : 1 noyau à fusion, 2 dés de matériaux communs, +1 dé par PA dépensé. Chaque Effet donne 1 matériau peu commun."
+      }
+    ],
+    "desc": "Robot militaire lourd, doté d'une puissance de feu massive et d'une armure épaisse."
+  },
+  "Super Mutant Brute": {
+    "level": 7,
+    "type": "Humain muté",
+    "category": "elite",
+    "xp": 52,
+    "attrs": {
+      "body": 9,
+      "mind": 5,
+      "melee": 4,
+      "guns": 4,
+      "other": 2
+    },
+    "hp": 14,
+    "initiative": 10,
+    "defense": 1,
+    "dr": {
+      "phys": "4 tête / 3 jambes / 2 torse-bras",
+      "energy": "3 jambes / 2 torse-bras",
+      "rad": "immune",
+      "poison": "immune"
+    },
+    "attacks": [
+      {
+        "name": "Frappe désarmée",
+        "attr": "str",
+        "skill": "unarmed",
+        "tn": 11,
+        "dmg": 4,
+        "dmgType": "physical",
+        "eff": ""
+      },
+      {
+        "name": "Planche",
+        "attr": "str",
+        "skill": "melee weapons",
+        "tn": 13,
+        "dmg": 6,
+        "dmgType": "physical",
+        "eff": "",
+        "special": "Two-Handed"
+      },
+      {
+        "name": "Fusil à verrou artisanal",
+        "attr": "agi",
+        "skill": "small guns",
+        "tn": 9,
+        "dmg": 5,
+        "dmgType": "physical",
+        "eff": "Piercing",
+        "range": "M",
+        "fireRate": 0,
+        "special": "Two-Handed"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Barbare",
+        "desc": "+2 aux résistances Physique et Énergie, déjà inclus."
+      },
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous les dégâts radiation à 0."
+      },
+      {
+        "name": "Immunisé au poison",
+        "desc": "Réduit tous les dégâts poison à 0."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Fusil à verrou artisanal, planche, ossements humains assortis, richesse 1, casque super mutant, protections de jambes super mutant x2."
+      }
+    ],
+    "desc": "Version plus robuste du super mutant ordinaire, mieux protégée et plus dangereuse au combat."
+  },
+  "Super Mutant Master": {
+    "level": 10,
+    "type": "Humain muté",
+    "category": "elite",
+    "xp": 148,
+    "attrs": {
+      "body": 10,
+      "mind": 8,
+      "melee": 4,
+      "guns": 3,
+      "other": 3
+    },
+    "hp": 23,
+    "initiative": 15,
+    "defense": 1,
+    "dr": {
+      "phys": "4 tête-jambes-torse / 3 bras",
+      "energy": "2 tête / 4 jambes-torse / 3 bras",
+      "rad": "immune",
+      "poison": "immune"
+    },
+    "attacks": [
+      {
+        "name": "Frappe désarmée",
+        "attr": "str",
+        "skill": "unarmed",
+        "tn": 12,
+        "dmg": 4,
+        "dmgType": "physical",
+        "eff": ""
+      },
+      {
+        "name": "Minigun",
+        "attr": "str",
+        "skill": "big guns",
+        "tn": 13,
+        "dmg": 5,
+        "dmgType": "physical",
+        "eff": "Burst, Spread, Inaccurate, Gatling",
+        "range": "M",
+        "fireRate": 5,
+        "special": "Two-Handed"
+      },
+      {
+        "name": "Lance-missiles",
+        "attr": "end",
+        "skill": "big guns",
+        "tn": 11,
+        "dmg": 11,
+        "dmgType": "physical",
+        "eff": "Blast",
+        "range": "L",
+        "special": "Two-Handed"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Barbare",
+        "desc": "+2 aux résistances Physique et Énergie, déjà inclus."
+      },
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous les dégâts radiation à 0."
+      },
+      {
+        "name": "Immunisé au poison",
+        "desc": "Réduit tous les dégâts poison à 0."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Fusil à verrou artisanal, planche, ossements humains assortis, richesse 1, casque super mutant, armure de jambe super mutant x2, brassard x2, armure légère."
+      }
+    ],
+    "desc": "Chef super mutant expérimenté, mieux armé, plus intelligent et souvent responsable d'un groupe."
+  },
+  "Super Mutant Suicider": {
+    "level": 6,
+    "type": "Humain muté",
+    "category": "elite",
+    "xp": 45,
+    "attrs": {
+      "body": 8,
+      "mind": 5,
+      "melee": 2,
+      "guns": 2,
+      "other": 4
+    },
+    "hp": 12,
+    "initiative": 12,
+    "defense": 1,
+    "dr": {
+      "phys": "3 torse / 2 bras-jambes-tête",
+      "energy": "4 torse / 2 bras-jambes-tête",
+      "rad": "immune",
+      "poison": "immune"
+    },
+    "attacks": [
+      {
+        "name": "Frappe désarmée",
+        "attr": "str",
+        "skill": "unarmed",
+        "tn": 10,
+        "dmg": 4,
+        "dmgType": "physical",
+        "eff": ""
+      },
+      {
+        "name": "Mini-nuke modifiée",
+        "attr": "agi",
+        "skill": "explosives",
+        "tn": 11,
+        "dmg": 21,
+        "dmgType": "physical",
+        "eff": "Breaking, Radioactive, Vicious, Blast",
+        "range": "C"
+      },
+      {
+        "name": "Fusil à verrou artisanal",
+        "attr": "agi",
+        "skill": "small guns",
+        "tn": 8,
+        "dmg": 5,
+        "dmgType": "physical",
+        "eff": "Piercing",
+        "range": "M",
+        "fireRate": 0,
+        "special": "Two-Handed"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Barbare",
+        "desc": "+2 aux résistances Physique et Énergie, déjà inclus."
+      },
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous les dégâts radiation à 0."
+      },
+      {
+        "name": "Immunisé au poison",
+        "desc": "Réduit tous les dégâts poison à 0."
+      },
+      {
+        "name": "Mini-nuke modifiée",
+        "desc": "Doit réussir AGI + Explosifs TN 11 pour déclencher la mini-nuke à portée C. Tous ceux à portée C, lui inclus, subissent les effets."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Richesse 1, chaînes. Si tué avant explosion, 1 mini-nuke récupérable ; si tué par l'explosion, le corps donne 1 matériau rare."
+      }
+    ],
+    "desc": "Super mutant fanatique portant une mini-nuke et chargeant ses ennemis pour exploser avec eux."
+  },
+  "Super Mutant Behemoth": {
+    "level": 18,
+    "type": "Humain muté",
+    "category": "boss",
+    "xp": 130,
+    "attrs": {
+      "body": 12,
+      "mind": 5,
+      "melee": 5,
+      "guns": null,
+      "other": 4
+    },
+    "hp": 48,
+    "initiative": 17,
+    "defense": 1,
+    "dr": {
+      "phys": 8,
+      "energy": 5,
+      "rad": "immune",
+      "poison": 8
+    },
+    "attacks": [
+      {
+        "name": "Batte-borne incendie",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 17,
+        "dmg": 11,
+        "dmgType": "physical",
+        "eff": "Vicious, Breaking"
+      },
+      {
+        "name": "Lancer de rocher",
+        "attr": "body",
+        "skill": "guns",
+        "tn": 12,
+        "dmg": 8,
+        "dmgType": "physical",
+        "eff": "Vicious, Stun, Throwing",
+        "range": "M"
+      },
+      {
+        "name": "Lance-missiles",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 14,
+        "dmg": 11,
+        "dmgType": "physical",
+        "eff": "Blast",
+        "range": "L"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous les dégâts radiation à 0."
+      },
+      {
+        "name": "Immunisé à la peur",
+        "desc": "Ne peut pas être intimidé ou menacé."
+      },
+      {
+        "name": "Grand",
+        "desc": "+1 HP par niveau, Défense -1 minimum 1. Coup critique seulement sur 7+ dégâts après RD."
+      },
+      {
+        "name": "Agressif",
+        "desc": "En entrant en scène, génère immédiatement 1 PA pour son camp."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Récupération",
+        "desc": "À sa mort : 3d20 capsules, 4 dés de junk. Le corps peut aussi contenir jusqu'à 2 armes et 2d20 munitions adaptées."
+      }
+    ],
+    "desc": "Gigantesque super mutant presque aveugle, colossal, brutal, capable d'utiliser des bornes incendie et des rochers comme armes."
+  },
+  "Synth": {
+    "level": 4,
+    "type": "Synth robotique",
+    "category": "normal",
+    "xp": 31,
+    "attrs": {
+      "body": 6,
+      "mind": 5,
+      "melee": 2,
+      "guns": 2,
+      "other": 2
+    },
+    "hp": 10,
+    "initiative": 11,
+    "defense": 1,
+    "dr": {
+      "phys": "2 tête/jambes/bras ; 1 torse",
+      "energy": "3 tête/jambes/bras ; 2 torse",
+      "rad": "immune",
+      "poison": "immune"
+    },
+    "attacks": [
+      {
+        "name": "Laser Institut",
+        "attr": "body",
+        "skill": "guns",
+        "tn": 8,
+        "dmg": 4,
+        "dmgType": "energy",
+        "eff": "Vicious, Burst",
+        "range": "M",
+        "fireRate": 3
+      },
+      {
+        "name": "Matraque électrique",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 8,
+        "dmg": 5,
+        "dmgType": "energy",
+        "range": "C"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Robot",
+        "desc": "Immunisé faim, soif, suffocation. Ne guérit pas naturellement."
+      },
+      {
+        "name": "Immunisé au poison",
+        "desc": "Réduit tous dégâts poison à 0."
+      },
+      {
+        "name": "Immunisé aux radiations",
+        "desc": "Réduit tous dégâts radiation à 0."
+      },
+      {
+        "name": "Immunisé à la peur",
+        "desc": "Ignore intimidation et menaces."
+      },
+      {
+        "name": "Immunisé aux maladies",
+        "desc": "Ne subit aucun effet de maladie."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Laser Institut, matraque choc, cellules fusion x3d20, casque synth, bras synth x2, jambe synth x2."
+      }
+    ]
+  },
+  "Synth Strider": {
+    "level": 7,
+    "type": "Synth robotique",
+    "category": "elite",
+    "xp": 52,
+    "attrs": {
+      "body": 6,
+      "mind": 6,
+      "melee": 4,
+      "guns": 4,
+      "other": 3
+    },
+    "hp": 13,
+    "initiative": 12,
+    "defense": 1,
+    "dr": {
+      "phys": 3,
+      "energy": 4,
+      "rad": "immune",
+      "poison": "immune"
+    },
+    "attacks": [
+      {
+        "name": "Laser Institut",
+        "attr": "body",
+        "skill": "guns",
+        "tn": 10,
+        "dmg": 6,
+        "dmgType": "energy",
+        "eff": "Vicious, Burst",
+        "range": "M",
+        "fireRate": 3
+      },
+      {
+        "name": "Matraque électrique",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 10,
+        "dmg": 5,
+        "dmgType": "energy"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Robot",
+        "desc": "Immunités robot classiques."
+      },
+      {
+        "name": "Immunisé radiations",
+        "desc": "Réduit radiation à 0."
+      },
+      {
+        "name": "Immunisé peur",
+        "desc": "Ignore intimidation."
+      },
+      {
+        "name": "Immunisé maladies",
+        "desc": "Ne subit aucune maladie."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Laser Institut amélioré, cellules x3d20, casque synth robuste, bras synth robustes x2."
+      }
+    ]
+  },
+  "Synth Courser": {
+    "level": 11,
+    "type": "Synth robotique",
+    "category": "elite",
+    "xp": 162,
+    "attrs": {
+      "body": 7,
+      "mind": 8,
+      "melee": 3,
+      "guns": 4,
+      "other": 4
+    },
+    "hp": 23,
+    "initiative": 17,
+    "defense": 2,
+    "dr": {
+      "phys": "4 bras/jambes/torse ; 2 tête",
+      "energy": "5 bras/jambes/torse ; 2 tête",
+      "rad": "immune",
+      "poison": "immune"
+    },
+    "attacks": [
+      {
+        "name": "Frappe",
+        "attr": "str",
+        "skill": "unarmed",
+        "tn": 9,
+        "dmg": 2,
+        "dmgType": "physical"
+      },
+      {
+        "name": "Laser Institut",
+        "attr": "agi",
+        "skill": "energy weapons",
+        "tn": 11,
+        "dmg": 6,
+        "dmgType": "energy",
+        "eff": "Burst, Vicious",
+        "fireRate": 4,
+        "range": "M"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Robot",
+        "desc": "Immunités robot."
+      },
+      {
+        "name": "Accès Institut",
+        "desc": "Peut utiliser téléportation Institut."
+      },
+      {
+        "name": "Synth Gen3",
+        "desc": "Peut se faire passer pour humain."
+      },
+      {
+        "name": "Immunisé peur",
+        "desc": "Ignore intimidation."
+      },
+      {
+        "name": "Immunisé maladies",
+        "desc": "Ne subit aucune maladie."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Composant synth, fusil laser Institut amélioré, pièces synth lourdes."
+      }
+    ]
+  },
+  "Synth Trooper": {
+    "level": 16,
+    "type": "Synth robotique",
+    "category": "elite",
+    "xp": 52,
+    "attrs": {
+      "body": 10,
+      "mind": 6,
+      "melee": 5,
+      "guns": 5,
+      "other": 5
+    },
+    "hp": 26,
+    "initiative": 16,
+    "defense": 1,
+    "dr": {
+      "phys": 1,
+      "energy": 1,
+      "rad": "immune",
+      "poison": "immune"
+    },
+    "attacks": [
+      {
+        "name": "Laser Institut",
+        "attr": "body",
+        "skill": "guns",
+        "tn": 15,
+        "dmg": 6,
+        "dmgType": "energy",
+        "eff": "Burst, Vicious",
+        "fireRate": 3,
+        "range": "M"
+      },
+      {
+        "name": "Matraque électrique",
+        "attr": "body",
+        "skill": "melee",
+        "tn": 15,
+        "dmg": 5,
+        "dmgType": "energy"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Robot",
+        "desc": "Immunités robot."
+      },
+      {
+        "name": "Agressif",
+        "desc": "Génère immédiatement 1 PA en entrant en scène."
+      },
+      {
+        "name": "Immunisé peur",
+        "desc": "Ignore intimidation."
+      }
+    ]
+  },
+  "Machine Gun Turret MK I": {
+    "level": 5,
+    "type": "Robot",
+    "category": "normal",
+    "xp": 38,
+    "attrs": {
+      "body": 6,
+      "mind": 5,
+      "melee": null,
+      "guns": 3,
+      "other": null
+    },
+    "hp": 11,
+    "initiative": 11,
+    "defense": 1,
+    "dr": {
+      "phys": 1,
+      "energy": 1,
+      "rad": "immune",
+      "poison": "immune"
+    },
+    "attacks": [
+      {
+        "name": "Mitrailleuse",
+        "attr": "body",
+        "skill": "guns",
+        "tn": 9,
+        "dmg": 5,
+        "dmgType": "physical",
+        "eff": "Burst",
+        "fireRate": 3,
+        "range": "M"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Robot",
+        "desc": "Immunités robot."
+      },
+      {
+        "name": "Immunisé radiations",
+        "desc": "Radiations = 0."
+      },
+      {
+        "name": "Immunisé maladies",
+        "desc": "Aucune maladie."
+      }
+    ]
+  },
+  "Machine Gun Turret MK III": {
+    "level": 10,
+    "type": "Robot",
+    "category": "elite",
+    "xp": 74,
+    "attrs": {
+      "body": 8,
+      "mind": 5,
+      "guns": 4
+    },
+    "hp": 18,
+    "initiative": 13,
+    "defense": 1,
+    "dr": {
+      "phys": 2,
+      "energy": 1,
+      "rad": "immune",
+      "poison": "immune"
+    },
+    "attacks": [
+      {
+        "name": "Mitrailleuse",
+        "attr": "body",
+        "skill": "guns",
+        "tn": 12,
+        "dmg": 7,
+        "dmgType": "physical",
+        "eff": "Burst",
+        "range": "M",
+        "fireRate": 3
+      }
+    ]
+  },
+  "Machine Gun Turret MK V": {
+    "level": 14,
+    "type": "Robot",
+    "category": "elite",
+    "xp": 102,
+    "attrs": {
+      "body": 9,
+      "mind": 5,
+      "guns": 5
+    },
+    "hp": 23,
+    "initiative": 15,
+    "defense": 1,
+    "dr": {
+      "phys": 4,
+      "energy": 2,
+      "rad": "immune",
+      "poison": "immune"
+    },
+    "attacks": [
+      {
+        "name": "Mitrailleuse",
+        "attr": "body",
+        "skill": "guns",
+        "tn": 14,
+        "dmg": 9,
+        "dmgType": "physical",
+        "eff": "Stun, Burst",
+        "range": "M",
+        "fireRate": 3
+      }
+    ]
+  },
+  "Brotherhood Elder": {
+    "level": 10,
+    "type": "Humain",
+    "category": "boss",
+    "xp": 222,
+    "attrs": {
+      "body": 7,
+      "mind": 8,
+      "melee": 2,
+      "guns": null,
+      "other": 4
+    },
+    "hp": 32,
+    "initiative": 19,
+    "defense": 1,
+    "dr": {
+      "phys": "3 bras/jambes/torse",
+      "energy": "2 bras/jambes/torse",
+      "rad": "1 bras/jambes/torse",
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Frappe désarmée",
+        "attr": "str",
+        "skill": "unarmed",
+        "tn": 9,
+        "dmg": 2,
+        "dmgType": "physical",
+        "eff": ""
+      },
+      {
+        "name": "Fusil laser long",
+        "attr": "agi",
+        "skill": "energy weapons",
+        "tn": 11,
+        "dmg": 5,
+        "dmgType": "energy",
+        "eff": "Piercing 1",
+        "range": "M",
+        "fireRate": 2,
+        "special": "Two-Handed"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Chaîne qui lie",
+        "desc": "Action majeure : ordonne à un membre inférieur de la Confrérie d'effectuer immédiatement une action majeure. L'Elder assiste avec CHA + Discours."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Uniforme de la Confrérie, manteau blindé, fusil laser long, holotags."
+      }
+    ],
+    "desc": "Dirigeant local de la Confrérie de l'Acier."
+  },
+  "Brotherhood Knight": {
+    "level": 7,
+    "type": "Humain",
+    "category": "elite",
+    "xp": 52,
+    "attrs": {
+      "body": 6,
+      "mind": 5,
+      "melee": 1,
+      "guns": 1,
+      "other": 4
+    },
+    "hp": 14,
+    "initiative": 12,
+    "defense": 1,
+    "dr": {
+      "phys": 2,
+      "energy": 2,
+      "rad": 1,
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Frappe désarmée",
+        "attr": "str",
+        "skill": "unarmed",
+        "tn": 8,
+        "dmg": 2,
+        "dmgType": "physical",
+        "eff": ""
+      },
+      {
+        "name": "Fusil laser long",
+        "attr": "agi",
+        "skill": "energy weapons",
+        "tn": 10,
+        "dmg": 5,
+        "dmgType": "energy",
+        "eff": "Piercing 1",
+        "range": "M",
+        "fireRate": 2,
+        "special": "Two-Handed"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Chaîne qui lie",
+        "desc": "Action majeure : ordonne à un membre inférieur de la Confrérie d'effectuer immédiatement une action majeure."
+      },
+      {
+        "name": "Bien équipé",
+        "desc": "Deux fois par combat, peut tirer en rafale avec son fusil laser long : cadence +2 pour une attaque."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Uniforme de la Confrérie, armure de combat complète, fusil laser long, holotags."
+      }
+    ],
+    "desc": "Soldat régulier de la Confrérie de l'Acier."
+  },
+  "Brotherhood Paladin": {
+    "level": 8,
+    "type": "Humain",
+    "category": "boss",
+    "xp": 120,
+    "attrs": {
+      "body": 11,
+      "mind": 6,
+      "melee": 3,
+      "guns": 2,
+      "other": 3
+    },
+    "hp": 20,
+    "initiative": 17,
+    "defense": 1,
+    "dr": {
+      "phys": "7 tête / 9 torse / 6 bras-jambes",
+      "energy": "6 tête / 8 torse / 5 bras-jambes",
+      "rad": "7 tête-bras-jambes / 9 torse",
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Frappe désarmée",
+        "attr": "str",
+        "skill": "unarmed",
+        "tn": 14,
+        "dmg": 5,
+        "dmgType": "physical",
+        "eff": ""
+      },
+      {
+        "name": "Fusil laser long amélioré",
+        "attr": "agi",
+        "skill": "energy weapons",
+        "tn": 11,
+        "dmg": 6,
+        "dmgType": "energy",
+        "eff": "Piercing 1",
+        "range": "M",
+        "fireRate": 2,
+        "special": "Two-Handed"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Armure assistée",
+        "desc": "Utilise STR et résistances de l'armure. Immunisé aux dégâts de chute, respire sous l'eau et dans les environnements toxiques."
+      },
+      {
+        "name": "Chaîne qui lie",
+        "desc": "Action majeure : ordonne à un membre inférieur de la Confrérie d'effectuer immédiatement une action majeure."
+      },
+      {
+        "name": "Bien équipé",
+        "desc": "Une fois par combat, peut tirer en rafale : cadence +2 pour une attaque."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Châssis d'armure assistée, armure T-60 complète, fusil laser long amélioré, holotags."
+      }
+    ],
+    "desc": "Vétéran d'élite de la Confrérie en armure assistée."
+  },
+  "Brotherhood Scribe": {
+    "level": 4,
+    "type": "Humain",
+    "category": "normal",
+    "xp": 31,
+    "attrs": {
+      "body": 5,
+      "mind": 7,
+      "melee": 0,
+      "guns": null,
+      "other": 4
+    },
+    "hp": 9,
+    "initiative": 11,
+    "defense": 1,
+    "dr": {
+      "phys": "1 bras-jambes-torse",
+      "energy": "2 bras-jambes-torse",
+      "rad": "2 bras-jambes-torse",
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Frappe désarmée",
+        "attr": "str",
+        "skill": "unarmed",
+        "tn": 5,
+        "dmg": 5,
+        "dmgType": "physical",
+        "eff": ""
+      },
+      {
+        "name": "Pistolet laser",
+        "attr": "agi",
+        "skill": "energy weapons",
+        "tn": 7,
+        "dmg": 4,
+        "dmgType": "energy",
+        "eff": "Piercing 1",
+        "range": "C",
+        "fireRate": 2,
+        "special": "Close Quarters"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Chaîne qui lie",
+        "desc": "Action majeure : ordonne à un membre inférieur de la Confrérie d'effectuer immédiatement une action majeure."
+      },
+      {
+        "name": "Expertise pré-Guerre",
+        "desc": "+1d20 aux tests pour examiner, identifier ou utiliser de la technologie pré-Guerre."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Armure de scribe, pistolet laser, holotags, richesse 2."
+      }
+    ],
+    "desc": "Technicien, archiviste et scientifique de terrain de la Confrérie."
+  },
+  "Brotherhood Lancer": {
+    "level": 5,
+    "type": "Humain",
+    "category": "normal",
+    "xp": 38,
+    "attrs": {
+      "body": 5,
+      "mind": 6,
+      "melee": 0,
+      "guns": 1,
+      "other": 4
+    },
+    "hp": 11,
+    "initiative": 12,
+    "defense": 1,
+    "dr": {
+      "phys": "2 bras-jambes-torse",
+      "energy": "2 bras-jambes-torse",
+      "rad": "1 bras-jambes-torse",
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Frappe désarmée",
+        "attr": "str",
+        "skill": "unarmed",
+        "tn": 5,
+        "dmg": 5,
+        "dmgType": "physical",
+        "eff": ""
+      },
+      {
+        "name": "Fusil laser long",
+        "attr": "agi",
+        "skill": "energy weapons",
+        "tn": 9,
+        "dmg": 5,
+        "dmgType": "energy",
+        "eff": "Piercing 1",
+        "range": "M",
+        "fireRate": 2,
+        "special": "Two-Handed"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Chaîne qui lie",
+        "desc": "Action majeure : ordonne à un membre inférieur de la Confrérie d'effectuer immédiatement une action majeure."
+      },
+      {
+        "name": "Formation Vertibird",
+        "desc": "+1d20 aux tests de Pilotage d'un Vertibird."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Uniforme de la Confrérie, veste de bombardier, fusil laser, holotags, richesse 2."
+      }
+    ],
+    "desc": "Pilote et soutien aérien de la Confrérie."
+  },
+  "Raider": {
+    "level": 2,
+    "type": "Pillard humain",
+    "category": "normal",
+    "xp": 17,
+    "attrs": {
+      "body": 6,
+      "mind": 4,
+      "melee": 2,
+      "guns": 2,
+      "other": 1
+    },
+    "hp": 8,
+    "initiative": 11,
+    "defense": 1,
+    "dr": {
+      "phys": "1 bras-torse",
+      "energy": "1 bras-torse",
+      "rad": 0,
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Frappe désarmée",
+        "attr": "str",
+        "skill": "unarmed",
+        "tn": 8,
+        "dmg": 2,
+        "dmgType": "physical",
+        "eff": ""
+      },
+      {
+        "name": "Démonte-pneu",
+        "attr": "str",
+        "skill": "melee weapons",
+        "tn": 8,
+        "dmg": 3,
+        "dmgType": "physical",
+        "eff": ""
+      },
+      {
+        "name": "Pétoire",
+        "attr": "agi",
+        "skill": "small guns",
+        "tn": 8,
+        "dmg": 3,
+        "dmgType": "physical",
+        "eff": "Close Quarters, Unreliable",
+        "range": "C",
+        "fireRate": 2
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Déchaînement",
+        "desc": "Une fois par combat, cadence +2 avec la pétoire pour une attaque."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Cuirs de route, pétoire, démonte-pneu, richesse 1."
+      }
+    ],
+    "desc": "Pillard de base, rarement seul."
+  },
+  "Raider Psycho": {
+    "level": 7,
+    "type": "Pillard humain",
+    "category": "elite",
+    "xp": 52,
+    "attrs": {
+      "body": 7,
+      "mind": 5,
+      "melee": 3,
+      "guns": 2,
+      "other": 2
+    },
+    "hp": 14,
+    "initiative": 12,
+    "defense": 1,
+    "dr": {
+      "phys": "1 bras-jambes-torse",
+      "energy": "2 torse / 2 bras-jambes",
+      "rad": 0,
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Machette",
+        "attr": "str",
+        "skill": "melee weapons",
+        "tn": 10,
+        "dmg": 4,
+        "dmgType": "physical",
+        "eff": "Piercing 1"
+      },
+      {
+        "name": "Fusil à double canon",
+        "attr": "agi",
+        "skill": "small guns",
+        "tn": 8,
+        "dmg": 6,
+        "dmgType": "physical",
+        "eff": "Spread, Vicious, Inaccurate",
+        "range": "C",
+        "special": "Two-Handed"
+      },
+      {
+        "name": "Cocktail Molotov",
+        "attr": "per",
+        "skill": "explosives",
+        "tn": 7,
+        "dmg": 4,
+        "dmgType": "energy",
+        "eff": "Persistent, Blast, Throwing",
+        "range": "M"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Chems ou Kaboom",
+        "desc": "Porte un Molotov ou une dose de Psycho. Utilise l'un ou l'autre au premier round."
+      },
+      {
+        "name": "Psycho",
+        "desc": "+2 dés aux dégâts et +2 aux résistances Physique et Énergie pendant le combat."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Cuirs de route, plastron de cuir, fusil à double canon, machette, richesse 1."
+      }
+    ],
+    "desc": "Pillard drogué, agressif, tourné vers le corps-à-corps."
+  },
+  "Raider Scaver": {
+    "level": 7,
+    "type": "Pillard humain",
+    "category": "elite",
+    "xp": 60,
+    "attrs": {
+      "body": 6,
+      "mind": 5,
+      "melee": 3,
+      "guns": 3,
+      "other": 2
+    },
+    "hp": 13,
+    "initiative": 13,
+    "defense": 1,
+    "dr": {
+      "phys": "3 bras-torse / 2 jambes",
+      "energy": "3 bras-torse / 2 jambes",
+      "rad": 0,
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Machette",
+        "attr": "str",
+        "skill": "melee weapons",
+        "tn": 9,
+        "dmg": 4,
+        "dmgType": "physical",
+        "eff": "Piercing"
+      },
+      {
+        "name": "Fusil de combat",
+        "attr": "agi",
+        "skill": "small guns",
+        "tn": 9,
+        "dmg": 5,
+        "dmgType": "physical",
+        "eff": "Spread, Inaccurate",
+        "range": "C",
+        "special": "Two-Handed"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Agressif",
+        "desc": "En entrant en scène, génère 1 PA pour son camp."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Plastron raider lourd, jambes raider robustes x2, bras raider lourds x2, fusil de combat, machette, richesse 1."
+      }
+    ],
+    "desc": "Pillard expérimenté et bien blindé."
+  },
+  "Raider Veteran": {
+    "level": 8,
+    "type": "Pillard humain",
+    "category": "elite",
+    "xp": 120,
+    "attrs": {
+      "body": 7,
+      "mind": 5,
+      "melee": 4,
+      "guns": 4,
+      "other": 2
+    },
+    "hp": 21,
+    "initiative": 17,
+    "defense": 1,
+    "dr": {
+      "phys": 2,
+      "energy": 2,
+      "rad": 0,
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Machette",
+        "attr": "str",
+        "skill": "melee weapons",
+        "tn": 11,
+        "dmg": 3,
+        "dmgType": "physical",
+        "eff": "Piercing 1"
+      },
+      {
+        "name": "Fusil de combat",
+        "attr": "agi",
+        "skill": "small guns",
+        "tn": 11,
+        "dmg": 3,
+        "dmgType": "physical",
+        "eff": "",
+        "range": "M",
+        "fireRate": 2,
+        "special": "Two-Handed"
+      },
+      {
+        "name": "Cocktail Molotov",
+        "attr": "per",
+        "skill": "explosives",
+        "tn": 9,
+        "dmg": 3,
+        "dmgType": "energy",
+        "eff": "Persistent, Blast, Throwing",
+        "range": "M"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Commandement",
+        "desc": "Action mineure : ordonne à un raider inférieur à portée C de faire immédiatement une action mineure ; ou action majeure pour une action majeure."
+      },
+      {
+        "name": "Déchaînement",
+        "desc": "Une fois par combat, cadence +2 avec le fusil de combat pour une attaque."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Armure à pointes, fusil de combat, machette, richesse 2."
+      }
+    ],
+    "desc": "Vétéran raider, dur à tuer et capable de commander."
+  },
+  "Raider Boss": {
+    "level": 10,
+    "type": "Pillard humain",
+    "category": "boss",
+    "xp": 222,
+    "attrs": {
+      "body": 8,
+      "mind": 7,
+      "melee": 1,
+      "guns": 4,
+      "other": 3
+    },
+    "hp": 30,
+    "initiative": 17,
+    "defense": 1,
+    "dr": {
+      "phys": "0 tête / 3 torse-bras / 2 jambes",
+      "energy": "0 tête / 3 torse-bras / 2 jambes",
+      "rad": 0,
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Frappe désarmée",
+        "attr": "str",
+        "skill": "unarmed",
+        "tn": 10,
+        "dmg": 3,
+        "dmgType": "physical",
+        "eff": ""
+      },
+      {
+        "name": "Grenade artisanale",
+        "attr": "agi",
+        "skill": "throwing",
+        "tn": 9,
+        "dmg": 6,
+        "dmgType": "physical",
+        "eff": "Blast, Throwing",
+        "range": "M"
+      },
+      {
+        "name": "Fusil de chasse",
+        "attr": "agi",
+        "skill": "small guns",
+        "tn": 10,
+        "dmg": 6,
+        "dmgType": "physical",
+        "eff": "Piercing",
+        "range": "M",
+        "special": "Two-Handed"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Agressif",
+        "desc": "En entrant en scène, génère 1 PA pour son camp."
+      },
+      {
+        "name": "Réserves d'action",
+        "desc": "Dispose d'une réserve personnelle de 4 PA."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Plastron raider lourd, jambes raider robustes x2, bras raider lourds x2, 3 grenades artisanales, fusil de chasse, richesse 2."
+      }
+    ],
+    "desc": "Chef raider brutal, mieux armé et mieux protégé."
+  },
+  "Children of Atom": {
+    "level": 6,
+    "type": "Humain",
+    "category": "normal",
+    "xp": 45,
+    "attrs": {
+      "body": 5,
+      "mind": 5,
+      "melee": 1,
+      "guns": null,
+      "other": 3
+    },
+    "hp": 14,
+    "initiative": 10,
+    "defense": 1,
+    "dr": {
+      "phys": "1 bras-jambes-torse",
+      "energy": "1 bras-jambes-torse",
+      "rad": 2,
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Frappe désarmée",
+        "attr": "str",
+        "skill": "unarmed",
+        "tn": 5,
+        "dmg": 2,
+        "dmgType": "physical",
+        "eff": ""
+      },
+      {
+        "name": "Gamma Gun",
+        "attr": "agi",
+        "skill": "energy weapons",
+        "tn": 8,
+        "dmg": 3,
+        "dmgType": "radiation",
+        "eff": "Piercing, Blast, Inaccurate",
+        "range": "M",
+        "fireRate": 1
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Lueur d'Atom",
+        "desc": "Habitué aux zones radioactives : +2 RD radiation déjà inclus."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Vêtements robustes, gamma gun, 2d20 munitions gamma, richesse 1."
+      }
+    ],
+    "desc": "Fanatique ou adepte irradié du culte d'Atom."
+  },
+  "Gunner": {
+    "level": 6,
+    "type": "Humain",
+    "category": "normal",
+    "xp": 45,
+    "attrs": {
+      "body": 5,
+      "mind": 5,
+      "melee": 3,
+      "guns": 3,
+      "other": 3
+    },
+    "hp": 12,
+    "initiative": 13,
+    "defense": 1,
+    "dr": {
+      "phys": "1 bras / 2 jambes-torse",
+      "energy": "2 bras-jambes-torse",
+      "rad": 0,
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Frappe désarmée",
+        "attr": "str",
+        "skill": "unarmed",
+        "tn": 5,
+        "dmg": 4,
+        "dmgType": "physical",
+        "eff": ""
+      },
+      {
+        "name": "Pistolet laser",
+        "attr": "agi",
+        "skill": "energy weapons",
+        "tn": 10,
+        "dmg": 4,
+        "dmgType": "energy",
+        "eff": "Piercing",
+        "range": "C",
+        "fireRate": 2
+      },
+      {
+        "name": "Fusil de combat",
+        "attr": "agi",
+        "skill": "small guns",
+        "tn": 10,
+        "dmg": 5,
+        "dmgType": "physical",
+        "eff": "",
+        "range": "M",
+        "fireRate": 2,
+        "special": "Two-Handed"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Déchaînement",
+        "desc": "Une fois par combat, cadence +2 avec fusil de combat ou laser gun pour une attaque."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Plastron d'armure de combat, jambes cuir x2, bras cuir x2, fusil de combat ou laser gun, richesse 2."
+      }
+    ],
+    "desc": "Mercenaire lourdement armé et territorial."
+  },
+  "Mercenary": {
+    "level": 6,
+    "type": "Humain",
+    "category": "normal",
+    "xp": 45,
+    "attrs": {
+      "body": 6,
+      "mind": 5,
+      "melee": 2,
+      "guns": 3,
+      "other": 2
+    },
+    "hp": 12,
+    "initiative": 12,
+    "defense": 1,
+    "dr": {
+      "phys": "2 bras-jambes-torse",
+      "energy": "2 bras-jambes-torse",
+      "rad": 0,
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Frappe désarmée",
+        "attr": "str",
+        "skill": "unarmed",
+        "tn": 7,
+        "dmg": 2,
+        "dmgType": "physical",
+        "eff": ""
+      },
+      {
+        "name": "Fusil de combat",
+        "attr": "agi",
+        "skill": "small guns",
+        "tn": 9,
+        "dmg": 2,
+        "dmgType": "physical",
+        "eff": "",
+        "range": "M",
+        "fireRate": 2,
+        "special": "Two-Handed"
+      },
+      {
+        "name": "Fusil à double canon",
+        "attr": "agi",
+        "skill": "small guns",
+        "tn": 8,
+        "dmg": 6,
+        "dmgType": "physical",
+        "eff": "Spread, Vicious, Inaccurate",
+        "range": "C",
+        "special": "Two-Handed"
+      },
+      {
+        "name": "Cocktail Molotov",
+        "attr": "per",
+        "skill": "explosives",
+        "tn": 7,
+        "dmg": 4,
+        "dmgType": "energy",
+        "eff": "Persistent, Blast, Throwing",
+        "range": "M"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Déchaînement",
+        "desc": "Une fois par combat, cadence +2 avec le fusil de combat pour une attaque."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Plastron et jambes d'armure de combat x2, bras d'armure de combat x2, fusil de combat, richesse 2."
+      }
+    ],
+    "desc": "Combattant à louer, fiable tant que les capsules suivent."
+  },
+  "Minuteman": {
+    "level": 7,
+    "type": "Humain",
+    "category": "normal",
+    "xp": 39,
+    "attrs": {
+      "body": 6,
+      "mind": 5,
+      "melee": 2,
+      "guns": 3,
+      "other": 3
+    },
+    "hp": 12,
+    "initiative": 12,
+    "defense": 1,
+    "dr": {
+      "phys": "1 bras-jambes-torse",
+      "energy": "1 bras-jambes-torse",
+      "rad": 0,
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Frappe désarmée",
+        "attr": "str",
+        "skill": "unarmed",
+        "tn": 6,
+        "dmg": 3,
+        "dmgType": "physical",
+        "eff": ""
+      },
+      {
+        "name": "Mousquet laser",
+        "attr": "agi",
+        "skill": "energy weapons",
+        "tn": 8,
+        "dmg": 5,
+        "dmgType": "energy",
+        "eff": "Piercing",
+        "range": "M",
+        "special": "Two-Handed"
+      }
+    ],
+    "abilities": [],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Vêtements robustes, richesse 2."
+      }
+    ],
+    "desc": "Milicien communautaire défendant les colonies."
+  },
+  "Railroad Agent": {
+    "level": 7,
+    "type": "Humain",
+    "category": "normal",
+    "xp": 39,
+    "attrs": {
+      "body": 5,
+      "mind": 6,
+      "melee": 1,
+      "guns": 2,
+      "other": 2
+    },
+    "hp": 13,
+    "initiative": 12,
+    "defense": 1,
+    "dr": {
+      "phys": "1 bras-jambes-torse",
+      "energy": "1 bras-jambes-torse",
+      "rad": 0,
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Frappe désarmée",
+        "attr": "str",
+        "skill": "unarmed",
+        "tn": 5,
+        "dmg": 2,
+        "dmgType": "physical",
+        "eff": ""
+      },
+      {
+        "name": "Fusil de chasse",
+        "attr": "agi",
+        "skill": "small guns",
+        "tn": 7,
+        "dmg": 6,
+        "dmgType": "energy",
+        "eff": "Piercing",
+        "range": "M",
+        "special": "Two-Handed"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Agent du Réseau",
+        "desc": "Sous couverture, gagne +1d20 aux tests de Discours impliquant la tromperie."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Vêtements robustes, richesse 2."
+      }
+    ],
+    "desc": "Agent clandestin spécialisé dans l'infiltration et l'exfiltration."
+  },
+  "Institute Scientist": {
+    "level": 7,
+    "type": "Humain",
+    "category": "normal",
+    "xp": 39,
+    "attrs": {
+      "body": 4,
+      "mind": 8,
+      "melee": null,
+      "guns": null,
+      "other": 5
+    },
+    "hp": 12,
+    "initiative": 12,
+    "defense": 1,
+    "dr": {
+      "phys": 0,
+      "energy": 0,
+      "rad": 0,
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Frappe désarmée",
+        "attr": "str",
+        "skill": "unarmed",
+        "tn": 4,
+        "dmg": 2,
+        "dmgType": "physical",
+        "eff": ""
+      },
+      {
+        "name": "Laser Institut",
+        "attr": "agi",
+        "skill": "energy weapons",
+        "tn": 10,
+        "dmg": 4,
+        "dmgType": "energy",
+        "eff": "Burst, Close Quarters, Inaccurate",
+        "range": "C",
+        "fireRate": 3
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Blouse de labo",
+        "desc": "Une fois par scène, peut relancer 1d20 sur un test basé sur INT."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Blouse de laboratoire, laser Institut, 2d20 cellules à fusion."
+      }
+    ],
+    "desc": "Scientifique de l'Institut, précieux mais vulnérable."
+  },
+  "Trader / Caravan Merchant": {
+    "level": 4,
+    "type": "Humain",
+    "category": "normal",
+    "xp": 62,
+    "attrs": {
+      "body": 5,
+      "mind": 8,
+      "melee": 2,
+      "guns": 3,
+      "other": 4
+    },
+    "hp": 15,
+    "initiative": 13,
+    "defense": 1,
+    "dr": {
+      "phys": "1 bras-jambes-torse",
+      "energy": "2 bras-jambes-torse",
+      "rad": 0,
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Frappe désarmée",
+        "attr": "str",
+        "skill": "unarmed",
+        "tn": 7,
+        "dmg": 2,
+        "dmgType": "physical",
+        "eff": ""
+      },
+      {
+        "name": "Pistolet auto 10mm",
+        "attr": "agi",
+        "skill": "small guns",
+        "tn": 8,
+        "dmg": 3,
+        "dmgType": "physical",
+        "eff": "Burst, Close Quarters, Inaccurate",
+        "range": "C",
+        "fireRate": 4
+      },
+      {
+        "name": "Fusil à double canon",
+        "attr": "agi",
+        "skill": "small guns",
+        "tn": 8,
+        "dmg": 6,
+        "dmgType": "physical",
+        "eff": "Spread, Vicious, Inaccurate",
+        "range": "C",
+        "special": "Two-Handed"
+      },
+      {
+        "name": "Cocktail Molotov",
+        "attr": "per",
+        "skill": "explosives",
+        "tn": 7,
+        "dmg": 4,
+        "dmgType": "energy",
+        "eff": "Persistent, Blast, Throwing",
+        "range": "M"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Déchaînement",
+        "desc": "Une fois par combat, cadence +4 avec le pistolet auto 10mm pour une attaque."
+      },
+      {
+        "name": "Marchand maître",
+        "desc": "En test opposé de troc, génère un succès automatique en plus des succès obtenus."
+      },
+      {
+        "name": "Boutiquier",
+        "desc": "Dispose de 6d20 capsules personnelles ou de marchandises déterminées par le MJ."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Tenue de voyageur, pistolet auto 10mm, richesse 6."
+      }
+    ],
+    "desc": "Marchand itinérant ou commerçant de caravane."
+  },
+  "Vault Dweller": {
+    "level": 7,
+    "type": "Humain",
+    "category": "normal",
+    "xp": 52,
+    "attrs": {
+      "body": 5,
+      "mind": 6,
+      "melee": 2,
+      "guns": 3,
+      "other": 3
+    },
+    "hp": 14,
+    "initiative": 10,
+    "defense": 1,
+    "dr": {
+      "phys": "1 bras-jambes-torse",
+      "energy": "1 bras-jambes-torse",
+      "rad": "2 bras-jambes-torse",
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Frappe désarmée",
+        "attr": "str",
+        "skill": "unarmed",
+        "tn": 7,
+        "dmg": 3,
+        "dmgType": "physical",
+        "eff": ""
+      },
+      {
+        "name": "Pistolet 10mm",
+        "attr": "agi",
+        "skill": "small guns",
+        "tn": 9,
+        "dmg": 4,
+        "dmgType": "physical",
+        "eff": "Close Quarters, Reliable",
+        "range": "C",
+        "fireRate": 2
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Enfant d'abri",
+        "desc": "Réduit de 1 la difficulté des tests END pour résister aux maladies. Peut porter une complication liée à l'expérience de l'abri."
+      },
+      {
+        "name": "Éduqué",
+        "desc": "Dispose d'une compétence tag supplémentaire."
+      },
+      {
+        "name": "Doué",
+        "desc": "Deux attributs SPECIAL au choix augmentés de +1."
+      }
+    ],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Combinaison d'abri, pistolet 10mm, 2d20 munitions 10mm, richesse 2."
+      }
+    ],
+    "desc": "Survivant issu d'un abri, souvent mieux formé que la moyenne."
+  },
+  "Wastelander": {
+    "level": 2,
+    "type": "Humain",
+    "category": "normal",
+    "xp": 17,
+    "attrs": {
+      "body": 7,
+      "mind": 5,
+      "melee": 2,
+      "guns": 2,
+      "other": 2
+    },
+    "hp": 8,
+    "initiative": 11,
+    "defense": 1,
+    "dr": {
+      "phys": "1 bras-jambes-torse",
+      "energy": "1 bras-jambes-torse",
+      "rad": 0,
+      "poison": 0
+    },
+    "attacks": [
+      {
+        "name": "Frappe désarmée",
+        "attr": "str",
+        "skill": "unarmed",
+        "tn": 6,
+        "dmg": 2,
+        "dmgType": "physical",
+        "eff": ""
+      },
+      {
+        "name": "Machette",
+        "attr": "str",
+        "skill": "melee weapons",
+        "tn": 7,
+        "dmg": 3,
+        "dmgType": "physical",
+        "eff": "Piercing 1"
+      },
+      {
+        "name": "Fusil à double canon",
+        "attr": "agi",
+        "skill": "small guns",
+        "tn": 8,
+        "dmg": 5,
+        "dmgType": "physical",
+        "eff": "Spread, Vicious, Inaccurate",
+        "range": "C",
+        "special": "Two-Handed"
+      }
+    ],
+    "abilities": [],
+    "inventory": [
+      {
+        "name": "Équipement",
+        "desc": "Cuirs de route, fusil à double canon, richesse variable."
+      }
+    ],
+    "desc": "Habitant ordinaire des terres désolées, parfois hostile, parfois simple survivant."
   }
 }
