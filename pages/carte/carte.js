@@ -1,6 +1,7 @@
 // ============================================================
-// CARTE — Leaflet (image CRS.Simple) + couche système (POI, zones,
-// jetons joueurs) synchronisée Firebase /carte/data.
+// CARTE — Leaflet (coordonnées géographiques WGS84) + couche système
+// (POI, zones, jetons) synchronisée Firebase /carte/data.
+// Fond : CartoDB Dark Matter + GeoJSON (seine, rails).
 // Révélation PAR JOUEUR : chaque POI/zone a revealedFor:[joueurIds].
 //   - MJ (auth 1234, pas de ?id) : voit tout + édite + révèle par joueur
 //   - Joueur (?id=<joueurId>) : voit seulement ce qui lui est révélé + jetons
@@ -8,7 +9,7 @@
 // Firestore interdit les tableaux imbriqués → polygones en [{lat,lng}].
 // ============================================================
 
-const IMG_SRC = '../../img/paris.png';
+const GEOJSON_BASE = '../../map/';
 const MJ_CODE = '1234';
 
 const POI_TYPES = {
@@ -25,17 +26,19 @@ const VARIATION_LABELS = { irradiated: 'Irradiée', abandoned: 'Abandonnée', oc
 const THREAT_LABELS    = { calme: 'Calme', normal: 'Normal', eleve: 'Élevé', extreme: 'Extrême' };
 const OCC_LABELS       = { neutral: 'Neutre' };
 
-const VISION_FRAC = 0.18;  // rayon de vision des alliés (fraction de la largeur carte)
-const FOG_FRAC    = 0.12;  // rayon de découverte du brouillard
-const FOG_STEP    = 0.05;  // espacement min entre points explorés enregistrés
+// Distances géographiques (mètres)
+const FOG_RADIUS_M    = 600;   // rayon de découverte du brouillard
+const FOG_STEP_M      = 150;   // espacement min entre points explorés enregistrés
+const VISION_RADIUS_M = 1500;  // rayon de vision des alliés
+const TELEPORT_M      = 5000;  // au-delà : repositionnement (pas de traîné)
 
 const _params  = new URLSearchParams(location.search);
 const viewerId = _params.get('id');               // perspective d'un joueur
 const embed    = _params.get('embed') === '1';
 let isMJ = !viewerId && sessionStorage.getItem('mj_auth') === '1';
 
-let fdb, map, mapW = 0, mapH = 0, VISION_RADIUS = 0;
-let fogOverlay = null;
+let fdb, map;
+let fogCanvas = null;
 let editMode = false, addingPOI = false, drawingZone = null;
 let mapData = { pois: [], zones: [], tokens: {}, fog: {} };
 let lieux = [];            // [{id, name, image, pois:[]}] — plans de bâtiments
@@ -51,28 +54,34 @@ let currentTab = 'paris';
 function init() {
   if (embed) document.body.classList.add('embed');
   fdb = firebase.initializeApp(firebaseConfig).firestore();
-  const img = new Image();
-  img.onload  = () => { mapW = img.naturalWidth; mapH = img.naturalHeight; buildMap(); };
-  img.onerror = () => { document.getElementById('carte-msg').style.display = 'flex'; };
-  img.src = IMG_SRC;
+  buildMap();
 }
 
 function buildMap() {
-  map = L.map('map', { crs: L.CRS.Simple, minZoom: -6, maxZoom: 4, zoomSnap: 0.25, attributionControl: false });
-  const bounds = [[0, 0], [mapH, mapW]];
-  VISION_RADIUS = mapW * VISION_FRAC;
-  // Panes : image (200) < brouillard (350) < zones (overlay 400) < marqueurs (600)
-  map.createPane('basePane'); map.getPane('basePane').style.zIndex = 200;
-  map.createPane('fogPane');  const fp = map.getPane('fogPane'); fp.style.zIndex = 350; fp.style.pointerEvents = 'none';
-  L.imageOverlay(IMG_SRC, bounds, { pane: 'basePane' }).addTo(map);
-  map.fitBounds(bounds);
-  map.setMaxBounds(L.latLngBounds(bounds).pad(0.3));
+  map = L.map('map', {
+    center: [48.8566, 2.3522], zoom: 13,
+    minZoom: 10, maxZoom: 18, zoomSnap: 0.25,
+    attributionControl: false,
+  });
 
-  zoneLayer = L.layerGroup().addTo(map);
-  poiLayer = L.layerGroup().addTo(map);
+  // Fond CartoDB Dark Matter (noir/gris, aucune clé API requise)
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19, subdomains: 'abcd',
+  }).addTo(map);
+
+  // Couches GeoJSON Paris
+  loadGeoJsonLayers();
+
+  zoneLayer  = L.layerGroup().addTo(map);
+  poiLayer   = L.layerGroup().addTo(map);
   tokenLayer = L.layerGroup().addTo(map);
+
+  // Canvas de brouillard (position absolue dans #map, z-index 350)
+  setupFogCanvas();
+
   map.on('click', onMapClick);
   map.on('popupclose', () => { if (!reopening) openItem = null; });
+  map.on('move zoom moveend zoomend', drawFog);
 
   updateModeUI();
 
@@ -91,6 +100,23 @@ function buildMap() {
       if (currentTab === 'lieux') renderLieux();
     });
   });
+}
+
+async function loadGeoJsonLayers() {
+  // Seine (51 ko)
+  try {
+    const data = await fetch(GEOJSON_BASE + 'seine.geojson').then(r => r.json());
+    L.geoJSON(data, {
+      style: { color: '#1a4a6a', weight: 5, opacity: 0.75, fillColor: '#0d2e44', fillOpacity: 0.55 },
+    }).addTo(map);
+  } catch(e) { console.warn('seine.geojson non chargé', e); }
+  // Rails / métro (2,3 Mo) — chargé après la Seine
+  try {
+    const data = await fetch(GEOJSON_BASE + 'rails.geojson').then(r => r.json());
+    L.geoJSON(data, {
+      style: { color: '#3a3520', weight: 2, opacity: 0.65, dashArray: '6 3' },
+    }).addTo(map);
+  } catch(e) { console.warn('rails.geojson non chargé', e); }
 }
 
 async function saveData() {
@@ -276,9 +302,10 @@ function renderTokens() {
   const my = (!isMJ && viewerId) ? mapData.tokens?.[viewerId] : null;
   Object.entries(mapData.tokens || {}).forEach(([id, pos]) => {
     if (!pos) return;
-    // Vue joueur : on ne voit les alliés que dans un rayon autour de soi
+    // Vue joueur : alliés visibles uniquement dans VISION_RADIUS_M mètres
     if (!isMJ && viewerId && id !== viewerId) {
-      if (!my || Math.hypot(my.lat - pos.lat, my.lng - pos.lng) > VISION_RADIUS) return;
+      if (!my) return;
+      if (L.latLng(my.lat, my.lng).distanceTo(L.latLng(pos.lat, pos.lng)) > VISION_RADIUS_M) return;
     }
     const nom = joueurs[id]?.nom || id;
     const me = id === viewerId;
@@ -298,50 +325,66 @@ function renderTokens() {
   });
 }
 
-// Brouillard d'exploration (vue joueur) : canvas sombre « percé » autour des
-// points explorés (déplacements) et des lieux révélés au joueur.
-function renderFog() {
-  if (fogOverlay) { map.removeLayer(fogOverlay); fogOverlay = null; }
+// ---- BROUILLARD (canvas absolu dans #map, se redessine sur move/zoom) ----
+
+function setupFogCanvas() {
   if (isMJ || !viewerId) return;
-  const FW = Math.min(1200, mapW), FH = Math.round(FW * mapH / mapW);
-  const cv = document.createElement('canvas'); cv.width = FW; cv.height = FH;
-  const ctx = cv.getContext('2d');
-  ctx.fillStyle = 'rgba(4,8,4,0.93)'; ctx.fillRect(0, 0, FW, FH);
+  fogCanvas = document.createElement('canvas');
+  fogCanvas.id = 'fog-canvas';
+  fogCanvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:350;pointer-events:none;';
+  document.getElementById('map').appendChild(fogCanvas);
+}
+
+// Rayon de brouillard en pixels à partir d'une distance en mètres
+function fogRadiusPx() {
+  const c = map.getCenter();
+  const p1 = map.latLngToContainerPoint(c);
+  const p2 = map.latLngToContainerPoint(L.latLng(c.lat + 0.001, c.lng));
+  return Math.abs(p2.y - p1.y) * FOG_RADIUS_M / 111; // 0.001° lat ≈ 111 m
+}
+
+function renderFog() { drawFog(); }
+
+function drawFog() {
+  if (!fogCanvas || isMJ || !viewerId) return;
+  const W = fogCanvas.offsetWidth, H = fogCanvas.offsetHeight;
+  if (!W || !H) return;
+  fogCanvas.width = W; fogCanvas.height = H;
+  const ctx = fogCanvas.getContext('2d');
+  ctx.fillStyle = 'rgba(4,8,4,0.90)'; ctx.fillRect(0, 0, W, H);
   ctx.globalCompositeOperation = 'destination-out';
 
   const pts = (mapData.fog?.[viewerId] || []).slice();
   const myPos = mapData.tokens?.[viewerId]; if (myPos) pts.push(myPos);
   (mapData.pois || []).forEach(p => { if (visibleFor(p)) pts.push({ lat: p.lat, lng: p.lng }); });
   (mapData.zones || []).forEach(z => {
-    if (z.polygon && z.polygon.length >= 3 && visibleFor(z)) {
+    if (z.polygon?.length >= 3 && visibleFor(z)) {
       const c = polygonCentroid(z.polygon.map(p => [p.lat, p.lng]));
       pts.push({ lat: c[0], lng: c[1] });
     }
   });
 
-  const rad = FOG_FRAC * FW;
+  const rad = fogRadiusPx();
   pts.forEach(p => {
-    const x = (p.lng / mapW) * FW, y = (1 - p.lat / mapH) * FH;
-    const g = ctx.createRadialGradient(x, y, rad * 0.35, x, y, rad);
-    g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rad, 0, Math.PI * 2); ctx.fill();
+    try {
+      const px = map.latLngToContainerPoint(L.latLng(p.lat, p.lng));
+      const g = ctx.createRadialGradient(px.x, px.y, rad * 0.3, px.x, px.y, rad);
+      g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px.x, px.y, rad, 0, Math.PI * 2); ctx.fill();
+    } catch(_) {}
   });
-  ctx.globalCompositeOperation = 'source-over';
-  fogOverlay = L.imageOverlay(cv.toDataURL(), [[0, 0], [mapH, mapW]], { pane: 'fogPane', interactive: false }).addTo(map);
 }
 
-// Enregistre le TRAJET exploré (gommage permanent) : interpole entre le
-// dernier point et la nouvelle position pour effacer toute la traînée.
+// Enregistre le trajet exploré en mètres (gommage permanent, traînée interpolée).
 function recordFog(id, lat, lng) {
   mapData.fog = mapData.fog || {};
   const arr = mapData.fog[id] = mapData.fog[id] || [];
-  const step = mapW * FOG_STEP;
   const last = arr[arr.length - 1];
   if (!last) { arr.push({ lat, lng }); return; }
-  const d = Math.hypot(last.lat - lat, last.lng - lng);
-  if (d <= step) return;                              // déjà couvert
-  if (d > mapW * 0.5) { arr.push({ lat, lng }); return; } // repositionnement = pas un passage
-  const n = Math.ceil(d / step);
+  const dist = L.latLng(last.lat, last.lng).distanceTo(L.latLng(lat, lng));
+  if (dist < FOG_STEP_M) return;
+  if (dist > TELEPORT_M) { arr.push({ lat, lng }); return; }
+  const n = Math.ceil(dist / FOG_STEP_M);
   for (let i = 1; i <= n; i++)
     arr.push({ lat: last.lat + (lat - last.lat) * i / n, lng: last.lng + (lng - last.lng) * i / n });
 }
