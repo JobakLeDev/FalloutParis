@@ -615,6 +615,14 @@ function renderCoequipiers(){
 }
 
 // ---- TRACKER ----
+function estElimineJ(c){
+  if(c.type === 'ennemi'){
+    const e = (combatState?.ennemis||[]).find(x => x.id === c.eid);
+    return !!e && (e.pvCur||0) <= 0;
+  }
+  return (tousJoueurs[c.id]?.hp ?? 1) <= 0;
+}
+
 function renderTrackerJoueur(){
   const el = document.getElementById('j-tracker'); if(!el||!combatState) return;
   const ordre = combatState.ordreInitiative||[];
@@ -624,6 +632,14 @@ function renderTrackerJoueur(){
   el.innerHTML = ordre.map((c,i) => {
     const isActif = i===tourActif;
     const isMe = c.id===joueurId;
+    const elimine = estElimineJ(c);
+    if(elimine){
+      return '<div class="tracker-item'+(c.type==='ennemi'?' ennemi':'')+'" style="opacity:0.35">'
+        +'<div class="tracker-top">'
+        +'<span class="tracker-nom" style="text-decoration:line-through">💀 '+c.nom+'</span>'
+        +'<span class="tracker-init">'+c.init+'</span>'
+        +'</div></div>';
+    }
     return '<div class="tracker-item'+(isActif?' actif':'')+(c.type==='ennemi'?' ennemi':'')+(isMe?' c-est-moi':'')+'">'
       +'<div class="tracker-top">'
       +'<span class="tracker-nom">'+(isActif?'▶ ':'')+c.nom+(isMe?' ◀':'')+' </span>'

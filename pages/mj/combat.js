@@ -274,25 +274,34 @@ function finDeTour(){
     db.collection(COMBATS_COLL).doc(currentCombatId).update(upd).catch(()=>{});
   }
 
-  // Réinitialiser actions du combattant suivant
-  tourActif = (tourActif + 1) % ordreInitiative.length;
-
-  // Nouveau round si on revient au début
-  if(tourActif === 0){
-    numRound++;
-    addLog('⚔ ─── Round ' + numRound + ' ───');
-    // Réinitialiser toutes les actions
-    ordreInitiative.forEach(c => {
-      const isJ = c.type === 'joueur';
-      const d = isJ ? combattants[c.id]?.data : {};
-      initActionsState(c.id, isJ, d);
-    });
-  }
+  // Avancer le tour en sautant les combattants éliminés
+  let steps = 0;
+  do {
+    tourActif = (tourActif + 1) % ordreInitiative.length;
+    steps++;
+    // Nouveau round si on revient au début
+    if(tourActif === 0){
+      numRound++;
+      addLog('⚔ ─── Round ' + numRound + ' ───');
+      ordreInitiative.forEach(c => {
+        const isJ = c.type === 'joueur';
+        const d = isJ ? combattants[c.id]?.data : {};
+        initActionsState(c.id, isJ, d || {});
+      });
+    }
+    if(estElimine(ordreInitiative[tourActif])){
+      addLog('💀 ' + ordreInitiative[tourActif].nom + ' — tour sauté');
+    }
+  } while(estElimine(ordreInitiative[tourActif]) && steps < ordreInitiative.length);
 
   const next = ordreInitiative[tourActif];
-  addLog('➤ Tour de ' + next.nom);
+  if(estElimine(next)){
+    addLog('⚠ Tous les combattants sont éliminés');
+    renderCombat(); renderTracker(); syncCombatToFirebase();
+    return;
+  }
 
-  // Si c'est un joueur, le sélectionner automatiquement
+  addLog('➤ Tour de ' + next.nom);
   if(next.type === 'joueur'){
     joueurActif = next.id;
     armeActive = null;
@@ -367,6 +376,14 @@ function chPA(key, delta){
   syncCombatToFirebase();
 }
 
+function estElimine(c){
+  if(c.type === 'ennemi'){
+    const e = ennemis.find(x => x.id === c.eid);
+    return !!e && (e.pvCur||0) <= 0;
+  }
+  return (combattants[c.id]?.data?.hp ?? 1) <= 0;
+}
+
 function renderTracker(){
   const el = document.getElementById('tracker-tour'); if(!el) return;
   if(!ordreInitiative.length){
@@ -378,8 +395,19 @@ function renderTracker(){
 
   ordreInitiative.forEach((c, idx) => {
     const isActif = idx === tourActif;
+    const elimine = estElimine(c);
     const s = actionsState[c.id] || {mineure:1,majeure:1,pa:0};
     const key = c.id;
+
+    // Combattant éliminé : entrée grisée, aucun contrôle
+    if(elimine){
+      html += '<div class="tracker-item' + (c.type==='ennemi'?' ennemi':'') + '" style="opacity:0.35">'
+        + '<div class="tracker-top">'
+        + '<span class="tracker-nom" style="text-decoration:line-through">💀 ' + c.nom + '</span>'
+        + '<span class="tracker-init">' + c.init + '</span>'
+        + '</div></div>';
+      return;
+    }
 
     // Pastilles actions
     const minDots = [0,1].map(i =>
