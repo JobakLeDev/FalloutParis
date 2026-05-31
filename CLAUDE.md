@@ -44,6 +44,10 @@ FalloutParis/
 │   ├── ammo.json                      → types de munitions (array de strings)
 │   ├── ammo_loot.json                 → table loot 2D20 munitions [{min,max,ammo,base,cd,mult,scavenger?}]
 │   ├── npc_xp.json                    → XP par niveau PNJ {perLevel[{lvl,normal,mighty,legendary}], above20}
+│   ├── zones.json                     → zones {key:{label, pool:{ennemi:poids}}} — "none" = pas de rencontre
+│   ├── zone_variations.json           → variations {key:{multipliers?, add?}} (irradiated, flooded…)
+│   ├── zone_occupation.json           → occupation faction {key:{multipliers?, add?}} (republique, raiders…)
+│   ├── zone_threat.json               → niveau menace {key:{multipliers?, add?}} — pilote le poids de "none" (DRAFT)
 │   ├── items.json                     → {food,drinks,drugs,stuff}
 │   ├── enemies.json                   → ENNEMIS_DB format officiel (voir schéma ennemis)
 │   ├── perks.json                     → 57 perks {max,lvl,req[],desc}
@@ -61,7 +65,8 @@ FalloutParis/
     ├── fiche_perso/                   → fiche joueur (vue joueur)
     ├── admin_perso/                   → éditeur MJ des personnages (code: 1234)
     └── mj/
-        ├── mj_shared.js              → fonctions partagées pages MJ (SK_ATTR, FACES_CD, getHpMax, rollDice, getTN)
+        ├── mj_shared.js              → fonctions partagées pages MJ (SK_ATTR, FACES_CD, getHpMax, rollDice, getTN, enemyInstanceFromDB, getNpcXP)
+        ├── zones.js                  → moteur rencontres pondérées (resolveZonePool, rollEncounter, generateEncounters)
         ├── mj.html / mj.js / mj.css → tableau de bord MJ (code: 1234)
         ├── combat.html / combat.js / combat.css  → écran combat MJ
         ├── combat_sync.js            → sync Firebase état combat
@@ -76,7 +81,7 @@ FalloutParis/
 | `fiche_perso.html` | `shared.js` → `db.js` → `fiche_perso.js` → `firebase.js` |
 | `combat.html` | `shared.js` → `db.js` → `mj_shared.js` → `combat_sync.js` → `combat.js` |
 | `combat_joueur.html` | `shared.js` → `db.js` → `mj_shared.js` → `combat_joueur.js` |
-| `mj.html` | `shared.js` → `db.js` → `mj_shared.js` → `mj.js` |
+| `mj.html` | `shared.js` → `db.js` → `mj_shared.js` → `zones.js` → `mj.js` |
 | `admin_perso.html` | `shared.js` → `db.js` → `admin_perso.js` |
 
 **Règles de chargement :**
@@ -159,6 +164,17 @@ Bestiaire officiel Fallout 2D20 — **55 créatures/PNJ** (bêtes, goules, robot
 `enemyInstanceFromDB(nom, lvl)` → instance combat : `{nom, pvMax, pvCur, atq:'XD', rd, initiative, xp, body, mind, tn, dmgType, eff, dr, defense, level, category}`.
 Scaling niveau : `hp ×(1+(lvl-1)·0.25)`, `rd phys +⌊(lvl-1)/2⌋`. Si `dr.phys` est une string, `rd` prend le 1er nombre (parseInt).
 Les ZONES de `mj.js` référencent ces noms pour la génération aléatoire — garder la cohérence si on renomme.
+
+### Système de zones / rencontres pondérées (`zones.js`)
+Arborescence : **zone** (pool pondéré de base) + couches de modificateurs appliquées dans l'ordre **variation → occupation → menace**.
+Chaque couche `{multipliers?, add?}` : applique d'abord `multipliers` (× le poids des entrées existantes), puis `add` (poids ajouté/créé). `"none"` = poids de « pas de rencontre ».
+```javascript
+resolveZonePool(zoneKey, {variation, occupation, threat})  // → {nom: poids} (>0)
+rollEncounter(pool)                                         // → nom tiré (ou "none")
+generateEncounters(zoneKey, opts, count, excludeNone)       // → [noms]
+zonePoolProbabilities(zoneKey, opts)                        // → [{nom, poids, pct}] (aperçu)
+```
+DRAFT en cours : certains noms de pool (Marchand, Mongrel, Republic Patrol, NNFP Militant…) n'ont pas encore de fiche dans `enemies.json` — `enemyInstanceFromDB` renvoie `null` pour eux (ignorés en combat). `zone_threat.json` est une 1re ébauche (menace = fréquence via `none`). Pas encore branché à l'UI mj.html.
 
 ---
 
