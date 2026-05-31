@@ -140,6 +140,40 @@ async function chargerJoueurs(){
   });
   renderSelJoueurs();
   renderCombat();
+
+  // Rejoin : si aucun joueur n'a été transmis depuis mj.html, restaurer l'état depuis Firebase
+  if(Object.keys(combattants).length === 0 && currentCombatId){
+    restaurerEtatCombat();
+  }
+}
+
+async function restaurerEtatCombat(){
+  try {
+    const snap = await db.collection(COMBATS_COLL).doc(currentCombatId).get();
+    if(!snap.exists) return;
+    const d = snap.data();
+    ordreInitiative = d.ordreInitiative || [];
+    actionsState    = d.actionsState   || {};
+    tourActif       = d.tourActif      || 0;
+    numRound        = d.numRound       || 0;
+    apPool          = d.apPool         || 0;
+    mjApPool        = d.mjApPool       || 0;
+    ennemis         = (d.ennemis       || []).map(e => ({...e}));
+    // Reconstruire combattants depuis l'ordre d'initiative
+    ordreInitiative.forEach(c => {
+      if(c.type === 'joueur' && joueurs[c.id]){
+        combattants[c.id] = {data: joueurs[c.id], initiative: c.init};
+      }
+    });
+    // Sélectionner le joueur actif
+    const actif = ordreInitiative[tourActif];
+    if(actif?.type === 'joueur') { joueurActif = actif.id; updateDicePanel(); }
+    addLog('↺ Combat restauré (round ' + numRound + ')');
+    renderCombat();
+    renderTracker();
+    renderAPPool();
+    renderSelJoueurs();
+  } catch(e){ console.error('restaurerEtatCombat:', e); }
 }
 
 function renderSelJoueurs(){
