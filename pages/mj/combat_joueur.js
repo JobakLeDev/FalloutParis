@@ -68,15 +68,25 @@ function initJoueur(){
 
   // État du combat
   db.collection(COMBATS_COLL).doc(combatId).onSnapshot(snap => {
-    if(!snap.exists || !snap.data().actif){
-      document.getElementById('attente').style.display='block';
-      document.getElementById('combat-actif').style.display='none';
+    const show = id => document.getElementById(id).style.display = 'block';
+    const hide = id => document.getElementById(id).style.display = 'none';
+
+    if(!snap.exists){
+      show('attente'); hide('combat-actif'); hide('combat-termine');
       return;
     }
-    combatState = snap.data();
+    const data = snap.data();
+    if(!data.actif){
+      // Combat terminé (pas "en attente") — afficher l'écran de fin
+      combatState = data;
+      hide('attente'); hide('combat-actif');
+      renderCombatTermine(data);
+      show('combat-termine');
+      return;
+    }
+    combatState = data;
     actionState = combatState?.actionsDeclarees?.[joueurId] || null;
-    document.getElementById('attente').style.display='none';
-    document.getElementById('combat-actif').style.display='block';
+    hide('attente'); show('combat-actif'); hide('combat-termine');
     renderCombatJoueur();
   });
 }
@@ -101,6 +111,79 @@ function renderLuckJoueur(){
 }
 
 // ---- RENDER PRINCIPAL ----
+// ============================================================
+// ÉCRAN DE FIN DE COMBAT
+// ============================================================
+function renderCombatTermine(data){
+  const el = document.getElementById('combat-termine'); if(!el) return;
+
+  const ennemis  = data.ennemis || [];
+  const nbRounds = data.numRound || 0;
+
+  // Déterminer victoire / défaite / indéterminé
+  const tousMorts   = ennemis.length > 0 && ennemis.every(e => (e.pvCur||0) <= 0);
+  const joueurMort  = joueurData && (joueurData.hp||0) <= 0;
+  let label, couleur, sousLabel;
+  if(tousMorts){
+    label = 'VICTOIRE'; couleur = 'var(--g)';
+    sousLabel = 'Tous les ennemis ont été éliminés.';
+  } else if(joueurMort){
+    label = 'DÉFAITE'; couleur = 'var(--rd)';
+    sousLabel = 'Tu as été mis hors de combat.';
+  } else {
+    label = 'COMBAT TERMINÉ'; couleur = 'var(--am)';
+    sousLabel = 'Le combat s\'est achevé.';
+  }
+
+  // XP
+  const defaits  = ennemis.filter(e => (e.pvCur||0) <= 0);
+  const xpTotal  = defaits.reduce((a, e) => a + (e.xp||0), 0);
+
+  // Fiche joueur
+  const hpMax  = joueurData ? ((joueurData.special?.L||5) + (joueurData.special?.E||5) + Math.max(0,(joueurData.niveau||1)-1)) : '?';
+  const hpFin  = joueurData?.hp ?? '?';
+  const radFin = joueurData?.rad ?? 0;
+
+  let html = '<div style="padding:40px 20px;text-align:center;font-family:\'Share Tech Mono\',monospace">';
+
+  // Titre
+  html += '<div style="font-family:\'Oswald\',sans-serif;font-size:36px;letter-spacing:6px;color:'+couleur+';margin-bottom:8px">'+label+'</div>';
+  html += '<div style="font-size:9px;color:var(--td);letter-spacing:2px;margin-bottom:24px">'+sousLabel+'</div>';
+
+  // Stats du combat
+  html += '<div style="display:inline-flex;gap:24px;border:1px solid var(--b2);padding:12px 24px;margin-bottom:20px">';
+  html += '<div><div style="font-size:7px;color:var(--td)">ROUNDS</div><div style="font-family:\'Oswald\',sans-serif;font-size:22px;color:var(--tb)">'+nbRounds+'</div></div>';
+  html += '<div><div style="font-size:7px;color:var(--td)">ENNEMIS</div><div style="font-family:\'Oswald\',sans-serif;font-size:22px;color:var(--rd)">'+defaits.length+'/'+ennemis.length+'</div></div>';
+  html += '<div><div style="font-size:7px;color:var(--td)">XP POTENTIEL</div><div style="font-family:\'Oswald\',sans-serif;font-size:22px;color:var(--am)">'+xpTotal+'</div></div>';
+  html += '<div><div style="font-size:7px;color:var(--td)">PV RESTANTS</div><div style="font-family:\'Oswald\',sans-serif;font-size:22px;color:'+(joueurMort?'var(--rd)':'var(--g)')+'">'+hpFin+'</div></div>';
+  if(radFin > 0) html += '<div><div style="font-size:7px;color:var(--td)">RAD</div><div style="font-family:\'Oswald\',sans-serif;font-size:22px;color:var(--am)">'+radFin+'</div></div>';
+  html += '</div>';
+
+  // Ennemis défaits
+  if(defaits.length){
+    html += '<div style="margin-bottom:16px;text-align:left;display:inline-block;min-width:260px">';
+    html += '<div style="font-size:7px;color:var(--td);letter-spacing:2px;margin-bottom:6px">ENNEMIS DÉFAITS</div>';
+    defaits.forEach(e => {
+      html += '<div style="display:flex;justify-content:space-between;font-size:8px;padding:3px 0;border-bottom:1px solid var(--b)">'
+        + '<span style="color:var(--t)">'+e.nom+'</span>'
+        + '<span style="color:var(--am)">+'+e.xp+' XP</span></div>';
+    });
+    html += '</div>';
+  }
+
+  // Note XP
+  if(xpTotal > 0){
+    html += '<div style="font-size:7px;color:var(--td);margin-bottom:20px">XP distribué par le MJ</div>';
+  }
+
+  // Lien retour fiche
+  html += '<div style="margin-top:8px">';
+  html += '<a href="../fiche_perso/fiche_perso.html?id='+joueurId+'" style="color:var(--g);border:1px solid var(--g);padding:8px 24px;text-decoration:none;font-size:9px;letter-spacing:2px">↗ MA FICHE</a>';
+  html += '</div></div>';
+
+  el.innerHTML = html;
+}
+
 function renderCombatJoueur(){
   if(!combatState) return;
   document.getElementById('j-round').textContent = combatState.numRound||1;
