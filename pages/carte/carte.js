@@ -21,14 +21,19 @@ const POI_TYPES = {
   other:      { label: 'Lieu',       color: '#7ed87e', icon: '📍' },
 };
 
+const VISION_FRAC = 0.18;  // rayon de vision des alliés (fraction de la largeur carte)
+const FOG_FRAC    = 0.12;  // rayon de découverte du brouillard
+const FOG_STEP    = 0.05;  // espacement min entre points explorés enregistrés
+
 const _params  = new URLSearchParams(location.search);
 const viewerId = _params.get('id');               // perspective d'un joueur
 const embed    = _params.get('embed') === '1';
 let isMJ = !viewerId && sessionStorage.getItem('mj_auth') === '1';
 
-let fdb, map, mapW = 0, mapH = 0;
+let fdb, map, mapW = 0, mapH = 0, VISION_RADIUS = 0;
+let fogOverlay = null;
 let editMode = false, addingPOI = false, drawingZone = null;
-let mapData = { pois: [], zones: {}, tokens: {} };
+let mapData = { pois: [], zones: {}, tokens: {}, fog: {} };
 let joueurs = {};
 let zoneLayer, poiLayer, tokenLayer;
 const poiMarkers = {}, zonePolys = {};
@@ -46,7 +51,11 @@ function init() {
 function buildMap() {
   map = L.map('map', { crs: L.CRS.Simple, minZoom: -6, maxZoom: 4, zoomSnap: 0.25, attributionControl: false });
   const bounds = [[0, 0], [mapH, mapW]];
-  L.imageOverlay(IMG_SRC, bounds).addTo(map);
+  VISION_RADIUS = mapW * VISION_FRAC;
+  // Panes : image (200) < brouillard (350) < zones (overlay 400) < marqueurs (600)
+  map.createPane('basePane'); map.getPane('basePane').style.zIndex = 200;
+  map.createPane('fogPane');  const fp = map.getPane('fogPane'); fp.style.zIndex = 350; fp.style.pointerEvents = 'none';
+  L.imageOverlay(IMG_SRC, bounds, { pane: 'basePane' }).addTo(map);
   map.fitBounds(bounds);
   map.setMaxBounds(L.latLngBounds(bounds).pad(0.3));
 
@@ -65,7 +74,7 @@ function buildMap() {
     });
     fdb.collection('carte').doc('data').onSnapshot(s => {
       const d = s.exists ? s.data() : {};
-      mapData = { pois: d.pois || [], zones: d.zones || {}, tokens: d.tokens || {} };
+      mapData = { pois: d.pois || [], zones: d.zones || {}, tokens: d.tokens || {}, fog: d.fog || {} };
       renderAll();
     });
   });
@@ -118,6 +127,7 @@ function renderAll() {
   renderZones();
   renderPOIs();
   renderTokens();
+  renderFog();
   renderMJPanel();
   if (openItem) {
     const layer = openItem.kind === 'poi' ? poiMarkers[openItem.id] : zonePolys[openItem.id];
@@ -172,8 +182,13 @@ function renderPOIs() {
 
 function renderTokens() {
   tokenLayer.clearLayers();
+  const my = (!isMJ && viewerId) ? mapData.tokens?.[viewerId] : null;
   Object.entries(mapData.tokens || {}).forEach(([id, pos]) => {
     if (!pos) return;
+    // Vue joueur : on ne voit les alliés que dans un rayon autour de soi
+    if (!isMJ && viewerId && id !== viewerId) {
+      if (!my || Math.hypot(my.lat - pos.lat, my.lng - pos.lng) > VISION_RADIUS) return;
+    }
     const nom = joueurs[id]?.nom || id;
     const me = id === viewerId;
     const m = L.marker([pos.lat, pos.lng], {
@@ -184,9 +199,53 @@ function renderTokens() {
     }).addTo(tokenLayer);
     m.bindPopup('<b>' + nom + '</b>');
     if (isMJ && editMode) m.on('dragend', () => {
-      mapData.tokens[id] = { lat: m.getLatLng().lat, lng: m.getLatLng().lng }; saveData();
+      const ll = m.getLatLng();
+      mapData.tokens[id] = { lat: ll.lat, lng: ll.lng };
+      recordFog(id, ll.lat, ll.lng);
+      saveData();
     });
   });
+}
+
+// Brouillard d'exploration (vue joueur) : canvas sombre « percé » autour des
+// points explorés (déplacements) et des lieux révélés au joueur.
+function renderFog() {
+  if (fogOverlay) { map.removeLayer(fogOverlay); fogOverlay = null; }
+  if (isMJ || !viewerId) return;
+  const FW = Math.min(1200, mapW), FH = Math.round(FW * mapH / mapW);
+  const cv = document.createElement('canvas'); cv.width = FW; cv.height = FH;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = 'rgba(4,8,4,0.93)'; ctx.fillRect(0, 0, FW, FH);
+  ctx.globalCompositeOperation = 'destination-out';
+
+  const pts = (mapData.fog?.[viewerId] || []).slice();
+  const myPos = mapData.tokens?.[viewerId]; if (myPos) pts.push(myPos);
+  (mapData.pois || []).forEach(p => { if (visibleFor(p)) pts.push({ lat: p.lat, lng: p.lng }); });
+  Object.values(mapData.zones || {}).forEach(z => {
+    if (z.polygon && z.polygon.length >= 3 && visibleFor(z)) {
+      const c = polygonCentroid(z.polygon.map(p => [p.lat, p.lng]));
+      pts.push({ lat: c[0], lng: c[1] });
+    }
+  });
+
+  const rad = FOG_FRAC * FW;
+  pts.forEach(p => {
+    const x = (p.lng / mapW) * FW, y = (1 - p.lat / mapH) * FH;
+    const g = ctx.createRadialGradient(x, y, rad * 0.35, x, y, rad);
+    g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rad, 0, Math.PI * 2); ctx.fill();
+  });
+  ctx.globalCompositeOperation = 'source-over';
+  fogOverlay = L.imageOverlay(cv.toDataURL(), [[0, 0], [mapH, mapW]], { pane: 'fogPane', interactive: false }).addTo(map);
+}
+
+// Enregistre la position explorée d'un joueur (point sparse)
+function recordFog(id, lat, lng) {
+  mapData.fog = mapData.fog || {};
+  const arr = mapData.fog[id] = mapData.fog[id] || [];
+  const min = mapW * FOG_STEP;
+  const last = arr[arr.length - 1];
+  if (!last || Math.hypot(last.lat - lat, last.lng - lng) > min) arr.push({ lat, lng });
 }
 
 function renderMJPanel() {
@@ -292,7 +351,7 @@ function cancelDrawZone() {
 }
 function placerJetons() {
   const c = { lat: mapH / 2, lng: mapW / 2 }; let n = 0;
-  Object.keys(joueurs).forEach(id => { if (!mapData.tokens[id]) { mapData.tokens[id] = { ...c }; n++; } });
+  Object.keys(joueurs).forEach(id => { if (!mapData.tokens[id]) { mapData.tokens[id] = { ...c }; recordFog(id, c.lat, c.lng); n++; } });
   if (n) saveData();
   setHint(n ? n + ' jeton(s) placé(s) au centre — active l\'édition pour les déplacer.' : 'Tous les jetons existent déjà.');
 }
