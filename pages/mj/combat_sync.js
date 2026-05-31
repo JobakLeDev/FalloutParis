@@ -41,17 +41,15 @@ async function syncCombatToFirebase(){
 async function resetActionsDeclarees(){
   if(!db || !currentCombatId) return;
   try {
-    const snap = await db.collection(COMBATS_COLL).doc(currentCombatId).collection('actions').get();
-    if(snap.empty) return;
-    const batch = db.batch();
-    snap.forEach(doc => {
-      batch.set(doc.ref, {
-        mineure: {used:[], pending:null},
-        majeure: {used:[], pending:null},
-        mouvement_used: false
-      });
+    const snap = await db.collection(COMBATS_COLL).doc(currentCombatId).get();
+    if(!snap.exists) return;
+    const existing = snap.data()?.actionsDeclarees || {};
+    if(!Object.keys(existing).length) return;
+    const upd = {};
+    Object.keys(existing).forEach(id => {
+      upd['actionsDeclarees.' + id] = { mineure:{used:[],pending:null}, majeure:{used:[],pending:null}, mouvement_used:false };
     });
-    await batch.commit();
+    await db.collection(COMBATS_COLL).doc(currentCombatId).update(upd);
   } catch(e){ console.error('resetActionsDeclarees:', e); }
 }
 
