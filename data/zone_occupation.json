@@ -1,0 +1,53 @@
+{
+  "neutral": {
+    "multipliers": {}
+  },
+  "republique": {
+    "add": {
+      "Republic Patrol": 15,
+      "Republic Soldier": 20
+    },
+    "multipliers": {
+      "Raider": 0.3,
+      "Feral Ghoul": 0.7
+    }
+  },
+  "commune": {
+    "add": {
+      "Commune Militia": 20,
+      "Worker Patrol": 10
+    }
+  },
+  "nnfp": {
+    "add": {
+      "NNFP Militant": 20,
+      "NNFP Patrol": 10
+    }
+  },
+  "reseau": {
+    "add": {
+      "Eyebot": 10,
+      "Reseau Agent": 20
+    },
+    "multipliers": {
+      "Raider": 0.2
+    }
+  },
+  "zazous": {
+    "add": {
+      "Zazou Gang": 20
+    }
+  },
+  "ultras": {
+    "add": {
+      "Ultra Patrol": 25
+    }
+  },
+  "raiders": {
+    "multipliers": {
+      "Raider": 2,
+      "Raider Veteran": 2,
+      "Raider Psycho": 2
+    }
+  }
+}

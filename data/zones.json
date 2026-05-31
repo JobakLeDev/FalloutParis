@@ -1,0 +1,94 @@
+{
+  "metro": {
+    "label": "Métro",
+    "pool": {
+      "Feral Ghoul": 30,
+      "Radroach": 30,
+      "Mole Rat": 20,
+      "Raider": 12,
+      "Eyebot": 4,
+      "Protectron": 2,
+      "Super Mutant": 1,
+      "none": 8
+    }
+  },
+  "egouts": {
+    "label": "Égouts",
+    "pool": {
+      "Mole Rat": 30,
+      "Radroach": 25,
+      "Mirelurk Hatchling": 20,
+      "Feral Ghoul": 10,
+      "Raider": 8,
+      "Glowing One": 2,
+      "none": 5
+    }
+  },
+  "catacombes": {
+    "label": "Catacombes",
+    "pool": {
+      "Feral Ghoul": 35,
+      "Glowing One": 10,
+      "Mole Rat": 15,
+      "Raider Scaver": 8,
+      "Super Mutant": 4,
+      "none": 10
+    }
+  },
+  "rues": {
+    "label": "Rues",
+    "pool": {
+      "Raider": 20,
+      "Raider Scaver": 10,
+      "Marchand": 12,
+      "Wastelander": 20,
+      "Feral Ghoul": 12,
+      "Eyebot": 5,
+      "none": 21
+    }
+  },
+  "ruines_haussmanniennes": {
+    "label": "Ruines Haussmanniennes",
+    "pool": {
+      "Feral Ghoul": 25,
+      "Raider": 20,
+      "Radroach": 10,
+      "Raider Veteran": 6,
+      "Super Mutant": 3,
+      "none": 15
+    }
+  },
+  "banlieue": {
+    "label": "Banlieue",
+    "pool": {
+      "Raider": 20,
+      "Wastelander": 20,
+      "Mongrel": 20,
+      "Feral Ghoul": 10,
+      "Super Mutant": 4,
+      "none": 26
+    }
+  },
+  "berges_seine": {
+    "label": "Berges / Seine",
+    "pool": {
+      "Mirelurk": 30,
+      "Mirelurk Hunter": 12,
+      "Raider": 10,
+      "Marchand": 10,
+      "Eyebot": 4,
+      "none": 34
+    }
+  },
+  "zone_industrielle": {
+    "label": "Zone industrielle",
+    "pool": {
+      "Protectron": 20,
+      "Raider": 20,
+      "Super Mutant": 10,
+      "Assaultron": 2,
+      "Radroach": 10,
+      "none": 20
+    }
+  }
+}

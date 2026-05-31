@@ -1,0 +1,20 @@
+{
+  "calme": {
+    "multipliers": {
+      "none": 2
+    }
+  },
+  "normal": {
+    "multipliers": {}
+  },
+  "eleve": {
+    "multipliers": {
+      "none": 0.5
+    }
+  },
+  "extreme": {
+    "multipliers": {
+      "none": 0.25
+    }
+  }
+}
