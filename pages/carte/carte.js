@@ -21,6 +21,10 @@ const POI_TYPES = {
   other:      { label: 'Lieu',       color: '#7ed87e', icon: '📍' },
 };
 
+const VARIATION_LABELS = { irradiated: 'Irradiée', abandoned: 'Abandonnée', occupied: 'Occupée', dark: 'Sombre', flooded: 'Inondée' };
+const THREAT_LABELS    = { calme: 'Calme', normal: 'Normal', eleve: 'Élevé', extreme: 'Extrême' };
+const OCC_LABELS       = { neutral: 'Neutre' };
+
 const VISION_FRAC = 0.18;  // rayon de vision des alliés (fraction de la largeur carte)
 const FOG_FRAC    = 0.12;  // rayon de découverte du brouillard
 const FOG_STEP    = 0.05;  // espacement min entre points explorés enregistrés
@@ -33,11 +37,12 @@ let isMJ = !viewerId && sessionStorage.getItem('mj_auth') === '1';
 let fdb, map, mapW = 0, mapH = 0, VISION_RADIUS = 0;
 let fogOverlay = null;
 let editMode = false, addingPOI = false, drawingZone = null;
-let mapData = { pois: [], zones: {}, tokens: {}, fog: {} };
+let mapData = { pois: [], zones: [], tokens: {}, fog: {} };
 let joueurs = {};
 let zoneLayer, poiLayer, tokenLayer;
 const poiMarkers = {}, zonePolys = {};
 let openItem = null, reopening = false;            // popup ouvert (pour le réouvrir après render)
+let zoneFormCtx = null;                            // {polygon} (création) ou {zone} (édition)
 
 function init() {
   if (embed) document.body.classList.add('embed');
@@ -74,7 +79,7 @@ function buildMap() {
     });
     fdb.collection('carte').doc('data').onSnapshot(s => {
       const d = s.exists ? s.data() : {};
-      mapData = { pois: d.pois || [], zones: d.zones || {}, tokens: d.tokens || {}, fog: d.fog || {} };
+      mapData = { pois: d.pois || [], zones: normZones(d.zones), tokens: d.tokens || {}, fog: d.fog || {} };
       renderAll();
     });
   });
@@ -136,23 +141,33 @@ function renderAll() {
   reopening = false;
 }
 
+// Normalise les zones en array d'entités (rétrocompat ancien format {key:{...}})
+function normZones(z) {
+  if (Array.isArray(z)) return z;
+  return Object.entries(z || {}).map(([key, v]) => ({
+    id: 'z' + key, name: window.ZONES_DB?.[key]?.label || key,
+    polygon: v.polygon || [], revealedFor: v.revealedFor || [],
+    baseZone: key, occupation: 'neutral', variation: '', threat: 'normal',
+  }));
+}
+
 function renderZones() {
   zoneLayer.clearLayers();
   for (const k in zonePolys) delete zonePolys[k];
-  Object.entries(mapData.zones || {}).forEach(([key, z]) => {
+  (mapData.zones || []).forEach(z => {
     if (!z.polygon || z.polygon.length < 3 || !visibleFor(z)) return;
     const latlngs = z.polygon.map(p => [p.lat, p.lng]);
-    const def = window.ZONES_DB?.[key] || {};
     const dim = isMJ && !anyRevealed(z);
+    const fcol = window.FACTIONS?.[z.occupation]?.color || '#5dbe5d';
     const poly = L.polygon(latlngs, {
-      color: dim ? '#888' : '#5dbe5d', weight: dim ? 1 : 2, dashArray: dim ? '5 5' : null,
-      fillColor: '#5dbe5d', fillOpacity: dim ? 0.04 : 0.12,
+      color: dim ? '#888' : fcol, weight: dim ? 1 : 2, dashArray: dim ? '5 5' : null,
+      fillColor: fcol, fillOpacity: dim ? 0.05 : 0.15,
     }).addTo(zoneLayer);
-    poly.bindPopup(zonePopup(key, def, z));
-    poly.on('popupopen', () => { openItem = { kind: 'zone', id: key }; });
-    zonePolys[key] = poly;
+    poly.bindPopup(zonePopup(z));
+    poly.on('popupopen', () => { openItem = { kind: 'zone', id: z.id }; });
+    zonePolys[z.id] = poly;
     L.marker(polygonCentroid(latlngs), { interactive: false, icon: L.divIcon({
-      className: 'zone-area-label', html: (def.label || key) + (dim ? ' 🔒' : ''), iconSize: [0, 0],
+      className: 'zone-area-label', html: (z.name || '') + (dim ? ' 🔒' : ''), iconSize: [0, 0],
     }) }).addTo(zoneLayer);
   });
 }
@@ -221,7 +236,7 @@ function renderFog() {
   const pts = (mapData.fog?.[viewerId] || []).slice();
   const myPos = mapData.tokens?.[viewerId]; if (myPos) pts.push(myPos);
   (mapData.pois || []).forEach(p => { if (visibleFor(p)) pts.push({ lat: p.lat, lng: p.lng }); });
-  Object.values(mapData.zones || {}).forEach(z => {
+  (mapData.zones || []).forEach(z => {
     if (z.polygon && z.polygon.length >= 3 && visibleFor(z)) {
       const c = polygonCentroid(z.polygon.map(p => [p.lat, p.lng]));
       pts.push({ lat: c[0], lng: c[1] });
@@ -255,22 +270,28 @@ function renderMJPanel() {
   if (!ids.length) { el.innerHTML = '<span class="empty">Aucun joueur</span>'; return; }
   el.innerHTML = ids.map(id => {
     const t = mapData.tokens[id];
-    const zk = t ? detectZone(t.lat, t.lng) : null;
-    const zl = zk ? (window.ZONES_DB?.[zk]?.label || zk) : '—';
+    const z = t ? detectZone(t.lat, t.lng) : null;
+    const zl = z ? (z.name || z.baseZone) : '—';
     return `<div class="pz-row"><span class="pz-nom">${joueurs[id]?.nom || id}</span>
       <span class="pz-zone">${zl}</span>
-      ${zk ? `<a class="pz-gen" href="../mj/mj.html?zone=${zk}" title="Générer rencontre">⚔</a>` : ''}</div>`;
+      ${z ? `<a class="pz-gen" href="${zoneGenLink(z)}" title="Générer rencontre">⚔</a>` : ''}</div>`;
   }).join('');
 }
 
 // ---- POPUPS ----
-function zonePopup(key, def, z) {
-  const top = Object.entries(def.pool || {}).filter(([n]) => n !== 'none')
-    .sort((a, b) => b[1] - a[1]).slice(0, 4).map(([n]) => n).join(', ');
-  let h = `<div class="zpop"><div class="zpop-title">${def.label || key}</div>`;
-  if (top) h += `<div class="zpop-pool">${top}</div>`;
-  h += `<a class="zpop-link" href="../mj/mj.html?zone=${encodeURIComponent(key)}">⚔ Générer une rencontre</a>`;
-  if (isMJ) h += revealControls('zone', key, z);
+function zonePopup(z) {
+  const base = window.ZONES_DB?.[z.baseZone] || {};
+  const fac = window.FACTIONS?.[z.occupation];
+  const tags = [];
+  if (fac) tags.push(`<span style="color:${fac.color}">${fac.label}</span>`);
+  if (z.variation) tags.push(VARIATION_LABELS[z.variation] || z.variation);
+  if (z.threat && z.threat !== 'normal') tags.push('Menace ' + (THREAT_LABELS[z.threat] || z.threat));
+  let h = `<div class="zpop"><div class="zpop-title">${z.name || base.label || z.baseZone || 'Zone'}</div>`;
+  if (tags.length) h += `<div class="zpop-pool">${tags.join(' · ')}</div>`;
+  const qs = new URLSearchParams({ zone: z.baseZone || '', occ: z.occupation || '', var: z.variation || '', threat: z.threat || '' });
+  h += `<a class="zpop-link" href="../mj/mj.html?${qs.toString()}">⚔ Générer une rencontre</a>`;
+  if (isMJ) h += `<div class="zpop-mj"><button onclick="editZone('${z.id}')">✎ Éditer</button>
+    <button onclick="deleteZone('${z.id}')" class="del">🗑</button></div>` + revealControls('zone', z.id, z);
   return h + '</div>';
 }
 function poiPopup(p, t) {
@@ -334,14 +355,46 @@ function toggleDrawZone() {
 }
 function finishDrawZone() {
   if (!drawingZone || drawingZone.pts.length < 3) { cancelDrawZone(); return; }
-  const keys = Object.keys(window.ZONES_DB || {});
-  const key = prompt('Zone (' + keys.join(', ') + ') :', keys[0]);
-  if (window.ZONES_DB?.[key]) {
-    mapData.zones[key] = { polygon: drawingZone.pts.map(p => ({ lat: p[0], lng: p[1] })),
-      revealedFor: mapData.zones[key]?.revealedFor || [] };
-    saveData();
-  }
+  const polygon = drawingZone.pts.map(p => ({ lat: p[0], lng: p[1] }));
   cancelDrawZone();
+  openZoneForm({ polygon });
+}
+
+// ---- Formulaire de zone (création / édition) ----
+function _fill(id, obj, labelFn, noneLabel) {
+  const el = document.getElementById(id); if (!el) return;
+  el.innerHTML = (noneLabel ? `<option value="">${noneLabel}</option>` : '')
+    + Object.keys(obj || {}).map(k => `<option value="${k}">${labelFn(k)}</option>`).join('');
+}
+function openZoneForm(ctx) {
+  zoneFormCtx = ctx;
+  const z = ctx.zone;
+  _fill('zf-base', window.ZONES_DB, k => window.ZONES_DB[k].label || k, false);
+  _fill('zf-occ', window.ZONE_OCCUPATION, k => window.FACTIONS?.[k]?.label || OCC_LABELS[k] || k, false);
+  _fill('zf-var', window.ZONE_VARIATIONS, k => VARIATION_LABELS[k] || k, 'Aucune');
+  _fill('zf-threat', window.ZONE_THREAT, k => THREAT_LABELS[k] || k, false);
+  document.getElementById('zf-name').value = z?.name || '';
+  document.getElementById('zf-base').value = z?.baseZone || Object.keys(window.ZONES_DB || {})[0] || '';
+  document.getElementById('zf-occ').value = z?.occupation || 'neutral';
+  document.getElementById('zf-var').value = z?.variation || '';
+  document.getElementById('zf-threat').value = z?.threat || 'normal';
+  document.getElementById('zone-form').style.display = 'flex';
+}
+function closeZoneForm() { document.getElementById('zone-form').style.display = 'none'; zoneFormCtx = null; }
+function editZone(id) { const z = mapData.zones.find(x => x.id === id); if (z) { map.closePopup(); openZoneForm({ zone: z }); } }
+function submitZoneForm() {
+  if (!zoneFormCtx) return;
+  const g = id => document.getElementById(id).value;
+  const base = g('zf-base');
+  const data = {
+    name: g('zf-name').trim() || window.ZONES_DB?.[base]?.label || base,
+    baseZone: base, occupation: g('zf-occ') || 'neutral',
+    variation: g('zf-var') || '', threat: g('zf-threat') || 'normal',
+  };
+  if (zoneFormCtx.zone) Object.assign(zoneFormCtx.zone, data);
+  else mapData.zones.push({ id: 'z' + Date.now(), polygon: zoneFormCtx.polygon, revealedFor: [], ...data });
+  saveData();
+  closeZoneForm();
 }
 function cancelDrawZone() {
   if (drawingZone) { map.removeLayer(drawingZone.layer); drawingZone = null; }
@@ -357,7 +410,7 @@ function placerJetons() {
 }
 
 // ---- Révélation par joueur ----
-function _item(kind, id) { return kind === 'poi' ? mapData.pois.find(p => p.id === id) : mapData.zones[id]; }
+function _item(kind, id) { return kind === 'poi' ? mapData.pois.find(p => p.id === id) : mapData.zones.find(z => z.id === id); }
 function toggleRevealFor(kind, id, pid) {
   const it = _item(kind, id); if (!it) return;
   delete it.revealed;                               // bascule vers le modèle par-joueur
@@ -373,7 +426,7 @@ function revealForAll(kind, id, all) {
   saveData();
 }
 function deletePOI(id) { mapData.pois = mapData.pois.filter(x => x.id !== id); openItem = null; saveData(); map.closePopup(); }
-function deleteZone(key) { delete mapData.zones[key]; openItem = null; saveData(); map.closePopup(); }
+function deleteZone(id) { mapData.zones = mapData.zones.filter(z => z.id !== id); openItem = null; saveData(); map.closePopup(); }
 function setHint(txt) { const el = document.getElementById('mjp-hint'); if (el) el.textContent = txt; }
 
 // ============================================================
@@ -388,11 +441,17 @@ function pointInPoly(x, y, poly) {
   return inside;
 }
 function detectZone(lat, lng) {
-  for (const [key, z] of Object.entries(mapData.zones || {})) {
+  for (const z of (mapData.zones || [])) {
     if (z.polygon && z.polygon.length >= 3 &&
-        pointInPoly(lng, lat, z.polygon.map(p => ({ x: p.lng, y: p.lat })))) return key;
+        pointInPoly(lng, lat, z.polygon.map(p => ({ x: p.lng, y: p.lat })))) return z;
   }
   return null;
+}
+
+function zoneGenLink(z) {
+  return '../mj/mj.html?' + new URLSearchParams({
+    zone: z.baseZone || '', occ: z.occupation || '', var: z.variation || '', threat: z.threat || '',
+  }).toString();
 }
 function polygonCentroid(latlngs) {
   let y = 0, x = 0; latlngs.forEach(p => { y += p[0]; x += p[1]; });
