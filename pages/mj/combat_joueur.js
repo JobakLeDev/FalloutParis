@@ -1,5 +1,25 @@
 // firebaseConfig, COMBAT_DOC, FACES_CD, SK_ATTR, WEAPONS_DB définis dans common/shared.js et mj_shared.js
 
+// ---- EFFETS DE DÉGÂTS (règle p.XX) ----
+const DAMAGE_EFFECTS = {
+  Burst:       { calc: (ef, dmg)    => ({ note: ef+' cible(s) supp. à portée Courte (+1 munition/cible)' }) },
+  Breaking:    { calc: (ef, dmg)    => ({ note: 'Réduit la RD de '+ef+' (couverture ou localisation)' }) },
+  Persistent:  { calc: (ef, dmg)    => ({ note: 'Subit '+dmg+' dmg/tour × '+ef+' tour(s) (action maj. pour arrêter)' }) },
+  Piercing:    { calc: (ef, dmg, x) => ({ note: 'Ignore '+(ef*(x||1))+' RD (Perforant '+x+')' }) },
+  Radioactive: { calc: (ef, dmg)    => ({ rad: ef, note: '+'+ef+' RAD après les dégâts' }) },
+  Spread:      { calc: (ef, dmg)    => ({ note: ef+'× '+Math.floor(dmg/2)+' dmg supp. zone aléatoire' }) },
+  Stun:        { calc: (ef, dmg)    => ({ note: 'Cible étourdie : pas d\'actions normales au prochain tour' }) },
+  Vicious:     { calc: (ef, dmg)    => ({ dmgBonus: ef, note: '+'+ef+' dmg (inclus)' }) },
+};
+
+function parseEffet(eff){
+  if(!eff || eff === '—' || !eff.trim()) return null;
+  const parts = eff.trim().split(/[\s,]+/);
+  const name = parts[0];
+  const val  = parts[1] ? parseInt(parts[1]) : 1;
+  return DAMAGE_EFFECTS[name] ? { name, val } : null;
+}
+
 const MINOR_ACTIONS = [
   { type: 'Aim',       desc: 'Re-roll 1d20 sur la premiere attaque ce tour',   mouvement: false },
   { type: 'Draw Item', desc: 'Sortir ou ranger un objet',                       mouvement: false },
@@ -636,7 +656,7 @@ function selArme(nom, tn, dmg, persoBonus=false){
   armeSelectionnee = nom;
   nbDCActuel = parseInt(dmg)||2;
   lastSkKeyJ = nom==='__unarmed__' ? 'barehand' : (WEAPONS_DB[nom]?.sk||'');
-  currentArmeInfo = {nom, skKey:lastSkKeyJ, persoBonus, dmg};
+  currentArmeInfo = {nom, skKey:lastSkKeyJ, persoBonus, dmg, eff: nom==='__unarmed__' ? '' : (WEAPONS_DB[nom]?.eff||'')};
   useStackedDeck = false;
   const btn=document.getElementById('j-stacked-deck-btn'); if(btn) btn.classList.remove('on');
   document.getElementById('j-tn-val').value = tn;
@@ -902,11 +922,25 @@ function renderDiceAccess(){
 function jLancerCD(){
   const nb = parseInt(document.getElementById('j-nb-cd').value)||2;
   const vals = Array.from({length:nb},()=>FACES_CD[Math.floor(Math.random()*6)]);
-  const dmg = vals.reduce((a,v)=>a+(parseInt(v)||0),0);
+  const dmgRaw = vals.reduce((a,v)=>a+(parseInt(v)||0),0);
   const ef = vals.filter(v=>v.includes('⚡')).length;
+
+  // Résultat brut des dés
   document.getElementById('j-cd-result').innerHTML =
     vals.map(v=>'<span style="color:'+(v.includes('⚡')?'var(--am)':v==='—'?'var(--td)':'var(--tb)')+';font-size:14px;font-family:Oswald,sans-serif">'+v+'</span>').join(' ')
-    +' <b style="color:var(--am)">'+dmg+'dmg</b>'+(ef?' <span style="color:var(--am)">+'+ef+'⚡</span>':'');
+    +' <b style="color:var(--am)">'+dmgRaw+'dmg</b>'+(ef?' <span style="color:var(--am)">+'+ef+'⚡</span>':'');
+
+  // Calculer l'effet de dégâts (si ⚡)
+  let dmgTotal = dmgRaw;
+  let effetInfo = null;
+  if(ef > 0){
+    const parsed = parseEffet(currentArmeInfo?.eff || '');
+    if(parsed){
+      const res = DAMAGE_EFFECTS[parsed.name].calc(ef, dmgRaw, parsed.val);
+      if(res.dmgBonus) dmgTotal += res.dmgBonus;
+      effetInfo = { nom: currentArmeInfo.eff, note: res.note, rad: res.rad || 0 };
+    }
+  }
 
   // Résultat narratif
   const nom = joueurData?.nom || joueurId;
@@ -914,15 +948,26 @@ function jLancerCD(){
   const arEl = document.getElementById('j-attack-result');
   if(arEl){
     arEl.style.display = 'block';
-    arEl.innerHTML = '<div style="font-size:9px;color:var(--tb);padding:4px 6px;border:1px solid var(--g);background:#060d06;margin-top:2px">'
-      + '⚔ <b>'+nom+'</b> inflige <b style="color:var(--am)">'+dmg+' dmg</b>'+(ef?' <span style="color:var(--am)">+'+ef+'⚡</span>':'')
-      + cible + '</div>';
+    let html = '<div style="font-size:9px;color:var(--tb);padding:4px 6px;border:1px solid var(--g);background:#060d06;margin-top:2px">'
+      + '⚔ <b>'+nom+'</b> inflige <b style="color:var(--am)">'+dmgTotal+' dmg</b>'+(ef?' <span style="color:var(--am)">'+ef+'⚡</span>':'')
+      + cible+'</div>';
+    if(effetInfo){
+      html += '<div style="font-size:8px;padding:3px 6px;border:1px solid var(--am);border-top:none;background:#1a1200">'
+        +'<span style="color:var(--am)">⚡ '+effetInfo.nom+' : </span>'
+        +'<span style="color:var(--td)">'+effetInfo.note+'</span>'
+        +(effetInfo.rad>0?' <span style="color:var(--rd)">+'+effetInfo.rad+' RAD</span>':'')
+        +'</div>';
+    }
+    arEl.innerHTML = html;
   }
 
   // Envoyer au MJ pour son log
   if(db && combatId){
     db.collection(COMBATS_COLL).doc(combatId).update({
-      attackResult: { joueur: joueurId, nom, cible: cibleAttaque, dmg, ef, ts: Date.now() }
+      attackResult: { joueur: joueurId, nom, cible: cibleAttaque,
+        dmg: dmgTotal, ef,
+        effetNom: effetInfo?.nom||'', effetNote: effetInfo?.note||'', rad: effetInfo?.rad||0,
+        ts: Date.now() }
     }).catch(()=>{});
   }
 }
