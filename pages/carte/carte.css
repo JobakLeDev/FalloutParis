@@ -16,9 +16,29 @@ body{background:var(--bg);color:var(--t);font-family:'Share Tech Mono',monospace
 body.embed .hdr{display:none;}
 body.embed #mj-panel{display:none !important;}
 
-/* MAP */
-#map{flex:1;background:#060d06;}
+/* ONGLETS DE CARTE */
+#map-tabs{display:flex;gap:0;flex:none;background:var(--p);border-bottom:1px solid var(--b2);}
+.map-tab{background:transparent;border:none;border-right:1px solid var(--b);border-bottom:2px solid transparent;color:var(--td);font-family:'Share Tech Mono',monospace;font-size:8px;padding:7px 16px;cursor:pointer;letter-spacing:2px;text-transform:uppercase;transition:all .1s;}
+.map-tab:hover{color:var(--t);}
+.map-tab.on{color:var(--g);border-bottom-color:var(--g);background:var(--p2);}
+body.embed #map-tabs{padding:0;}
+
+/* PARIS */
+#map-paris-wrap{flex:1;display:flex;flex-direction:column;min-height:0;}
+#map{flex:1;background:#060d06;min-height:0;}
 .leaflet-container{background:#060d06;font-family:'Share Tech Mono',monospace;}
+
+/* LIEUX */
+#map-lieux-wrap{flex:1;display:flex;min-height:0;}
+#lieux-sidebar{width:180px;flex:none;background:var(--p2);border-right:1px solid var(--b2);padding:8px;overflow-y:auto;}
+#map-lieux{flex:1;background:#060d06;min-height:0;}
+#lieux-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;color:var(--td);font-size:10px;letter-spacing:2px;gap:8px;}
+#lieux-placeholder small{font-size:8px;color:var(--b2);}
+#map-lieux-wrap{position:relative;}
+.lieu-btn{display:block;width:100%;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:8px;padding:5px 7px;margin-bottom:4px;cursor:pointer;text-align:left;letter-spacing:.5px;}
+.lieu-btn:hover{border-color:var(--g);}
+.lieu-btn.on{border-color:var(--am);color:var(--am);}
+
 
 /* PANNEAU MJ */
 #mj-panel{position:fixed;top:54px;right:10px;width:210px;z-index:1100;background:rgba(22,32,22,.95);border:1px solid var(--b2);max-height:calc(100vh - 70px);overflow-y:auto;}
