@@ -60,6 +60,14 @@ function init() {
 // Bornes de Paris intra-muros — délimitent la carte (pan + dézoom bloqués)
 const PARIS_BOUNDS = L.latLngBounds([48.8156, 2.2241], [48.9022, 2.4699]);
 const SHIFT_FRAC = 1 / 7;   // décalage horizontal de la vue vers l'ouest (gauche)
+const NS_EXTEND_KM = 2;     // marge de pan navigable au nord et au sud (km)
+
+// Bornes de pan : Paris + NS_EXTEND_KM au nord et au sud
+function panBounds() {
+  const dLat = NS_EXTEND_KM / 111;            // ~0.018° de latitude pour 2 km
+  const sw = PARIS_BOUNDS.getSouthWest(), ne = PARIS_BOUNDS.getNorthEast();
+  return L.latLngBounds([sw.lat - dLat, sw.lng], [ne.lat + dLat, ne.lng]).pad(0.02);
+}
 
 // Bornes décalées vers l'ouest de SHIFT_FRAC de la largeur
 function shiftedBounds() {
@@ -76,7 +84,7 @@ function lockParis(resetView) {
   map.setMinZoom(0);
   const zFill = map.getBoundsZoom(PARIS_BOUNDS, true); // Paris remplit la largeur
   map.setMinZoom(zFill);                                // dézoom min = pas de vide
-  map.setMaxBounds(PARIS_BOUNDS.pad(0.02));             // pan libre dans tout Paris
+  map.setMaxBounds(panBounds());                        // pan libre dans Paris + 2 km N/S
   map.options.maxBoundsViscosity = 1.0;
   if (resetView) {
     const z = Math.min(zFill + 0.6, 16);               // un cran plus serré → marge de scroll N-S
