@@ -254,13 +254,20 @@ function renderFog() {
   fogOverlay = L.imageOverlay(cv.toDataURL(), [[0, 0], [mapH, mapW]], { pane: 'fogPane', interactive: false }).addTo(map);
 }
 
-// Enregistre la position explorée d'un joueur (point sparse)
+// Enregistre le TRAJET exploré (gommage permanent) : interpole entre le
+// dernier point et la nouvelle position pour effacer toute la traînée.
 function recordFog(id, lat, lng) {
   mapData.fog = mapData.fog || {};
   const arr = mapData.fog[id] = mapData.fog[id] || [];
-  const min = mapW * FOG_STEP;
+  const step = mapW * FOG_STEP;
   const last = arr[arr.length - 1];
-  if (!last || Math.hypot(last.lat - lat, last.lng - lng) > min) arr.push({ lat, lng });
+  if (!last) { arr.push({ lat, lng }); return; }
+  const d = Math.hypot(last.lat - lat, last.lng - lng);
+  if (d <= step) return;                              // déjà couvert
+  if (d > mapW * 0.5) { arr.push({ lat, lng }); return; } // repositionnement = pas un passage
+  const n = Math.ceil(d / step);
+  for (let i = 1; i <= n; i++)
+    arr.push({ lat: last.lat + (lat - last.lat) * i / n, lng: last.lng + (lng - last.lng) * i / n });
 }
 
 function renderMJPanel() {
@@ -404,7 +411,7 @@ function cancelDrawZone() {
 }
 function placerJetons() {
   const c = { lat: mapH / 2, lng: mapW / 2 }; let n = 0;
-  Object.keys(joueurs).forEach(id => { if (!mapData.tokens[id]) { mapData.tokens[id] = { ...c }; recordFog(id, c.lat, c.lng); n++; } });
+  Object.keys(joueurs).forEach(id => { if (!mapData.tokens[id]) { mapData.tokens[id] = { ...c }; n++; } });
   if (n) saveData();
   setHint(n ? n + ' jeton(s) placé(s) au centre — active l\'édition pour les déplacer.' : 'Tous les jetons existent déjà.');
 }
