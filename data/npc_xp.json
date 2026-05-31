@@ -1,0 +1,25 @@
+{
+  "perLevel": [
+    {"lvl":1,  "normal":10,  "mighty":20,  "legendary":30},
+    {"lvl":2,  "normal":17,  "mighty":34,  "legendary":51},
+    {"lvl":3,  "normal":24,  "mighty":48,  "legendary":72},
+    {"lvl":4,  "normal":31,  "mighty":62,  "legendary":93},
+    {"lvl":5,  "normal":38,  "mighty":76,  "legendary":114},
+    {"lvl":6,  "normal":45,  "mighty":90,  "legendary":135},
+    {"lvl":7,  "normal":52,  "mighty":104, "legendary":156},
+    {"lvl":8,  "normal":60,  "mighty":120, "legendary":180},
+    {"lvl":9,  "normal":67,  "mighty":134, "legendary":201},
+    {"lvl":10, "normal":74,  "mighty":148, "legendary":222},
+    {"lvl":11, "normal":81,  "mighty":162, "legendary":243},
+    {"lvl":12, "normal":88,  "mighty":176, "legendary":264},
+    {"lvl":13, "normal":95,  "mighty":190, "legendary":285},
+    {"lvl":14, "normal":102, "mighty":204, "legendary":306},
+    {"lvl":15, "normal":109, "mighty":218, "legendary":327},
+    {"lvl":16, "normal":116, "mighty":232, "legendary":348},
+    {"lvl":17, "normal":123, "mighty":246, "legendary":369},
+    {"lvl":18, "normal":130, "mighty":260, "legendary":390},
+    {"lvl":19, "normal":137, "mighty":274, "legendary":411},
+    {"lvl":20, "normal":144, "mighty":288, "legendary":432}
+  ],
+  "above20": {"normal":7, "mighty":14, "legendary":21}
+}
