@@ -139,6 +139,7 @@
       <div class="inv-tab" onclick="swInv('armor')">ARMURE & TENUES</div>
       <div class="inv-tab" onclick="swInv('aid')">AIDE</div>
       <div class="inv-tab" onclick="swInv('misc')">DIVERS</div>
+      <div class="inv-tab" onclick="swInv('ammo')">MUNITIONS</div>
     </div>
 
     <!-- TOUT -->
@@ -170,9 +171,18 @@
 
     <!-- DIVERS -->
     <div class="inv-content" id="inv-misc">
-      
+
       <div class="inv-header stuff-cols" style="display:grid"><span>TYPE</span><span>NOM</span><span>EFFET</span><span>QTÉ</span><span>POIDS</span><span></span></div>
       <div class="scr" id="inv-misc-list"></div>
+    </div>
+
+    <!-- MUNITIONS -->
+    <div class="inv-content" id="inv-ammo">
+      <div class="row" style="gap:6px;margin-bottom:8px">
+        <select id="add-sel-ammo" style="flex:1;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:9px;padding:5px;outline:none"></select>
+        <button class="ambtn" onclick="addAmmoSel()" style="padding:5px 12px">+ Ajouter</button>
+      </div>
+      <div class="scr" id="inv-ammo-list"></div>
     </div>
   </div>
 </div>

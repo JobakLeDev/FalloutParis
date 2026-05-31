@@ -96,6 +96,7 @@ DB.food[]      // nourriture
 DB.drinks[]    // boissons
 DB.drugs[]     // drogues/médicaments
 DB.stuff[]     // objets divers
+DB.ammo[]      // types de munitions (array de strings) — calibres dispo
 ```
 
 ### Globals exposés par `db.js`
