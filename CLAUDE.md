@@ -42,6 +42,7 @@ FalloutParis/
 │   ├── weapons.json                   → 24 armes {n,t,a,dmg,eff,dt,fr,rng,w,sk}
 │   ├── armor.json                     → 56 pièces d'armure {n,t,ph,en,rad,z,w}
 │   ├── ammo.json                      → types de munitions (array de strings)
+│   ├── ammo_loot.json                 → table loot 2D20 munitions [{min,max,ammo,base,cd,mult,scavenger?}]
 │   ├── items.json                     → {food,drinks,drugs,stuff}
 │   ├── enemies.json                   → ENNEMIS_DB {pvd,atq,rd,xp,body,mind,desc}
 │   ├── perks.json                     → 57 perks {max,lvl,req[],desc}
@@ -107,7 +108,16 @@ window.PERKS_DEF   // {nom: {max, lvl, req[], desc}} — 57 perks
 window.ENNEMIS_DB  // {nom: {pvd, atq, rd, xp, body, mind, desc}} — 19 ennemis
 window.WEAPONS_DB  // {nom: {t, dmg, eff, fr, rng, sk}} — construit depuis weapons.json
 window.NPC_DB      // array PNJ nommés
+window.AMMO_LOOT   // table loot munitions 2D20 [{min,max,ammo,base,cd,mult,scavenger?}]
 ```
+
+### Table de loot munitions (`AMMO_LOOT`)
+Jet **2D20** (somme 2→40). Trouver l'entrée où `min ≤ roll ≤ max`.
+Quantité obtenue = `(base + somme de cd dés de combat) × mult`.
+Dé de combat pour quantité : faces valent `1,2,0,0,1,1` (mêmes que `FACES_CD`).
+- `scavenger:"missile"` → perk Scavenger : +1 Missile par rang seulement
+- `scavenger:"none"`    → perk Scavenger : aucun bonus (Fusion Core, Mini-Nuke)
+Système de loot à implémenter plus tard — pour l'instant data seule.
 
 ### `common/shared.js` (synchrone)
 ```javascript
