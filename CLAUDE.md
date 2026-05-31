@@ -48,6 +48,7 @@ FalloutParis/
 │   ├── zone_variations.json           → variations {key:{multipliers?, add?}} (irradiated, flooded…)
 │   ├── zone_occupation.json           → occupation faction {key:{multipliers?, add?}} (republique, raiders…)
 │   ├── zone_threat.json               → niveau menace {key:{multipliers?, add?}} — pilote le poids de "none" (DRAFT)
+│   ├── factions.json                  → 6 factions {key:{label,tier,category,color,structure,units[],valeurs[],traits[],desc}}
 │   ├── items.json                     → {food,drinks,drugs,stuff}
 │   ├── enemies.json                   → ENNEMIS_DB format officiel (voir schéma ennemis)
 │   ├── perks.json                     → 57 perks {max,lvl,req[],desc}
@@ -175,6 +176,18 @@ generateEncounters(zoneKey, opts, count, excludeNone)       // → [noms]
 zonePoolProbabilities(zoneKey, opts)                        // → [{nom, poids, pct}] (aperçu)
 ```
 DRAFT en cours : certains noms de pool (Marchand, Mongrel, Republic Patrol, NNFP Militant…) n'ont pas encore de fiche dans `enemies.json` — `enemyInstanceFromDB` renvoie `null` pour eux (ignorés en combat). `zone_threat.json` est une 1re ébauche (menace = fréquence via `none`). Pas encore branché à l'UI mj.html.
+
+### Factions (`factions.json` / `window.FACTIONS`)
+6 factions Fallout Paris. **La clé de faction === clé `zone_occupation`** (republique, commune, nnfp, reseau, zazous, ultras) → une faction qui occupe une zone injecte ses unités dans le pool de rencontres.
+```javascript
+"republique": {
+  label, tier:'principale'|'intermediaire', category, color, structure,
+  militarized, presence:[], valeurs:[], traits:[],
+  units:[],   // noms de PNJ correspondants dans enemies.json (à créer)
+  desc
+}
+```
+Lien à venir avec les personnages : un perso pourra référencer `faction: "<key>"` (+ réputation par faction). Le champ `units` relie faction → PNJ → pools de zones. `color` = couleur de badge pour l'UI.
 
 ---
 

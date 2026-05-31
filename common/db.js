@@ -29,7 +29,8 @@ window.DB_READY = Promise.all([
   _fetch('zone_variations.json'),
   _fetch('zone_occupation.json'),
   _fetch('zone_threat.json'),
-]).then(([weapons, armor, items, enemies, perks, npc, ammo, ammoLoot, npcXp, zones, zoneVariations, zoneOccupation, zoneThreat]) => {
+  _fetch('factions.json'),
+]).then(([weapons, armor, items, enemies, perks, npc, ammo, ammoLoot, npcXp, zones, zoneVariations, zoneOccupation, zoneThreat, factions]) => {
 
   window.DB = {
     weapons,
@@ -50,6 +51,7 @@ window.DB_READY = Promise.all([
   window.ZONE_VARIATIONS = zoneVariations || {};
   window.ZONE_OCCUPATION = zoneOccupation || {};
   window.ZONE_THREAT     = zoneThreat || {};
+  window.FACTIONS        = factions || {};
 
   // WEAPONS_DB : format objet keyed par nom (accès O(1) dans les pages combat)
   window.WEAPONS_DB = {};
@@ -65,5 +67,5 @@ window.DB_READY = Promise.all([
   window.DB = { weapons: [], armor: [], food: [], drinks: [], drugs: [], stuff: [], ammo: [] };
   window.PERKS_DEF = {}; window.ENNEMIS_DB = {}; window.WEAPONS_DB = {}; window.AMMO_LOOT = [];
   window.NPC_XP = {perLevel:[], above20:{normal:7,mighty:14,legendary:21}};
-  window.ZONES_DB = {}; window.ZONE_VARIATIONS = {}; window.ZONE_OCCUPATION = {}; window.ZONE_THREAT = {};
+  window.ZONES_DB = {}; window.ZONE_VARIATIONS = {}; window.ZONE_OCCUPATION = {}; window.ZONE_THREAT = {}; window.FACTIONS = {};
 });
