@@ -25,6 +25,7 @@ let lastSkKeyMJ = '';
 let lastInfoRequestTs = 0;
 let lastLuckyTimingTs = 0;
 let lastLuckDrawTs = 0;
+let lastAttackResultTs = 0;
 
 // WEAPONS_DB défini dans mj_shared.js
 
@@ -97,6 +98,12 @@ function deverrouiller(){
     if(data.actionsDeclarees){
       actionsJoueurs = data.actionsDeclarees;
       renderActionsMJ();
+    }
+    // Résultat d'attaque envoyé par un joueur
+    if(data.attackResult && data.attackResult.ts > lastAttackResultTs){
+      lastAttackResultTs = data.attackResult.ts;
+      const r = data.attackResult;
+      addLog('⚔ ' + (r.nom||r.joueur) + ' inflige ' + r.dmg + 'dmg' + (r.ef?' +'+r.ef+'⚡':'') + (r.cible?' à '+r.cible:''));
     }
   });
 
