@@ -68,6 +68,7 @@ function startSync(){
     snap.forEach(doc => { joueurs[doc.id] = {...doc.data(), _id: doc.id}; });
     renderJoueurs();
   });
+  renderCombatsActifs();
 }
 
 // ============================================================
@@ -193,6 +194,21 @@ function genCombat(){
     </div>`;
 }
 
+async function lancerCombat(){
+  const zone = document.getElementById('zone-sel')?.value || '';
+  const joueurIds = JSON.parse(sessionStorage.getItem('combat_joueurs') || '[]');
+  const ennemisData = JSON.parse(sessionStorage.getItem('combat_ennemis') || '[]');
+  const btn = document.getElementById('btn-vers-combat');
+  if(btn){ btn.textContent = '⏳ Création...'; btn.disabled = true; }
+  try {
+    await createCombatSession(ennemisData, joueurIds, zone);
+    window.location.href = 'combat.html';
+  } catch(e){
+    console.error('lancerCombat:', e);
+    if(btn){ btn.textContent = '⚔ Ouvrir l\'écran combat'; btn.disabled = false; }
+  }
+}
+
 function donnerXPCombat(xp){
   document.getElementById('val-xp').value = xp;
   appliquer('xp');
@@ -281,5 +297,69 @@ function lancerCD(){
 }
 
 // rollDice défini dans mj_shared.js
+
+// ============================================================
+// GESTION DES SESSIONS COMBAT (multi-room)
+// ============================================================
+
+function genCombatId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+async function createCombatSession(combatData, joueurIds, zone) {
+  const combatId = genCombatId();
+  await db.collection(COMBATS_COLL).doc(combatId).set({
+    actif: true, numRound: 0, tourActif: 0,
+    ordreInitiative: [], actionsState: {},
+    ennemis: combatData, apPool: 0, mjApPool: 0,
+    meta: { createdAt: Date.now(), status: 'active', joueurs: joueurIds, round: 0, zone: zone||'' },
+    lastUpdate: Date.now(),
+  });
+  await db.collection(COMBATS_COLL).doc('current').set({combatId, lastUpdate: Date.now()});
+  sessionStorage.setItem('currentCombatId', combatId);
+  return combatId;
+}
+
+function joinCombat(combatId) {
+  sessionStorage.setItem('currentCombatId', combatId);
+  window.location.href = 'combat.html';
+}
+
+async function terminerCombatSession(combatId) {
+  await db.collection(COMBATS_COLL).doc(combatId).update({
+    actif: false, 'meta.status': 'termine', lastUpdate: Date.now()
+  });
+  const cur = await db.collection(COMBATS_COLL).doc('current').get();
+  if(cur.exists && cur.data()?.combatId === combatId)
+    db.collection(COMBATS_COLL).doc('current').set({combatId: null, lastUpdate: Date.now()});
+  renderCombatsActifs();
+}
+
+function renderCombatsActifs() {
+  const el = document.getElementById('combats-actifs-list'); if(!el) return;
+  el.innerHTML = '<div class="empty">Chargement...</div>';
+  db.collection(COMBATS_COLL).get().then(snap => {
+    const actifs = [];
+    snap.forEach(doc => {
+      if(doc.id === 'current') return;
+      const d = doc.data();
+      if(d.actif && d.meta?.status !== 'termine') actifs.push({id: doc.id, ...d});
+    });
+    if(!actifs.length){ el.innerHTML = '<div class="empty">Aucun combat actif</div>'; return; }
+    el.innerHTML = actifs.map(c => {
+      const joueurs = (c.meta?.joueurs||[]).join(', ') || '—';
+      const zone   = c.meta?.zone ? ' · ' + c.meta.zone : '';
+      return '<div class="combat-item">' +
+        '<div class="combat-item-info">' +
+          '<span class="combat-id">' + c.id + '</span>' +
+          '<span class="combat-meta">R' + (c.numRound||0) + zone + ' · ' + joueurs + '</span>' +
+        '</div>' +
+        '<div class="combat-item-btns">' +
+          '<button class="r-btn" onclick="joinCombat(\'' + c.id + '\')">↗ Rejoindre</button>' +
+          '<button class="r-btn" style="border-color:var(--rd);color:var(--rd)" onclick="terminerCombatSession(\'' + c.id + '\')">✕ Terminer</button>' +
+        '</div></div>';
+    }).join('');
+  }).catch(() => { el.innerHTML = '<div class="empty">Erreur</div>'; });
+}
 
 

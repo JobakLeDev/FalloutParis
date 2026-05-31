@@ -151,52 +151,60 @@ window.DB_READY.then(() => {
 
 // ---- Listener combat temps réel ----
 function initCombatListener() {
-  db.collection('combat').doc('fallout-paris').onSnapshot(snap => {
-    const data = snap.exists ? snap.data() : null;
-    let banner = document.getElementById('combat-banner');
+  let _combatUnsub = null;
 
-    if (!data || !data.actif) {
-      if (banner) banner.style.display = 'none';
+  function _attachCombat(combatId) {
+    if(_combatUnsub) { _combatUnsub(); _combatUnsub = null; }
+    if(!combatId) {
+      const b = document.getElementById('combat-banner');
+      if(b) b.style.display = 'none';
       return;
     }
+    _combatUnsub = db.collection('combats').doc(combatId).onSnapshot(snap => {
+      const data = snap.exists ? snap.data() : null;
+      let banner = document.getElementById('combat-banner');
 
-    // Créer le bandeau si pas encore là
-    if (!banner) {
-      banner = document.createElement('div');
-      banner.id = 'combat-banner';
-      banner.style.cssText = [
-        'position:fixed;top:0;left:0;right:0;z-index:500',
-        'background:#1a0505;border-bottom:2px solid #e04040',
-        'display:flex;align-items:center;justify-content:space-between',
-        'padding:6px 16px;font-family:"Share Tech Mono",monospace',
-      ].join(';');
-      document.body.appendChild(banner);
-      // Pousser le contenu vers le bas
-      document.body.style.paddingTop = '40px';
-    }
+      if(!data || !data.actif) {
+        if(banner) banner.style.display = 'none';
+        return;
+      }
 
-    // Trouver si c'est le tour du joueur
-    const ordre = data.ordreInitiative || [];
-    const tourActif = data.tourActif || 0;
-    const currentCombatant = ordre[tourActif];
-    const isMonTour = currentCombatant?.id === JOUEUR_ID;
-    const nomActif = currentCombatant?.nom || '?';
+      if(!banner) {
+        banner = document.createElement('div');
+        banner.id = 'combat-banner';
+        banner.style.cssText = [
+          'position:fixed;top:0;left:0;right:0;z-index:500',
+          'background:#1a0505;border-bottom:2px solid #e04040',
+          'display:flex;align-items:center;justify-content:space-between',
+          'padding:6px 16px;font-family:"Share Tech Mono",monospace',
+        ].join(';');
+        document.body.appendChild(banner);
+        document.body.style.paddingTop = '40px';
+      }
 
-    banner.style.display = 'flex';
-    banner.style.background = isMonTour ? '#0a1a0a' : '#1a0505';
-    banner.style.borderBottomColor = isMonTour ? '#5dbe5d' : '#e04040';
+      const ordre = data.ordreInitiative || [];
+      const tourActif = data.tourActif || 0;
+      const currentCombatant = ordre[tourActif];
+      const isMonTour = currentCombatant?.id === JOUEUR_ID;
+      const nomActif = currentCombatant?.nom || '?';
+      const tourText = isMonTour ? "▶ C'EST TON TOUR !" : "Tour de " + nomActif;
+      const tourColor = isMonTour ? '#5dbe5d' : '#e8a820';
 
-    const tourText = isMonTour
-      ? "▶ C'EST TON TOUR !"
-      : "Tour de " + nomActif;
-    const tourColor = isMonTour ? '#5dbe5d' : '#e8a820';
+      banner.style.display = 'flex';
+      banner.style.background = isMonTour ? '#0a1a0a' : '#1a0505';
+      banner.style.borderBottomColor = isMonTour ? '#5dbe5d' : '#e04040';
+      banner.innerHTML =
+        '<span style="color:#e04040;font-size:9px;letter-spacing:2px">⚔ COMBAT · Round ' + (data.numRound||1) + '</span>' +
+        '<span style="color:' + tourColor + ';font-size:10px;letter-spacing:2px;font-weight:bold">' + tourText + '</span>' +
+        '<a href="../mj/combat_joueur.html?id=' + JOUEUR_ID + '&combat=' + combatId + '" ' +
+          'style="color:#e04040;font-size:8px;border:1px solid #e04040;padding:3px 10px;text-decoration:none;letter-spacing:2px"' +
+        '>⚔ REJOINDRE</a>';
+    });
+  }
 
-    banner.innerHTML =
-      '<span style="color:#e04040;font-size:9px;letter-spacing:2px">⚔ COMBAT · Round ' + (data.numRound||1) + '</span>' +
-      '<span style="color:' + tourColor + ';font-size:10px;letter-spacing:2px;font-weight:bold">' + tourText + '</span>' +
-      '<a href="../mj/combat_joueur.html?id=' + JOUEUR_ID + '" ' +
-        'style="color:#e04040;font-size:8px;border:1px solid #e04040;padding:3px 10px;text-decoration:none;letter-spacing:2px"' +
-      '>⚔ REJOINDRE</a>';
+  // Écoute le pointeur "combat courant"
+  db.collection('combats').doc('current').onSnapshot(snap => {
+    _attachCombat(snap.exists ? snap.data()?.combatId : null);
   });
 }
 

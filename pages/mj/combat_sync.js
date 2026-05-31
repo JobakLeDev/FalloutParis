@@ -3,13 +3,14 @@
 // Partagé entre combat.html (MJ) et combat_joueur.html
 // ============================================================
 
-// COMBAT_DOC défini dans mj_shared.js
+// COMBATS_COLL défini dans mj_shared.js
+// currentCombatId défini dans combat.js
 
 // ---- MJ : écrire l'état du combat dans Firebase ----
 async function syncCombatToFirebase(){
-  if(!db) return;
+  if(!db || !currentCombatId) return;
   try {
-    await db.collection('combat').doc(COMBAT_DOC).set({
+    await db.collection(COMBATS_COLL).doc(currentCombatId).set({
       actif: true,
       numRound,
       tourActif,
@@ -28,11 +29,38 @@ async function syncCombatToFirebase(){
       apPool:   typeof apPool   !== 'undefined' ? apPool   : 0,
       mjApPool: typeof mjApPool !== 'undefined' ? mjApPool : 0,
       lastUpdate: Date.now(),
-    });
+    }, { merge: true });
+    // Mise à jour du pointeur courant (utilisé par firebase.js côté joueur)
+    db.collection(COMBATS_COLL).doc('current').set({
+      combatId: currentCombatId,
+      lastUpdate: Date.now()
+    }).catch(() => {});
   } catch(e){ console.error('syncCombat:', e); }
 }
 
+async function resetActionsDeclarees(){
+  if(!db || !currentCombatId) return;
+  try {
+    const snap = await db.collection(COMBATS_COLL).doc(currentCombatId).collection('actions').get();
+    if(snap.empty) return;
+    const batch = db.batch();
+    snap.forEach(doc => {
+      batch.set(doc.ref, {
+        mineure: {used:[], pending:null},
+        majeure: {used:[], pending:null},
+        mouvement_used: false
+      });
+    });
+    await batch.commit();
+  } catch(e){ console.error('resetActionsDeclarees:', e); }
+}
+
 async function stopCombat(){
-  if(!db) return;
-  await db.collection('combat').doc(COMBAT_DOC).set({actif:false, apPool:0, mjApPool:0, lastUpdate:Date.now()});
+  if(!db || !currentCombatId) return;
+  await db.collection(COMBATS_COLL).doc(currentCombatId).set({
+    actif: false, apPool: 0, mjApPool: 0, lastUpdate: Date.now(),
+    'meta.status': 'termine'
+  }, { merge: true });
+  // Effacer le pointeur courant
+  db.collection(COMBATS_COLL).doc('current').set({combatId: null, lastUpdate: Date.now()}).catch(() => {});
 }

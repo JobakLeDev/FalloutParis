@@ -17,6 +17,7 @@
   <div class="hdr">
     <div><div class="hdr-title">⚔ ÉCRAN DE COMBAT<small>Fallout Paris — MJ</small></div></div>
     <div class="hdr-btns">
+      <button class="hbtn" onclick="partagerCombat()" style="border-color:var(--g);color:var(--g)">🔗 Partager</button>
       <a class="hbtn" href="mj.html">← MJ</a>
       <a class="hbtn" href="../../index.html">Accueil</a>
     </div>
@@ -107,6 +108,14 @@
       </div>
 
       <div class="pnl">
+        <div class="pnl-title" style="display:flex;justify-content:space-between;align-items:center">
+          Actions joueurs
+          <span style="font-size:7px;color:var(--td);letter-spacing:1px">temps réel</span>
+        </div>
+        <div id="actions-joueurs-notif"><span class="empty">Aucune action en attente</span></div>
+      </div>
+
+      <div class="pnl">
         <div class="pnl-title">
           Journal
           <button class="log-clear" onclick="clearLog()">Effacer</button>
@@ -119,6 +128,11 @@
   </div><!-- /combat-grid -->
 
 </div><!-- /app -->
+
+<!-- MODAL PARTAGE -->
+<div class="mo" id="mo-partage">
+  <div class="mbox" style="width:380px;max-width:95vw"></div>
+</div>
 
 <!-- MODAL ENNEMI -->
 <div class="mo" id="mo-ennemi" style="display:none">

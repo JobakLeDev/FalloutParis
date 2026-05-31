@@ -32,8 +32,22 @@ let lastLuckDrawTs = 0;
 
 // SK_ATTR, FACES_CD définis dans mj_shared.js
 
+// ---- COMBAT ID (multi-sessions) ----
+let currentCombatId = sessionStorage.getItem('currentCombatId') || null;
+
+// ---- ACTIONS DÉCLARÉES (subcollection) ----
+let actionsJoueurs = {}; // {joueurId: {mineure:{used,pending}, majeure:{used,pending}, mouvement_used}}
+
 // ---- INIT ----
 function init(){
+  if(!currentCombatId){
+    document.getElementById('app').innerHTML =
+      '<div style="padding:60px;text-align:center;color:var(--rd);font-family:\'Share Tech Mono\',monospace;font-size:10px;letter-spacing:2px">' +
+      '⚠ Aucun combat actif.<br><br>' +
+      '<a href="mj.html" style="color:var(--g);border:1px solid var(--g);padding:6px 18px;text-decoration:none">← Retour au MJ</a>' +
+      '</div>';
+    return;
+  }
   const app = firebase.initializeApp(firebaseConfig);
   db = app.firestore();
   deverrouiller();
@@ -42,7 +56,7 @@ function init(){
 function deverrouiller(){
   chargerJoueurs();
   // Listener pour apPool (mis à jour par les joueurs)
-  db.collection('combat').doc(COMBAT_DOC).onSnapshot(snap => {
+  db.collection(COMBATS_COLL).doc(currentCombatId).onSnapshot(snap => {
     if(!snap.exists) return;
     const data = snap.data();
     if(data.apPool !== undefined && data.apPool !== apPool) {
@@ -66,7 +80,7 @@ function deverrouiller(){
     if(data.luckyTimingReq && data.luckyTimingReq.ts > lastLuckyTimingTs) {
       lastLuckyTimingTs = data.luckyTimingReq.ts;
       executeLuckyTiming(data.luckyTimingReq.id, data.luckyTimingReq.nom);
-      db.collection('combat').doc(COMBAT_DOC).update({luckyTimingReq:null}).catch(()=>{});
+      db.collection(COMBATS_COLL).doc(currentCombatId).update({luckyTimingReq:null}).catch(()=>{});
     }
     // Luck of the Draw
     if(data.luckRequest && data.luckRequest.ts > lastLuckDrawTs) {
@@ -80,6 +94,13 @@ function deverrouiller(){
       }
     }
   });
+  // Listener actions déclarées (subcollection)
+  db.collection(COMBATS_COLL).doc(currentCombatId).collection('actions').onSnapshot(snap => {
+    actionsJoueurs = {};
+    snap.forEach(doc => { actionsJoueurs[doc.id] = doc.data(); });
+    renderActionsMJ();
+  });
+
   // Auto-sélectionner les joueurs transmis depuis mj.html
   const storedJoueurs = sessionStorage.getItem('combat_joueurs');
   if(storedJoueurs){
@@ -181,6 +202,16 @@ function lancerInitiative(){
   numRound = 1;
 
   addLog('⚔ Round ' + numRound + ' — ' + ordreInitiative[0].nom + ' commence !');
+
+  // Initialiser les docs d'actions pour chaque joueur dans la subcollection
+  Object.keys(combattants).forEach(id => {
+    db.collection(COMBATS_COLL).doc(currentCombatId).collection('actions').doc(id).set({
+      mineure: {used:[], pending:null},
+      majeure: {used:[], pending:null},
+      mouvement_used: false
+    }).catch(()=>{});
+  });
+
   renderCombat();
   renderTracker();
   syncCombatToFirebase();
@@ -189,6 +220,15 @@ function lancerInitiative(){
 function finDeTour(){
   if(!ordreInitiative.length) return;
   const current = ordreInitiative[tourActif];
+
+  // Reset déclarations d'actions du combattant qui vient de jouer
+  if(current.type === 'joueur' && db && currentCombatId){
+    db.collection(COMBATS_COLL).doc(currentCombatId).collection('actions').doc(current.id).set({
+      mineure: {used:[], pending:null},
+      majeure: {used:[], pending:null},
+      mouvement_used: false
+    }).catch(()=>{});
+  }
 
   // Réinitialiser actions du combattant suivant
   tourActif = (tourActif + 1) % ordreInitiative.length;
@@ -523,7 +563,7 @@ function renderAPPool(){
 
 async function _writeAP(){
   if(!db) return;
-  try { await db.collection('combat').doc(COMBAT_DOC).update({apPool, mjApPool}); }
+  try { await db.collection(COMBATS_COLL).doc(currentCombatId).update({apPool, mjApPool}); }
   catch(e){ console.error(e); }
 }
 
@@ -549,7 +589,7 @@ function mjBonusAction(type){
 }
 function clearInfoRequest(){
   const b=document.getElementById('ap-info-banner'); if(b) b.style.display='none';
-  if(db) db.collection('combat').doc(COMBAT_DOC).update({infoRequest:null}).catch(()=>{});
+  if(db) db.collection(COMBATS_COLL).doc(currentCombatId).update({infoRequest:null}).catch(()=>{});
 }
 
 // ---- SÉLECTEUR D20 ----
@@ -720,6 +760,31 @@ async function soignJoueur(id, val){
   renderJoueursCombat();
 }
 
+// ---- PARTAGE ----
+function partagerCombat(){
+  const base = window.location.href.replace(/combat\.html.*$/, 'combat_joueur.html');
+  const ids = Object.keys(combattants);
+  const mo = document.getElementById('mo-partage');
+  if(!mo) return;
+  let html = '<div class="mtitle">LIENS JOUEURS</div>';
+  if(!ids.length){
+    html += '<div style="font-size:8px;color:var(--td)">Aucun joueur en combat.<br>Les liens utilisent le format :<br><code>?id={joueur}&combat=' + currentCombatId + '</code></div>';
+  } else {
+    ids.forEach(id => {
+      const d = combattants[id]?.data;
+      const nom = d?.nom || id;
+      const url = base + '?id=' + id + '&combat=' + currentCombatId;
+      html += '<div style="margin-bottom:8px"><div style="font-size:8px;color:var(--g);margin-bottom:2px">' + nom.toUpperCase() + '</div>' +
+        '<div style="font-size:7px;color:var(--td);word-break:break-all;background:#060d06;padding:4px;border:1px solid var(--b)">' + url + '</div>' +
+        '<button class="btn sm" style="margin-top:3px" onclick="navigator.clipboard.writeText(\'' + url + '\').then(()=>this.textContent=\'✓ Copié!\').catch(()=>{})">Copier</button>' +
+        '</div>';
+    });
+  }
+  html += '<div style="margin-top:10px;text-align:right"><button class="btn" onclick="document.getElementById(\'mo-partage\').classList.remove(\'on\')">Fermer</button></div>';
+  mo.querySelector('.mbox').innerHTML = html;
+  mo.classList.add('on');
+}
+
 // ---- LOG ----
 function addLog(msg){
   const ts = new Date().toLocaleTimeString('fr',{hour:'2-digit',minute:'2-digit'});
@@ -736,6 +801,81 @@ function finCombat(){
   tourActif = 0;
   numRound = 0;
   stopCombat();
+  resetActionsDeclarees();
   addLog('🏁 Combat terminé.');
   renderTracker();
+}
+
+// ============================================================
+// ACTIONS JOUEURS — VALIDATION MJ
+// ============================================================
+
+function renderActionsMJ(){
+  const el = document.getElementById('actions-joueurs-notif'); if(!el) return;
+  const pending = [];
+  Object.entries(actionsJoueurs).forEach(([jId, data]) => {
+    ['mineure','majeure'].forEach(cat => {
+      const p = data?.[cat]?.pending;
+      if(p && p.status === 'waiting'){
+        const nom = combattants[jId]?.data?.nom || jId;
+        pending.push({jId, cat, p, nom});
+      }
+    });
+  });
+  if(!pending.length){ el.innerHTML = '<span class="empty">Aucune action en attente</span>'; return; }
+  el.innerHTML = pending.map(({jId, cat, p, nom}) => {
+    const key = jId + '_' + cat;
+    return '<div style="padding:5px;border:1px solid var(--am);background:#1a1200;margin-bottom:4px">'
+      + '<div style="font-size:8px;margin-bottom:3px">'
+      + '<span style="color:var(--am)">' + nom.toUpperCase() + '</span>'
+      + ' <span style="color:var(--td)">· ' + cat + ' ·</span>'
+      + ' <span style="color:var(--tb)">' + p.type + '</span>'
+      + '</div>'
+      + (p.details ? '<div style="font-size:7px;color:var(--td);margin-bottom:4px;font-style:italic">&ldquo;' + p.details + '&rdquo;</div>' : '')
+      + '<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">'
+      + '<button class="ap-btn-sm" style="border-color:var(--g);color:var(--g)" onclick="validerAction(\'' + jId + '\',\'' + cat + '\')">✓ Valider</button>'
+      + '<input type="text" placeholder="Motif refus..." id="ri-' + key + '"'
+      + ' style="flex:1;min-width:60px;background:#060d06;border:1px solid var(--b);color:var(--t);font-family:monospace;font-size:7px;padding:2px 4px;outline:none">'
+      + '<button class="ap-btn-sm" style="border-color:var(--rd);color:var(--rd)" onclick="refuserAction(\'' + jId + '\',\'' + cat + '\')">✗ Refuser</button>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+async function validerAction(jId, cat){
+  const data = actionsJoueurs[jId]; if(!data) return;
+  const p = data?.[cat]?.pending; if(!p || p.status !== 'waiting') return;
+  const nom = combattants[jId]?.data?.nom || jId;
+  const isMovement = ['Move','Sprint'].includes(p.type);
+  const upd = {};
+  upd[cat + '.used'] = [...(data[cat].used || []), p.type];
+  upd[cat + '.pending'] = null;
+  if(isMovement) upd.mouvement_used = true;
+  try {
+    await db.collection(COMBATS_COLL).doc(currentCombatId).collection('actions').doc(jId).update(upd);
+    // Décrémenter le compteur de dot dans actionsState
+    const s = actionsState[jId];
+    if(s){
+      if(cat === 'mineure') s.mineure = Math.max(0, s.mineure - 1);
+      if(cat === 'majeure') s.majeure = Math.max(0, s.majeure - 1);
+      syncCombatToFirebase();
+      renderTracker();
+    }
+    addLog('✓ ' + nom + ' : ' + p.type + ' (' + cat + ') validée');
+  } catch(e){ console.error(e); }
+}
+
+async function refuserAction(jId, cat){
+  const data = actionsJoueurs[jId]; if(!data) return;
+  const p = data?.[cat]?.pending; if(!p || p.status !== 'waiting') return;
+  const nom = combattants[jId]?.data?.nom || jId;
+  const key = jId + '_' + cat;
+  const raison = document.getElementById('ri-' + key)?.value?.trim() || '';
+  const upd = {};
+  upd[cat + '.pending.status'] = 'refused';
+  upd[cat + '.pending.refusalReason'] = raison;
+  try {
+    await db.collection(COMBATS_COLL).doc(currentCombatId).collection('actions').doc(jId).update(upd);
+    addLog('✗ ' + nom + ' : ' + p.type + ' (' + cat + ') refusée' + (raison ? ' — ' + raison : ''));
+  } catch(e){ console.error(e); }
 }

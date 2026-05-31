@@ -119,7 +119,7 @@ SKILLS_DEF[]       // [{name, attr, key}] — 17 compétences
 ```javascript
 SK_ATTR{}      // {skKey: attrLettre} — mapping compétence → attribut
 FACES_CD[]     // ['1','2','—','—','★','★'] — faces dés combat
-COMBAT_DOC     // 'fallout-paris'
+COMBATS_COLL   // 'combats' — collection multi-sessions Firebase
 getHpMax(d)    // calcul PV max depuis données joueur Firebase
 rollDice(expr) // lance un dé type '2D+4', retourne int
 getTN(d,skKey) // retourne {total, attrVal, rang, tag}
@@ -131,7 +131,8 @@ getTN(d,skKey) // retourne {total, attrVal, rang, tag}
 
 **Collections Firestore :**
 - `/joueurs/{id}` — données personnage
-- `/combat/fallout-paris` — état du combat en cours
+- `/combats/{combatId}` — état d'un combat (multi-sessions)
+- `/combats/current` — pointeur vers le combat actif `{combatId, lastUpdate}`
 
 **API compat v9 — règle critique :**
 ```javascript
@@ -168,6 +169,14 @@ snap.exists()    // ✗ FAUX
 
 ### Fonctions clés
 ```javascript
+// mj.js — gestion sessions multi-room
+genCombatId()                            → génère un ID court unique
+createCombatSession(data, ids, zone)     → crée doc Firebase + sessionStorage.currentCombatId
+joinCombat(combatId)                     → set sessionStorage + redirect combat.html
+terminerCombatSession(combatId)          → passe meta.status à 'termine'
+lancerCombat()                           → lit sessionStorage, appelle createCombatSession, redirect
+renderCombatsActifs()                    → affiche liste des combats actifs dans #combats-actifs-list
+
 // combat.js / combat_sync.js
 finDeTour()            → avance le tour + syncCombatToFirebase()
 finCombat()            → stopCombat() → Firebase actif:false
@@ -183,9 +192,20 @@ bonusActionGroupeJ(type)     → +action via apPool groupe
 demanderInfoJ()              → −1AP groupe + notification MJ via infoRequest
 donnerAPMJ()                 → −1AP groupe, +1AP MJ
 convertExcessToAPJ()         → succès excéd. → apPool groupe
+// Déclaration d'actions (subcollection)
+renderActionsDeclarees()     → affiche boutons MINOR/MAJOR_ACTIONS selon état actionState
+prepareAction(cat,type)      → ouvre panneau confirmation
+submitActionDeclaree()       → écrit pending dans subcollection
+dismissRefused(cat)          → efface une action refusée
+
+// combat.js — validation MJ
+renderActionsMJ()            → affiche en temps réel les actions en attente dans #actions-joueurs-notif
+validerAction(jId, cat)      → valide pending → moved to used[], décrémente actionsState
+refuserAction(jId, cat)      → passe pending.status à 'refused' + motif
+resetActionsDeclarees()      → (combat_sync.js) reset tous les docs actions en batch
 ```
 
-### Document Firebase `/combat/fallout-paris`
+### Document Firebase `/combats/{combatId}`
 ```javascript
 {
   actif: bool,
@@ -197,7 +217,15 @@ convertExcessToAPJ()         → succès excéd. → apPool groupe
   apPool: int,              // pool AP groupe (max 6)
   mjApPool: int,            // pool AP MJ (masqué joueurs)
   infoRequest: {joueur, ts} | null,  // notification info joueur → MJ
+  meta: {createdAt, status:'active'|'termine', joueurs:[], round:N, zone:''},
   lastUpdate: timestamp
+}
+
+// Subcollection combats/{combatId}/actions/{joueurId}
+{
+  mineure: { used: ['Move'], pending: null },   // pending: {type, details, requestedAt, status:'waiting'|'refused', refusalReason?}
+  majeure: { used: [], pending: {type:'Attack', details:'...', status:'waiting'} },
+  mouvement_used: bool   // true si Move ou Sprint validé ce tour
 }
 ```
 
@@ -275,6 +303,8 @@ chargeMax = (150 + FOR×10) / 2.2046  ×  (powerArmor ? 1.5 : 1) + (powerArmor ?
 - Bandeau combat sur fiche joueur avec "C'EST TON TOUR"
 - Transmission joueurs MJ → écran combat via `sessionStorage`
 - Toutes les données statiques en JSON (`/data/`) chargées async via `db.js`
+- **Sessions combat multi-room** : `combats/{combatId}` dans Firebase, liste des combats actifs dans `mj.html`, lien joueur avec `?combat={combatId}`
+- **Système de déclaration d'actions** : subcollection `combats/{combatId}/actions/{joueurId}`, boutons par action (mineure/majeure) côté joueur, panneau validation MJ en temps réel dans `combat.html`
 
 ## Prochaines étapes
 

@@ -1,6 +1,27 @@
 // firebaseConfig, COMBAT_DOC, FACES_CD, SK_ATTR, WEAPONS_DB définis dans common/shared.js et mj_shared.js
 
-let db, joueurData = null, joueurId = null;
+const MINOR_ACTIONS = [
+  { type: 'Aim',       desc: 'Re-roll 1d20 sur la premiere attaque ce tour',   mouvement: false },
+  { type: 'Draw Item', desc: 'Sortir ou ranger un objet',                       mouvement: false },
+  { type: 'Interact',  desc: 'Interaction simple (ouvrir porte, bouton...)',    mouvement: false },
+  { type: 'Move',      desc: 'Se deplacer d\'une zone (portee Medium)',         mouvement: true  },
+  { type: 'Take Chem', desc: 'Administrer un chem a soi ou un allie a portee', mouvement: false },
+];
+
+const MAJOR_ACTIONS = [
+  { type: 'Attack',      desc: 'Attaque melee ou a distance',                           mouvement: false },
+  { type: 'Assist',      desc: 'Assister un allie sur son prochain test',               mouvement: false },
+  { type: 'Command NPC', desc: 'Donner un ordre a un PNJ allie',                        mouvement: false },
+  { type: 'Defend',      desc: 'Test AGI+Athletisme, +1 Defense (ou +2 pour 2AP)',      mouvement: false },
+  { type: 'First Aid',   desc: 'Test INT+Medecine pour soigner un allie',               mouvement: false },
+  { type: 'Pass',        desc: 'Ne rien faire ce tour',                                  mouvement: false },
+  { type: 'Rally',       desc: 'Test END+Survie D0, generer des AP',                    mouvement: false },
+  { type: 'Ready',       desc: 'Preparer une action declenchee par un evenement',       mouvement: false },
+  { type: 'Sprint',      desc: 'Se deplacer de 2 zones (portee Long)',                  mouvement: true  },
+  { type: 'Test',        desc: 'Test de competence libre (permission MJ)',               mouvement: false },
+];
+
+let db, joueurData = null, joueurId = null, combatId = null;
 let combatState = null;
 let tousJoueurs = {};
 let armeSelectionnee = null;
@@ -12,11 +33,15 @@ let useStackedDeck = false;
 let currentArmeInfo = null;  // {nom, skKey, persoBonus, dmg}
 let lastRollDice = [];       // [{val, rerolled}]
 let lastRollTN = 0;
+let actionState = null;       // doc combats/{combatId}/actions/{joueurId}
+let selectedActionDraft = null; // {category, type, desc} — action en cours de saisie
 
 function initJoueur(){
   const params = new URLSearchParams(window.location.search);
-  joueurId = params.get('id');
+  joueurId  = params.get('id');
+  combatId  = params.get('combat');
   if(!joueurId){ document.getElementById('attente').innerHTML = '<div style="color:var(--rd);padding:40px;text-align:center">⚠ Aucun personnage — accède via ta fiche joueur</div>'; return; }
+  if(!combatId){ document.getElementById('attente').innerHTML = '<div style="color:var(--td);padding:40px;text-align:center">Aucun combat en cours — demande le lien à ton MJ</div>'; return; }
 
   const app = firebase.initializeApp(firebaseConfig);
   db = app.firestore();
@@ -39,7 +64,7 @@ function initJoueur(){
   });
 
   // État du combat
-  db.collection('combat').doc(COMBAT_DOC).onSnapshot(snap => {
+  db.collection(COMBATS_COLL).doc(combatId).onSnapshot(snap => {
     if(!snap.exists || !snap.data().actif){
       document.getElementById('attente').style.display='block';
       document.getElementById('combat-actif').style.display='none';
@@ -49,6 +74,12 @@ function initJoueur(){
     document.getElementById('attente').style.display='none';
     document.getElementById('combat-actif').style.display='block';
     renderCombatJoueur();
+  });
+
+  // Déclarations d'actions (subcollection)
+  db.collection(COMBATS_COLL).doc(combatId).collection('actions').doc(joueurId).onSnapshot(snap => {
+    actionState = snap.exists ? snap.data() : null;
+    renderActionsDeclarees();
   });
 }
 
@@ -78,6 +109,7 @@ function renderCombatJoueur(){
   document.getElementById('hdr-round').textContent = 'Round ' + (combatState.numRound||1);
   renderMaCarte();
   renderActionsJoueur();
+  renderActionsDeclarees();
   renderAPPoolJoueur();
   renderLuckJoueur();
   renderCoequipiers();
@@ -107,7 +139,7 @@ function renderAPPoolJoueur(){
 async function _updateAPGroupe(delta){
   if(!db||!combatState) return;
   const newVal = Math.max(0, Math.min(6, (combatState.apPool||0)+delta));
-  try { await db.collection('combat').doc(COMBAT_DOC).update({apPool: newVal}); }
+  try { await db.collection(COMBATS_COLL).doc(combatId).update({apPool: newVal}); }
   catch(e){ console.error(e); }
 }
 
@@ -118,7 +150,7 @@ async function bonusActionGroupeJ(type){
   const s = combatState.actionsState?.[joueurId]; if(!s) return;
   const upd = {apPool: (combatState.apPool||0)-cout};
   upd['actionsState.'+joueurId+(type==='min'?'.mineure':'.majeure')] = Math.min((type==='min'?s.mineure:s.majeure)+1,2);
-  try { await db.collection('combat').doc(COMBAT_DOC).update(upd); }
+  try { await db.collection(COMBATS_COLL).doc(combatId).update(upd); }
   catch(e){ console.error(e); }
 }
 
@@ -126,7 +158,7 @@ async function demanderInfoJ(){
   if(!combatState||(combatState.apPool||0)<1) return;
   const nom = joueurData?.nom || joueurId;
   const upd = {apPool:(combatState.apPool||0)-1, infoRequest:{joueur:nom, ts:Date.now()}};
-  try { await db.collection('combat').doc(COMBAT_DOC).update(upd); }
+  try { await db.collection(COMBATS_COLL).doc(combatId).update(upd); }
   catch(e){ console.error(e); }
 }
 
@@ -138,7 +170,7 @@ async function reduireTempsJ(){
 async function donnerAPMJ(){
   if(!combatState||(combatState.apPool||0)<1) return;
   const upd = {apPool:(combatState.apPool||0)-1, mjApPool:(combatState.mjApPool||0)+1};
-  try { await db.collection('combat').doc(COMBAT_DOC).update(upd); }
+  try { await db.collection(COMBATS_COLL).doc(combatId).update(upd); }
   catch(e){ console.error(e); }
 }
 
@@ -221,7 +253,7 @@ async function luckyTimingJ(){
   if(luckPts<1) return;
   const newPts = luckPts-1;
   await db.collection('joueurs').doc(joueurId).update({luck_points:newPts, lastUpdate:Date.now()});
-  await db.collection('combat').doc(COMBAT_DOC).update({
+  await db.collection(COMBATS_COLL).doc(combatId).update({
     luckyTimingReq:{id:joueurId, nom:(joueurData?.nom||joueurId).toUpperCase(), ts:Date.now()}
   }).catch(e=>console.error(e));
 }
@@ -234,7 +266,7 @@ async function luckOfTheDrawJ(){
   if(luckPts<1) return;
   const newPts = luckPts-1;
   await db.collection('joueurs').doc(joueurId).update({luck_points:newPts, lastUpdate:Date.now()});
-  await db.collection('combat').doc(COMBAT_DOC).update({
+  await db.collection(COMBATS_COLL).doc(combatId).update({
     luckRequest:{joueur:joueurData?.nom||joueurId, detail, ts:Date.now()}
   }).catch(e=>console.error(e));
   const inp = document.getElementById('j-luck-draw-inp'); if(inp) inp.value='';
@@ -351,7 +383,7 @@ async function depenseActionJoueur(type){
   const upd = {};
   upd['actionsState.' + joueurId + (type==='min' ? '.mineure' : '.majeure')] =
     (type==='min' ? s.mineure : s.majeure) - 1;
-  try { await db.collection('combat').doc(COMBAT_DOC).update(upd); } catch(e){ console.error(e); }
+  try { await db.collection(COMBATS_COLL).doc(combatId).update(upd); } catch(e){ console.error(e); }
 }
 
 async function actionBonusJoueur(type){
@@ -363,7 +395,7 @@ async function actionBonusJoueur(type){
   upd['actionsState.' + joueurId + '.pa'] = (s.pa||0) - cout;
   upd['actionsState.' + joueurId + (type==='min' ? '.mineure' : '.majeure')] =
     Math.min((type==='min' ? s.mineure : s.majeure) + 1, 2);
-  try { await db.collection('combat').doc(COMBAT_DOC).update(upd); } catch(e){ console.error(e); }
+  try { await db.collection(COMBATS_COLL).doc(combatId).update(upd); } catch(e){ console.error(e); }
 }
 
 async function chPAJoueur(delta){
@@ -372,7 +404,7 @@ async function chPAJoueur(delta){
   const newPA = Math.max(0, (s.pa||0) + delta);
   const upd = {};
   upd['actionsState.' + joueurId + '.pa'] = newPA;
-  try { await db.collection('combat').doc(COMBAT_DOC).update(upd); } catch(e){ console.error(e); }
+  try { await db.collection(COMBATS_COLL).doc(combatId).update(upd); } catch(e){ console.error(e); }
 }
 
 // ---- COÉQUIPIERS ----
@@ -532,6 +564,142 @@ async function jLancer2D20(){
       bdEl.style.display='block'; bdEl.innerHTML=btns;
     } else { bdEl.style.display='none'; }
   }
+}
+
+// ============================================================
+// DÉCLARATION D'ACTIONS
+// ============================================================
+
+function renderActionsDeclarees(){
+  const el = document.getElementById('j-actions-decl'); if(!el) return;
+
+  // Préserver la saisie en cours si l'input existe
+  const savedDetails = document.getElementById('j-action-details')?.value || '';
+  const inputFocused = document.activeElement?.id === 'j-action-details';
+
+  const isMoTour = combatState?.ordreInitiative?.[combatState.tourActif]?.id === joueurId;
+  const s = combatState?.actionsState?.[joueurId] || {mineure:1, majeure:1};
+  const as = actionState || {mineure:{used:[],pending:null}, majeure:{used:[],pending:null}, mouvement_used:false};
+
+  let html = '';
+
+  // Bandeaux actions refusées (toujours visibles)
+  ['mineure','majeure'].forEach(cat => {
+    const p = as[cat]?.pending;
+    if(p?.status === 'refused'){
+      html += '<div style="margin-bottom:4px;padding:4px 6px;border:1px solid var(--rd);background:var(--rdk);font-size:8px;display:flex;justify-content:space-between;align-items:center">'
+        + '<div><span style="color:var(--rd)">✗ ' + p.type + '</span>'
+        + (p.refusalReason ? ' <span style="color:var(--td);font-size:7px">— ' + p.refusalReason + '</span>' : '')
+        + '</div>'
+        + '<button onclick="dismissRefused(\'' + cat + '\')" style="background:none;border:1px solid var(--rd);color:var(--rd);font-size:7px;padding:1px 5px;cursor:pointer;font-family:monospace;letter-spacing:0">OK</button>'
+        + '</div>';
+    }
+  });
+
+  // Panneau de confirmation (action sélectionnée, pas encore envoyée)
+  if(selectedActionDraft){
+    html += '<div style="margin-bottom:6px;padding:5px;border:1px solid var(--am);background:#1a1200;font-size:8px">'
+      + '<div style="color:var(--am);margin-bottom:2px">' + selectedActionDraft.type
+      + ' <span style="color:var(--td);font-size:7px">(' + selectedActionDraft.category + ')</span></div>'
+      + '<div style="color:var(--td);font-size:7px;margin-bottom:5px">' + selectedActionDraft.desc + '</div>'
+      + '<input type="text" id="j-action-details" placeholder="Precisions optionnelles (cible, objet...)"'
+      + ' style="width:100%;box-sizing:border-box;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:monospace;font-size:8px;padding:3px 5px;outline:none;margin-bottom:4px">'
+      + '<div style="display:flex;gap:4px">'
+      + '<button onclick="submitActionDeclaree()" style="flex:1;background:none;border:1px solid var(--g);color:var(--g);font-family:monospace;font-size:8px;padding:3px;cursor:pointer;letter-spacing:0">→ Envoyer au MJ</button>'
+      + '<button onclick="cancelActionDeclaree()" style="background:none;border:1px solid var(--rd);color:var(--rd);font-family:monospace;font-size:8px;padding:3px 8px;cursor:pointer;letter-spacing:0">✕</button>'
+      + '</div>'
+      + '</div>';
+  }
+
+  // Boutons d'actions (uniquement pendant mon tour)
+  if(isMoTour){
+    const minorUsed    = as.mineure?.used || [];
+    const minorPending = as.mineure?.pending;
+    const minorWaiting = minorPending?.status === 'waiting';
+    const noMinorSlots = (s.mineure || 1) <= 0;
+
+    html += '<div style="font-size:7px;color:var(--td);letter-spacing:1px;margin-bottom:3px;margin-top:2px">ACTIONS MINEURES</div>'
+      + '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px">';
+    MINOR_ACTIONS.forEach(a => {
+      const isUsed        = minorUsed.includes(a.type);
+      const isPendingThis = minorWaiting && minorPending.type === a.type;
+      const moveBlocked   = a.mouvement && !!as.mouvement_used;
+      const disabled      = isUsed || moveBlocked || noMinorSlots || (minorWaiting && !isPendingThis) || !!selectedActionDraft;
+      const col = isPendingThis ? 'var(--am)' : isUsed ? 'var(--gd)' : disabled ? '#1e2e1e' : 'var(--t)';
+      const bdr = isPendingThis ? 'var(--am)' : isUsed ? 'var(--gd)' : disabled ? '#1e2e1e' : 'var(--b2)';
+      const lbl = isPendingThis ? '⏳ ' + a.type : isUsed ? '✓ ' + a.type : a.type;
+      html += '<button onclick="prepareAction(\'mineure\',\'' + a.type + '\')"'
+        + (disabled ? ' disabled' : '')
+        + ' style="background:none;border:1px solid ' + bdr + ';color:' + col + ';font-family:monospace;font-size:7px;padding:2px 5px;cursor:' + (disabled?'default':'pointer') + ';letter-spacing:0"'
+        + ' title="' + a.desc + '">' + lbl + '</button>';
+    });
+    html += '</div>';
+
+    const majorUsed    = as.majeure?.used || [];
+    const majorPending = as.majeure?.pending;
+    const majorWaiting = majorPending?.status === 'waiting';
+    const noMajorSlots = (s.majeure || 1) <= 0;
+
+    html += '<div style="font-size:7px;color:var(--td);letter-spacing:1px;margin-bottom:3px">ACTIONS MAJEURES</div>'
+      + '<div style="display:flex;flex-wrap:wrap;gap:3px">';
+    MAJOR_ACTIONS.forEach(a => {
+      const isUsed        = majorUsed.includes(a.type);
+      const isPendingThis = majorWaiting && majorPending.type === a.type;
+      const moveBlocked   = a.mouvement && !!as.mouvement_used;
+      const disabled      = isUsed || moveBlocked || noMajorSlots || (majorWaiting && !isPendingThis) || !!selectedActionDraft;
+      const col = isPendingThis ? 'var(--am)' : isUsed ? 'var(--gd)' : disabled ? '#1e2e1e' : 'var(--t)';
+      const bdr = isPendingThis ? 'var(--am)' : isUsed ? 'var(--gd)' : disabled ? '#1e2e1e' : 'var(--b2)';
+      const lbl = isPendingThis ? '⏳ ' + a.type : isUsed ? '✓ ' + a.type : a.type;
+      html += '<button onclick="prepareAction(\'majeure\',\'' + a.type + '\')"'
+        + (disabled ? ' disabled' : '')
+        + ' style="background:none;border:1px solid ' + bdr + ';color:' + col + ';font-family:monospace;font-size:7px;padding:2px 5px;cursor:' + (disabled?'default':'pointer') + ';letter-spacing:0"'
+        + ' title="' + a.desc + '">' + lbl + '</button>';
+    });
+    html += '</div>';
+  }
+
+  el.innerHTML = html;
+  el.style.display = html ? 'block' : 'none';
+
+  // Restaurer la saisie après re-render
+  const inp = document.getElementById('j-action-details');
+  if(inp){
+    if(savedDetails) inp.value = savedDetails;
+    if(inputFocused){ inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+  }
+}
+
+function prepareAction(category, type){
+  const list = category === 'mineure' ? MINOR_ACTIONS : MAJOR_ACTIONS;
+  const action = list.find(a => a.type === type); if(!action) return;
+  selectedActionDraft = { category, type: action.type, desc: action.desc };
+  renderActionsDeclarees();
+}
+
+async function submitActionDeclaree(){
+  if(!selectedActionDraft || !db) return;
+  const { category, type } = selectedActionDraft;
+  const details = document.getElementById('j-action-details')?.value?.trim() || '';
+  const upd = {};
+  upd[category + '.pending'] = { type, details, requestedAt: Date.now(), status: 'waiting' };
+  try {
+    await db.collection(COMBATS_COLL).doc(combatId).collection('actions').doc(joueurId).set(upd, {merge:true});
+    selectedActionDraft = null;
+  } catch(e){ console.error(e); }
+}
+
+function cancelActionDeclaree(){
+  selectedActionDraft = null;
+  renderActionsDeclarees();
+}
+
+async function dismissRefused(category){
+  if(!db) return;
+  const upd = {};
+  upd[category + '.pending'] = null;
+  try {
+    await db.collection(COMBATS_COLL).doc(combatId).collection('actions').doc(joueurId).set(upd, {merge:true});
+  } catch(e){ console.error(e); }
 }
 
 function jLancerCD(){

@@ -28,7 +28,7 @@
     <div><div class="hdr-title">FALLOUT PARIS<small>ÉCRAN MAÎTRE DU JEU</small></div></div>
     <div class="hdr-btns">
       <button class="hbtn" onclick="location.reload()">↻ Rafraîchir</button>
-      <a class="hbtn" href="combat.html" style="border-color:#e04040;color:#e04040">⚔ Écran Combat</a>
+      <button class="hbtn" style="border-color:#e04040;color:#e04040;cursor:pointer" onclick="document.getElementById('combats-actifs').scrollIntoView({behavior:'smooth'});renderCombatsActifs()">⚔ Combats actifs</button>
       <a class="hbtn" href="../admin_perso/admin_perso.html">⚙ Admin persos</a>
       <a class="hbtn" href="../../index.html">← Accueil</a>
     </div>
@@ -176,12 +176,22 @@
 
       <!-- Bouton vers écran combat, visible après génération -->
       <div id="btn-combat-wrap" style="display:none;margin-top:10px">
-        <a id="btn-vers-combat" href="combat.html" class="gen-btn" style="display:block;text-align:center;text-decoration:none;border-color:var(--rd);color:var(--rd);background:var(--rdk)">
+        <button id="btn-vers-combat" class="gen-btn" onclick="lancerCombat()" style="width:100%;border-color:var(--rd);color:var(--rd);background:var(--rdk)">
           ⚔ Ouvrir l'écran combat
-        </a>
+        </button>
       </div>
 
     </div>
+
+    <!-- COMBATS ACTIFS -->
+    <div class="rencontre-pnl" id="combats-actifs" style="margin-top:10px">
+      <div class="pnl-title" style="display:flex;justify-content:space-between;align-items:center">
+        ⚔ Combats actifs
+        <button class="sel-btn" onclick="renderCombatsActifs()" style="font-size:9px">↻ Rafraîchir</button>
+      </div>
+      <div id="combats-actifs-list"><div class="empty" style="font-size:8px;color:var(--td);padding:10px">Chargement...</div></div>
+    </div>
+
   </div>
 
 </div>
