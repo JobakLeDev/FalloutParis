@@ -141,23 +141,24 @@ enemyInstanceFromDB(nom, lvl) // construit une instance de combat depuis ENNEMIS
 ```
 
 ### Schéma ennemi (`enemies.json` / `ENNEMIS_DB`)
-Format officiel Fallout 2D20 (fiches du livre). Construit des **instances de combat** via `enemyInstanceFromDB()`.
+Bestiaire officiel Fallout 2D20 — **55 créatures/PNJ** (bêtes, goules, robots, super mutants, synths, tourelles, factions Confrérie/Pillards/Gunners/Institut…). Construit des **instances de combat** via `enemyInstanceFromDB()`.
 ```javascript
 "Bloodbug": {
-  level, type, category:'normal'|'notable'|'legendary', xp,
+  level, type, category:'swarm'|'normal'|'elite'|'boss', xp,
   attrs: {body, mind, melee, guns, other},  // null si non applicable
   hp,            // PV fixes (pas en dés)
-  initiative,    // = body + mind
+  initiative,
   defense,
-  dr: {phys, energy, rad, poison},          // nombre OU "immune"
-  attacks: [{name, attr, skill, tn, dmg, dmgType, eff}],  // dmg = nb dés de combat
+  dr: {phys, energy, rad, poison},          // nombre, "immune", OU string RD localisée ("4 tête / 3 jambes...")
+  attacks: [{name, attr, skill, tn, dmg, dmgType, eff, range?, fireRate?, special?}],  // dmg = nb dés de combat
   abilities: [{name, desc}],                // capacités spéciales
-  inventory: [{name, desc}],                // optionnel (dépeçage…)
+  inventory: [{name, desc}],                // optionnel (dépeçage, récupération…)
   desc
 }
 ```
 `enemyInstanceFromDB(nom, lvl)` → instance combat : `{nom, pvMax, pvCur, atq:'XD', rd, initiative, xp, body, mind, tn, dmgType, eff, dr, defense, level, category}`.
-Scaling niveau : `hp ×(1+(lvl-1)·0.25)`, `rd phys +⌊(lvl-1)/2⌋`. Les 19 ennemis homebrew ont été convertis (valeurs approximatives, jouables).
+Scaling niveau : `hp ×(1+(lvl-1)·0.25)`, `rd phys +⌊(lvl-1)/2⌋`. Si `dr.phys` est une string, `rd` prend le 1er nombre (parseInt).
+Les ZONES de `mj.js` référencent ces noms pour la génération aléatoire — garder la cohérence si on renomme.
 
 ---
 

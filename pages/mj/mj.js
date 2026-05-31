@@ -10,12 +10,12 @@ let selected = new Set();
 // TABLES DE RENCONTRES
 // ============================================================
 const ZONES = {
-  'Paris Centre':     {danger:2, nbMin:1, nbMax:3, ennemis:['Pillard','Pillard Vétéran','Goule errante','Chien sauvage','Marchand hostile']},
-  'Paris Banlieue':   {danger:3, nbMin:2, nbMax:4, ennemis:['Pillard Vétéran','Goule enragée','Super Mutant','Chien sauvage','Légion de Fer']},
-  'Métro':            {danger:4, nbMin:3, nbMax:5, ennemis:['Goule enragée','Goule irradiée','Mite de vapeur','Pillard','Homme de main']},
-  'Zone Industrielle':{danger:3, nbMin:2, nbMax:4, ennemis:['Robot Protectron','Robot Assaultron','Pillard Vétéran','Super Mutant','Saccageur']},
-  'Égouts':           {danger:4, nbMin:3, nbMax:5, ennemis:['Radscorpion','Mole Rat','Goule errante','Goule enragée','Mirelurk']},
-  'Zone Verte':       {danger:2, nbMin:1, nbMax:2, ennemis:['Radstag','Brahmane sauvage','Chien sauvage','Pillard','Pillard Vétéran']},
+  'Paris Centre':     {danger:2, nbMin:1, nbMax:3, ennemis:['Raider','Raider Psycho','Feral Ghoul','Chien sauvage','Wastelander']},
+  'Paris Banlieue':   {danger:3, nbMin:2, nbMax:4, ennemis:['Raider Veteran','Feral Ghoul','Super Mutant','Mutant Hound','Gunner']},
+  'Métro':            {danger:4, nbMin:3, nbMax:5, ennemis:['Feral Ghoul','Glowing One','Radroach','Mole Rat','Raider Scaver']},
+  'Zone Industrielle':{danger:3, nbMin:2, nbMax:4, ennemis:['Protectron','Assaultron','Eyebot','Super Mutant','Mercenary']},
+  'Égouts':           {danger:4, nbMin:3, nbMax:5, ennemis:['Radscorpion','Mole Rat','Mirelurk Hatchling','Mirelurk','Bloatfly']},
+  'Zone Verte':       {danger:2, nbMin:1, nbMax:2, ennemis:['Radstag','Brahmane sauvage','Chien sauvage','Bloodbug','Stingwing']},
 };
 
 // ENNEMIS_DB défini dans mj_shared.js (fusionné avec body+mind+desc, 'Légion de Fer' corrigé)
