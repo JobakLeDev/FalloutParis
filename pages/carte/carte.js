@@ -62,10 +62,11 @@ const PARIS_BOUNDS = L.latLngBounds([48.8156, 2.2241], [48.9022, 2.4699]);
 
 // Recadre sur Paris et fige le dézoom au niveau « Paris entier »
 function lockParis() {
-  map.setMinZoom(0);
   map.invalidateSize();
-  map.fitBounds(PARIS_BOUNDS);
-  map.setMinZoom(map.getZoom());      // impossible de dézoomer au-delà de Paris
+  map.setMinZoom(0);
+  const z = map.getBoundsZoom(PARIS_BOUNDS); // zoom où Paris remplit le cadre (sans animation)
+  map.setMinZoom(z);                          // impossible de dézoomer au-delà de Paris
+  map.setView(PARIS_BOUNDS.getCenter(), z, { animate: false });
 }
 
 function buildMap() {
