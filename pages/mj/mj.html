@@ -151,25 +151,34 @@
       <div class="rencontre-controls">
         <div class="ctrl-row">
           <span class="ctrl-lbl">Zone</span>
-          <select class="ctrl-sel" id="zone-sel" onchange="updateNbEnnemis()">
-            <option>Paris Centre</option>
-            <option>Paris Banlieue</option>
-            <option>Métro</option>
-            <option>Zone Industrielle</option>
-            <option>Égouts</option>
-            <option>Zone Verte</option>
-          </select>
+          <select class="ctrl-sel" id="zone-sel"></select>
         </div>
         <div class="ctrl-row">
-          <span class="ctrl-lbl">Unités dépl.</span>
+          <span class="ctrl-lbl">Occupation</span>
+          <select class="ctrl-sel" id="occ-sel"></select>
+        </div>
+        <div class="ctrl-row">
+          <span class="ctrl-lbl">Variation</span>
+          <select class="ctrl-sel" id="var-sel"></select>
+        </div>
+        <div class="ctrl-row">
+          <span class="ctrl-lbl">Menace</span>
+          <select class="ctrl-sel" id="threat-sel"></select>
+        </div>
+        <div class="ctrl-row">
+          <span class="ctrl-lbl">Créneaux</span>
+          <input type="number" class="ctrl-input" id="nb-slots" value="4" min="1" max="12" title="Nombre de jets sur le pool (none = créneau vide)">
+          <span class="ctrl-lbl" style="margin-left:8px">Unités dépl.</span>
           <input type="number" class="ctrl-input" id="nb-unites" value="1" min="1" max="20">
         </div>
       </div>
 
-      <input type="hidden" id="nb-ennemis" value="3">
       <div class="gen-btns">
-        <button class="gen-btn" onclick="genCombat()">⚔ Générer combat</button>
+        <button class="gen-btn" onclick="genRencontre()">⚔ Générer rencontre</button>
         <button class="gen-btn dep" onclick="genDeplacement()">🚶 Déplacement</button>
+      </div>
+      <div class="gen-btns" style="margin-top:6px">
+        <button class="gen-btn" style="grid-column:1/-1;border-color:var(--b2);color:var(--td)" onclick="apercuPool()">📊 Aperçu des probabilités</button>
       </div>
 
       <div id="rencontre-panel"></div>
