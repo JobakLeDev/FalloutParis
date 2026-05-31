@@ -43,6 +43,27 @@
     </div>
   </div>
 
+  <!-- FORMULAIRE DE ZONE (MJ) -->
+  <div id="zone-form">
+    <div class="zform-box">
+      <div class="zform-title">Caractéristiques de la zone</div>
+      <label>Nom</label>
+      <input id="zf-name" type="text" placeholder="Nom de la zone…">
+      <label>Pool de base (type de zone)</label>
+      <select id="zf-base"></select>
+      <label>Faction occupante</label>
+      <select id="zf-occ"></select>
+      <label>Variation</label>
+      <select id="zf-var"></select>
+      <label>Niveau de menace</label>
+      <select id="zf-threat"></select>
+      <div class="zform-btns">
+        <button class="zf-ok" onclick="submitZoneForm()">✓ Enregistrer</button>
+        <button class="zf-cancel" onclick="closeZoneForm()">✗ Annuler</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Message si image manquante -->
   <div id="carte-msg">
     ⚠ Image de carte introuvable.<br>

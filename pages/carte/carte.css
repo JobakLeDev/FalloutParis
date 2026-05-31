@@ -37,6 +37,19 @@ body.embed #mj-panel{display:none !important;}
 .pz-gen:hover{border-color:var(--g);}
 .empty{font-size:8px;color:var(--td);}
 
+/* FORMULAIRE DE ZONE */
+#zone-form{display:none;position:fixed;inset:0;z-index:3000;background:rgba(6,13,6,.85);align-items:center;justify-content:center;}
+.zform-box{background:var(--p2);border:1px solid var(--b2);padding:16px 18px;width:300px;max-width:92vw;}
+.zform-title{font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:2px;color:var(--g);margin-bottom:12px;border-bottom:1px solid var(--b);padding-bottom:6px;}
+.zform-box label{display:block;font-size:7px;letter-spacing:2px;color:var(--td);text-transform:uppercase;margin:8px 0 3px;}
+.zform-box input,.zform-box select{width:100%;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:10px;padding:5px;outline:none;}
+.zform-box input:focus,.zform-box select:focus{border-color:var(--g);}
+.zform-btns{display:flex;gap:6px;margin-top:14px;}
+.zform-btns button{flex:1;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:9px;padding:7px;cursor:pointer;letter-spacing:1px;}
+.zf-ok{border-color:var(--gd)!important;color:var(--g)!important;}
+.zf-ok:hover{background:#0a1f0a;}
+.zf-cancel{border-color:var(--rd)!important;color:var(--rd)!important;}
+
 /* MESSAGE IMAGE MANQUANTE */
 #carte-msg{display:none;position:fixed;inset:0;z-index:2000;background:rgba(12,21,12,.96);flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--rd);font-size:12px;letter-spacing:2px;line-height:2;}
 #carte-msg span{color:var(--td);font-size:9px;}

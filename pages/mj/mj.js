@@ -63,10 +63,17 @@ function populateZoneSelectors(){
   }).join(''));
   set('var-sel', '<option value="">Aucune variation</option>'+Object.keys(window.ZONE_VARIATIONS||{}).map(k=>`<option value="${k}">${VARIATION_LABELS[k]||k}</option>`).join(''));
   set('threat-sel', Object.keys(window.ZONE_THREAT||{}).map(k=>`<option value="${k}"${k==='normal'?' selected':''}>${THREAT_LABELS[k]||k}</option>`).join(''));
-  // Pré-sélection depuis l'URL (?zone=metro, depuis la carte)
-  const z = new URLSearchParams(location.search).get('zone');
-  const zs = document.getElementById('zone-sel');
-  if(z && zs && window.ZONES_DB?.[z]){ zs.value = z; document.getElementById('rencontre-panel')?.scrollIntoView({behavior:'smooth'}); }
+  // Pré-sélection depuis l'URL (depuis la carte : ?zone=metro&occ=republique&var=irradiated&threat=normal)
+  const p = new URLSearchParams(location.search);
+  const setIf = (id, val, db) => { const el=document.getElementById(id); if(el && val!=null && (val==='' || db?.[val])) el.value = val; };
+  const z = p.get('zone');
+  if(z && window.ZONES_DB?.[z]){
+    setIf('zone-sel', z, window.ZONES_DB);
+    if(p.has('occ'))    setIf('occ-sel', p.get('occ'), window.ZONE_OCCUPATION);
+    if(p.has('var'))    setIf('var-sel', p.get('var'), window.ZONE_VARIATIONS);
+    if(p.has('threat')) setIf('threat-sel', p.get('threat'), window.ZONE_THREAT);
+    document.getElementById('rencontre-panel')?.scrollIntoView({behavior:'smooth'});
+  }
 }
 
 // Lit les 4 sélecteurs → opts pour resolveZonePool
