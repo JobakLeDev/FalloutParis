@@ -14,6 +14,7 @@
       "Très hiérarchisée"
     ],
     "units": ["Republic Patrol", "Republic Soldier"],
+    "roles": ["civilian", "militia", "soldier", "scout", "veteran", "heavy", "officer", "commander", "technician", "pilot", "robot_support", "robot_security", "merchant"],
     "desc": "Organisation étatique centralisée, présente dans les grandes villes. Communication fluviale et aérienne. Cherche la stabilité, l'administration et la reconstruction."
   },
   "commune": {
@@ -32,6 +33,7 @@
       "Très implantée dans certains quartiers"
     ],
     "units": ["Commune Militia", "Worker Patrol"],
+    "roles": ["civilian", "militia", "soldier", "officer", "merchant", "technician", "gang_member"],
     "desc": "Organisation populaire locale faite de communautés autonomes à structure horizontale. Très implantée dans certains quartiers."
   },
   "nnfp": {
@@ -52,6 +54,7 @@
       "Organisation de masse"
     ],
     "units": ["NNFP Militant", "NNFP Patrol"],
+    "roles": ["civilian", "militia", "soldier", "officer", "commander", "merchant"],
     "desc": "Coalition politique et militante post-apocalyptique, très idéologique, à fort ancrage populaire. Propagande importante, organisation de masse."
   },
   "reseau": {
@@ -71,6 +74,7 @@
       "Contrôle des flux d'information"
     ],
     "units": ["Reseau Agent", "Eyebot"],
+    "roles": ["agent", "special_agent", "technician", "smuggler", "scout", "robot_support", "robot_security"],
     "desc": "Infrastructure clandestine reposant sur le métro, la communication et la technologie. Spécialisée dans l'espionnage, la messagerie et le contrôle des flux d'information."
   },
   "zazous": {
@@ -89,6 +93,7 @@
       "Moins militarisés"
     ],
     "units": ["Zazou Gang"],
+    "roles": ["civilian", "gang_member", "merchant", "smuggler", "enforcer"],
     "desc": "Mouvement de contre-culture autour du jazz, de la mode et des couleurs. Peu militarisé, ancré dans la vie nocturne et artistique."
   },
   "ultras": {
@@ -107,6 +112,7 @@
       "Très mobiles"
     ],
     "units": ["Ultra Patrol"],
+    "roles": ["gang_member", "enforcer", "officer", "veteran", "smuggler", "heavy"],
     "desc": "Violence organisée structurée en bandes mobiles disputant des territoires. Forte culture de bande."
   }
 }

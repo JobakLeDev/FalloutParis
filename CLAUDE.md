@@ -48,7 +48,8 @@ FalloutParis/
 │   ├── zone_variations.json           → variations {key:{multipliers?, add?}} (irradiated, flooded…)
 │   ├── zone_occupation.json           → occupation faction {key:{multipliers?, add?}} (republique, raiders…)
 │   ├── zone_threat.json               → niveau menace {key:{multipliers?, add?}} — pilote le poids de "none" (DRAFT)
-│   ├── factions.json                  → 6 factions {key:{label,tier,category,color,structure,units[],valeurs[],traits[],desc}}
+│   ├── factions.json                  → 6 factions {key:{label,tier,category,color,structure,units[],roles[],valeurs[],traits[],desc}}
+│   ├── npc_roles.json                 → templates d'unités {role:{baseId,label,spawnWeight,tags[]}} — baseId = fiche enemies.json réutilisée
 │   ├── items.json                     → {food,drinks,drugs,stuff}
 │   ├── enemies.json                   → ENNEMIS_DB format officiel (voir schéma ennemis)
 │   ├── perks.json                     → 57 perks {max,lvl,req[],desc}
@@ -188,6 +189,15 @@ DRAFT en cours : certains noms de pool (Marchand, Mongrel, Republic Patrol, NNFP
 }
 ```
 Lien à venir avec les personnages : un perso pourra référencer `faction: "<key>"` (+ réputation par faction). Le champ `units` relie faction → PNJ → pools de zones. `color` = couleur de badge pour l'UI.
+
+### Génération d'unités par faction (`npc_roles.json` + `zones.js`)
+Une faction recrute des **rôles** (`factions.json: roles[]`). Chaque rôle (`npc_roles.json`) a un `baseId` = fiche stats d'`enemies.json` à réutiliser, un `label`, un `spawnWeight` (pondération) et des `tags`. Une unité générée = instance du `baseId` relabellisée avec l'identité de la faction.
+```javascript
+factionRolePool(factionKey, filterTags?)        // → {roleKey: poids} (filtrable par tags)
+generateFactionUnit(factionKey, {lvl, filterTags})  // → instance combat enrichie {nom:"Soldat (La République)", faction, factionColor, role, roleLabel, tags, ...}
+generateFactionSquad(factionKey, count, opts)   // → [unités] avec id unique
+```
+La répartition `roles[]` par faction est un **DRAFT** (basé sur le thème). Les baseId pointent vers des fiches existantes (Raider, Brotherhood *, Synth *, Protectron/Assaultron/Sentry Bot) — pas besoin de créer des fiches dédiées par unité.
 
 ---
 
