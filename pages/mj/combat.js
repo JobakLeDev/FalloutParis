@@ -106,7 +106,20 @@ function deverrouiller(){
       { let msg = (r.nom||r.joueur)+' inflige '+r.dmg+'dmg'+(r.ef?' +'+r.ef+'⚡':'')+(r.cible?' à '+r.cible:'');
         if(r.effetNote) msg += ' ['+r.effetNom+' : '+r.effetNote+']';
         if(r.rad>0) msg += ' +'+r.rad+' RAD';
-        addLog('⚔ ' + msg); }
+        addLog('⚔ ' + msg);
+        // Appliquer les dégâts automatiquement à l'ennemi ciblé
+        if(r.cible && r.dmg > 0){
+          const cible = ennemis.find(e => e.nom === r.cible);
+          if(cible && cible.pvCur > 0){
+            const avant = cible.pvCur;
+            cible.pvCur = Math.max(0, cible.pvCur - r.dmg);
+            addLog('💥 '+cible.nom+' : '+avant+' → '+cible.pvCur+' PV (−'+r.dmg+')');
+            if(cible.pvCur <= 0) addLog('💀 '+cible.nom+' éliminé !');
+            renderCombat();
+            syncCombatToFirebase();
+          }
+        }
+      }
     }
   });
 
