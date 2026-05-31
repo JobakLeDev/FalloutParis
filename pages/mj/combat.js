@@ -244,10 +244,9 @@ function lancerInitiative(){
     addLog('🎲 ' + (d.nom||id) + ' init ' + per + '+' + agi + (bonus?'+'+bonus:'') + ' = ' + init);
   });
 
-  // Ennemis : Body + Mind
+  // Ennemis : initiative déjà calculée à la création (Body + Mind du schéma)
   ennemis.forEach(e => {
-    const db2 = ENNEMIS_DB[e.nom] || ENNEMIS_DB[Object.keys(ENNEMIS_DB).find(k=>e.nom.startsWith(k))] || {};
-    e.initiative = (db2.body||6) + (db2.mind||4);
+    if(!e.initiative) e.initiative = (e.body||6) + (e.mind||4);
     ordreInitiative.push({id:'e_'+e.id, nom:e.nom, type:'ennemi', init:e.initiative, eid:e.id});
     initActionsState('e_'+e.id, false, {});
   });
@@ -479,13 +478,13 @@ function ajouterEnnemisModal(){
   const nom = document.getElementById('mo-ennemi-nom').value;
   const nb  = parseInt(document.getElementById('mo-ennemi-nb').value)||1;
   const lvl = parseInt(document.getElementById('mo-ennemi-lvl').value)||1;
-  const db2 = ENNEMIS_DB[nom]; if(!db2) return;
+  if(!ENNEMIS_DB[nom]) return;
   for(let i=0;i<nb;i++){
-    const pvMax = Math.round(rollDice(db2.pvd) * (1+(lvl-1)*0.25));
-    const rd = db2.rd + Math.floor((lvl-1)/2);
-    const label = nb>1 ? nom+' '+(i+1) : nom;
-    ennemis.push({id:Date.now()+i, nom:label, pvd:db2.pvd, pvMax, pvCur:pvMax, atq:db2.atq, rd, xp:db2.xp*lvl, initiative:null, body:db2.body||6, mind:db2.mind||4});
-    addLog('➕ '+label+' (PV:'+pvMax+' RD:'+rd+')');
+    const inst = enemyInstanceFromDB(nom, lvl); if(!inst) continue;
+    inst.id = Date.now()+i;
+    inst.nom = nb>1 ? nom+' '+(i+1) : nom;
+    ennemis.push(inst);
+    addLog('➕ '+inst.nom+' (PV:'+inst.pvMax+' RD:'+inst.rd+')');
   }
   fermerModalEnnemi();
   renderCombat();
