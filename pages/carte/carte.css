@@ -12,6 +12,10 @@ body{background:var(--bg);color:var(--t);font-family:'Share Tech Mono',monospace
 .hbtn:hover{border-color:var(--g);color:var(--t);}
 .hbtn.on{border-color:var(--am);color:var(--am);background:#1a1200;}
 
+/* EMBED (iframe dans la fiche joueur) : pas de header */
+body.embed .hdr{display:none;}
+body.embed #mj-panel{display:none !important;}
+
 /* MAP */
 #map{flex:1;background:#060d06;}
 .leaflet-container{background:#060d06;font-family:'Share Tech Mono',monospace;}
@@ -63,5 +67,16 @@ body{background:var(--bg);color:var(--t);font-family:'Share Tech Mono',monospace
 .zpop-mj button{background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:8px;padding:3px 6px;cursor:pointer;}
 .zpop-mj button:hover{border-color:var(--g);}
 .zpop-mj button.del{border-color:var(--rd);color:var(--rd);}
+/* Contrôles de révélation par joueur */
+.zpop-reveal{margin-top:6px;padding-top:6px;border-top:1px solid var(--b);}
+.rv-lbl{font-size:7px;letter-spacing:2px;color:var(--td);text-transform:uppercase;margin-bottom:4px;}
+.rv-grid{display:flex;flex-wrap:wrap;gap:3px;}
+.rv-grid .rv{background:#060d06;border:1px solid var(--b2);color:var(--td);font-family:'Share Tech Mono',monospace;font-size:8px;padding:2px 6px;cursor:pointer;letter-spacing:0;}
+.rv-grid .rv.on{border-color:var(--g);color:var(--g);background:#0a1f0a;}
+.rv-all{display:flex;gap:4px;margin-top:5px;}
+.rv-all button{flex:1;background:#060d06;border:1px solid var(--b);color:var(--td);font-family:'Share Tech Mono',monospace;font-size:8px;padding:3px;cursor:pointer;}
+.rv-all button:hover{border-color:var(--g);color:var(--t);}
+/* Jeton du joueur courant (vue joueur) */
+.token-pin.me .token-dot{background:#5dbe5d;border-color:#fff;box-shadow:0 0 10px rgba(93,190,93,.9);}
 .leaflet-control-zoom a{background:var(--p2);color:var(--t);border-color:var(--b2);}
 .leaflet-control-zoom a:hover{background:var(--gk);}
