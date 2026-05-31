@@ -43,6 +43,7 @@ FalloutParis/
 │   ├── armor.json                     → 56 pièces d'armure {n,t,ph,en,rad,z,w}
 │   ├── ammo.json                      → types de munitions (array de strings)
 │   ├── ammo_loot.json                 → table loot 2D20 munitions [{min,max,ammo,base,cd,mult,scavenger?}]
+│   ├── npc_xp.json                    → XP par niveau PNJ {perLevel[{lvl,normal,mighty,legendary}], above20}
 │   ├── items.json                     → {food,drinks,drugs,stuff}
 │   ├── enemies.json                   → ENNEMIS_DB {pvd,atq,rd,xp,body,mind,desc}
 │   ├── perks.json                     → 57 perks {max,lvl,req[],desc}
@@ -109,6 +110,7 @@ window.ENNEMIS_DB  // {nom: {pvd, atq, rd, xp, body, mind, desc}} — 19 ennemis
 window.WEAPONS_DB  // {nom: {t, dmg, eff, fr, rng, sk}} — construit depuis weapons.json
 window.NPC_DB      // array PNJ nommés
 window.AMMO_LOOT   // table loot munitions 2D20 [{min,max,ammo,base,cd,mult,scavenger?}]
+window.NPC_XP      // XP par niveau PNJ {perLevel:[{lvl,normal,mighty,legendary}], above20:{...}}
 ```
 
 ### Table de loot munitions (`AMMO_LOOT`)
@@ -134,6 +136,7 @@ COMBATS_COLL   // 'combats' — collection multi-sessions Firebase
 getHpMax(d)    // calcul PV max depuis données joueur Firebase
 rollDice(expr) // lance un dé type '2D+4', retourne int
 getTN(d,skKey) // retourne {total, attrVal, rang, tag}
+getNpcXP(level, cat) // XP PNJ par niveau — cat: 'normal'|'mighty'|'legendary', extrapole >20
 ```
 
 ---
