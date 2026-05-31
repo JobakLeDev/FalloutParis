@@ -647,9 +647,9 @@ function bonusDmgMJ(n){
   if(apPool<n){ addLog('⚠ AP groupe insuffisants'); return; }
   chAPPool(-n);
   const vals=Array.from({length:n},()=>FACES_CD[Math.floor(Math.random()*6)]);
-  const dmg=vals.filter(v=>v==='1'||v==='2').reduce((a,v)=>a+parseInt(v),0);
-  const ef=vals.filter(v=>v==='★').length;
-  const extra=vals.map(v=>'<span style="color:'+(v==='★'?'var(--am)':v==='—'?'var(--td)':'var(--tb)')+';font-size:14px;font-family:Oswald,sans-serif">'+v+'</span>').join(' ');
+  const dmg=vals.reduce((a,v)=>a+(parseInt(v)||0),0);
+  const ef=vals.filter(v=>v.includes('⚡')).length;
+  const extra=vals.map(v=>'<span style="color:'+(v.includes('⚡')?'var(--am)':v==='—'?'var(--td)':'var(--tb)')+';font-size:14px;font-family:Oswald,sans-serif">'+v+'</span>').join(' ');
   const cd=document.getElementById('cd-result');
   if(cd) cd.innerHTML+=' <span style="color:var(--am)">+['+extra+'] ='+dmg+'dmg'+(ef?' +'+ef+'⚡':'')+'</span>';
   addLog('⚡ +'+n+'DC bonus (-'+n+' AP groupe): '+dmg+'dmg'+(ef?' +'+ef+'⚡':''));
@@ -766,10 +766,10 @@ function lancer2D20(){
 function lancerCD(){
   const nb = parseInt(document.getElementById('nb-cd').value)||2;
   const vals = Array.from({length:nb},()=>FACES_CD[Math.floor(Math.random()*6)]);
-  const dmg = vals.filter(v=>v==='1'||v==='2').reduce((a,v)=>a+parseInt(v),0);
-  const ef = vals.filter(v=>v==='★').length;
+  const dmg = vals.reduce((a,v)=>a+(parseInt(v)||0),0);
+  const ef = vals.filter(v=>v.includes('⚡')).length;
   document.getElementById('cd-result').innerHTML =
-    vals.map(v=>'<span style="color:'+(v==='★'?'var(--am)':v==='—'?'var(--td)':'var(--tb)')+';font-family:Oswald,sans-serif;font-size:16px">'+v+'</span>').join(' ')
+    vals.map(v=>'<span style="color:'+(v.includes('⚡')?'var(--am)':v==='—'?'var(--td)':'var(--tb)')+';font-family:Oswald,sans-serif;font-size:16px">'+v+'</span>').join(' ')
     +' <span style="color:var(--td)">→</span> <b style="color:var(--am)">'+dmg+'dmg</b>'+(ef?' <span style="color:var(--am)">+'+ef+'⚡</span>':'');
   const nom = joueurActif?(combattants[joueurActif]?.data?.nom||joueurActif):'?';
   addLog('💥 '+nom+' '+nb+'DC: '+dmg+'dmg'+(ef?' +'+ef+'⚡':''));

@@ -12,7 +12,8 @@ const SK_ATTR = {
   science:'I', survival:'E', barter:'C',
 };
 
-const FACES_CD = ['1','2','—','—','★','★'];
+// Faces du dé de combat : 1dmg | 2dmg | blank | blank | 1dmg+effet | 1dmg+effet
+const FACES_CD = ['1','2','—','—','1⚡','1⚡'];
 
 // WEAPONS_DB et ENNEMIS_DB chargés depuis /data/*.json via common/db.js → window.WEAPONS_DB / window.ENNEMIS_DB
 
