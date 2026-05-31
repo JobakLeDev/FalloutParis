@@ -1,10 +1,13 @@
 /* Styles spécifiques fiche_perso — voir common/style.css pour les styles partagés */
 
-/* Onglet CARTE : contenu contraint, pas de scroll de page.
-   Plus de transform:scale → hauteur layout directe. */
+/* Onglet CARTE : hauteur = viewport − chrome (header + onglets + paddings pip),
+   pour que la page entière tienne dans l'écran (aucun scroll vertical).
+   Le chrome est en rem → suit l'échelle responsive. */
 #tc-carte {
-  margin: -1rem;                  /* annuler le padding du .body (1rem) */
-  height: clamp(24rem, 68vh, 60rem);
+  margin: -1rem;                          /* annuler le padding du .body (1rem) */
+  height: calc(100vh - 11rem);
+  max-height: calc(100vh - 11rem);
+  min-height: 18rem;
   overflow: hidden;
 }
 #tc-carte iframe {
