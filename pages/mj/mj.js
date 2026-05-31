@@ -285,15 +285,17 @@ function lancerDes(){
   el.innerHTML = `<span style="color:var(--td)">${nb}D${faces} → </span>${resultats.join(' + ')} <span style="color:var(--am);font-family:'Oswald',sans-serif;font-size:16px"> = ${total}</span>`;
 }
 
-// Dés de Combat Fallout 2D20 : faces = 1,2,blank,blank,Effect,Effect
+// Dés de Combat Fallout 2D20 : 1|2dmg, blank, blank, 1dmg+effet, 1dmg+effet
 function lancerCD(){
   const nb = Math.min(10, parseInt(document.getElementById('dice-nb').value)||2);
   const resultats = Array.from({length:nb}, ()=>FACES_CD[Math.floor(Math.random()*6)]);
-  const dmg = resultats.filter(f=>f==='1'||f==='2').reduce((a,f)=>a+parseInt(f),0);
-  const effets = resultats.filter(f=>f==='★').length;
+  const dmg = resultats.reduce((a,f)=>a+(parseInt(f)||0),0);
+  const effets = resultats.filter(f=>f.includes('⚡')).length;
   const el = document.getElementById('dice-result');
   el.style.display='block';
-  el.innerHTML = `<span style="color:var(--td)">${nb}DC → </span>${resultats.join(' ')} <span style="color:var(--am);font-family:'Oswald',sans-serif;font-size:14px"> = ${dmg} dmg${effets>0?` + ${effets} Effet(s)`:''}</span>`;
+  el.innerHTML = `<span style="color:var(--td)">${nb}DC → </span>`
+    + resultats.map(f=>`<span style="color:${f.includes('⚡')?'var(--am)':f==='—'?'var(--td)':'var(--tb)'}">` + f + '</span>').join(' ')
+    + ` <span style="color:var(--am);font-family:'Oswald',sans-serif;font-size:14px"> = ${dmg} dmg${effets>0?` + ${effets} Effet(s)`:''}</span>`;
 }
 
 // rollDice défini dans mj_shared.js
