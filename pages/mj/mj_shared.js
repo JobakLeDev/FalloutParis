@@ -3,7 +3,7 @@
 // (combat.html, combat_joueur.html, mj.html)
 // ============================================================
 
-const COMBATS_COLL = 'combats'; // collection multi-sessions
+const COMBATS_COLL = 'combat'; // collection existante Firebase (réutilisée avec IDs dynamiques)
 
 const SK_ATTR = {
   en_weapon:'P', cac_weapon:'S', light_weapon:'A', heavy_weapon:'E',

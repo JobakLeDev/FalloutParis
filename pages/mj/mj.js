@@ -341,9 +341,10 @@ function renderCombatsActifs() {
   db.collection(COMBATS_COLL).get().then(snap => {
     const actifs = [];
     snap.forEach(doc => {
-      if(doc.id === 'current') return;
+      if(doc.id === 'current' || doc.id === 'fallout-paris') return;
       const d = doc.data();
-      if(d.actif && d.meta?.status !== 'termine') actifs.push({id: doc.id, ...d});
+      if(!d.meta) return; // ignorer les docs sans meta (ancien format)
+      if(d.actif && d.meta.status !== 'termine') actifs.push({id: doc.id, ...d});
     });
     if(!actifs.length){ el.innerHTML = '<div class="empty">Aucun combat actif</div>'; return; }
     el.innerHTML = actifs.map(c => {
