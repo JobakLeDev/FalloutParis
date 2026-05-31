@@ -50,7 +50,7 @@
     </div>
   </div>
 
-  <!-- GRILLE 3 colonnes -->
+  <!-- GRILLE 4 colonnes -->
   <div class="combat-grid">
 
     <!-- COL 1 : JOUEURS -->
@@ -72,7 +72,7 @@
       <div id="ennemis-combat"></div>
     </div>
 
-    <!-- COL 3 : DÉS + INITIATIVE + LOG -->
+    <!-- COL 3 : DÉS + LOG -->
     <div style="display:flex;flex-direction:column;gap:8px">
 
       <div class="pnl">
@@ -103,6 +103,19 @@
       </div>
 
       <div class="pnl">
+        <div class="pnl-title">
+          Journal
+          <button class="log-clear" onclick="clearLog()">Effacer</button>
+        </div>
+        <div class="scr" id="combat-log"></div>
+      </div>
+
+    </div>
+
+    <!-- COL 4 : TRACKER DE TOUR + ACTIONS JOUEURS -->
+    <div style="display:flex;flex-direction:column;gap:8px">
+
+      <div class="pnl">
         <div class="pnl-title">Tracker de tour</div>
         <div id="tracker-tour"><span class="empty">Lance l'initiative pour démarrer</span></div>
       </div>
@@ -113,14 +126,6 @@
           <span style="font-size:7px;color:var(--td);letter-spacing:1px">temps réel</span>
         </div>
         <div id="actions-joueurs-notif"><span class="empty">Aucune action en attente</span></div>
-      </div>
-
-      <div class="pnl">
-        <div class="pnl-title">
-          Journal
-          <button class="log-clear" onclick="clearLog()">Effacer</button>
-        </div>
-        <div class="scr" id="combat-log"></div>
       </div>
 
     </div>
