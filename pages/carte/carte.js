@@ -59,14 +59,24 @@ function init() {
 
 // Bornes de Paris intra-muros — délimitent la carte (pan + dézoom bloqués)
 const PARIS_BOUNDS = L.latLngBounds([48.8156, 2.2241], [48.9022, 2.4699]);
+const SHIFT_FRAC = 1 / 7;   // décalage horizontal de la vue vers l'ouest (gauche)
 
-// Recadre sur Paris et fige le dézoom au niveau « Paris entier »
+// Bornes décalées vers l'ouest de SHIFT_FRAC de la largeur
+function shiftedBounds() {
+  const sw = PARIS_BOUNDS.getSouthWest(), ne = PARIS_BOUNDS.getNorthEast();
+  const dLng = (ne.lng - sw.lng) * SHIFT_FRAC;
+  return L.latLngBounds([sw.lat, sw.lng - dLng], [ne.lat, ne.lng - dLng]);
+}
+
+// Recadre sur Paris (décalé) et fige le dézoom au niveau « Paris entier »
 function lockParis() {
   map.invalidateSize();
   map.setMinZoom(0);
   const z = map.getBoundsZoom(PARIS_BOUNDS); // zoom où Paris remplit le cadre (sans animation)
   map.setMinZoom(z);                          // impossible de dézoomer au-delà de Paris
-  map.setView(PARIS_BOUNDS.getCenter(), z, { animate: false });
+  const b = shiftedBounds();
+  map.setMaxBounds(b);
+  map.setView(b.getCenter(), z, { animate: false });
 }
 
 function buildMap() {
