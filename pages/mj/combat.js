@@ -203,6 +203,11 @@ function lancerInitiative(){
 
   addLog('⚔ Round ' + numRound + ' — ' + ordreInitiative[0].nom + ' commence !');
 
+  // Notifier chaque joueur de son combatId (banneau fiche_perso — multi-room safe)
+  Object.keys(combattants).forEach(id => {
+    db.collection('joueurs').doc(id).update({ combatId: currentCombatId }).catch(()=>{});
+  });
+
   // Initialiser les docs d'actions pour chaque joueur dans la subcollection
   Object.keys(combattants).forEach(id => {
     db.collection(COMBATS_COLL).doc(currentCombatId).collection('actions').doc(id).set({
@@ -800,6 +805,10 @@ function finCombat(){
   actionsState = {};
   tourActif = 0;
   numRound = 0;
+  // Effacer le combatId sur les fiches joueurs (retire le bandeau combat)
+  Object.keys(combattants).forEach(id => {
+    db.collection('joueurs').doc(id).update({ combatId: null }).catch(()=>{});
+  });
   stopCombat();
   resetActionsDeclarees();
   addLog('🏁 Combat terminé.');

@@ -152,8 +152,11 @@ window.DB_READY.then(() => {
 // ---- Listener combat temps réel ----
 function initCombatListener() {
   let _combatUnsub = null;
+  let _lastCombatId = undefined;
 
   function _attachCombat(combatId) {
+    if(combatId === _lastCombatId) return; // déjà attaché, éviter les re-attaches inutiles
+    _lastCombatId = combatId;
     if(_combatUnsub) { _combatUnsub(); _combatUnsub = null; }
     if(!combatId) {
       const b = document.getElementById('combat-banner');
@@ -202,9 +205,9 @@ function initCombatListener() {
     });
   }
 
-  // Écoute le pointeur "combat courant"
-  db.collection('combats').doc('current').onSnapshot(snap => {
-    _attachCombat(snap.exists ? snap.data()?.combatId : null);
+  // Lit le combatId depuis le doc du joueur (isolé par joueur → multi-room safe)
+  db.collection('joueurs').doc(JOUEUR_ID).onSnapshot(snap => {
+    _attachCombat(snap.exists ? (snap.data()?.combatId || null) : null);
   });
 }
 
