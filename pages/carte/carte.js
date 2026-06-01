@@ -27,9 +27,9 @@ const THREAT_LABELS    = { calme: 'Calme', normal: 'Normal', eleve: 'Élevé', e
 const OCC_LABELS       = { neutral: 'Neutre' };
 
 // Distances géographiques (mètres)
-const FOG_RADIUS_CITY_M  = 200;   // rayon de découverte intra-muros (ville, vue courte)
-const FOG_RADIUS_RURAL_M = 500;   // rayon de découverte hors périphérique (campagne)
-const FOG_STEP_M      = 120;   // espacement min entre points explorés enregistrés
+const FOG_RADIUS_CITY_M  = 600;   // rayon de découverte intra-muros (ville)
+const FOG_RADIUS_RURAL_M = 1500;  // rayon de découverte hors périphérique (campagne)
+const FOG_STEP_M      = 250;   // espacement min entre points explorés enregistrés
 const VISION_RADIUS_M = 1500;  // rayon de vision des alliés
 const TELEPORT_M      = 5000;  // au-delà : repositionnement (pas de traîné)
 
@@ -45,7 +45,7 @@ let isMJ = !viewerId && sessionStorage.getItem('mj_auth') === '1';
 let fdb, map;
 let fogOverlay = null;
 let editMode = false, addingPOI = false, drawingZone = null;
-let mapData = { pois: [], zones: [], tokens: {}, fog: {}, geoReveal: {} };
+let mapData = { pois: [], zones: [], tokens: {}, fog: {}, geoReveal: {}, geoVisited: {} };
 const geoMarkerRefs = {};                          // nom → layer (pour réouverture popup)
 let lieux = [];            // [{id, name, image, pois:[]}] — plans de bâtiments
 let lieuActif = null;      // lieu sélectionné dans l'onglet LIEUX
@@ -186,8 +186,9 @@ function buildMap() {
   mkPane('seinePane',  200, 'drop-shadow(0 0 2px rgba(85,255,136,0.25))');
   mkPane('routesPane', 201, 'drop-shadow(0 0 2px rgba(140,255,140,0.35))');
   mkPane('railsPane',  202, 'drop-shadow(0 0 1.5px rgba(140,255,140,0.25))');
-  // Pane du brouillard : au-dessus des marqueurs (640) — repositionné par Leaflet
-  map.createPane('fogPane'); const fp = map.getPane('fogPane'); fp.style.zIndex = 640; fp.style.pointerEvents = 'none';
+  // Pane du brouillard : entre le terrain (202) et les zones/marqueurs (400+)
+  // → le fog ne noircit que le terrain ; les éléments révélés restent visibles au-dessus
+  map.createPane('fogPane'); const fp = map.getPane('fogPane'); fp.style.zIndex = 350; fp.style.pointerEvents = 'none';
 
   // Couches GeoJSON Paris (PipBoy style)
   loadGeoJsonLayers();
@@ -214,7 +215,7 @@ function buildMap() {
     });
     fdb.collection('carte').doc('data').onSnapshot(s => {
       const d = s.exists ? s.data() : {};
-      mapData = { pois: d.pois || [], zones: normZones(d.zones), tokens: d.tokens || {}, fog: d.fog || {}, geoReveal: d.geoReveal || {} };
+      mapData = { pois: d.pois || [], zones: normZones(d.zones), tokens: d.tokens || {}, fog: d.fog || {}, geoReveal: d.geoReveal || {}, geoVisited: d.geoVisited || {} };
       renderAll();
       tryCenterPlayer();   // au 1er chargement : centrer sur le jeton du joueur
     });
@@ -324,32 +325,44 @@ function geoMarkerVisibleFor(nom) {
 function geoMarkerAnyRevealed(nom) {
   return (mapData.geoReveal?.[nom] || []).length > 0;
 }
+// Visité = le brouillard est dégagé autour du marqueur pour ce joueur
+function geoMarkerVisitedFor(nom) {
+  return !!viewerId && (mapData.geoVisited?.[nom] || []).includes(viewerId);
+}
 function _escq(s) { return ('' + s).replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
 
-// Contrôles de révélation par joueur pour un marqueur GeoJSON (MJ)
+// Deux contrôles par joueur (MJ) : Révéler (afficher) + Visiter (dégager le fog)
 function revealControlsGeo(nom) {
-  const rf = mapData.geoReveal?.[nom] || [];
+  return geoToggleRow(nom, 'Révélé à', mapData.geoReveal, 'toggleRevealGeo', 'revealGeoAll', '👁')
+       + geoToggleRow(nom, 'Visité par', mapData.geoVisited, 'toggleVisitGeo', 'visitGeoAll', '👣');
+}
+function geoToggleRow(nom, title, stateObj, fnToggle, fnAll, onIcon) {
+  const arr = (stateObj || {})[nom] || [];
   const ids = Object.keys(joueurs);
   const e = _escq(nom);
   const btns = ids.length ? ids.map(pid => {
-    const on = rf.includes(pid);
-    return `<button class="rv${on ? ' on' : ''}" onclick="toggleRevealGeo('${e}','${pid}')">${on ? '👁' : '∅'} ${joueurs[pid]?.nom || pid}</button>`;
+    const on = arr.includes(pid);
+    return `<button class="rv${on ? ' on' : ''}" onclick="${fnToggle}('${e}','${pid}')">${on ? onIcon : '∅'} ${joueurs[pid]?.nom || pid}</button>`;
   }).join('') : '<span class="empty">Aucun joueur</span>';
-  return `<div class="zpop-reveal"><div class="rv-lbl">Révélé à :</div><div class="rv-grid">${btns}</div>
-    <div class="rv-all"><button onclick="revealGeoAll('${e}',true)">Tous</button><button onclick="revealGeoAll('${e}',false)">Aucun</button></div></div>`;
+  return `<div class="zpop-reveal"><div class="rv-lbl">${title} :</div><div class="rv-grid">${btns}</div>
+    <div class="rv-all"><button onclick="${fnAll}('${e}',true)">Tous</button><button onclick="${fnAll}('${e}',false)">Aucun</button></div></div>`;
 }
-function toggleRevealGeo(nom, pid) {
-  mapData.geoReveal = mapData.geoReveal || {};
-  const arr = mapData.geoReveal[nom] = mapData.geoReveal[nom] || [];
+function _geoToggle(stateKey, nom, pid) {
+  mapData[stateKey] = mapData[stateKey] || {};
+  const arr = mapData[stateKey][nom] = mapData[stateKey][nom] || [];
   const i = arr.indexOf(pid);
   if (i >= 0) arr.splice(i, 1); else arr.push(pid);
   saveData();
 }
-function revealGeoAll(nom, all) {
-  mapData.geoReveal = mapData.geoReveal || {};
-  mapData.geoReveal[nom] = all ? Object.keys(joueurs) : [];
+function _geoAll(stateKey, nom, all) {
+  mapData[stateKey] = mapData[stateKey] || {};
+  mapData[stateKey][nom] = all ? Object.keys(joueurs) : [];
   saveData();
 }
+function toggleRevealGeo(nom, pid) { _geoToggle('geoReveal', nom, pid); }
+function revealGeoAll(nom, all)    { _geoAll('geoReveal', nom, all); }
+function toggleVisitGeo(nom, pid)  { _geoToggle('geoVisited', nom, pid); }
+function visitGeoAll(nom, all)     { _geoAll('geoVisited', nom, all); }
 
 function geoZonePopup(p) {
   const fk = geoFactionKey(p.Faction);
@@ -613,9 +626,12 @@ function renderFog() {
   ctx.fillStyle = 'rgba(4,8,4,0.92)'; ctx.fillRect(0, 0, W, H);
   ctx.globalCompositeOperation = 'destination-out';
 
-  // Seule l'exploration (trajet parcouru + position actuelle) dégage le brouillard
+  // Le brouillard se dégage : exploration (trajet + position) + marqueurs VISITÉS
   const pts = (mapData.fog?.[viewerId] || []).slice();
   const myPos = mapData.tokens?.[viewerId]; if (myPos) pts.push(myPos);
+  if (geoMarkersData) geoMarkersData.features.forEach(f => {
+    if (geoMarkerVisitedFor(f.properties.nom)) { const c = f.geometry.coordinates; pts.push({ lat: c[1], lng: c[0] }); }
+  });
 
   pts.forEach(p => {
     const px = toPx(p.lat, p.lng);
