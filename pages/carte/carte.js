@@ -115,21 +115,26 @@ function init() {
   buildMap();
 }
 
-// Bornes de Paris intra-muros — délimitent la carte (pan + dézoom bloqués)
+// Bornes intra-muros (proxy ville/campagne pour le rayon de brouillard)
 const PARIS_BOUNDS = L.latLngBounds([48.8156, 2.2241], [48.9022, 2.4699]);
+// Bornes affichables de la carte — remplacées par map/cadre.geojson (FULL_ZONE) au chargement
+let MAP_BOUNDS = PARIS_BOUNDS;
 const SHIFT_FRAC = 1 / 7;   // décalage horizontal de la vue vers l'ouest (gauche)
-const NS_EXTEND_KM = 2;     // marge de pan navigable au nord et au sud (km)
 
-// Bornes de pan : Paris + NS_EXTEND_KM au nord et au sud
-function panBounds() {
-  const dLat = NS_EXTEND_KM / 111;            // ~0.018° de latitude pour 2 km
-  const sw = PARIS_BOUNDS.getSouthWest(), ne = PARIS_BOUNDS.getNorthEast();
-  return L.latLngBounds([sw.lat - dLat, sw.lng], [ne.lat + dLat, ne.lng]).pad(0.02);
+// Bbox englobante d'un FeatureCollection GeoJSON → L.latLngBounds
+function boundsFromGeoJSON(data) {
+  let s = Infinity, n = -Infinity, w = Infinity, e = -Infinity;
+  const scan = a => { if (typeof a[0] === 'number') { const [lng, lat] = a; if (lat<s)s=lat; if (lat>n)n=lat; if (lng<w)w=lng; if (lng>e)e=lng; } else a.forEach(scan); };
+  (data.features || []).forEach(f => f.geometry && scan(f.geometry.coordinates));
+  return L.latLngBounds([s, w], [n, e]);
 }
+
+// Bornes de pan = cadre affichable (léger padding)
+function panBounds() { return MAP_BOUNDS.pad(0.02); }
 
 // Bornes décalées vers l'ouest de SHIFT_FRAC de la largeur
 function shiftedBounds() {
-  const sw = PARIS_BOUNDS.getSouthWest(), ne = PARIS_BOUNDS.getNorthEast();
+  const sw = MAP_BOUNDS.getSouthWest(), ne = MAP_BOUNDS.getNorthEast();
   const dLng = (ne.lng - sw.lng) * SHIFT_FRAC;
   return L.latLngBounds([sw.lat, sw.lng - dLng], [ne.lat, ne.lng - dLng]);
 }
@@ -140,9 +145,9 @@ function shiftedBounds() {
 function lockParis(resetView) {
   map.invalidateSize();
   map.setMinZoom(0);
-  const zFill = map.getBoundsZoom(PARIS_BOUNDS, true); // Paris remplit la largeur
+  const zFill = map.getBoundsZoom(MAP_BOUNDS, true);    // la carte remplit la largeur
   map.setMinZoom(zFill);                                // dézoom min = pas de vide
-  map.setMaxBounds(panBounds());                        // pan libre dans Paris + 2 km N/S
+  map.setMaxBounds(panBounds());                        // pan limité au cadre affichable
   map.options.maxBoundsViscosity = 1.0;
   if (resetView && !centeredOnPlayer) {
     const z = Math.min(zFill + 0.6, 16);               // un cran plus serré → marge de scroll N-S
@@ -164,7 +169,7 @@ function tryCenterPlayer() {
 function buildMap() {
   map = L.map('map', {
     zoomSnap: 0.25, maxZoom: 17,
-    maxBounds: PARIS_BOUNDS, maxBoundsViscosity: 1.0,  // défilement bloqué aux bords
+    maxBounds: MAP_BOUNDS, maxBoundsViscosity: 1.0,    // défilement bloqué aux bords (cadre)
     attributionControl: false,
   });
 
@@ -221,6 +226,12 @@ function buildMap() {
 }
 
 async function loadGeoJsonLayers() {
+  // Cadre — étendue affichable de la carte (limites de pan/zoom)
+  try {
+    const data = await fetch(GEOJSON_BASE + 'cadre.geojson').then(r => r.json());
+    MAP_BOUNDS = boundsFromGeoJSON(data);
+    lockParis(true);                      // applique les nouvelles bornes (recadre si pas encore centré)
+  } catch(e) { console.warn('cadre.geojson non chargé', e); }
   // Seine — eau vert sombre + liseré vert vif
   try {
     const data = await fetch(GEOJSON_BASE + 'seine.geojson').then(r => r.json());
