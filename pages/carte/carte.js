@@ -38,7 +38,7 @@ const embed    = _params.get('embed') === '1';
 let isMJ = !viewerId && sessionStorage.getItem('mj_auth') === '1';
 
 let fdb, map;
-let fogCanvas = null;
+let fogOverlay = null;
 let editMode = false, addingPOI = false, drawingZone = null;
 let mapData = { pois: [], zones: [], tokens: {}, fog: {}, geoReveal: {} };
 const geoMarkerRefs = {};                          // nom → layer (pour réouverture popup)
@@ -176,6 +176,8 @@ function buildMap() {
   mkPane('seinePane',  200, 'drop-shadow(0 0 2px rgba(85,255,136,0.25))');
   mkPane('routesPane', 201, 'drop-shadow(0 0 2px rgba(140,255,140,0.35))');
   mkPane('railsPane',  202, 'drop-shadow(0 0 1.5px rgba(140,255,140,0.25))');
+  // Pane du brouillard : au-dessus des marqueurs (640) — repositionné par Leaflet
+  map.createPane('fogPane'); const fp = map.getPane('fogPane'); fp.style.zIndex = 640; fp.style.pointerEvents = 'none';
 
   // Couches GeoJSON Paris (PipBoy style)
   loadGeoJsonLayers();
@@ -186,12 +188,8 @@ function buildMap() {
   poiLayer   = L.layerGroup().addTo(map);
   tokenLayer = L.layerGroup().addTo(map);
 
-  // Canvas de brouillard (position absolue dans #map, z-index 350)
-  setupFogCanvas();
-
   map.on('click', onMapClick);
   map.on('popupclose', () => { if (!reopening) openItem = null; });
-  map.on('move zoom moveend zoomend resize', drawFog);
 
   lockParis(true);
   setTimeout(() => lockParis(true), 300);      // re-cadrage si conteneur (iframe) pas encore dimensionné
@@ -571,37 +569,28 @@ function renderTokens() {
   });
 }
 
-// ---- BROUILLARD (canvas absolu dans #map, se redessine sur move/zoom) ----
+// ---- BROUILLARD (L.imageOverlay sur l'étendue de Paris, dans le pane fog) ----
+// Repositionné automatiquement par Leaflet au pan/zoom ; on ne le redessine
+// qu'au changement de données (renderFog appelé dans renderAll).
+const FOG_RES = 1500;          // résolution du canvas fog (px sur la largeur)
 
-function setupFogCanvas() {
+function renderFog() {
+  if (fogOverlay) { map.removeLayer(fogOverlay); fogOverlay = null; }
   if (isMJ || !viewerId) return;
-  fogCanvas = document.createElement('canvas');
-  fogCanvas.id = 'fog-canvas';
-  fogCanvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:350;pointer-events:none;';
-  document.getElementById('map').appendChild(fogCanvas);
-}
 
-// Rayon de brouillard en pixels à partir d'une distance en mètres
-function fogRadiusPx() {
-  const c = map.getCenter();
-  const p1 = map.latLngToContainerPoint(c);
-  const p2 = map.latLngToContainerPoint(L.latLng(c.lat + 0.001, c.lng));
-  return Math.abs(p2.y - p1.y) * FOG_RADIUS_M / 111; // 0.001° lat ≈ 111 m
-}
+  const b = panBounds();
+  const sw = b.getSouthWest(), ne = b.getNorthEast();
+  const dLng = ne.lng - sw.lng, dLat = ne.lat - sw.lat;
+  const W = FOG_RES, H = Math.max(1, Math.round(W * dLat / dLng));
+  // latlng → pixel du canvas (linéaire sur l'étendue b)
+  const toPx = (lat, lng) => ({ x: (lng - sw.lng) / dLng * W, y: (1 - (lat - sw.lat) / dLat) * H });
+  // rayon (m) → px sur le canvas
+  const widthM = dLng * 111000 * Math.cos((sw.lat + ne.lat) / 2 * Math.PI / 180);
+  const rad = FOG_RADIUS_M / widthM * W;
 
-function renderFog() { drawFog(); }
-
-let _fogRetries = 0;
-function drawFog() {
-  if (isMJ || !viewerId) return;
-  if (!fogCanvas) setupFogCanvas();
-  if (!fogCanvas) return;
-  const W = fogCanvas.offsetWidth, H = fogCanvas.offsetHeight;
-  if (!W || !H) { if (_fogRetries++ < 15) setTimeout(drawFog, 200); return; } // canvas pas encore dimensionné (iframe)
-  _fogRetries = 0;
-  fogCanvas.width = W; fogCanvas.height = H;
-  const ctx = fogCanvas.getContext('2d');
-  ctx.fillStyle = 'rgba(4,8,4,0.90)'; ctx.fillRect(0, 0, W, H);
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = 'rgba(4,8,4,0.92)'; ctx.fillRect(0, 0, W, H);
   ctx.globalCompositeOperation = 'destination-out';
 
   const pts = (mapData.fog?.[viewerId] || []).slice();
@@ -613,22 +602,19 @@ function drawFog() {
       pts.push({ lat: c[0], lng: c[1] });
     }
   });
-  // Marqueurs GeoJSON révélés au joueur → dégagent le brouillard autour d'eux
   if (geoMarkersData) geoMarkersData.features.forEach(f => {
-    if (geoMarkerVisibleFor(f.properties.nom)) {
-      const c = f.geometry.coordinates; pts.push({ lat: c[1], lng: c[0] });
-    }
+    if (geoMarkerVisibleFor(f.properties.nom)) { const c = f.geometry.coordinates; pts.push({ lat: c[1], lng: c[0] }); }
   });
 
-  const rad = fogRadiusPx();
   pts.forEach(p => {
-    try {
-      const px = map.latLngToContainerPoint(L.latLng(p.lat, p.lng));
-      const g = ctx.createRadialGradient(px.x, px.y, rad * 0.3, px.x, px.y, rad);
-      g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px.x, px.y, rad, 0, Math.PI * 2); ctx.fill();
-    } catch(_) {}
+    const px = toPx(p.lat, p.lng);
+    const g = ctx.createRadialGradient(px.x, px.y, rad * 0.3, px.x, px.y, rad);
+    g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px.x, px.y, rad, 0, Math.PI * 2); ctx.fill();
   });
+  ctx.globalCompositeOperation = 'source-over';
+
+  fogOverlay = L.imageOverlay(cv.toDataURL(), b, { pane: 'fogPane', interactive: false }).addTo(map);
 }
 
 // Enregistre le trajet exploré en mètres (gommage permanent, traînée interpolée).
