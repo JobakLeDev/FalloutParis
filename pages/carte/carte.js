@@ -40,7 +40,8 @@ let isMJ = !viewerId && sessionStorage.getItem('mj_auth') === '1';
 let fdb, map;
 let fogCanvas = null;
 let editMode = false, addingPOI = false, drawingZone = null;
-let mapData = { pois: [], zones: [], tokens: {}, fog: {} };
+let mapData = { pois: [], zones: [], tokens: {}, fog: {}, geoReveal: {} };
+const geoMarkerRefs = {};                          // nom → layer (pour réouverture popup)
 let lieux = [];            // [{id, name, image, pois:[]}] — plans de bâtiments
 let lieuActif = null;      // lieu sélectionné dans l'onglet LIEUX
 let mapLieu = null;        // instance Leaflet pour les lieux
@@ -205,7 +206,7 @@ function buildMap() {
     });
     fdb.collection('carte').doc('data').onSnapshot(s => {
       const d = s.exists ? s.data() : {};
-      mapData = { pois: d.pois || [], zones: normZones(d.zones), tokens: d.tokens || {}, fog: d.fog || {} };
+      mapData = { pois: d.pois || [], zones: normZones(d.zones), tokens: d.tokens || {}, fog: d.fog || {}, geoReveal: d.geoReveal || {} };
       renderAll();
       tryCenterPlayer();   // au 1er chargement : centrer sur le jeton du joueur
     });
@@ -268,24 +269,68 @@ function renderGeoLayers() {
   }
 
   if (geoMarkersData) {
+    for (const k in geoMarkerRefs) delete geoMarkerRefs[k];
     L.geoJSON(geoMarkersData, {
+      filter: f => geoMarkerVisibleFor(f.properties.nom),
       pointToLayer: (f, latlng) => {
         const nom = f.properties.nom || '';
+        const dim = isMJ && !geoMarkerAnyRevealed(nom);   // MJ : caché = grisé + 🔒
+        const lock = dim ? ' 🔒' : '';
         const sprite = LANDMARK_SPRITES[nom.toLowerCase()];
+        let m;
         if (sprite) {  // monument avec icône dédiée (sprite Icons.png)
-          return L.marker(latlng, { icon: L.divIcon({ className: 'land-pin',
-            html: `<span class="land-icon" style="background-position:${sprite}"></span><span class="poi-label">${nom}</span>`,
+          m = L.marker(latlng, { opacity: dim ? 0.5 : 1, icon: L.divIcon({ className: 'land-pin',
+            html: `<span class="land-icon" style="background-position:${sprite}"></span><span class="poi-label">${nom}${lock}</span>`,
             iconSize: [60, 45], iconAnchor: [30, 38] }) });
+        } else {
+          const col = geoColor(f.properties.faction, f.properties.type);
+          const icon = GEO_MARKER_ICONS[f.properties.type] || '📍';
+          m = L.marker(latlng, { opacity: dim ? 0.5 : 1, icon: L.divIcon({ className: 'poi-pin',
+            html: `<span class="poi-dot" style="background:${col}">${icon}</span><span class="poi-label">${nom}${lock}</span>`,
+            iconSize: [16, 16], iconAnchor: [8, 8] }) });
         }
-        const col = geoColor(f.properties.faction, f.properties.type);
-        const icon = GEO_MARKER_ICONS[f.properties.type] || '📍';
-        return L.marker(latlng, { icon: L.divIcon({ className: 'poi-pin',
-          html: `<span class="poi-dot" style="background:${col}">${icon}</span><span class="poi-label">${nom}</span>`,
-          iconSize: [16, 16], iconAnchor: [8, 8] }) });
+        geoMarkerRefs[nom] = m;
+        m.on('popupopen', () => { openItem = { kind: 'geomarker', id: nom }; });
+        return m;
       },
       onEachFeature: (f, layer) => layer.bindPopup(geoMarkerPopup(f.properties)),
     }).addTo(geoMarkerLayer);
   }
+}
+
+// ---- Visibilité / révélation des marqueurs GeoJSON (par joueur, comme les POI) ----
+function geoMarkerVisibleFor(nom) {
+  if (isMJ) return true;
+  return !!viewerId && (mapData.geoReveal?.[nom] || []).includes(viewerId);
+}
+function geoMarkerAnyRevealed(nom) {
+  return (mapData.geoReveal?.[nom] || []).length > 0;
+}
+function _escq(s) { return ('' + s).replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
+
+// Contrôles de révélation par joueur pour un marqueur GeoJSON (MJ)
+function revealControlsGeo(nom) {
+  const rf = mapData.geoReveal?.[nom] || [];
+  const ids = Object.keys(joueurs);
+  const e = _escq(nom);
+  const btns = ids.length ? ids.map(pid => {
+    const on = rf.includes(pid);
+    return `<button class="rv${on ? ' on' : ''}" onclick="toggleRevealGeo('${e}','${pid}')">${on ? '👁' : '∅'} ${joueurs[pid]?.nom || pid}</button>`;
+  }).join('') : '<span class="empty">Aucun joueur</span>';
+  return `<div class="zpop-reveal"><div class="rv-lbl">Révélé à :</div><div class="rv-grid">${btns}</div>
+    <div class="rv-all"><button onclick="revealGeoAll('${e}',true)">Tous</button><button onclick="revealGeoAll('${e}',false)">Aucun</button></div></div>`;
+}
+function toggleRevealGeo(nom, pid) {
+  mapData.geoReveal = mapData.geoReveal || {};
+  const arr = mapData.geoReveal[nom] = mapData.geoReveal[nom] || [];
+  const i = arr.indexOf(pid);
+  if (i >= 0) arr.splice(i, 1); else arr.push(pid);
+  saveData();
+}
+function revealGeoAll(nom, all) {
+  mapData.geoReveal = mapData.geoReveal || {};
+  mapData.geoReveal[nom] = all ? Object.keys(joueurs) : [];
+  saveData();
 }
 
 function geoZonePopup(p) {
@@ -307,6 +352,7 @@ function geoMarkerPopup(p) {
   let h = `<div class="zpop"><div class="zpop-title">${icon} ${p.nom || ''}</div>
     <div class="zpop-pool">${p.type || ''}${facLabel ? ' · ' + facLabel : ''}</div>`;
   if (p.descriptio) h += `<div class="zpop-pool" style="color:var(--td)">${p.descriptio}</div>`;
+  if (isMJ) h += revealControlsGeo(p.nom);
   return h + '</div>';
 }
 
@@ -430,11 +476,14 @@ function renderAll() {
   reopening = true;
   renderZones();
   renderPOIs();
+  renderGeoLayers();   // réagit aussi aux changements de geoReveal
   renderTokens();
   renderFog();
   renderMJPanel();
   if (openItem) {
-    const layer = openItem.kind === 'poi' ? poiMarkers[openItem.id] : zonePolys[openItem.id];
+    const layer = openItem.kind === 'poi' ? poiMarkers[openItem.id]
+                : openItem.kind === 'zone' ? zonePolys[openItem.id]
+                : openItem.kind === 'geomarker' ? geoMarkerRefs[openItem.id] : null;
     if (layer) layer.openPopup();
   }
   reopening = false;
@@ -562,6 +611,12 @@ function drawFog() {
     if (z.polygon?.length >= 3 && visibleFor(z)) {
       const c = polygonCentroid(z.polygon.map(p => [p.lat, p.lng]));
       pts.push({ lat: c[0], lng: c[1] });
+    }
+  });
+  // Marqueurs GeoJSON révélés au joueur → dégagent le brouillard autour d'eux
+  if (geoMarkersData) geoMarkersData.features.forEach(f => {
+    if (geoMarkerVisibleFor(f.properties.nom)) {
+      const c = f.geometry.coordinates; pts.push({ lat: c[1], lng: c[0] });
     }
   });
 
