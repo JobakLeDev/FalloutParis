@@ -1,13 +1,17 @@
 /* Styles spécifiques fiche_perso — voir common/style.css pour les styles partagés */
 
-/* Onglet CARTE : hauteur = viewport − chrome (header + onglets + paddings pip),
-   pour que la page entière tienne dans l'écran (aucun scroll vertical).
-   Le chrome est en rem → suit l'échelle responsive. */
+/* La fiche tient dans la hauteur de l'écran : aucune barre de défilement
+   navigateur. Le scroll éventuel d'un onglet se fait À L'INTÉRIEUR du cadre.
+   (scopé à la fiche — les autres pages gardent leur scroll normal) */
+html, body { height: 100%; overflow: hidden; }
+.pip { height: 100vh; display: flex; flex-direction: column; }
+.hdr, .tabs { flex: none; }
+.body { flex: 1 1 auto; min-height: 0; overflow: auto; }
+
+/* Onglet CARTE : remplit la place restante du cadre (plus de calc approximatif) */
 #tc-carte {
-  margin: -1rem;                          /* annuler le padding du .body (1rem) */
-  height: calc(100vh - 11rem);
-  max-height: calc(100vh - 11rem);
-  min-height: 18rem;
+  height: 100%;
+  margin: 0;
   overflow: hidden;
 }
 #tc-carte iframe {
