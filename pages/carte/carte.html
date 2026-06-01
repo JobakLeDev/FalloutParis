@@ -46,8 +46,12 @@
     </div>
   </div>
 
-  <!-- PANNEAU MJ -->
-  <div id="mj-panel" style="display:none">
+  <!-- BANDEAU GAUCHE : outils MJ -->
+  <div id="mj-left" style="display:none">
+    <div class="mjp-section">
+      <div class="mjp-title">Outils</div>
+      <button class="mjp-btn" id="btn-move" onclick="toggleMoveMode()">🎯 Déplacer un perso</button>
+    </div>
     <div class="mjp-section" id="mjp-tools" style="display:none">
       <div class="mjp-title">Édition</div>
       <div id="mjp-paris-tools">
@@ -62,8 +66,13 @@
         <button class="mjp-btn ok" onclick="finishDrawZone()">✓ Terminer</button>
         <button class="mjp-btn cancel" onclick="cancelDrawZone()">✗ Annuler</button>
       </div>
-      <div class="mjp-hint" id="mjp-hint"></div>
     </div>
+    <div class="mjp-hint" id="mjp-hint"></div>
+    <div id="move-result"></div>
+  </div>
+
+  <!-- BANDEAU DROITE : positions des joueurs -->
+  <div id="mj-right" style="display:none">
     <div class="mjp-section">
       <div class="mjp-title">Position des joueurs</div>
       <div id="player-zones"><span class="empty">…</span></div>
