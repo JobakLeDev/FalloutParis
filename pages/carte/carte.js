@@ -56,6 +56,16 @@ let geoZonesData = null, geoMarkersData = null;
 let geoZoneLayer, geoMarkerLayer;
 
 const GEO_MARKER_ICONS = { Landmark:'🗼', Settlement:'🏠', Safe:'🛡', Metro:'🚇', Danger:'☢', Faction:'🚩', Loot:'📦', Quest:'❗' };
+
+// Sprite img/Icons.png (2 col × 4 lignes) → position de fond par monument (nom minuscule)
+const LANDMARK_SPRITES = {
+  'tour eiffel':              '0% 0%',
+  'obélisque de la concorde': '100% 0%',
+  'arc de triomphe':          '0% 33.333%',
+  'notre-dame':               '0% 66.667%',
+  'musée du louvre':          '100% 66.667%',
+  'montmartre':               '0% 100%',
+};
 const GEO_OTHER_COLORS = { mutants:'#a05ad0', independant:'#c0a040', independants:'#c0a040', 'vault-tec':'#3a7bd5' };
 
 // Faction GeoJSON → clé factions.json (null si pas une faction joueur)
@@ -247,10 +257,17 @@ function renderGeoLayers() {
   if (geoMarkersData) {
     L.geoJSON(geoMarkersData, {
       pointToLayer: (f, latlng) => {
+        const nom = f.properties.nom || '';
+        const sprite = LANDMARK_SPRITES[nom.toLowerCase()];
+        if (sprite) {  // monument avec icône dédiée (sprite Icons.png)
+          return L.marker(latlng, { icon: L.divIcon({ className: 'land-pin',
+            html: `<span class="land-icon" style="background-position:${sprite}"></span><span class="poi-label">${nom}</span>`,
+            iconSize: [60, 45], iconAnchor: [30, 38] }) });
+        }
         const col = geoColor(f.properties.faction, f.properties.type);
         const icon = GEO_MARKER_ICONS[f.properties.type] || '📍';
         return L.marker(latlng, { icon: L.divIcon({ className: 'poi-pin',
-          html: `<span class="poi-dot" style="background:${col}">${icon}</span><span class="poi-label">${f.properties.nom || ''}</span>`,
+          html: `<span class="poi-dot" style="background:${col}">${icon}</span><span class="poi-label">${nom}</span>`,
           iconSize: [16, 16], iconAnchor: [8, 8] }) });
       },
       onEachFeature: (f, layer) => layer.bindPopup(geoMarkerPopup(f.properties)),
