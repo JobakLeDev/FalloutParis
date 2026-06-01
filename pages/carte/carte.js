@@ -50,6 +50,7 @@ const poiMarkers = {}, zonePolys = {};
 let openItem = null, reopening = false;            // popup ouvert (pour le réouvrir après render)
 let zoneFormCtx = null;                            // {polygon} (création) ou {zone} (édition)
 let currentTab = 'paris';
+let centeredOnPlayer = false;                      // vue déjà centrée sur le jeton du joueur
 
 // Couches GeoJSON authorées (QGIS) : zones (rencontres/danger) + marqueurs
 let geoZonesData = null, geoMarkersData = null;
@@ -137,10 +138,21 @@ function lockParis(resetView) {
   map.setMinZoom(zFill);                                // dézoom min = pas de vide
   map.setMaxBounds(panBounds());                        // pan libre dans Paris + 2 km N/S
   map.options.maxBoundsViscosity = 1.0;
-  if (resetView) {
+  if (resetView && !centeredOnPlayer) {
     const z = Math.min(zFill + 0.6, 16);               // un cran plus serré → marge de scroll N-S
-    map.setView(shiftedBounds().getCenter(), z, { animate: false });
+    const t = viewerId ? mapData.tokens?.[viewerId] : null;
+    if (t) { map.setView([t.lat, t.lng], z, { animate: false }); centeredOnPlayer = true; }
+    else map.setView(shiftedBounds().getCenter(), z, { animate: false });  // défaut (jeton pas encore chargé / MJ)
   }
+}
+
+// Centre la vue sur le jeton du joueur (1re fois), clampé aux limites (maxBounds)
+function tryCenterPlayer() {
+  if (centeredOnPlayer || !viewerId) return;
+  const t = mapData.tokens?.[viewerId];
+  if (!t) return;
+  map.setView([t.lat, t.lng], map.getZoom(), { animate: false });  // _limitCenter clampe aux bornes
+  centeredOnPlayer = true;
 }
 
 function buildMap() {
@@ -195,6 +207,7 @@ function buildMap() {
       const d = s.exists ? s.data() : {};
       mapData = { pois: d.pois || [], zones: normZones(d.zones), tokens: d.tokens || {}, fog: d.fog || {} };
       renderAll();
+      tryCenterPlayer();   // au 1er chargement : centrer sur le jeton du joueur
     });
     fdb.collection('carte').doc('lieux').onSnapshot(s => {
       lieux = (s.exists ? s.data().lieux : null) || [];
