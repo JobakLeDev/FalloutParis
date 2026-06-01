@@ -51,6 +51,47 @@ let openItem = null, reopening = false;            // popup ouvert (pour le réo
 let zoneFormCtx = null;                            // {polygon} (création) ou {zone} (édition)
 let currentTab = 'paris';
 
+// Couches GeoJSON authorées (QGIS) : zones (rencontres/danger) + marqueurs
+let geoZonesData = null, geoMarkersData = null;
+let geoZoneLayer, geoMarkerLayer;
+
+const GEO_MARKER_ICONS = { Landmark:'🗼', Settlement:'🏠', Safe:'🛡', Metro:'🚇', Danger:'☢', Faction:'🚩', Loot:'📦', Quest:'❗' };
+const GEO_OTHER_COLORS = { mutants:'#a05ad0', independant:'#c0a040', independants:'#c0a040', 'vault-tec':'#3a7bd5' };
+
+// Faction GeoJSON → clé factions.json (null si pas une faction joueur)
+function geoFactionKey(f) {
+  const s = ('' + (f || '')).toLowerCase().trim();
+  if (s.startsWith('republiq') || s.startsWith('républiq')) return 'republique';
+  if (s.startsWith('commune')) return 'commune';
+  if (s.startsWith('nnfp')) return 'nnfp';
+  if (s.startsWith('reseau') || s.startsWith('réseau')) return 'reseau';
+  if (s.startsWith('zazou')) return 'zazous';
+  if (s.startsWith('ultra')) return 'ultras';
+  return null;
+}
+// Couleur d'une zone/marqueur selon faction puis type
+function geoColor(faction, type) {
+  const k = geoFactionKey(faction);
+  if (k && window.FACTIONS?.[k]) return window.FACTIONS[k].color;
+  const o = GEO_OTHER_COLORS[('' + (faction || '')).toLowerCase().trim()];
+  if (o) return o;
+  if (type === 'Danger') return '#e04040';
+  if (type === 'Safe') return '#5dbe5d';
+  return '#7ed87e';
+}
+// Paramètres du générateur déduits d'une zone GeoJSON (occupation/variation/menace)
+function geoZoneGenQuery(props) {
+  const occ = geoFactionKey(props.Faction) || 'neutral';
+  let variation = '', threat = 'normal';
+  const st = ('' + (props.Statut || '')).toLowerCase();
+  const ty = ('' + (props.Type || '')).toLowerCase();
+  if (st.includes('rad')) { variation = 'irradiated'; threat = 'extreme'; }
+  if (st.includes('inond') || st.includes('flood')) variation = 'flooded';
+  if (ty === 'danger' && threat === 'normal') threat = 'eleve';
+  if (ty === 'safe') threat = 'calme';
+  return new URLSearchParams({ zone: 'rues', occ, var: variation, threat }).toString();
+}
+
 function init() {
   if (embed) document.body.classList.add('embed');
   fdb = firebase.initializeApp(firebaseConfig).firestore();
@@ -116,6 +157,8 @@ function buildMap() {
   // Couches GeoJSON Paris (PipBoy style)
   loadGeoJsonLayers();
 
+  geoZoneLayer   = L.layerGroup().addTo(map);   // zones GeoJSON (sous les zones manuelles)
+  geoMarkerLayer = L.layerGroup().addTo(map);
   zoneLayer  = L.layerGroup().addTo(map);
   poiLayer   = L.layerGroup().addTo(map);
   tokenLayer = L.layerGroup().addTo(map);
@@ -172,6 +215,69 @@ async function loadGeoJsonLayers() {
       style: { color: '#9DF09D', weight: 1.0, opacity: 0.8, dashArray: '5 3', fill: false },
     }).addTo(map);
   } catch(e) { console.warn('rails.geojson non chargé', e); }
+  // Zones + marqueurs authorés (QGIS)
+  try { geoZonesData   = await fetch(GEOJSON_BASE + 'zones.geojson').then(r => r.json()); }
+  catch(e){ console.warn('zones.geojson non chargé', e); }
+  try { geoMarkersData = await fetch(GEOJSON_BASE + 'marqueurs.geojson').then(r => r.json()); }
+  catch(e){ console.warn('marqueurs.geojson non chargé', e); }
+  await window.DB_READY;          // FACTIONS dispo pour couleurs/labels
+  renderGeoLayers();
+}
+
+// Rendu des zones/marqueurs GeoJSON. MJ : tout (Visible=false en pointillé léger).
+// Joueur : seulement Visible=true (et soumis au brouillard, comme le fond).
+function renderGeoLayers() {
+  if (!geoZoneLayer) return;
+  geoZoneLayer.clearLayers();
+  geoMarkerLayer.clearLayers();
+
+  if (geoZonesData) {
+    L.geoJSON(geoZonesData, {
+      filter: f => isMJ || f.properties.Visible === true,
+      style: f => {
+        const col = geoColor(f.properties.Faction, f.properties.Type);
+        const fonctionnelle = isMJ && f.properties.Visible !== true;  // non visible joueurs
+        return { color: col, weight: fonctionnelle ? 1 : 2, dashArray: fonctionnelle ? '4 4' : null,
+                 fillColor: col, fillOpacity: fonctionnelle ? 0.05 : 0.18, opacity: fonctionnelle ? 0.55 : 0.9 };
+      },
+      onEachFeature: (f, layer) => layer.bindPopup(geoZonePopup(f.properties)),
+    }).addTo(geoZoneLayer);
+  }
+
+  if (geoMarkersData) {
+    L.geoJSON(geoMarkersData, {
+      pointToLayer: (f, latlng) => {
+        const col = geoColor(f.properties.faction, f.properties.type);
+        const icon = GEO_MARKER_ICONS[f.properties.type] || '📍';
+        return L.marker(latlng, { icon: L.divIcon({ className: 'poi-pin',
+          html: `<span class="poi-dot" style="background:${col}">${icon}</span><span class="poi-label">${f.properties.nom || ''}</span>`,
+          iconSize: [16, 16], iconAnchor: [8, 8] }) });
+      },
+      onEachFeature: (f, layer) => layer.bindPopup(geoMarkerPopup(f.properties)),
+    }).addTo(geoMarkerLayer);
+  }
+}
+
+function geoZonePopup(p) {
+  const fk = geoFactionKey(p.Faction);
+  const facLabel = (fk && window.FACTIONS?.[fk]?.label) || p.Faction || '—';
+  const col = geoColor(p.Faction, p.Type);
+  let h = `<div class="zpop"><div class="zpop-title">${p.Nom || 'Zone'}</div>
+    <div class="zpop-pool"><span style="color:${col}">${facLabel}</span>${p.Type ? ' · ' + p.Type : ''}${p.Statut ? ' · ' + p.Statut : ''}</div>`;
+  if (p.Descriptio) h += `<div class="zpop-pool" style="color:var(--td)">${p.Descriptio}</div>`;
+  h += `<a class="zpop-link" href="../mj/mj.html?${geoZoneGenQuery(p)}">⚔ Générer une rencontre</a>`;
+  if (!isMJ) {} // joueurs : pas d'outils
+  return h + '</div>';
+}
+
+function geoMarkerPopup(p) {
+  const fk = geoFactionKey(p.faction);
+  const facLabel = (fk && window.FACTIONS?.[fk]?.label) || p.faction || '';
+  const icon = GEO_MARKER_ICONS[p.type] || '📍';
+  let h = `<div class="zpop"><div class="zpop-title">${icon} ${p.nom || ''}</div>
+    <div class="zpop-pool">${p.type || ''}${facLabel ? ' · ' + facLabel : ''}</div>`;
+  if (p.descriptio) h += `<div class="zpop-pool" style="color:var(--td)">${p.descriptio}</div>`;
+  return h + '</div>';
 }
 
 // Route principale ? (selon le tag OSM highway)
@@ -269,7 +375,7 @@ function demanderMJ() {
   if (isMJ || viewerId) return;
   if (prompt('Code MJ :') !== MJ_CODE) return;
   sessionStorage.setItem('mj_auth', '1');
-  isMJ = true; updateModeUI(); renderAll();
+  isMJ = true; updateModeUI(); renderGeoLayers(); renderAll();
 }
 function updateModeUI() {
   const md = document.getElementById('hdr-mode');
@@ -458,10 +564,9 @@ function renderMJPanel() {
   el.innerHTML = ids.map(id => {
     const t = mapData.tokens[id];
     const z = t ? detectZone(t.lat, t.lng) : null;
-    const zl = z ? (z.name || z.baseZone) : '—';
     return `<div class="pz-row"><span class="pz-nom">${joueurs[id]?.nom || id}</span>
-      <span class="pz-zone">${zl}</span>
-      ${z ? `<a class="pz-gen" href="${zoneGenLink(z)}" title="Générer rencontre">⚔</a>` : ''}</div>`;
+      <span class="pz-zone">${z ? z.name : '—'}</span>
+      ${z ? `<a class="pz-gen" href="${z.genUrl}" title="Générer rencontre">⚔</a>` : ''}</div>`;
   }).join('');
 }
 
@@ -627,12 +732,33 @@ function pointInPoly(x, y, poly) {
   }
   return inside;
 }
+// Détecte la zone d'un point. Priorité aux zones GeoJSON authorées (rencontres
+// /danger, y compris Visible=false), puis aux zones manuelles Firebase.
+// Retourne {name, genUrl} ou null.
 function detectZone(lat, lng) {
+  if (geoZonesData) {
+    for (const f of geoZonesData.features) {
+      if (geoPointInFeature(lat, lng, f))
+        return { name: f.properties.Nom || 'Zone', genUrl: '../mj/mj.html?' + geoZoneGenQuery(f.properties) };
+    }
+  }
   for (const z of (mapData.zones || [])) {
     if (z.polygon && z.polygon.length >= 3 &&
-        pointInPoly(lng, lat, z.polygon.map(p => ({ x: p.lng, y: p.lat })))) return z;
+        pointInPoly(lng, lat, z.polygon.map(p => ({ x: p.lng, y: p.lat }))))
+      return { name: z.name || z.baseZone, genUrl: zoneGenLink(z) };
   }
   return null;
+}
+
+// Point dans une feature GeoJSON (Polygon / MultiPolygon, anneau extérieur)
+function geoPointInFeature(lat, lng, f) {
+  const g = f.geometry; if (!g) return false;
+  const polys = g.type === 'MultiPolygon' ? g.coordinates : (g.type === 'Polygon' ? [g.coordinates] : []);
+  for (const poly of polys) {
+    const ring = poly[0];
+    if (ring && pointInPoly(lng, lat, ring.map(c => ({ x: c[0], y: c[1] })))) return true;
+  }
+  return false;
 }
 
 function zoneGenLink(z) {
