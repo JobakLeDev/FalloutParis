@@ -1,0 +1,30 @@
+{
+"type": "FeatureCollection",
+"name": "marqueurs",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "id": 1, "nom": "Tour Eiffel", "faction": "Republique", "type": "Landmark", "descriptio": "La tour Eiffel" }, "geometry": { "type": "Point", "coordinates": [ 2.291214283436393, 48.855338732675193 ] } },
+{ "type": "Feature", "properties": { "id": 2, "nom": "Arc de Triomphe", "faction": null, "type": "Landmark", "descriptio": "L'arc de triomphe" }, "geometry": { "type": "Point", "coordinates": [ 2.295011529346351, 48.873826333974186 ] } },
+{ "type": "Feature", "properties": { "id": 3, "nom": "Notre-Dame", "faction": "Commune", "type": "Settlement", "descriptio": "Notre-Dame-de-Paris" }, "geometry": { "type": "Point", "coordinates": [ 2.351855149937859, 48.852231895112496 ] } },
+{ "type": "Feature", "properties": { "id": 4, "nom": "Hotel des Invalides", "faction": "Republique", "type": "Settlement", "descriptio": "Hotêl des Invalides" }, "geometry": { "type": "Point", "coordinates": [ 2.312322879387038, 48.853919559961348 ] } },
+{ "type": "Feature", "properties": { "id": 5, "nom": "Obélisque de la Concorde", "faction": null, "type": "Landmark", "descriptio": "L'obélisque de la concorde" }, "geometry": { "type": "Point", "coordinates": [ 2.320454355477051, 48.865937779339674 ] } },
+{ "type": "Feature", "properties": { "id": 6, "nom": "Musée du Louvre", "faction": null, "type": "Landmark", "descriptio": "Le musée du Louvre" }, "geometry": { "type": "Point", "coordinates": [ 2.337845613891265, 48.860695790036331 ] } },
+{ "type": "Feature", "properties": { "id": 7, "nom": "Montmartre", "faction": null, "type": "Settlement", "descriptio": "La basilique du Sacré-Coeur de Montmartre" }, "geometry": { "type": "Point", "coordinates": [ 2.343010891155991, 48.88677788315524 ] } },
+{ "type": "Feature", "properties": { "id": 8, "nom": "Tour Montparnasse", "faction": null, "type": "Landmark", "descriptio": "La Tour Montparnasse" }, "geometry": { "type": "Point", "coordinates": [ 2.322682200930959, 48.842911382424383 ] } },
+{ "type": "Feature", "properties": { "id": 9, "nom": "L'Abbé Groult", "faction": null, "type": "Safe", "descriptio": "l'angle de la rue de l'abbé groult" }, "geometry": { "type": "Point", "coordinates": [ 2.306633403191983, 48.837094052831674 ] } },
+{ "type": "Feature", "properties": { "id": 10, "nom": "Hôpital Pompidou", "faction": "NNFP", "type": "Settlement", "descriptio": "Hopital du NNFP" }, "geometry": { "type": "Point", "coordinates": [ 2.275628954263868, 48.840456597189657 ] } },
+{ "type": "Feature", "properties": { "id": 11, "nom": "Beaugrenelle", "faction": "Zazous", "type": "Settlement", "descriptio": "Centre commercial Beaugrenelle" }, "geometry": { "type": "Point", "coordinates": [ 2.282417969678643, 48.848255654445822 ] } },
+{ "type": "Feature", "properties": { "id": 12, "nom": "Parc des Princes", "faction": "Ultras", "type": "Settlement", "descriptio": "Le Parc des Princes" }, "geometry": { "type": "Point", "coordinates": [ 2.252653698707653, 48.84131321495385 ] } },
+{ "type": "Feature", "properties": { "id": 13, "nom": "Marcel Sembat", "faction": null, "type": "Metro", "descriptio": "Entrée de métro" }, "geometry": { "type": "Point", "coordinates": [ 2.243512180776271, 48.833616440415824 ] } },
+{ "type": "Feature", "properties": { "id": 14, "nom": "EHPAD Sainte Emilie", "faction": "Independant", "type": "Settlement", "descriptio": "Un EHPAD" }, "geometry": { "type": "Point", "coordinates": [ 2.251279274683005, 48.806185493951773 ] } },
+{ "type": "Feature", "properties": { "id": 15, "nom": "Hopital Militaire", "faction": "Republique", "type": "Settlement", "descriptio": null }, "geometry": { "type": "Point", "coordinates": [ 2.255843640978815, 48.814329755381543 ] } },
+{ "type": "Feature", "properties": { "id": 16, "nom": "La Gendarmerie", "faction": "République", "type": "Settlement", "descriptio": "QG sud de la République" }, "geometry": { "type": "Point", "coordinates": [ 2.268424415306759, 48.816042990909935 ] } },
+{ "type": "Feature", "properties": { "id": 17, "nom": "Bourg-au-Bois", "faction": "Independant", "type": "Settlement", "descriptio": "Un village de marchands" }, "geometry": { "type": "Point", "coordinates": [ 2.21815565568898, 48.808744160072074 ] } },
+{ "type": "Feature", "properties": { "id": 18, "nom": "Vault 17", "faction": "Vault-Tec", "type": "Settlement", "descriptio": "Entrée du Vault 17" }, "geometry": { "type": "Point", "coordinates": [ 2.205146572478936, 48.852489200075183 ] } },
+{ "type": "Feature", "properties": { "id": 18, "nom": "La Défense", "faction": "Reseau", "type": "Settlement", "descriptio": "Les restes des tours de la défense" }, "geometry": { "type": "Point", "coordinates": [ 2.241859675611752, 48.890659831941115 ] } },
+{ "type": "Feature", "properties": { "id": 20, "nom": "Le Repaire du Dragon", "faction": "", "type": "Safe", "descriptio": "Le repaire du dragon" }, "geometry": { "type": "Point", "coordinates": [ 2.3806189680723, 48.875777696455629 ] } },
+{ "type": "Feature", "properties": { "id": 21, "nom": "Vault 9", "faction": "Vault-Tec", "type": "Settlement", "descriptio": "L'entrée du Vault 9" }, "geometry": { "type": "Point", "coordinates": [ 2.287119778376919, 48.862989160356513 ] } },
+{ "type": "Feature", "properties": { "id": 23, "nom": "Opéra Garnier", "faction": "Mutants", "type": "Settlement", "descriptio": "L'opéra Garnier" }, "geometry": { "type": "Point", "coordinates": [ 2.331809335355111, 48.872093920436107 ] } },
+{ "type": "Feature", "properties": { "id": 25, "nom": "Galleries Lafayette", "faction": "Zazous", "type": "Settlement", "descriptio": "Les galleries Lafayette" }, "geometry": { "type": "Point", "coordinates": [ 2.331751801326172, 48.874222679506843 ] } }
+]
+}
