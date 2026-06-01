@@ -273,8 +273,12 @@ function renderGeoLayers() {
     L.geoJSON(geoZonesData, {
       filter: f => isMJ || f.properties.Visible === true,
       style: f => {
-        const col = geoColor(f.properties.Faction, f.properties.Type);
         const fonctionnelle = isMJ && f.properties.Visible !== true;  // non visible joueurs
+        // Désert de radiation : vert toxique, sans bordure, plus opaque
+        if (('' + (f.properties.Statut || '')).toLowerCase().includes('rad')) {
+          return { stroke: false, weight: 0, fillColor: '#5dff5d', fillOpacity: fonctionnelle ? 0.14 : 0.4 };
+        }
+        const col = geoColor(f.properties.Faction, f.properties.Type);
         return { color: col, weight: fonctionnelle ? 1 : 2, dashArray: fonctionnelle ? '4 4' : null,
                  fillColor: col, fillOpacity: fonctionnelle ? 0.05 : 0.18, opacity: fonctionnelle ? 0.55 : 0.9 };
       },
