@@ -27,10 +27,15 @@ const THREAT_LABELS    = { calme: 'Calme', normal: 'Normal', eleve: 'Élevé', e
 const OCC_LABELS       = { neutral: 'Neutre' };
 
 // Distances géographiques (mètres)
-const FOG_RADIUS_M    = 600;   // rayon de découverte du brouillard
-const FOG_STEP_M      = 150;   // espacement min entre points explorés enregistrés
+const FOG_RADIUS_CITY_M  = 200;   // rayon de découverte intra-muros (ville, vue courte)
+const FOG_RADIUS_RURAL_M = 500;   // rayon de découverte hors périphérique (campagne)
+const FOG_STEP_M      = 120;   // espacement min entre points explorés enregistrés
 const VISION_RADIUS_M = 1500;  // rayon de vision des alliés
 const TELEPORT_M      = 5000;  // au-delà : repositionnement (pas de traîné)
+
+// Intra-muros (vue courte) ? — approx. via la bounding box Paris
+// (sera remplacé par le GeoJSON de limites quand tu l'enverras)
+function isIntraMuros(lat, lng) { return PARIS_BOUNDS.contains([lat, lng]); }
 
 const _params  = new URLSearchParams(location.search);
 const viewerId = _params.get('id');               // perspective d'un joueur
@@ -584,30 +589,22 @@ function renderFog() {
   const W = FOG_RES, H = Math.max(1, Math.round(W * dLat / dLng));
   // latlng → pixel du canvas (linéaire sur l'étendue b)
   const toPx = (lat, lng) => ({ x: (lng - sw.lng) / dLng * W, y: (1 - (lat - sw.lat) / dLat) * H });
-  // rayon (m) → px sur le canvas
+  // mètres → px sur le canvas (rayon variable selon intra-muros / campagne)
   const widthM = dLng * 111000 * Math.cos((sw.lat + ne.lat) / 2 * Math.PI / 180);
-  const rad = FOG_RADIUS_M / widthM * W;
+  const pxPerM = W / widthM;
 
   const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
   const ctx = cv.getContext('2d');
   ctx.fillStyle = 'rgba(4,8,4,0.92)'; ctx.fillRect(0, 0, W, H);
   ctx.globalCompositeOperation = 'destination-out';
 
+  // Seule l'exploration (trajet parcouru + position actuelle) dégage le brouillard
   const pts = (mapData.fog?.[viewerId] || []).slice();
   const myPos = mapData.tokens?.[viewerId]; if (myPos) pts.push(myPos);
-  (mapData.pois || []).forEach(p => { if (visibleFor(p)) pts.push({ lat: p.lat, lng: p.lng }); });
-  (mapData.zones || []).forEach(z => {
-    if (z.polygon?.length >= 3 && visibleFor(z)) {
-      const c = polygonCentroid(z.polygon.map(p => [p.lat, p.lng]));
-      pts.push({ lat: c[0], lng: c[1] });
-    }
-  });
-  if (geoMarkersData) geoMarkersData.features.forEach(f => {
-    if (geoMarkerVisibleFor(f.properties.nom)) { const c = f.geometry.coordinates; pts.push({ lat: c[1], lng: c[0] }); }
-  });
 
   pts.forEach(p => {
     const px = toPx(p.lat, p.lng);
+    const rad = (isIntraMuros(p.lat, p.lng) ? FOG_RADIUS_CITY_M : FOG_RADIUS_RURAL_M) * pxPerM;
     const g = ctx.createRadialGradient(px.x, px.y, rad * 0.3, px.x, px.y, rad);
     g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px.x, px.y, rad, 0, Math.PI * 2); ctx.fill();
