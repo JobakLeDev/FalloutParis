@@ -178,7 +178,7 @@ function buildMap() {
 
   map.on('click', onMapClick);
   map.on('popupclose', () => { if (!reopening) openItem = null; });
-  map.on('move zoom moveend zoomend', drawFog);
+  map.on('move zoom moveend zoomend resize', drawFog);
 
   lockParis(true);
   setTimeout(() => lockParis(true), 300);      // re-cadrage si conteneur (iframe) pas encore dimensionné
@@ -529,10 +529,14 @@ function fogRadiusPx() {
 
 function renderFog() { drawFog(); }
 
+let _fogRetries = 0;
 function drawFog() {
-  if (!fogCanvas || isMJ || !viewerId) return;
+  if (isMJ || !viewerId) return;
+  if (!fogCanvas) setupFogCanvas();
+  if (!fogCanvas) return;
   const W = fogCanvas.offsetWidth, H = fogCanvas.offsetHeight;
-  if (!W || !H) return;
+  if (!W || !H) { if (_fogRetries++ < 15) setTimeout(drawFog, 200); return; } // canvas pas encore dimensionné (iframe)
+  _fogRetries = 0;
   fogCanvas.width = W; fogCanvas.height = H;
   const ctx = fogCanvas.getContext('2d');
   ctx.fillStyle = 'rgba(4,8,4,0.90)'; ctx.fillRect(0, 0, W, H);
