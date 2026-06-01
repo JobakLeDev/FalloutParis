@@ -57,6 +57,7 @@ let openItem = null, reopening = false;            // popup ouvert (pour le réo
 let zoneFormCtx = null;                            // {polygon} (création) ou {zone} (édition)
 let currentTab = 'paris';
 let centeredOnPlayer = false;                      // vue déjà centrée sur le jeton du joueur
+let moveMode = false, movingToken = null;          // outil déplacement de jeton (MJ)
 
 // Couches GeoJSON authorées (QGIS) : zones (rencontres/danger) + marqueurs
 let geoZonesData = null, geoMarkersData = null;
@@ -489,7 +490,8 @@ function updateModeUI() {
   if (md) md.textContent = isMJ ? 'Vue MJ' : (viewerId ? 'Vue joueur' : 'Visiteur');
   const mb = document.getElementById('mj-btn'); if (mb) mb.style.display = (isMJ || viewerId) ? 'none' : 'inline-block';
   const eb = document.getElementById('edit-btn'); if (eb) eb.style.display = isMJ ? 'inline-block' : 'none';
-  const mp = document.getElementById('mj-panel'); if (mp) mp.style.display = isMJ ? 'block' : 'none';
+  const ml = document.getElementById('mj-left');  if (ml) ml.style.display = isMJ ? 'block' : 'none';
+  const mr = document.getElementById('mj-right'); if (mr) mr.style.display = isMJ ? 'block' : 'none';
 }
 function toggleEdit() {
   editMode = !editMode;
@@ -586,9 +588,10 @@ function renderTokens() {
     }
     const nom = joueurs[id]?.nom || id;
     const me = id === viewerId;
+    const sel = movingToken && movingToken.id === id;
     const m = L.marker([pos.lat, pos.lng], {
       draggable: isMJ && editMode,
-      icon: L.divIcon({ className: 'token-pin' + (me ? ' me' : ''),
+      icon: L.divIcon({ className: 'token-pin' + (me ? ' me' : '') + (sel ? ' sel' : ''),
         html: `<span class="token-dot">${nom.charAt(0).toUpperCase()}</span><span class="token-label">${nom}${me ? ' (toi)' : ''}</span>`,
         iconSize: [18, 18], iconAnchor: [9, 9] }),
     }).addTo(tokenLayer);
@@ -669,6 +672,7 @@ function renderMJPanel() {
     const z = t ? detectZone(t.lat, t.lng) : null;
     return `<div class="pz-row"><span class="pz-nom">${joueurs[id]?.nom || id}</span>
       <span class="pz-zone">${z ? z.name : '—'}</span>
+      ${t ? `<button class="pz-gen" onclick="centerOnToken('${id}')" title="Centrer la carte">⌖</button>` : ''}
       ${z ? `<a class="pz-gen" href="${z.genUrl}" title="Générer rencontre">⚔</a>` : ''}</div>`;
   }).join('');
 }
@@ -713,8 +717,78 @@ function revealControls(kind, id, item) {
 // ÉDITION (MJ)
 // ============================================================
 function onMapClick(e) {
+  if (moveMode) { handleMoveClick(e.latlng); return; }
   if (addingPOI) { creerPOI(e.latlng); return; }
   if (drawingZone) { drawingZone.pts.push([e.latlng.lat, e.latlng.lng]); drawingZone.layer.setLatLngs(drawingZone.pts); }
+}
+
+// ---- OUTIL DÉPLACEMENT DE JETON (clic jeton → clic destination) ----
+function toggleMoveMode() {
+  moveMode = !moveMode; movingToken = null;
+  if (moveMode) { addingPOI = false; document.getElementById('btn-add-poi')?.classList.remove('on'); cancelDrawZone(); }
+  document.getElementById('btn-move').classList.toggle('on', moveMode);
+  setHint(moveMode ? 'Clique le jeton à déplacer.' : '');
+  renderTokens();
+}
+function nearestTokenId(latlng) {
+  const cp = map.latLngToContainerPoint(latlng);
+  let best = null, bestD = Infinity;
+  Object.entries(mapData.tokens || {}).forEach(([id, p]) => {
+    if (!p) return;
+    const d = cp.distanceTo(map.latLngToContainerPoint(L.latLng(p.lat, p.lng)));
+    if (d < bestD) { bestD = d; best = id; }
+  });
+  return bestD < 45 ? best : null;   // tolérance 45 px
+}
+function handleMoveClick(latlng) {
+  if (!movingToken) {
+    const id = nearestTokenId(latlng);
+    if (!id) { setHint('Aucun jeton à proximité — clique sur un jeton.'); return; }
+    movingToken = { id, from: { ...mapData.tokens[id] } };
+    setHint('« ' + (joueurs[id]?.nom || id) + ' » sélectionné. Clique la destination.');
+    renderTokens();
+  } else {
+    executeMove(movingToken.id, movingToken.from, latlng);
+    moveMode = false; movingToken = null;
+    document.getElementById('btn-move').classList.remove('on');
+    setHint('');
+  }
+}
+function executeMove(id, from, to) {
+  const dist = L.latLng(from.lat, from.lng).distanceTo(L.latLng(to.lat, to.lng));
+  const zones = zonesAlongPath(from, to);
+  // déplacer le jeton + tracer le brouillard en ligne droite (rayon applicable)
+  mapData.tokens[id] = { lat: to.lat, lng: to.lng };
+  recordFog(id, from.lat, from.lng);
+  recordFog(id, to.lat, to.lng);
+  saveData();
+  showMoveResult(id, dist, zones);
+}
+// Zones traversées le long du trajet (échantillonnage) → [{name, genUrl}]
+function zonesAlongPath(from, to) {
+  const steps = 30, seen = new Map();
+  for (let i = 0; i <= steps; i++) {
+    const lat = from.lat + (to.lat - from.lat) * i / steps;
+    const lng = from.lng + (to.lng - from.lng) * i / steps;
+    const z = detectZone(lat, lng);
+    if (z) seen.set(z.name, z);
+  }
+  return [...seen.values()];
+}
+function showMoveResult(id, dist, zones) {
+  const el = document.getElementById('move-result'); if (!el) return;
+  const nom = joueurs[id]?.nom || id;
+  const distTxt = dist < 1000 ? Math.round(dist) + ' m' : (dist / 1000).toFixed(2) + ' km';
+  el.innerHTML = `<div class="mjp-section">
+    <div class="mjp-title">Déplacement</div>
+    <div class="pz-row"><span class="pz-nom">${nom}</span><span class="pz-zone" style="color:var(--am)">${distTxt}</span></div>
+    <div class="mjp-title" style="margin-top:6px">Zones traversées</div>
+    ${zones.length ? zones.map(z => `<div class="pz-row"><span class="pz-nom">${z.name}</span><a class="pz-gen" href="${z.genUrl}" title="Générer rencontre">⚔</a></div>`).join('') : '<span class="empty">Aucune</span>'}
+  </div>`;
+}
+function centerOnToken(id) {
+  const t = mapData.tokens?.[id]; if (!t) return;
+  map.setView([t.lat, t.lng], map.getZoom(), { animate: true });
 }
 function toggleAddPOI() {
   addingPOI = !addingPOI;
