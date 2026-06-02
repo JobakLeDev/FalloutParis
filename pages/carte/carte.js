@@ -50,10 +50,10 @@ let isMJ = !viewerId && sessionStorage.getItem('mj_auth') === '1';
 let fdb, map;
 let fogOverlay = null;
 // Métro
-let metroStationsData = null;                      // GeoJSON des stations
-let metroStationLayer = null, metroTokenLayer = null, metroFogOverlay = null;
+let metroStationsData = null, metroLinesData = null; // GeoJSON stations / lignes (égouts)
+let metroStationLayer = null, metroTokenLayer = null, metroLineLayer = null, metroFogOverlay = null;
 let metroLinesByName = {};                         // {ligne: [{lat,lng}]} — sommets par ligne
-let metroVertexFlat = [];                          // [{lat,lng,line}] — tous les sommets (recherche ligne la plus proche)
+let metroVertexFlat = [];                          // [{lat,lng,line,lk}] — sommets allégés (ligne la plus proche)
 let metroMoveMode = false, movingMetroToken = null;
 let editMode = false, addingPOI = false, drawingZone = null;
 let mapData = { pois: [], zones: [], tokens: {}, fog: {}, geoReveal: {}, geoVisited: {}, ping: null, metroTokens: {}, metroFog: {}, underground: {} };
@@ -485,6 +485,7 @@ async function initMetroMap(){
   // Pane brouillard (au-dessus des tunnels, sous les marqueurs/jetons)
   metroMap.createPane('metroFogPane');
   const fp = metroMap.getPane('metroFogPane'); fp.style.zIndex = 350; fp.style.pointerEvents = 'none';
+  metroLineLayer    = L.layerGroup().addTo(metroMap);   // égouts révélés (lignes des gares découvertes)
   metroStationLayer = L.layerGroup().addTo(metroMap);
   metroTokenLayer   = L.layerGroup().addTo(metroMap);
   metroMap.on('click', onMetroClick);
@@ -493,16 +494,51 @@ async function initMetroMap(){
     const seine = await fetch(GEOJSON_BASE + 'seine.geojson').then(r => r.json());
     L.geoJSON(seine, { style:{ color:'#2f6f3f', weight:1, opacity:0.5, fillColor:'#0E2A0E', fillOpacity:0.35 } }).addTo(metroMap);
   } catch(e){ console.warn('seine.geojson (métro) non chargé', e); }
-  // Égouts — vert monochrome, ligne pleine
+  // Égouts — chargés mais affichés UNIQUEMENT pour les lignes des gares découvertes (renderMetroLines)
   try {
-    const data = await fetch(GEOJSON_BASE + 'lignes_metro.geojson').then(r => r.json());
-    L.geoJSON(data, { pane:'metroPane',
-      style: { color:'#5dff5d', weight:1.6, opacity:0.8, fill:false },
-    }).addTo(metroMap);
-    buildMetroIndex(data);
+    metroLinesData = await fetch(GEOJSON_BASE + 'lignes_metro.geojson').then(r => r.json());
+    buildMetroIndex(metroLinesData);
   } catch(e){ console.warn('lignes_metro.geojson non chargé', e); }
   lockMetro();
   renderMetro();
+}
+
+// Clé de ligne normalisée : "Métro 6"/"METRO 6"/"Métro 1 Voie…" → "6" ; "Métro 3bis" → "3bis"
+function lineKey(label){
+  const s = ('' + (label || '')).toLowerCase().replace(/^m[ée]tro\s+/, '');
+  const m = s.match(/^\d+\s*bis/) || s.match(/^\d+/);
+  return m ? m[0].replace(/\s+/g, '') : '';
+}
+// Lignes disponibles à un joueur = lignes des gares qu'il a découvertes (proches d'un point exploré)
+function unlockedLinesFor(id){
+  const set = new Set();
+  const pts = metroExploredPoints(id);
+  if (!pts.length || !metroStationsData) return set;
+  metroStationsData.features.forEach(f => {
+    const c = f.geometry?.coordinates; if (!c) return;
+    const k = lineKey(f.properties.res_com); if (!k) return;
+    if (pts.some(p => L.latLng(p.lat, p.lng).distanceTo(L.latLng(c[1], c[0])) < METRO_TUNNEL_W_M * 1.6)) set.add(k);
+  });
+  return set;
+}
+// Lignes visibles dans la perspective courante : joueur → les siennes ; MJ → union de tous
+function unlockedLinesView(){
+  if (!isMJ && viewerId) return unlockedLinesFor(viewerId);
+  const set = new Set();
+  const ids = new Set([...Object.keys(joueurs), ...Object.keys(mapData.metroFog || {})]);
+  ids.forEach(id => unlockedLinesFor(id).forEach(k => set.add(k)));
+  return set;
+}
+// Affiche les égouts des seules lignes débloquées
+function renderMetroLines(){
+  if (!metroLineLayer || !metroLinesData) return;
+  metroLineLayer.clearLayers();
+  const allowed = unlockedLinesView();
+  if (!allowed.size) return;
+  L.geoJSON(metroLinesData, { pane: 'metroPane',
+    filter: f => allowed.has(lineKey(f.properties.name)),
+    style: { color: '#5dff5d', weight: 1.6, opacity: 0.85, fill: false },
+  }).addTo(metroLineLayer);
 }
 
 // Index des sommets de lignes (pour « ligne la plus proche » + dégagement du tunnel)
@@ -516,14 +552,17 @@ function buildMetroIndex(data){
     segs.forEach(seg => seg.forEach((c, i) => {
       const v = { lat: c[1], lng: c[0] };
       arr.push(v);
-      if (i % 4 === 0) metroVertexFlat.push({ lat: v.lat, lng: v.lng, line }); // index allégé (1 sommet/4)
+      if (i % 4 === 0) metroVertexFlat.push({ lat: v.lat, lng: v.lng, line, lk: lineKey(line) }); // index allégé (1 sommet/4)
     }));
   });
 }
-// Ligne (tunnel) la plus proche d'un point → nom de ligne
-function nearestMetroLine(lat, lng){
+// Ligne (tunnel) la plus proche d'un point → nom de ligne. allowed = Set de clés autorisées (optionnel).
+function nearestMetroLine(lat, lng, allowed){
   let best = null, bd = Infinity; const ll = L.latLng(lat, lng);
-  for (const v of metroVertexFlat){ const d = ll.distanceTo(L.latLng(v.lat, v.lng)); if (d < bd){ bd = d; best = v.line; } }
+  for (const v of metroVertexFlat){
+    if (allowed && !allowed.has(v.lk)) continue;
+    const d = ll.distanceTo(L.latLng(v.lat, v.lng)); if (d < bd){ bd = d; best = v.line; }
+  }
   return best;
 }
 // Station la plus proche d'un point → {nom, lat, lng, dist}
@@ -541,6 +580,7 @@ function nearestStation(lat, lng){
 // ---- RENDU DE LA CARTE MÉTRO ----
 function renderMetro(){
   if (!metroMap) return;
+  renderMetroLines();
   renderMetroStations();
   renderMetroTokens();
   renderMetroFog();
@@ -629,8 +669,9 @@ function renderMetroFog(){
     g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px.x, px.y, r, 0, Math.PI * 2); ctx.fill();
   };
+  const allowed = unlockedLinesFor(viewerId);              // seulement les tunnels accessibles
   pts.forEach(p => {
-    const line = nearestMetroLine(p.lat, p.lng);
+    const line = nearestMetroLine(p.lat, p.lng, allowed);
     pierce(p.lat, p.lng, METRO_TUNNEL_W_M);                 // autour de la position
     if (!line) return;
     (metroLinesByName[line] || []).forEach(v => {           // le long du tunnel courant
@@ -952,7 +993,7 @@ function renderMJPanel() {
     if (mapData.underground?.[id]) {
       const mt = mapData.metroTokens?.[id];
       const st = mt ? nearestStation(mt.lat, mt.lng) : null;
-      const line = mt ? nearestMetroLine(mt.lat, mt.lng) : null;
+      const line = mt ? nearestMetroLine(mt.lat, mt.lng, unlockedLinesFor(id)) : null;
       const lbl = '🚇 Métro' + (st && st.dist < METRO_DESCEND_M ? ' — ' + st.nom : line ? ' — ' + line : '');
       return `<div class="pp-row"><div class="pp-head"><span class="pp-nom">${joueurs[id]?.nom || id}</span></div>
         <div class="pp-pos" style="color:var(--am)">${lbl}</div></div>`;
