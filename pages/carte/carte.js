@@ -549,20 +549,44 @@ function unlockedLinesFor(id){
   });
   return set;
 }
+// Clés de lignes sur lesquelles se trouve un joueur (ligne la plus proche du jeton métro).
+// MJ → tous les joueurs sous terre ; joueur → la sienne. Sert à mettre la ligne en évidence.
+function activeLineKeys(){
+  const set = new Set();
+  const ids = (!isMJ && viewerId) ? [viewerId] : Object.keys(mapData.metroTokens || {});
+  ids.forEach(id => {
+    if (!mapData.underground?.[id]) return;
+    const t = mapData.metroTokens?.[id]; if (!t) return;
+    const allowed = (!isMJ && viewerId) ? unlockedLinesFor(id) : null;
+    const line = nearestMetroLine(t.lat, t.lng, allowed);
+    if (line) set.add(lineKey(line));
+  });
+  return set;
+}
+
 // Affiche les égouts. MJ → réseau complet (gestion). Joueur → seulement les lignes des gares découvertes.
+// La (les) ligne(s) où se trouve un joueur sont surlignées en ambre (par-dessus) pour suivre le bon tunnel.
 function renderMetroLines(){
   if (!metroLineLayer || !metroLinesData) return;
   metroLineLayer.clearLayers();
-  let filter;
+  let baseFilter;
   if (isMJ || !viewerId) {
-    filter = () => true;                                   // MJ : tout le réseau
+    baseFilter = () => true;                               // MJ : tout le réseau
   } else {
     const allowed = unlockedLinesFor(viewerId);
     if (!allowed.size) return;                             // aucune gare découverte → rien
-    filter = f => allowed.has(lineKey(f.properties.name));
+    baseFilter = f => allowed.has(lineKey(f.properties.name));
   }
-  L.geoJSON(metroLinesData, { pane: 'metroPane', filter,
-    style: { color: '#5dff5d', weight: 1.6, opacity: 0.85, fill: false },
+  const active = activeLineKeys();
+  // Réseau de base (lignes non occupées par un joueur)
+  L.geoJSON(metroLinesData, { pane: 'metroPane',
+    filter: f => baseFilter(f) && !active.has(lineKey(f.properties.name)),
+    style: { color: '#5dff5d', weight: 1.6, opacity: active.size ? 0.55 : 0.85, fill: false },
+  }).addTo(metroLineLayer);
+  // Ligne(s) occupée(s) par un joueur — en ambre, plus épaisses, par-dessus
+  if (active.size) L.geoJSON(metroLinesData, { pane: 'metroPane',
+    filter: f => baseFilter(f) && active.has(lineKey(f.properties.name)),
+    style: { color: '#e8a820', weight: 3, opacity: 0.95, fill: false },
   }).addTo(metroLineLayer);
 }
 
