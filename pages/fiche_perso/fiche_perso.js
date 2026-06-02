@@ -593,13 +593,18 @@ function pendingLU(){
   const al = (char.allocatedLevel==null) ? (char.niveau||1) : char.allocatedLevel;
   return Math.max(0,(char.niveau||1)-al);
 }
-let _luSkill=null, _luPerk=null, _luPerks=[];
+let _luSkill=null, _luSkillDone=false, _luPerk=null, _luPerks=[];
 
-// Une perk est éligible si : niveau requis atteint, prérequis SPECIAL remplis, rang max non atteint.
-function perkEligible(name){
+// Une perk est éligible si : niveau requis atteint, prérequis remplis, rang max non atteint.
+// req: {s:'S',min} = prérequis SPECIAL ; {sk:'cle',min} = prérequis compétence (futur).
+// stagedSkills = surcouche de compétences déjà validées dans la modale (avant écriture char).
+function perkEligible(name, stagedSkills){
   const def=PERKS_DEF[name]; if(!def) return false;
   if((def.lvl||1)>char.niveau) return false;
-  for(const r of (def.req||[])) if((SP()[r.s]||0)<r.min) return false;
+  for(const r of (def.req||[])){
+    if(r.s){ if((SP()[r.s]||0)<r.min) return false; }
+    else if(r.sk){ const v=(stagedSkills&&stagedSkills[r.sk]!=null?stagedSkills[r.sk]:char.skills[r.sk])||0; if(v<r.min) return false; }
+  }
   return (char.perks[name]||0)<(def.max||1);
 }
 
@@ -613,42 +618,64 @@ function rLevelUp(){
 
 function openLevelUp(){
   if(pendingLU()<=0) return;
-  _luSkill=null; _luPerk=null;
+  _luSkill=null; _luSkillDone=false; _luPerk=null;
   document.getElementById('mo-lvl-t').textContent='MONTÉE DE NIVEAU '+char.niveau;
   // compétences (+1, max 6)
   document.getElementById('lvl-skills').innerHTML = SKILLS_DEF.map(s=>{
     const r=char.skills[s.key]||0, dis=r>=6;
     return `<button class="lvl-opt${dis?' dis':''}" id="luS-${s.key}" ${dis?'disabled':''} onclick="selLuSkill('${s.key}')"><span class="lo-n">${s.name}</span><span class="lo-r">${dis?r+' (max)':r+'→'+(r+1)}</span></button>`;
   }).join('');
-  // perks éligibles
-  _luPerks = Object.keys(PERKS_DEF).filter(perkEligible).sort();
-  document.getElementById('lvl-perks').innerHTML = _luPerks.length ? _luPerks.map((n,i)=>{
-    const def=PERKS_DEF[n], cur=char.perks[n]||0;
-    const reqTxt=(def.req||[]).map(r=>r.s+'≥'+r.min).join(' ');
-    return `<button class="lvl-perk" id="luP-${i}" onclick="selLuPerk(${i})"><div class="lp-h"><span class="lp-n">${n}${def.max>1?` (${cur}→${cur+1}/${def.max})`:''}</span>${reqTxt?`<span class="lp-req">${reqTxt}</span>`:''}</div><div class="lp-d">${def.desc}</div></button>`;
-  }).join('') : '<div class="lvl-empty">Aucune perk éligible (prérequis SPECIAL/niveau non remplis).</div>';
+  renderLuPerks();
   _luSync();
   document.getElementById('mo-lvl').classList.add('on');
 }
+// Rendu des perks éligibles — tient compte de la compétence validée (staged)
+function renderLuPerks(){
+  const staged = (_luSkillDone&&_luSkill) ? {[_luSkill]:(char.skills[_luSkill]||0)+1} : null;
+  _luPerks = Object.keys(PERKS_DEF).filter(n=>perkEligible(n,staged)).sort();
+  const el=document.getElementById('lvl-perks');
+  el.innerHTML = _luPerks.length ? _luPerks.map((n,i)=>{
+    const def=PERKS_DEF[n], cur=char.perks[n]||0;
+    const reqTxt=(def.req||[]).map(r=>(r.s||r.sk)+'≥'+r.min).join(' ');
+    return `<button class="lvl-perk" id="luP-${i}" onclick="selLuPerk(${i})"><div class="lp-h"><span class="lp-n">${n}${def.max>1?` (${cur}→${cur+1}/${def.max})`:''}</span>${reqTxt?`<span class="lp-req">${reqTxt}</span>`:''}</div><div class="lp-d">${def.desc}</div></button>`;
+  }).join('') : '<div class="lvl-empty">Aucune perk éligible (prérequis SPECIAL/niveau non remplis).</div>';
+  if(_luPerk && !_luPerks.includes(_luPerk)) _luPerk=null; // sélection devenue invalide
+}
 function selLuSkill(key){
+  if(_luSkillDone) return; // compétence déjà verrouillée
   _luSkill=key;
   document.querySelectorAll('#lvl-skills .lvl-opt').forEach(b=>b.classList.toggle('sel', b.id==='luS-'+key));
   _luSync();
 }
+// Étape 1 : valider la compétence → débloque + rafraîchit la liste des perks
+function confirmLuSkill(){
+  if(!_luSkill||_luSkillDone) return;
+  _luSkillDone=true;
+  document.querySelectorAll('#lvl-skills .lvl-opt').forEach(b=>{ b.disabled=true; b.classList.add('locked'); });
+  renderLuPerks();
+  _luSync();
+}
 function selLuPerk(i){
+  if(!_luSkillDone) return; // perk verrouillée tant que la compétence n'est pas validée
   _luPerk=_luPerks[i];
   document.querySelectorAll('#lvl-perks .lvl-perk').forEach((b,j)=>b.classList.toggle('sel', j===i));
   _luSync();
 }
 function _luSync(){
+  // bouton « valider la compétence »
+  const sb=document.getElementById('lvl-skill-ok');
+  if(sb){ sb.disabled = !_luSkill || _luSkillDone; sb.textContent = _luSkillDone ? '✓ Compétence validée' : '✓ Valider la compétence'; }
+  // section perk grisée tant que la compétence n'est pas validée
+  document.getElementById('lvl-perks').classList.toggle('locked', !_luSkillDone);
+  document.getElementById('lvl-perk-sec').classList.toggle('dim', !_luSkillDone);
+  // bouton final (la perk est facultative s'il n'y en a aucune d'éligible)
   const ok=document.getElementById('lvl-ok');
-  // la perk est facultative s'il n'y en a aucune d'éligible
   const perkOk = _luPerks.length===0 || !!_luPerk;
-  if(ok) ok.disabled = !(_luSkill && perkOk);
+  if(ok) ok.disabled = !(_luSkillDone && perkOk);
 }
 function applyLevelUp(){
   if(pendingLU()<=0){ closeMo('mo-lvl'); return; }
-  if(!_luSkill) return;
+  if(!_luSkillDone||!_luSkill) return;
   char.skills[_luSkill]=Math.min(6,(char.skills[_luSkill]||0)+1);
   if(_luPerk) char.perks[_luPerk]=(char.perks[_luPerk]||0)+1;
   char.allocatedLevel = ((char.allocatedLevel==null)?(char.niveau-pendingLU()):char.allocatedLevel) + 1;
