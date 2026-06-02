@@ -521,22 +521,19 @@ function unlockedLinesFor(id){
   });
   return set;
 }
-// Lignes visibles dans la perspective courante : joueur → les siennes ; MJ → union de tous
-function unlockedLinesView(){
-  if (!isMJ && viewerId) return unlockedLinesFor(viewerId);
-  const set = new Set();
-  const ids = new Set([...Object.keys(joueurs), ...Object.keys(mapData.metroFog || {})]);
-  ids.forEach(id => unlockedLinesFor(id).forEach(k => set.add(k)));
-  return set;
-}
-// Affiche les égouts des seules lignes débloquées
+// Affiche les égouts. MJ → réseau complet (gestion). Joueur → seulement les lignes des gares découvertes.
 function renderMetroLines(){
   if (!metroLineLayer || !metroLinesData) return;
   metroLineLayer.clearLayers();
-  const allowed = unlockedLinesView();
-  if (!allowed.size) return;
-  L.geoJSON(metroLinesData, { pane: 'metroPane',
-    filter: f => allowed.has(lineKey(f.properties.name)),
+  let filter;
+  if (isMJ || !viewerId) {
+    filter = () => true;                                   // MJ : tout le réseau
+  } else {
+    const allowed = unlockedLinesFor(viewerId);
+    if (!allowed.size) return;                             // aucune gare découverte → rien
+    filter = f => allowed.has(lineKey(f.properties.name));
+  }
+  L.geoJSON(metroLinesData, { pane: 'metroPane', filter,
     style: { color: '#5dff5d', weight: 1.6, opacity: 0.85, fill: false },
   }).addTo(metroLineLayer);
 }
