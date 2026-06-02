@@ -731,11 +731,10 @@ function onMapClick(e) {
 }
 
 // ---- OUTIL DÉPLACEMENT DE JETON (clic jeton → clic destination) ----
-// Active/désactive l'interactivité des couches (pour que le clic atteigne la carte)
+// Désactive les clics sur zones/marqueurs (pour que le clic atteigne la carte).
+// Via une classe CSS car les éléments .leaflet-interactive forcent pointer-events:auto.
 function setLayersClickable(on) {
-  ['overlayPane', 'markerPane', 'geoZonePane'].forEach(p => {
-    const pane = map.getPane(p); if (pane) pane.style.pointerEvents = on ? '' : 'none';
-  });
+  const m = document.getElementById('map'); if (m) m.classList.toggle('move-passthrough', !on);
 }
 // Déplacement déclenché depuis le popup d'un jeton (flèche ➤)
 function startMoveFromToken(id) {
