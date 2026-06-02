@@ -134,6 +134,12 @@ body.embed #map-tabs{padding:0;}
 .token-pin.me .token-dot{background:#5dbe5d;border-color:#fff;box-shadow:0 0 10px rgba(93,190,93,.9);}
 /* Jeton sélectionné pour déplacement (MJ) */
 .token-pin.sel .token-dot{border-color:var(--am);box-shadow:0 0 12px rgba(232,168,32,1);}
+/* Ping joueurs (signal lumineux temporaire) */
+.ping-pin span{position:absolute;left:0;top:0;transform:translate(-50%,-50%);border-radius:50%;}
+.ping-dot{width:10px;height:10px;background:var(--am);box-shadow:0 0 10px var(--am);}
+.ping-ring{width:14px;height:14px;border:2px solid var(--am);animation:pingPulse 1.4s ease-out infinite;}
+.ping-ring.r2{animation-delay:.7s;}
+@keyframes pingPulse{0%{width:14px;height:14px;opacity:.9;}100%{width:70px;height:70px;opacity:0;}}
 #move-result .pz-row a{cursor:pointer;}
 .leaflet-control-zoom a{background:var(--p2);color:var(--t);border-color:var(--b2);}
 .leaflet-control-zoom a:hover{background:var(--gk);}
