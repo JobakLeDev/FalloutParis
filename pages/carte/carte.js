@@ -493,11 +493,11 @@ async function initMetroMap(){
     const seine = await fetch(GEOJSON_BASE + 'seine.geojson').then(r => r.json());
     L.geoJSON(seine, { style:{ color:'#2f6f3f', weight:1, opacity:0.5, fillColor:'#0E2A0E', fillOpacity:0.35 } }).addTo(metroMap);
   } catch(e){ console.warn('seine.geojson (métro) non chargé', e); }
-  // Tunnels — vert monochrome, pointillés
+  // Égouts — vert monochrome, ligne pleine
   try {
     const data = await fetch(GEOJSON_BASE + 'lignes_metro.geojson').then(r => r.json());
     L.geoJSON(data, { pane:'metroPane',
-      style: { color:'#5dff5d', weight:1.6, opacity:0.8, dashArray:'5 4', fill:false },
+      style: { color:'#5dff5d', weight:1.6, opacity:0.8, fill:false },
     }).addTo(metroMap);
     buildMetroIndex(data);
   } catch(e){ console.warn('lignes_metro.geojson non chargé', e); }
