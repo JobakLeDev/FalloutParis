@@ -83,11 +83,16 @@ const GEO_MARKER_ICONS = { Landmark:'🗼', Settlement:'🏠', Safe:'🛡', Metr
 // Si le fichier n'existe pas, l'icône se masque et le marqueur bascule sur le style standard (onerror).
 // IMG_VER : à incrémenter quand on remplace des images (casse le cache navigateur).
 const IMG_VER = '3';
+// Clé normalisée (sert au nom de fichier ET aux ajustements par monument)
+function landmarkKey(nom){
+  return ('' + nom).toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')   // retire les accents
+    .replace(/['’‘\-\s]+/g, '');                        // retire apostrophes, tirets, espaces
+}
+// Monuments dont l'image source est trop claire → atténuée en CSS (.land-dim)
+const DIM_LANDMARKS = new Set(['tourmontparnasse', 'operagarnier', 'parcdesprinces']);
 function landmarkImgPath(nom){
-  return '../../img/' + nom.toLowerCase()
-    .normalize('NFD').replace(/[̀-ͯ]/g, '')    // retire les accents
-    .replace(/['’‘\-\s]+/g, '')                          // retire apostrophes, tirets, espaces
-    + '.png?v=' + IMG_VER;
+  return '../../img/' + landmarkKey(nom) + '.png?v=' + IMG_VER;
 }
 const GEO_OTHER_COLORS = { mutants:'#a05ad0', independant:'#c0a040', independants:'#c0a040', 'vault-tec':'#3a7bd5' };
 
@@ -331,8 +336,9 @@ function renderGeoLayers() {
         // Tous les marqueurs essaient leur image dédiée ; si absente → marqueur générique Fallout
         // (l'image se cache et le losange apparaît via onerror — sans guillemets doubles)
         const imgPath = landmarkImgPath(nom);
+        const dimCls = DIM_LANDMARKS.has(landmarkKey(nom)) ? ' land-dim' : '';
         const m = L.marker(latlng, { opacity: dim ? 0.5 : 1, icon: L.divIcon({ className: 'land-pin',
-          html: `<img class="land-icon-img" src="${imgPath}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">`
+          html: `<img class="land-icon-img${dimCls}" src="${imgPath}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">`
               + `<span class="geo-mark-dot${dim?' dim':''}" style="display:none"></span>`
               + `<span class="poi-label">${nom}${lock}</span>`,
           iconSize: [64, 64], iconAnchor: [32, 60] }) });
