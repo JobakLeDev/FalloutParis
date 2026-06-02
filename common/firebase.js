@@ -30,6 +30,14 @@ function appliquerDonnees(data) {
   if (data.origine   !== undefined) char.origine   = data.origine;
   if (data.niveau    !== undefined) char.niveau    = data.niveau;
   if (data.xp        !== undefined) char.xp        = data.xp;
+  // allocatedLevel : niveau jusqu'auquel rang+perk ont été répartis.
+  // Migration douce : un perso existant sans le champ est considéré « déjà réparti »
+  // (allocatedLevel = niveau actuel), pour ne pas générer d'alertes rétroactives.
+  if (data.allocatedLevel !== undefined) char.allocatedLevel = data.allocatedLevel;
+  else if (char.allocatedLevel == null && data.niveau !== undefined) {
+    char.allocatedLevel = data.niveau;
+    saveToFirebase();
+  }
   if (data.hp        !== undefined) char.hp        = data.hp;
   if (data.rad       !== undefined) char.rad       = data.rad;
   if (data.momentum  !== undefined) char.momentum  = data.momentum;
@@ -64,6 +72,7 @@ function saveToFirebase() {
         origine:      char.origine,
         niveau:       char.niveau,
         xp:           char.xp,
+        allocatedLevel: char.allocatedLevel,
         hp:           char.hp,
         rad:          char.rad,
         momentum:     char.momentum,

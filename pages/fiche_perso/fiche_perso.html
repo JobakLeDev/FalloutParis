@@ -28,6 +28,12 @@
   </div>
 </div>
 
+<!-- ALERTE MONTÉE DE NIVEAU -->
+<div id="lvlup-alert" onclick="openLevelUp()">
+  <span class="lvlup-ico">⬆</span>
+  <span>MONTÉE DE NIVEAU <b id="lvlup-count"></b> — clique pour répartir ton rang &amp; ta perk</span>
+</div>
+
 <!-- TABS -->
 <div class="tabs">
   <div class="tab on" onclick="sw('general')">GÉNÉRAL</div>
@@ -240,6 +246,22 @@
   </div>
 </div>
 
+
+<!-- MODAL MONTÉE DE NIVEAU -->
+<div class="mo" id="mo-lvl">
+  <div class="mbox lvl-box">
+    <div class="mtitle" id="mo-lvl-t">MONTÉE DE NIVEAU</div>
+    <div class="lvl-note">+1 PV max appliqué automatiquement · pas de soin</div>
+    <div class="lvl-sec">▸ Améliore une compétence <small>(+1, max 6)</small></div>
+    <div id="lvl-skills" class="lvl-grid"></div>
+    <div class="lvl-sec">▸ Choisis une perk</div>
+    <div id="lvl-perks" class="lvl-perks"></div>
+    <div class="mbtns">
+      <button class="btn pri f1" id="lvl-ok" onclick="applyLevelUp()" disabled>VALIDER</button>
+      <button class="btn f1" onclick="closeMo('mo-lvl')">PLUS TARD</button>
+    </div>
+  </div>
+</div>
 
   <script src="../../common/shared.js"></script>
   <script src="../../common/db.js"></script>
