@@ -452,9 +452,9 @@ function switchMapTab(tab) {
   if (pt) pt.style.display = tab === 'paris' ? 'block' : 'none';
   if (lt) lt.style.display = tab === 'lieux' ? 'block' : 'none';
   if (da) da.style.display = 'none';
-  // Bandeaux MJ : outils sur Paris/Lieux, positions joueurs sur Paris uniquement ; rien sur Métro
+  // Bandeaux MJ : outils sur Paris/Lieux ; positions joueurs sur Paris + Métro
   if (ml) ml.style.display = (isMJ && tab !== 'metro') ? 'block' : 'none';
-  if (mr) mr.style.display = (isMJ && tab === 'paris') ? 'block' : 'none';
+  if (mr) mr.style.display = (isMJ && tab !== 'lieux') ? 'block' : 'none';
   if (tab !== 'paris') { addingPOI = false; cancelDrawZone(); }
   if (tab === 'paris') {
     if (map) setTimeout(() => map.invalidateSize(), 50);
