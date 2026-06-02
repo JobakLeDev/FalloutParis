@@ -420,28 +420,81 @@ function anyRevealed(item) {
 // ============================================================
 function switchMapTab(tab) {
   currentTab = tab;
-  document.querySelectorAll('.map-tab').forEach((el, i) => el.classList.toggle('on', ['paris', 'lieux'][i] === tab));
+  const order = ['paris', 'metro', 'lieux'];
+  document.querySelectorAll('.map-tab').forEach((el, i) => el.classList.toggle('on', order[i] === tab));
   const pw = document.getElementById('map-paris-wrap');
+  const mw = document.getElementById('map-metro-wrap');
   const lw = document.getElementById('map-lieux-wrap');
   const pt = document.getElementById('mjp-paris-tools');
   const lt = document.getElementById('mjp-lieux-tools');
   const da = document.getElementById('draw-actions');
+  const ml = document.getElementById('mj-left');
+  const mr = document.getElementById('mj-right');
+  if (pw) pw.style.display = tab === 'paris' ? 'flex' : 'none';
+  if (mw) mw.style.display = tab === 'metro' ? 'flex' : 'none';
+  if (lw) lw.style.display = tab === 'lieux' ? 'flex' : 'none';
+  if (pt) pt.style.display = tab === 'paris' ? 'block' : 'none';
+  if (lt) lt.style.display = tab === 'lieux' ? 'block' : 'none';
+  if (da) da.style.display = 'none';
+  // Bandeaux MJ : outils sur Paris/Lieux, positions joueurs sur Paris uniquement ; rien sur Métro
+  if (ml) ml.style.display = (isMJ && tab !== 'metro') ? 'block' : 'none';
+  if (mr) mr.style.display = (isMJ && tab === 'paris') ? 'block' : 'none';
+  if (tab !== 'paris') { addingPOI = false; cancelDrawZone(); }
   if (tab === 'paris') {
-    if (pw) pw.style.display = 'flex';
-    if (lw) lw.style.display = 'none';
-    if (pt) pt.style.display = 'block';
-    if (lt) lt.style.display = 'none';
     if (map) setTimeout(() => map.invalidateSize(), 50);
+  } else if (tab === 'metro') {
+    initMetroMap();
+    if (metroMap) setTimeout(() => metroMap.invalidateSize(), 50);
   } else {
-    if (pw) pw.style.display = 'none';
-    if (lw) lw.style.display = 'flex';
-    if (pt) pt.style.display = 'none';
-    if (lt) lt.style.display = 'block';
-    if (da) da.style.display = 'none';
-    addingPOI = false; cancelDrawZone();
     renderLieux();
     if (mapLieu) setTimeout(() => mapLieu.invalidateSize(), 50);
   }
+}
+
+// ============================================================
+// ONGLET MÉTRO — plan du réseau (map/lignes_metro.geojson)
+// ============================================================
+const METRO_COLORS = {
+  '1':'#FFCD00','2':'#0064B0','3':'#9F9825','3bis':'#98D4E2','4':'#C04191',
+  '5':'#F28E42','6':'#83C491','7':'#F3A4BA','7bis':'#83C491','8':'#CEADD2',
+  '9':'#D5C900','10':'#E3B32A','11':'#8D5E2A','12':'#00814F','13':'#98D4E2','14':'#662483',
+};
+function metroLineKey(name){ const m=(''+(name||'')).match(/M[ée]tro\s+(\S+)/i); return m?m[1]:''; }
+function metroColor(name){ return METRO_COLORS[metroLineKey(name)] || '#7ED87E'; }
+
+let metroMap = null, metroInit = false;
+async function initMetroMap(){
+  if (metroInit) return;
+  metroInit = true;
+  const el = document.getElementById('map-metro');
+  metroMap = L.map(el, { zoomSnap:0.25, maxZoom:17, attributionControl:false });
+  metroMap.createPane('metroPane');
+  const mp = metroMap.getPane('metroPane');
+  mp.style.zIndex = 300; mp.style.pointerEvents = 'none';
+  mp.style.filter = 'drop-shadow(0 0 2px rgba(0,0,0,0.55))';
+  // Seine en repère géographique (discret)
+  try {
+    const seine = await fetch(GEOJSON_BASE + 'seine.geojson').then(r => r.json());
+    L.geoJSON(seine, { style:{ color:'#2f6f3f', weight:1, opacity:0.5, fillColor:'#0E2A0E', fillOpacity:0.35 } }).addTo(metroMap);
+  } catch(e){ console.warn('seine.geojson (métro) non chargé', e); }
+  // Lignes de métro colorées par numéro de ligne
+  let layer = null;
+  try {
+    const data = await fetch(GEOJSON_BASE + 'lignes_metro.geojson').then(r => r.json());
+    layer = L.geoJSON(data, { pane:'metroPane',
+      style: f => ({ color: metroColor(f.properties.name), weight:2.2, opacity:0.95, fill:false }),
+    }).addTo(metroMap);
+  } catch(e){ console.warn('lignes_metro.geojson non chargé', e); }
+  if (layer && layer.getBounds().isValid()) metroMap.fitBounds(layer.getBounds().pad(0.05));
+  else metroMap.setView([48.857, 2.34], 12);
+  buildMetroLegend();
+}
+function buildMetroLegend(){
+  const el = document.getElementById('metro-legend'); if(!el) return;
+  const order = ['1','2','3','3bis','4','5','6','7','7bis','8','9','10','11','12','13','14'];
+  el.innerHTML = '<div class="ml-t">LIGNES</div>' + order.map(k =>
+    `<div class="ml-it"><span class="ml-sw" style="background:${METRO_COLORS[k]};color:${METRO_COLORS[k]}"></span>${k}</div>`
+  ).join('');
 }
 
 function ajouterLieu() {
