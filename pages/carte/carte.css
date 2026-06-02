@@ -107,7 +107,7 @@ body.embed #map-tabs{padding:0;}
 .land-pin{display:flex !important;flex-direction:column;align-items:center;gap:1px;white-space:nowrap;}
 img.land-icon-img{
   display:block;
-  width:60px;height:45px;flex:none;
+  width:64px;height:64px;flex:none;
   object-fit:contain;
   filter:invert(1) hue-rotate(180deg) brightness(1.25) saturate(1.4) drop-shadow(0 0 3px rgba(93,190,93,.55));
   mix-blend-mode:screen;

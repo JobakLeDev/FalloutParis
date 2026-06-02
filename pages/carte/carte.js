@@ -333,7 +333,7 @@ function renderGeoLayers() {
           html: `<img class="land-icon-img" src="${imgPath}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">`
               + `<span class="geo-mark-dot${dim?' dim':''}" style="display:none"></span>`
               + `<span class="poi-label">${nom}${lock}</span>`,
-          iconSize: [60, 54], iconAnchor: [30, 46] }) });
+          iconSize: [64, 64], iconAnchor: [32, 60] }) });
         geoMarkerRefs[nom] = m;
         m.on('popupopen', () => { openItem = { kind: 'geomarker', id: nom }; });
         return m;
