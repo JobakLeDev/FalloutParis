@@ -83,8 +83,8 @@ const GEO_MARKER_ICONS = { Landmark:'🗼', Settlement:'🏠', Safe:'🛡', Metr
 // Si le fichier n'existe pas, l'icône se masque et le marqueur bascule sur le style standard (onerror).
 function landmarkImgPath(nom){
   return '../../img/' + nom.toLowerCase()
-    .normalize('NFD').replace(/[̀-ͯ]/g, '')   // retire les accents
-    .replace(/['''\-\s]+/g, '')                          // retire apostrophes, tirets, espaces
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')    // retire les accents
+    .replace(/['’‘\-\s]+/g, '')                          // retire apostrophes, tirets, espaces
     + '.png';
 }
 const GEO_OTHER_COLORS = { mutants:'#a05ad0', independant:'#c0a040', independants:'#c0a040', 'vault-tec':'#3a7bd5' };
