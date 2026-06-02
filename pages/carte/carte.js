@@ -233,40 +233,39 @@ function buildMap() {
 }
 
 async function loadGeoJsonLayers() {
+  await window.DB_READY;                   // FACTIONS dispo pour couleurs/labels
   // Cadre — étendue affichable de la carte (limites de pan/zoom)
   try {
     const data = await fetch(GEOJSON_BASE + 'cadre.geojson').then(r => r.json());
     MAP_BOUNDS = boundsFromGeoJSON(data);
-    lockParis(true);                      // applique les nouvelles bornes (recadre si pas encore centré)
+    lockParis(true);
   } catch(e) { console.warn('cadre.geojson non chargé', e); }
-  // Seine — eau vert sombre + liseré vert vif
+  // Zones + marqueurs (petits, prioritaires : libellés de position + détection)
+  try { geoZonesData   = await fetch(GEOJSON_BASE + 'zones.geojson').then(r => r.json()); }
+  catch(e){ console.warn('zones.geojson non chargé', e); }
+  try { geoMarkersData = await fetch(GEOJSON_BASE + 'marqueurs.geojson').then(r => r.json()); }
+  catch(e){ console.warn('marqueurs.geojson non chargé', e); }
+  renderGeoLayers();
+  renderMJPanel();                         // positions à jour dès que les marqueurs sont chargés
+  // Couches visuelles (plus lourdes) — chargées après
   try {
     const data = await fetch(GEOJSON_BASE + 'seine.geojson').then(r => r.json());
     L.geoJSON(data, { pane: 'seinePane',
       style: { color: '#4CFF77', weight: 1.6, opacity: 0.75, fillColor: '#0E2A0E', fillOpacity: 0.6 },
     }).addTo(map);
   } catch(e) { console.warn('seine.geojson non chargé', e); }
-  // Routes — réseau vert clair PipBoy
-  try {
-    const data = await fetch(GEOJSON_BASE + 'routes.geojson').then(r => r.json());
-    L.geoJSON(data, { pane: 'routesPane',
-      style: f => ({ color: '#B8FFB8', weight: isMajorRoad(f) ? 1.4 : 0.7, opacity: 0.85, fill: false }),
-    }).addTo(map);
-  } catch(e) { console.warn('routes.geojson non chargé', e); }
-  // Rails / métro — vert pointillé
   try {
     const data = await fetch(GEOJSON_BASE + 'rails.geojson').then(r => r.json());
     L.geoJSON(data, { pane: 'railsPane',
       style: { color: '#9DF09D', weight: 1.0, opacity: 0.8, dashArray: '5 3', fill: false },
     }).addTo(map);
   } catch(e) { console.warn('rails.geojson non chargé', e); }
-  // Zones + marqueurs authorés (QGIS)
-  try { geoZonesData   = await fetch(GEOJSON_BASE + 'zones.geojson').then(r => r.json()); }
-  catch(e){ console.warn('zones.geojson non chargé', e); }
-  try { geoMarkersData = await fetch(GEOJSON_BASE + 'marqueurs.geojson').then(r => r.json()); }
-  catch(e){ console.warn('marqueurs.geojson non chargé', e); }
-  await window.DB_READY;          // FACTIONS dispo pour couleurs/labels
-  renderGeoLayers();
+  try {
+    const data = await fetch(GEOJSON_BASE + 'routes.geojson').then(r => r.json());
+    L.geoJSON(data, { pane: 'routesPane',
+      style: f => ({ color: '#B8FFB8', weight: isMajorRoad(f) ? 1.4 : 0.7, opacity: 0.85, fill: false }),
+    }).addTo(map);
+  } catch(e) { console.warn('routes.geojson non chargé', e); }
 }
 
 // Rendu des zones/marqueurs GeoJSON. MJ : tout (Visible=false en pointillé léger).
