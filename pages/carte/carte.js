@@ -480,13 +480,18 @@ function centerOnViewer() {
   if (!viewerId) return;
   if (currentTab === 'metro') {
     if (!metroMap) return;
+    metroMap.invalidateSize();
     const t = mapData.metroTokens?.[viewerId];
     if (t && mapData.underground?.[viewerId]) metroMap.setView([t.lat, t.lng], Math.max(metroMap.getZoom(), 14), { animate: false });
     else lockMetro();
   } else if (currentTab === 'paris') {
     if (!map) return;
+    map.invalidateSize();
     const t = mapData.tokens?.[viewerId];
-    if (t) map.setView([t.lat, t.lng], map.getZoom(), { animate: false });
+    if (!t) return;
+    const zFill = map.getBoundsZoom(MAP_BOUNDS, true);
+    const z = Math.max(map.getZoom(), Math.min(zFill + 0.6, 16));   // au moins le zoom de navigation
+    map.setView([t.lat, t.lng], z, { animate: false });
   }
 }
 
