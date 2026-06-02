@@ -727,11 +727,26 @@ function onMapClick(e) {
 }
 
 // ---- OUTIL DÉPLACEMENT DE JETON (clic jeton → clic destination) ----
+// Active/désactive l'interactivité des couches (pour que le clic atteigne la carte)
+function setLayersClickable(on) {
+  ['overlayPane', 'markerPane', 'geoZonePane'].forEach(p => {
+    const pane = map.getPane(p); if (pane) pane.style.pointerEvents = on ? '' : 'none';
+  });
+}
 function toggleMoveMode() {
-  moveMode = !moveMode; movingToken = null;
-  if (moveMode) { addingPOI = false; document.getElementById('btn-add-poi')?.classList.remove('on'); cancelDrawZone(); }
-  document.getElementById('btn-move').classList.toggle('on', moveMode);
-  setHint(moveMode ? 'Clique le jeton à déplacer.' : '');
+  if (moveMode) { endMoveMode(); return; }
+  moveMode = true; movingToken = null;
+  addingPOI = false; document.getElementById('btn-add-poi')?.classList.remove('on'); cancelDrawZone();
+  setLayersClickable(false);                       // les clics passent à la carte
+  document.getElementById('btn-move').classList.add('on');
+  setHint('Clique le jeton à déplacer.');
+  renderTokens();
+}
+function endMoveMode() {
+  moveMode = false; movingToken = null;
+  setLayersClickable(true);
+  document.getElementById('btn-move')?.classList.remove('on');
+  setHint('');
   renderTokens();
 }
 function nearestTokenId(latlng) {
@@ -753,9 +768,7 @@ function handleMoveClick(latlng) {
     renderTokens();
   } else {
     executeMove(movingToken.id, movingToken.from, latlng);
-    moveMode = false; movingToken = null;
-    document.getElementById('btn-move').classList.remove('on');
-    setHint('');
+    endMoveMode();
   }
 }
 function executeMove(id, from, to) {
