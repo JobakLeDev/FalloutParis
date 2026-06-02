@@ -89,8 +89,14 @@ function landmarkKey(nom){
     .normalize('NFD').replace(/[̀-ͯ]/g, '')   // retire les accents
     .replace(/['’‘\-\s]+/g, '');                        // retire apostrophes, tirets, espaces
 }
-// Monuments dont l'image source est trop claire → atténuée en CSS (.land-dim)
-const DIM_LANDMARKS = new Set(['tourmontparnasse', 'operagarnier', 'parcdesprinces']);
+// Luminosité par monument (défaut 1.25) — pour égaliser des images sources trop claires/sombres.
+const LANDMARK_BRIGHT = {
+  operagarnier:     0.45,
+  parcdesprinces:   0.9,
+  tourmontparnasse: 0.9,
+  gallerieslafayette: 1.7,
+  ladefense:        0.7,
+};
 function landmarkImgPath(nom){
   return '../../img/' + landmarkKey(nom) + '.png?v=' + IMG_VER;
 }
@@ -336,9 +342,10 @@ function renderGeoLayers() {
         // Tous les marqueurs essaient leur image dédiée ; si absente → marqueur générique Fallout
         // (l'image se cache et le losange apparaît via onerror — sans guillemets doubles)
         const imgPath = landmarkImgPath(nom);
-        const dimCls = DIM_LANDMARKS.has(landmarkKey(nom)) ? ' land-dim' : '';
+        const lb = LANDMARK_BRIGHT[landmarkKey(nom)];
+        const lbStyle = lb != null ? ` style="--lb:${lb}"` : '';
         const m = L.marker(latlng, { opacity: dim ? 0.5 : 1, icon: L.divIcon({ className: 'land-pin',
-          html: `<img class="land-icon-img${dimCls}" src="${imgPath}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">`
+          html: `<img class="land-icon-img" src="${imgPath}"${lbStyle} onerror="this.style.display='none';this.nextElementSibling.style.display='block'">`
               + `<span class="geo-mark-dot${dim?' dim':''}" style="display:none"></span>`
               + `<span class="poi-label">${nom}${lock}</span>`,
           iconSize: [64, 64], iconAnchor: [32, 60] }) });

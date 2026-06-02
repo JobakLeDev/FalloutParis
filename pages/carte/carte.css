@@ -109,12 +109,9 @@ img.land-icon-img{
   display:block;
   width:64px;height:64px;flex:none;
   object-fit:contain;
-  filter:invert(1) hue-rotate(180deg) brightness(1.25) saturate(1.4) drop-shadow(0 0 3px rgba(93,190,93,.55));
+  /* luminosité réglable par monument via --lb (défaut 1.25) — voir LANDMARK_BRIGHT */
+  filter:invert(1) hue-rotate(180deg) brightness(var(--lb,1.25)) saturate(1.4) drop-shadow(0 0 3px rgba(93,190,93,.55));
   mix-blend-mode:screen;
-}
-/* Monuments dont l'image source est trop claire → on baisse la luminosité pour égaliser */
-img.land-icon-img.land-dim{
-  filter:invert(1) hue-rotate(180deg) brightness(0.45) saturate(1.4) drop-shadow(0 0 3px rgba(93,190,93,.55));
 }
 /* Marqueur générique Fallout-style : losange vert + croix de visée */
 .geo-mark-dot{
