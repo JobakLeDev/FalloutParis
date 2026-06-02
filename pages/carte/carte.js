@@ -327,10 +327,11 @@ function renderGeoLayers() {
         const dim = isMJ && !geoMarkerAnyRevealed(nom);   // MJ : caché = grisé + 🔒
         const lock = dim ? ' 🔒' : '';
         // Tous les marqueurs essaient leur image dédiée ; si absente → marqueur générique Fallout
+        // (l'image se cache et le losange apparaît via onerror — sans guillemets doubles)
         const imgPath = landmarkImgPath(nom);
-        const fallbackHtml = `<span class="geo-mark-dot${dim?' dim':''}"></span>`;
         const m = L.marker(latlng, { opacity: dim ? 0.5 : 1, icon: L.divIcon({ className: 'land-pin',
-          html: `<img class="land-icon land-icon-img" src="${imgPath}" onerror="this.replaceWith(document.createRange().createContextualFragment('${fallbackHtml}'))">`
+          html: `<img class="land-icon-img" src="${imgPath}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">`
+              + `<span class="geo-mark-dot${dim?' dim':''}" style="display:none"></span>`
               + `<span class="poi-label">${nom}${lock}</span>`,
           iconSize: [60, 54], iconAnchor: [30, 46] }) });
         geoMarkerRefs[nom] = m;
