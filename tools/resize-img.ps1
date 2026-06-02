@@ -4,8 +4,8 @@
 # (ou double-clic sur tools\resize-img.bat)
 
 param(
-  [int]$Max = 200,                     # taille max du grand côté (px)
-  [string[]]$Skip = @('VaultBoy.png')  # fichiers à ne pas toucher
+  [int]$Max = 200,                             # taille max du grand côté (px)
+  [string[]]$Skip = @('*vaultboy*','*icons*')  # motifs à ne pas toucher (insensible à la casse)
 )
 
 Add-Type -AssemblyName System.Drawing
@@ -14,7 +14,8 @@ $imgDir = Join-Path $PSScriptRoot '..\img'
 $total = 0
 
 Get-ChildItem $imgDir -Filter *.png | ForEach-Object {
-  if ($Skip -contains $_.Name) { Write-Host "skip  $($_.Name)"; return }
+  $name = $_.Name
+  if ($Skip | Where-Object { $name -like $_ }) { Write-Host "skip  $name"; return }
 
   $img = [System.Drawing.Image]::FromFile($_.FullName)
   $long = [Math]::Max($img.Width, $img.Height)
