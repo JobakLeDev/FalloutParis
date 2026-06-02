@@ -61,7 +61,7 @@ let moveMode = false, movingToken = null;          // outil déplacement de jeto
 
 // Couches GeoJSON authorées (QGIS) : zones (rencontres/danger) + marqueurs
 let geoZonesData = null, geoMarkersData = null;
-let geoZoneLayer, geoMarkerLayer;
+let geoZoneLayer, geoMarkerLayer, geoZoneRenderer = null;
 
 const GEO_MARKER_ICONS = { Landmark:'🗼', Settlement:'🏠', Safe:'🛡', Metro:'🚇', Danger:'☢', Faction:'🚩', Loot:'📦', Quest:'❗' };
 
@@ -188,7 +188,9 @@ function buildMap() {
   mkPane('routesPane', 201, 'drop-shadow(0 0 2px rgba(140,255,140,0.35))');
   mkPane('railsPane',  202, 'drop-shadow(0 0 1.5px rgba(140,255,140,0.25))');
   // Pane des zones GeoJSON : SOUS le brouillard (révélées par exploration)
+  // → renderer SVG dédié, sinon les polygones vont dans overlayPane (au-dessus du fog)
   map.createPane('geoZonePane'); map.getPane('geoZonePane').style.zIndex = 330;
+  geoZoneRenderer = L.svg({ pane: 'geoZonePane' });
   // Pane du brouillard : au-dessus des zones, sous les marqueurs (400+)
   map.createPane('fogPane'); const fp = map.getPane('fogPane'); fp.style.zIndex = 350; fp.style.pointerEvents = 'none';
 
@@ -274,7 +276,7 @@ function renderGeoLayers() {
 
   if (geoZonesData) {
     L.geoJSON(geoZonesData, {
-      pane: 'geoZonePane',
+      pane: 'geoZonePane', renderer: geoZoneRenderer,
       filter: f => isMJ || f.properties.Visible === true,
       style: f => {
         const fonctionnelle = isMJ && f.properties.Visible !== true;  // non visible joueurs
