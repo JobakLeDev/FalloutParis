@@ -114,7 +114,7 @@ img.land-icon-img{
 }
 /* Monuments dont l'image source est trop claire → on baisse la luminosité pour égaliser */
 img.land-icon-img.land-dim{
-  filter:invert(1) hue-rotate(180deg) brightness(0.7) saturate(1.4) drop-shadow(0 0 3px rgba(93,190,93,.55));
+  filter:invert(1) hue-rotate(180deg) brightness(0.45) saturate(1.4) drop-shadow(0 0 3px rgba(93,190,93,.55));
 }
 /* Marqueur générique Fallout-style : losange vert + croix de visée */
 .geo-mark-dot{
