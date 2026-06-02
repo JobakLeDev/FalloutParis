@@ -225,6 +225,14 @@ function buildMap() {
     if (currentTab === 'paris') lockParis(false);
     else if (currentTab === 'metro' && metroMap) lockMetro();
   });
+  // La fiche joueur (iframe) demande un recentrage à chaque réaffichage de l'onglet CARTE
+  window.addEventListener('message', e => {
+    if (e.data === 'carte-recenter' && viewerId) {
+      if (currentTab === 'paris' && map) map.invalidateSize();
+      if (currentTab === 'metro' && metroMap) metroMap.invalidateSize();
+      setTimeout(centerOnViewer, 60);
+    }
+  });
 
   updateModeUI();
 
@@ -457,13 +465,28 @@ function switchMapTab(tab) {
   if (mr) mr.style.display = (isMJ && tab !== 'lieux') ? 'block' : 'none';
   if (tab !== 'paris') { addingPOI = false; cancelDrawZone(); }
   if (tab === 'paris') {
-    if (map) setTimeout(() => map.invalidateSize(), 50);
+    if (map) setTimeout(() => { map.invalidateSize(); centerOnViewer(); }, 50);
   } else if (tab === 'metro') {
     initMetroMap();
-    if (metroMap) setTimeout(() => lockMetro(), 50);
+    if (metroMap) setTimeout(() => { lockMetro(); centerOnViewer(); }, 50);
   } else {
     renderLieux();
     if (mapLieu) setTimeout(() => mapLieu.invalidateSize(), 50);
+  }
+}
+
+// Recentre la carte active sur le jeton du joueur (vue joueur uniquement)
+function centerOnViewer() {
+  if (!viewerId) return;
+  if (currentTab === 'metro') {
+    if (!metroMap) return;
+    const t = mapData.metroTokens?.[viewerId];
+    if (t && mapData.underground?.[viewerId]) metroMap.setView([t.lat, t.lng], Math.max(metroMap.getZoom(), 14), { animate: false });
+    else lockMetro();
+  } else if (currentTab === 'paris') {
+    if (!map) return;
+    const t = mapData.tokens?.[viewerId];
+    if (t) map.setView([t.lat, t.lng], map.getZoom(), { animate: false });
   }
 }
 
