@@ -345,10 +345,12 @@ function renderGeoLayers() {
         const lb = LANDMARK_BRIGHT[landmarkKey(nom)];
         const lbStyle = lb != null ? ` style="--lb:${lb}"` : '';
         const m = L.marker(latlng, { opacity: dim ? 0.5 : 1, icon: L.divIcon({ className: 'land-pin',
-          html: `<img class="land-icon-img" src="${imgPath}"${lbStyle} onerror="this.style.display='none';this.nextElementSibling.style.display='block'">`
-              + `<span class="geo-mark-dot${dim?' dim':''}" style="display:none"></span>`
-              + `<span class="poi-label">${nom}${lock}</span>`,
-          iconSize: [64, 64], iconAnchor: [32, 60] }) });
+          html: `<span class="land-icon-wrap">`
+              +   `<img class="land-icon-img" src="${imgPath}"${lbStyle} onerror="this.style.display='none';this.nextElementSibling.style.display='block'">`
+              +   `<span class="geo-mark-dot${dim?' dim':''}" style="display:none"></span>`
+              + `</span>`,
+          iconSize: [64, 64], iconAnchor: [32, 32] }) });
+        m.bindTooltip(nom + lock, { className: 'map-tip', direction: 'top', offset: [0, -34] });
         geoMarkerRefs[nom] = m;
         m.on('popupopen', () => { openItem = { kind: 'geomarker', id: nom }; });
         return m;
@@ -938,9 +940,10 @@ function renderPOIs() {
     const m = L.marker([p.lat, p.lng], {
       draggable: isMJ && editMode, opacity: dim ? 0.5 : 1,
       icon: L.divIcon({ className: 'poi-pin',
-        html: `<span class="poi-dot" style="background:${t.color}">${t.icon}</span><span class="poi-label">${p.name}${dim ? ' 🔒' : ''}</span>`,
+        html: `<span class="poi-dot" style="background:${t.color}">${t.icon}</span>`,
         iconSize: [16, 16], iconAnchor: [8, 8] }),
     }).addTo(poiLayer);
+    m.bindTooltip(p.name + (dim ? ' 🔒' : ''), { className: 'map-tip', direction: 'top', offset: [0, -8] });
     m.bindPopup(poiPopup(p, t));
     m.on('popupopen', () => { openItem = { kind: 'poi', id: p.id }; });
     poiMarkers[p.id] = m;
