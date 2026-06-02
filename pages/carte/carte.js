@@ -210,7 +210,10 @@ function buildMap() {
 
   lockParis(true);
   setTimeout(() => lockParis(true), 300);      // re-cadrage si conteneur (iframe) pas encore dimensionné
-  window.addEventListener('resize', () => { if (currentTab === 'paris') lockParis(false); });
+  window.addEventListener('resize', () => {
+    if (currentTab === 'paris') lockParis(false);
+    else if (currentTab === 'metro' && metroMap) lockMetro();
+  });
 
   updateModeUI();
 
@@ -444,7 +447,7 @@ function switchMapTab(tab) {
     if (map) setTimeout(() => map.invalidateSize(), 50);
   } else if (tab === 'metro') {
     initMetroMap();
-    if (metroMap) setTimeout(() => metroMap.invalidateSize(), 50);
+    if (metroMap) setTimeout(() => lockMetro(), 50);
   } else {
     renderLieux();
     if (mapLieu) setTimeout(() => mapLieu.invalidateSize(), 50);
@@ -471,15 +474,26 @@ async function initMetroMap(){
     L.geoJSON(seine, { style:{ color:'#2f6f3f', weight:1, opacity:0.5, fillColor:'#0E2A0E', fillOpacity:0.35 } }).addTo(metroMap);
   } catch(e){ console.warn('seine.geojson (métro) non chargé', e); }
   // Tunnels — vert monochrome, pointillés
-  let layer = null;
   try {
     const data = await fetch(GEOJSON_BASE + 'lignes_metro.geojson').then(r => r.json());
-    layer = L.geoJSON(data, { pane:'metroPane',
+    L.geoJSON(data, { pane:'metroPane',
       style: { color:'#5dff5d', weight:1.6, opacity:0.8, dashArray:'5 4', fill:false },
     }).addTo(metroMap);
   } catch(e){ console.warn('lignes_metro.geojson non chargé', e); }
-  if (layer && layer.getBounds().isValid()) metroMap.fitBounds(layer.getBounds().pad(0.05));
-  else metroMap.setView([48.857, 2.34], 12);
+  lockMetro();
+}
+
+// Cadre la vue métro sur MAP_BOUNDS (cadre.geojson), comme la carte Paris :
+// remplit la largeur, pan limité au cadre.
+function lockMetro(){
+  if (!metroMap) return;
+  metroMap.invalidateSize();
+  metroMap.setMinZoom(0);
+  const zFill = metroMap.getBoundsZoom(MAP_BOUNDS, true);
+  metroMap.setMinZoom(zFill);
+  metroMap.setMaxBounds(MAP_BOUNDS.pad(0.02));
+  metroMap.options.maxBoundsViscosity = 1.0;
+  metroMap.setView(MAP_BOUNDS.getCenter(), zFill, { animate:false });
 }
 
 function ajouterLieu() {
