@@ -68,6 +68,11 @@ body.embed #map-tabs{padding:0;}
 .pz-gen{color:var(--am);text-decoration:none;border:1px solid var(--gd);padding:1px 5px;background:none;font-family:'Share Tech Mono',monospace;font-size:9px;cursor:pointer;line-height:1.4;}
 .pz-gen:hover{border-color:var(--g);color:var(--g);}
 .empty{font-size:8px;color:var(--td);}
+/* Lignes position joueur (nom + boutons au-dessus, lieu en dessous) */
+.pp-row{padding:5px 0;border-bottom:1px solid var(--b);}
+.pp-head{display:flex;align-items:center;gap:6px;}
+.pp-nom{flex:1;color:var(--tb);font-size:10px;}
+.pp-pos{font-size:8px;color:var(--td);margin-top:2px;line-height:1.45;}
 
 /* FORMULAIRE DE ZONE */
 #zone-form{display:none;position:fixed;inset:0;z-index:3000;background:rgba(6,13,6,.85);align-items:center;justify-content:center;}
