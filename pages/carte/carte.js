@@ -81,11 +81,13 @@ const GEO_MARKER_ICONS = { Landmark:'🗼', Settlement:'🏠', Safe:'🛡', Metr
 // Normalisation : minuscules, sans accents, sans apostrophes/tirets/espaces.
 // L'utilisateur dépose les fichiers dans img/ avec le nom du monument.
 // Si le fichier n'existe pas, l'icône se masque et le marqueur bascule sur le style standard (onerror).
+// IMG_VER : à incrémenter quand on remplace des images (casse le cache navigateur).
+const IMG_VER = '3';
 function landmarkImgPath(nom){
   return '../../img/' + nom.toLowerCase()
     .normalize('NFD').replace(/[̀-ͯ]/g, '')    // retire les accents
     .replace(/['’‘\-\s]+/g, '')                          // retire apostrophes, tirets, espaces
-    + '.png';
+    + '.png?v=' + IMG_VER;
 }
 const GEO_OTHER_COLORS = { mutants:'#a05ad0', independant:'#c0a040', independants:'#c0a040', 'vault-tec':'#3a7bd5' };
 
