@@ -77,15 +77,16 @@ let geoZoneLayer, geoMarkerLayer, geoZoneRenderer = null;
 
 const GEO_MARKER_ICONS = { Landmark:'🗼', Settlement:'🏠', Safe:'🛡', Metro:'🚇', Danger:'☢', Faction:'🚩', Loot:'📦', Quest:'❗' };
 
-// Icônes de monuments : {img} → fichier dédié ; string → position dans le sprite Icons.png (2×4)
-const LANDMARK_SPRITES = {
-  'tour eiffel':              { img: '../../img/toureiffel.png' },
-  'notre-dame':               { img: '../../img/notredame.png' },
-  'obélisque de la concorde': '100% 0%',
-  'arc de triomphe':          '0% 33.333%',
-  'musée du louvre':          '100% 66.667%',
-  'montmartre':               '0% 100%',
-};
+// Chemin de l'image pour un marqueur : img/<nom normalisé>.png
+// Normalisation : minuscules, sans accents, sans apostrophes/tirets/espaces.
+// L'utilisateur dépose les fichiers dans img/ avec le nom du monument.
+// Si le fichier n'existe pas, l'icône se masque et le marqueur bascule sur le style standard (onerror).
+function landmarkImgPath(nom){
+  return '../../img/' + nom.toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')   // retire les accents
+    .replace(/['''\-\s]+/g, '')                          // retire apostrophes, tirets, espaces
+    + '.png';
+}
 const GEO_OTHER_COLORS = { mutants:'#a05ad0', independant:'#c0a040', independants:'#c0a040', 'vault-tec':'#3a7bd5' };
 
 // Faction GeoJSON → clé factions.json (null si pas une faction joueur)
@@ -325,22 +326,13 @@ function renderGeoLayers() {
         const nom = f.properties.nom || '';
         const dim = isMJ && !geoMarkerAnyRevealed(nom);   // MJ : caché = grisé + 🔒
         const lock = dim ? ' 🔒' : '';
-        const sprite = LANDMARK_SPRITES[nom.toLowerCase()];
-        let m;
-        if (sprite) {  // monument avec icône dédiée
-          const iconHtml = typeof sprite === 'object' && sprite.img
-            ? `<span class="land-icon land-icon-img" style="background-image:url('${sprite.img}')"></span>`
-            : `<span class="land-icon" style="background-position:${sprite}"></span>`;
-          m = L.marker(latlng, { opacity: dim ? 0.5 : 1, icon: L.divIcon({ className: 'land-pin',
-            html: `${iconHtml}<span class="poi-label">${nom}${lock}</span>`,
-            iconSize: [60, 45], iconAnchor: [30, 38] }) });
-        } else {
-          const col = geoColor(f.properties.faction, f.properties.type);
-          const icon = GEO_MARKER_ICONS[f.properties.type] || '📍';
-          m = L.marker(latlng, { opacity: dim ? 0.5 : 1, icon: L.divIcon({ className: 'poi-pin',
-            html: `<span class="poi-dot" style="background:${col}">${icon}</span><span class="poi-label">${nom}${lock}</span>`,
-            iconSize: [16, 16], iconAnchor: [8, 8] }) });
-        }
+        // Tous les marqueurs essaient leur image dédiée ; si absente → marqueur générique Fallout
+        const imgPath = landmarkImgPath(nom);
+        const fallbackHtml = `<span class="geo-mark-dot${dim?' dim':''}"></span>`;
+        const m = L.marker(latlng, { opacity: dim ? 0.5 : 1, icon: L.divIcon({ className: 'land-pin',
+          html: `<img class="land-icon land-icon-img" src="${imgPath}" onerror="this.replaceWith(document.createRange().createContextualFragment('${fallbackHtml}'))">`
+              + `<span class="poi-label">${nom}${lock}</span>`,
+          iconSize: [60, 54], iconAnchor: [30, 46] }) });
         geoMarkerRefs[nom] = m;
         m.on('popupopen', () => { openItem = { kind: 'geomarker', id: nom }; });
         return m;

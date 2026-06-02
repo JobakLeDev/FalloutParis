@@ -105,18 +105,26 @@ body.embed #map-tabs{padding:0;}
 
 /* MONUMENTS (sprite Icons.png, fond blanc détouré via invert+screen) */
 .land-pin{display:flex !important;flex-direction:column;align-items:center;gap:1px;white-space:nowrap;}
-.land-icon{
+.land-icon{display:none;}/* sprite supprimé */
+img.land-icon.land-icon-img{
+  display:block;
   width:60px;height:45px;flex:none;
-  background-image:url('../../img/Icons.png');
-  background-repeat:no-repeat;
-  background-size:200% 400%;            /* 2 colonnes × 4 lignes */
+  object-fit:contain;
   filter:invert(1) hue-rotate(180deg) brightness(1.25) saturate(1.4) drop-shadow(0 0 3px rgba(93,190,93,.55));
-  mix-blend-mode:screen;               /* le fond blanc → noir → transparent */
+  mix-blend-mode:screen;
 }
-.land-icon.land-icon-img{
-  background-size:contain;
-  background-position:center !important;
+/* Marqueur générique Fallout-style : losange vert + croix de visée */
+.geo-mark-dot{
+  display:block; width:16px; height:16px; flex:none; position:relative;
+  background:var(--g); clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);
+  box-shadow:0 0 6px rgba(93,190,93,.7);
 }
+.geo-mark-dot::before,.geo-mark-dot::after{
+  content:''; position:absolute; background:var(--bg);
+}
+.geo-mark-dot::before{ width:2px; height:8px; top:4px; left:7px; }
+.geo-mark-dot::after{  width:8px; height:2px; top:7px; left:4px; }
+.geo-mark-dot.dim{ opacity:0.45; }
 .land-pin .poi-label{font-size:10px;}
 
 /* JETONS JOUEURS */
