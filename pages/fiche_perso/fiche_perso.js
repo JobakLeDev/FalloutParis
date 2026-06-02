@@ -4,7 +4,7 @@
 // ============================================================
 
 const char = {
-  name:'',niveau:1,xp:0,origine:'',
+  name:'',niveau:1,xp:0,origine:'',allocatedLevel:null,
   hp:3,rad:0,momentum:0,powerArmor:false,
   special:{S:9,P:5,E:8,C:5,I:5,A:5,L:5},
   perks:{},
@@ -125,7 +125,7 @@ function utiliserItem(i){
 }
 
 
-function rAll(){rSpecial();rGenWeap();rHP();rMeta();rStatus();rWeapEq();rAmmo();rPerkRD();rLocs();rLocsGen();rInventory();rSkills();rPerks();rPerkEff();rCharge();}
+function rAll(){rSpecial();rGenWeap();rHP();rMeta();rStatus();rWeapEq();rAmmo();rPerkRD();rLocs();rLocsGen();rInventory();rSkills();rPerks();rPerkEff();rCharge();rLevelUp();}
 
 function rSpecial(){
   const ORDER=['S','P','E','C','I','A','L'];
@@ -515,7 +515,9 @@ function chHPd(add){const d=parseInt(document.getElementById('hpd')?.value)||1;c
 function chRad(n){char.rad=Math.max(0,Math.min(hpMax(),char.rad+n));rAll();}
 function addXP(n){
   char.xp+=n;
-  if(char.xp>=xpNext()&&char.niveau<20){char.niveau++;const b=SP().E;char.hp=Math.min(char.hp+b,hpMax());alert(`✦ Niveau ${char.niveau} ! +${b} PV`);}
+  // Montée de niveau : +1 PV max (via formule hpMax), PAS de soin. La répartition
+  // rang+perk se fait via la modale (écart niveau / allocatedLevel → alerte).
+  while(char.niveau<20&&char.xp>=xpNext())char.niveau++;
   rAll();
 }
 function setMom(i){char.momentum=(i<char.momentum)?i:i+1;rMom();}
@@ -581,6 +583,79 @@ function saveSpec(){const v=Math.min(10,Math.max(1,parseInt(document.getElementB
 function openMoSk(key,name){_moSkKey=key;document.getElementById('mo-sk-t').textContent='COMPÉTENCE : '+name.toUpperCase();document.getElementById('mo-sk-v').value=char.skills[key]||0;document.getElementById('mo-sk-tag').value=char.taggedSkills.includes(key)?'1':'0';document.getElementById('mo-sk').classList.add('on');}
 function saveSkill(){const v=Math.min(6,Math.max(0,parseInt(document.getElementById('mo-sk-v').value)||0));char.skills[_moSkKey]=v;const tg=document.getElementById('mo-sk-tag').value==='1';if(tg&&!char.taggedSkills.includes(_moSkKey))char.taggedSkills.push(_moSkKey);if(!tg)char.taggedSkills=char.taggedSkills.filter(k=>k!==_moSkKey);closeMo('mo-sk');rAll();}
 function closeMo(id){document.getElementById(id).classList.remove('on');}
+
+// ============================================================
+// MONTÉE DE NIVEAU — répartition rang + perk
+// ============================================================
+// Niveaux en attente = écart entre le niveau atteint (piloté par le MJ ou l'XP)
+// et allocatedLevel (dernier niveau dont le joueur a réparti rang+perk).
+function pendingLU(){
+  const al = (char.allocatedLevel==null) ? (char.niveau||1) : char.allocatedLevel;
+  return Math.max(0,(char.niveau||1)-al);
+}
+let _luSkill=null, _luPerk=null, _luPerks=[];
+
+// Une perk est éligible si : niveau requis atteint, prérequis SPECIAL remplis, rang max non atteint.
+function perkEligible(name){
+  const def=PERKS_DEF[name]; if(!def) return false;
+  if((def.lvl||1)>char.niveau) return false;
+  for(const r of (def.req||[])) if((SP()[r.s]||0)<r.min) return false;
+  return (char.perks[name]||0)<(def.max||1);
+}
+
+// Bandeau d'alerte sur l'écran joueur
+function rLevelUp(){
+  const a=document.getElementById('lvlup-alert'); if(!a) return;
+  const n=pendingLU();
+  a.style.display = n>0 ? 'flex' : 'none';
+  if(n>0){ const c=document.getElementById('lvlup-count'); if(c) c.textContent = n>1?`(${n} niveaux)`:''; }
+}
+
+function openLevelUp(){
+  if(pendingLU()<=0) return;
+  _luSkill=null; _luPerk=null;
+  document.getElementById('mo-lvl-t').textContent='MONTÉE DE NIVEAU '+char.niveau;
+  // compétences (+1, max 6)
+  document.getElementById('lvl-skills').innerHTML = SKILLS_DEF.map(s=>{
+    const r=char.skills[s.key]||0, dis=r>=6;
+    return `<button class="lvl-opt${dis?' dis':''}" id="luS-${s.key}" ${dis?'disabled':''} onclick="selLuSkill('${s.key}')"><span class="lo-n">${s.name}</span><span class="lo-r">${dis?r+' (max)':r+'→'+(r+1)}</span></button>`;
+  }).join('');
+  // perks éligibles
+  _luPerks = Object.keys(PERKS_DEF).filter(perkEligible).sort();
+  document.getElementById('lvl-perks').innerHTML = _luPerks.length ? _luPerks.map((n,i)=>{
+    const def=PERKS_DEF[n], cur=char.perks[n]||0;
+    const reqTxt=(def.req||[]).map(r=>r.s+'≥'+r.min).join(' ');
+    return `<button class="lvl-perk" id="luP-${i}" onclick="selLuPerk(${i})"><div class="lp-h"><span class="lp-n">${n}${def.max>1?` (${cur}→${cur+1}/${def.max})`:''}</span>${reqTxt?`<span class="lp-req">${reqTxt}</span>`:''}</div><div class="lp-d">${def.desc}</div></button>`;
+  }).join('') : '<div class="lvl-empty">Aucune perk éligible (prérequis SPECIAL/niveau non remplis).</div>';
+  _luSync();
+  document.getElementById('mo-lvl').classList.add('on');
+}
+function selLuSkill(key){
+  _luSkill=key;
+  document.querySelectorAll('#lvl-skills .lvl-opt').forEach(b=>b.classList.toggle('sel', b.id==='luS-'+key));
+  _luSync();
+}
+function selLuPerk(i){
+  _luPerk=_luPerks[i];
+  document.querySelectorAll('#lvl-perks .lvl-perk').forEach((b,j)=>b.classList.toggle('sel', j===i));
+  _luSync();
+}
+function _luSync(){
+  const ok=document.getElementById('lvl-ok');
+  // la perk est facultative s'il n'y en a aucune d'éligible
+  const perkOk = _luPerks.length===0 || !!_luPerk;
+  if(ok) ok.disabled = !(_luSkill && perkOk);
+}
+function applyLevelUp(){
+  if(pendingLU()<=0){ closeMo('mo-lvl'); return; }
+  if(!_luSkill) return;
+  char.skills[_luSkill]=Math.min(6,(char.skills[_luSkill]||0)+1);
+  if(_luPerk) char.perks[_luPerk]=(char.perks[_luPerk]||0)+1;
+  char.allocatedLevel = ((char.allocatedLevel==null)?(char.niveau-pendingLU()):char.allocatedLevel) + 1;
+  closeMo('mo-lvl');
+  rAll(); // sauvegarde Firebase + maj affichage
+  if(pendingLU()>0) setTimeout(openLevelUp,180); // niveaux restants à répartir
+}
 
 window.DB_READY.then(() => {
   Object.keys(PERKS_DEF).forEach(k => { if (!char.perks[k]) char.perks[k] = 0; });
