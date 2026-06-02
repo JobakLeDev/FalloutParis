@@ -495,9 +495,11 @@ function updateModeUI() {
   const md = document.getElementById('hdr-mode');
   if (md) md.textContent = isMJ ? 'Vue MJ' : (viewerId ? 'Vue joueur' : 'Visiteur');
   const mb = document.getElementById('mj-btn'); if (mb) mb.style.display = (isMJ || viewerId) ? 'none' : 'inline-block';
-  const eb = document.getElementById('edit-btn'); if (eb) eb.style.display = isMJ ? 'inline-block' : 'none';
+  const eb = document.getElementById('edit-btn'); if (eb) eb.style.display = 'none';  // édition toujours active
   const ml = document.getElementById('mj-left');  if (ml) ml.style.display = isMJ ? 'block' : 'none';
   const mr = document.getElementById('mj-right'); if (mr) mr.style.display = isMJ ? 'block' : 'none';
+  // MJ : outils d'édition directement disponibles (plus de toggle)
+  if (isMJ) { editMode = true; const t = document.getElementById('mjp-tools'); if (t) t.style.display = 'block'; }
 }
 function toggleEdit() {
   editMode = !editMode;
