@@ -41,10 +41,6 @@ body.embed #map-tabs{padding:0;}
 /* LIEUX */
 #map-metro-wrap{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;padding:8px;overflow:hidden;position:relative;}
 #map-metro{width:66%;height:66%;background:#071307;position:relative;border:1px solid var(--b2);box-shadow:inset 0 0 30px rgba(0,0,0,0.6),0 0 0 1px #060d06;overflow:hidden;}
-#metro-legend{position:absolute;top:18px;right:18px;max-height:80%;overflow-y:auto;background:rgba(6,13,6,.88);border:1px solid var(--b2);padding:7px 9px;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:1px;color:var(--t);z-index:500;display:grid;grid-template-columns:auto auto;gap:3px 8px;}
-#metro-legend .ml-it{display:flex;align-items:center;gap:5px;}
-#metro-legend .ml-sw{width:14px;height:3px;border-radius:1px;flex:none;box-shadow:0 0 3px currentColor;}
-#metro-legend .ml-t{font-size:7px;letter-spacing:2px;color:var(--td);grid-column:1/-1;margin-bottom:2px;}
 
 #map-lieux-wrap{flex:1;display:flex;min-height:0;}
 #lieux-sidebar{width:180px;flex:none;background:var(--p2);border-right:1px solid var(--b2);padding:8px;overflow-y:auto;}

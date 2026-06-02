@@ -452,16 +452,9 @@ function switchMapTab(tab) {
 }
 
 // ============================================================
-// ONGLET MÉTRO — plan du réseau (map/lignes_metro.geojson)
+// ONGLET MÉTRO — réseau de tunnels (map/lignes_metro.geojson)
+// Fallout : plus de RATP. Tunnels en vert CRT monochrome, pointillés.
 // ============================================================
-const METRO_COLORS = {
-  '1':'#FFCD00','2':'#0064B0','3':'#9F9825','3bis':'#98D4E2','4':'#C04191',
-  '5':'#F28E42','6':'#83C491','7':'#F3A4BA','7bis':'#83C491','8':'#CEADD2',
-  '9':'#D5C900','10':'#E3B32A','11':'#8D5E2A','12':'#00814F','13':'#98D4E2','14':'#662483',
-};
-function metroLineKey(name){ const m=(''+(name||'')).match(/M[ée]tro\s+(\S+)/i); return m?m[1]:''; }
-function metroColor(name){ return METRO_COLORS[metroLineKey(name)] || '#7ED87E'; }
-
 let metroMap = null, metroInit = false;
 async function initMetroMap(){
   if (metroInit) return;
@@ -471,30 +464,22 @@ async function initMetroMap(){
   metroMap.createPane('metroPane');
   const mp = metroMap.getPane('metroPane');
   mp.style.zIndex = 300; mp.style.pointerEvents = 'none';
-  mp.style.filter = 'drop-shadow(0 0 2px rgba(0,0,0,0.55))';
+  mp.style.filter = 'drop-shadow(0 0 2px rgba(93,255,93,0.45))';
   // Seine en repère géographique (discret)
   try {
     const seine = await fetch(GEOJSON_BASE + 'seine.geojson').then(r => r.json());
     L.geoJSON(seine, { style:{ color:'#2f6f3f', weight:1, opacity:0.5, fillColor:'#0E2A0E', fillOpacity:0.35 } }).addTo(metroMap);
   } catch(e){ console.warn('seine.geojson (métro) non chargé', e); }
-  // Lignes de métro colorées par numéro de ligne
+  // Tunnels — vert monochrome, pointillés
   let layer = null;
   try {
     const data = await fetch(GEOJSON_BASE + 'lignes_metro.geojson').then(r => r.json());
     layer = L.geoJSON(data, { pane:'metroPane',
-      style: f => ({ color: metroColor(f.properties.name), weight:2.2, opacity:0.95, fill:false }),
+      style: { color:'#5dff5d', weight:1.6, opacity:0.8, dashArray:'5 4', fill:false },
     }).addTo(metroMap);
   } catch(e){ console.warn('lignes_metro.geojson non chargé', e); }
   if (layer && layer.getBounds().isValid()) metroMap.fitBounds(layer.getBounds().pad(0.05));
   else metroMap.setView([48.857, 2.34], 12);
-  buildMetroLegend();
-}
-function buildMetroLegend(){
-  const el = document.getElementById('metro-legend'); if(!el) return;
-  const order = ['1','2','3','3bis','4','5','6','7','7bis','8','9','10','11','12','13','14'];
-  el.innerHTML = '<div class="ml-t">LIGNES</div>' + order.map(k =>
-    `<div class="ml-it"><span class="ml-sw" style="background:${METRO_COLORS[k]};color:${METRO_COLORS[k]}"></span>${k}</div>`
-  ).join('');
 }
 
 function ajouterLieu() {
