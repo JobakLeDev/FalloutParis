@@ -679,11 +679,34 @@ function renderMJPanel() {
   el.innerHTML = ids.map(id => {
     const t = mapData.tokens[id];
     const z = t ? detectZone(t.lat, t.lng) : null;
-    return `<div class="pz-row"><span class="pz-nom">${joueurs[id]?.nom || id}</span>
-      <span class="pz-zone">${z ? z.name : '—'}</span>
-      ${t ? `<button class="pz-gen" onclick="centerOnToken('${id}')" title="Centrer la carte">⌖</button>` : ''}
-      ${z ? `<a class="pz-gen" href="${z.genUrl}" title="Générer rencontre">⚔</a>` : ''}</div>`;
+    const label = t ? playerPositionLabel(t.lat, t.lng, z) : '—';
+    return `<div class="pp-row">
+      <div class="pp-head"><span class="pp-nom">${joueurs[id]?.nom || id}</span>
+        ${t ? `<button class="pz-gen" onclick="centerOnToken('${id}')" title="Centrer la carte">⌖</button>` : ''}
+        ${z ? `<a class="pz-gen" href="${z.genUrl}" title="Générer rencontre">⚔</a>` : ''}</div>
+      <div class="pp-pos">${label}</div>
+    </div>`;
   }).join('');
+}
+
+// Marqueur GeoJSON le plus proche d'un point → {nom, dist} ou null
+function nearestMarker(lat, lng) {
+  if (!geoMarkersData) return null;
+  let best = null, bestD = Infinity;
+  geoMarkersData.features.forEach(f => {
+    const c = f.geometry?.coordinates; if (!c) return;
+    const d = L.latLng(lat, lng).distanceTo(L.latLng(c[1], c[0]));
+    if (d < bestD) { bestD = d; best = { nom: f.properties.nom, dist: d }; }
+  });
+  return best;
+}
+// Libellé de position : zone, sinon marqueur posé dessus, sinon région + proximité
+function playerPositionLabel(lat, lng, z) {
+  if (z) return z.name;
+  const near = nearestMarker(lat, lng);
+  if (near && near.dist < 120) return near.nom;               // posé sur un marqueur
+  const region = isIntraMuros(lat, lng) ? 'Visite Paris' : 'En banlieue';
+  return near ? `${region} — à proximité de ${near.nom}` : region;
 }
 
 // ---- POPUPS ----
