@@ -204,7 +204,14 @@ function addInvItem(){
 }
 
 // ---- AMMO ----
+function populateAmmoSelect(){
+  const sel=document.getElementById('ammo-cal');if(!sel)return;
+  const used=new Set(editAmmo.map(a=>a.cal));
+  sel.innerHTML='<option value="">Calibre...</option>';
+  (window.DB?.ammo||[]).filter(c=>!used.has(c)).forEach(c=>sel.innerHTML+=`<option value="${c}">${c}</option>`);
+}
 function renderAmmo(){
+  populateAmmoSelect();
   const g=document.getElementById('ammo-grid');g.innerHTML='';
   editAmmo.forEach((a,i)=>{
     g.innerHTML+=`<div class="inv-row">
@@ -223,8 +230,8 @@ function rmAmmo(i){editAmmo.splice(i,1);renderAmmo();}
 function addAmmo(){
   const cal=document.getElementById('ammo-cal').value.trim();
   if(!cal)return;
+  if(editAmmo.some(a=>a.cal===cal))return; // déjà présent
   editAmmo.push({cal,qty:0});
-  document.getElementById('ammo-cal').value='';
   renderAmmo();
 }
 

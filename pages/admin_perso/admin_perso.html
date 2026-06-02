@@ -30,7 +30,10 @@
     <div>
       <div class="hdr-title">ADMIN PERSONNAGES<small>Fallout Paris — MAÎTRE DU JEU</small></div>
     </div>
-    <button class="btn-back" onclick="window.location.href='/FalloutParis/index.html'">← Accueil</button>
+    <div style="display:flex;gap:8px">
+      <a class="btn-back" href="../mj/mj.html">🎲 Page MJ</a>
+      <button class="btn-back" onclick="window.location.href='/FalloutParis/index.html'">← Accueil</button>
+    </div>
   </div>
 
   <div class="main">
@@ -116,7 +119,7 @@
           <div class="ptitle" style="margin-top:4px">Munitions</div>
           <div id="ammo-grid"></div>
           <div style="display:flex;gap:6px;margin-top:6px">
-            <input type="text" id="ammo-cal" placeholder="Calibre..." style="flex:1;background:#060d06;border:1px solid var(--b2);color:var(--tb);font-family:'Share Tech Mono',monospace;font-size:10px;padding:5px;outline:none;">
+            <select class="fo-sel" id="ammo-cal" style="flex:1"><option value="">Calibre...</option></select>
             <button class="btn" onclick="addAmmo()">+ Munitions</button>
           </div>
         </div>
