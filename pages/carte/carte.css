@@ -113,6 +113,10 @@ body.embed #map-tabs{padding:0;}
   filter:invert(1) hue-rotate(180deg) brightness(1.25) saturate(1.4) drop-shadow(0 0 3px rgba(93,190,93,.55));
   mix-blend-mode:screen;               /* le fond blanc → noir → transparent */
 }
+.land-icon.land-icon-img{
+  background-size:contain;
+  background-position:center !important;
+}
 .land-pin .poi-label{font-size:10px;}
 
 /* JETONS JOUEURS */

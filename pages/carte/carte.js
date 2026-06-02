@@ -77,12 +77,12 @@ let geoZoneLayer, geoMarkerLayer, geoZoneRenderer = null;
 
 const GEO_MARKER_ICONS = { Landmark:'🗼', Settlement:'🏠', Safe:'🛡', Metro:'🚇', Danger:'☢', Faction:'🚩', Loot:'📦', Quest:'❗' };
 
-// Sprite img/Icons.png (2 col × 4 lignes) → position de fond par monument (nom minuscule)
+// Icônes de monuments : {img} → fichier dédié ; string → position dans le sprite Icons.png (2×4)
 const LANDMARK_SPRITES = {
-  'tour eiffel':              '0% 0%',
+  'tour eiffel':              { img: '../../img/toureiffel.png' },
+  'notre-dame':               { img: '../../img/notredame.png' },
   'obélisque de la concorde': '100% 0%',
   'arc de triomphe':          '0% 33.333%',
-  'notre-dame':               '0% 66.667%',
   'musée du louvre':          '100% 66.667%',
   'montmartre':               '0% 100%',
 };
@@ -327,9 +327,12 @@ function renderGeoLayers() {
         const lock = dim ? ' 🔒' : '';
         const sprite = LANDMARK_SPRITES[nom.toLowerCase()];
         let m;
-        if (sprite) {  // monument avec icône dédiée (sprite Icons.png)
+        if (sprite) {  // monument avec icône dédiée
+          const iconHtml = typeof sprite === 'object' && sprite.img
+            ? `<span class="land-icon land-icon-img" style="background-image:url('${sprite.img}')"></span>`
+            : `<span class="land-icon" style="background-position:${sprite}"></span>`;
           m = L.marker(latlng, { opacity: dim ? 0.5 : 1, icon: L.divIcon({ className: 'land-pin',
-            html: `<span class="land-icon" style="background-position:${sprite}"></span><span class="poi-label">${nom}${lock}</span>`,
+            html: `${iconHtml}<span class="poi-label">${nom}${lock}</span>`,
             iconSize: [60, 45], iconAnchor: [30, 38] }) });
         } else {
           const col = geoColor(f.properties.faction, f.properties.type);
