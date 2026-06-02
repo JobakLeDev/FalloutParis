@@ -187,8 +187,9 @@ function buildMap() {
   mkPane('seinePane',  200, 'drop-shadow(0 0 2px rgba(85,255,136,0.25))');
   mkPane('routesPane', 201, 'drop-shadow(0 0 2px rgba(140,255,140,0.35))');
   mkPane('railsPane',  202, 'drop-shadow(0 0 1.5px rgba(140,255,140,0.25))');
-  // Pane du brouillard : entre le terrain (202) et les zones/marqueurs (400+)
-  // → le fog ne noircit que le terrain ; les éléments révélés restent visibles au-dessus
+  // Pane des zones GeoJSON : SOUS le brouillard (révélées par exploration)
+  map.createPane('geoZonePane'); map.getPane('geoZonePane').style.zIndex = 330;
+  // Pane du brouillard : au-dessus des zones, sous les marqueurs (400+)
   map.createPane('fogPane'); const fp = map.getPane('fogPane'); fp.style.zIndex = 350; fp.style.pointerEvents = 'none';
 
   // Couches GeoJSON Paris (PipBoy style)
@@ -273,6 +274,7 @@ function renderGeoLayers() {
 
   if (geoZonesData) {
     L.geoJSON(geoZonesData, {
+      pane: 'geoZonePane',
       filter: f => isMJ || f.properties.Visible === true,
       style: f => {
         const fonctionnelle = isMJ && f.properties.Visible !== true;  // non visible joueurs
