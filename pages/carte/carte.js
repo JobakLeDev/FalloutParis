@@ -45,7 +45,7 @@ let isMJ = !viewerId && sessionStorage.getItem('mj_auth') === '1';
 let fdb, map;
 let fogOverlay = null;
 let editMode = false, addingPOI = false, drawingZone = null;
-let mapData = { pois: [], zones: [], tokens: {}, fog: {}, geoReveal: {}, geoVisited: {} };
+let mapData = { pois: [], zones: [], tokens: {}, fog: {}, geoReveal: {}, geoVisited: {}, ping: null };
 const geoMarkerRefs = {};                          // nom → layer (pour réouverture popup)
 let lieux = [];            // [{id, name, image, pois:[]}] — plans de bâtiments
 let lieuActif = null;      // lieu sélectionné dans l'onglet LIEUX
@@ -57,7 +57,8 @@ let openItem = null, reopening = false;            // popup ouvert (pour le réo
 let zoneFormCtx = null;                            // {polygon} (création) ou {zone} (édition)
 let currentTab = 'paris';
 let centeredOnPlayer = false;                      // vue déjà centrée sur le jeton du joueur
-let moveMode = false, movingToken = null;          // outil déplacement de jeton (MJ)
+let moveMode = false, movingToken = null;          // déplacement de jeton (depuis son popup)
+let pingMode = false, pingLayer = null;            // ping joueurs
 
 // Couches GeoJSON authorées (QGIS) : zones (rencontres/danger) + marqueurs
 let geoZonesData = null, geoMarkersData = null;
@@ -205,6 +206,7 @@ function buildMap() {
 
   map.on('click', onMapClick);
   map.on('popupclose', () => { if (!reopening) openItem = null; });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (moveMode) endMoveMode(); if (pingMode) endPingMode(); } });
 
   lockParis(true);
   setTimeout(() => lockParis(true), 300);      // re-cadrage si conteneur (iframe) pas encore dimensionné
@@ -219,7 +221,7 @@ function buildMap() {
     });
     fdb.collection('carte').doc('data').onSnapshot(s => {
       const d = s.exists ? s.data() : {};
-      mapData = { pois: d.pois || [], zones: normZones(d.zones), tokens: d.tokens || {}, fog: d.fog || {}, geoReveal: d.geoReveal || {}, geoVisited: d.geoVisited || {} };
+      mapData = { pois: d.pois || [], zones: normZones(d.zones), tokens: d.tokens || {}, fog: d.fog || {}, geoReveal: d.geoReveal || {}, geoVisited: d.geoVisited || {}, ping: d.ping || null };
       renderAll();
       tryCenterPlayer();   // au 1er chargement : centrer sur le jeton du joueur
     });
@@ -516,6 +518,7 @@ function renderAll() {
   renderGeoLayers();   // réagit aussi aux changements de geoReveal
   renderTokens();
   renderFog();
+  renderPing();
   renderMJPanel();
   if (openItem) {
     const layer = openItem.kind === 'poi' ? poiMarkers[openItem.id]
@@ -599,7 +602,7 @@ function renderTokens() {
         html: `<span class="token-dot">${nom.charAt(0).toUpperCase()}</span><span class="token-label">${nom}${me ? ' (toi)' : ''}</span>`,
         iconSize: [18, 18], iconAnchor: [9, 9] }),
     }).addTo(tokenLayer);
-    m.bindPopup('<b>' + nom + '</b>');
+    m.bindPopup('<b>' + nom + '</b>' + (isMJ ? `<div class="zpop-mj"><button onclick="startMoveFromToken('${id}')">➤ Déplacer</button></div>` : ''));
     if (isMJ && editMode) m.on('dragend', () => {
       const ll = m.getLatLng();
       mapData.tokens[id] = { lat: ll.lat, lng: ll.lng };
@@ -722,6 +725,7 @@ function revealControls(kind, id, item) {
 // ============================================================
 function onMapClick(e) {
   if (moveMode) { handleMoveClick(e.latlng); return; }
+  if (pingMode) { sendPing(e.latlng); return; }
   if (addingPOI) { creerPOI(e.latlng); return; }
   if (drawingZone) { drawingZone.pts.push([e.latlng.lat, e.latlng.lng]); drawingZone.layer.setLatLngs(drawingZone.pts); }
 }
@@ -733,43 +737,56 @@ function setLayersClickable(on) {
     const pane = map.getPane(p); if (pane) pane.style.pointerEvents = on ? '' : 'none';
   });
 }
-function toggleMoveMode() {
-  if (moveMode) { endMoveMode(); return; }
-  moveMode = true; movingToken = null;
+// Déplacement déclenché depuis le popup d'un jeton (flèche ➤)
+function startMoveFromToken(id) {
+  const t = mapData.tokens?.[id]; if (!t) return;
+  map.closePopup();
+  pingMode = false; document.getElementById('btn-ping')?.classList.remove('on');
   addingPOI = false; document.getElementById('btn-add-poi')?.classList.remove('on'); cancelDrawZone();
-  setLayersClickable(false);                       // les clics passent à la carte
-  document.getElementById('btn-move').classList.add('on');
-  setHint('Clique le jeton à déplacer.');
+  moveMode = true; movingToken = { id, from: { ...t } };
+  setLayersClickable(false);                        // les clics passent à la carte
+  setHint('Clique la destination pour « ' + (joueurs[id]?.nom || id) + ' ».');
   renderTokens();
 }
 function endMoveMode() {
   moveMode = false; movingToken = null;
   setLayersClickable(true);
-  document.getElementById('btn-move')?.classList.remove('on');
   setHint('');
   renderTokens();
 }
-function nearestTokenId(latlng) {
-  const cp = map.latLngToContainerPoint(latlng);
-  let best = null, bestD = Infinity;
-  Object.entries(mapData.tokens || {}).forEach(([id, p]) => {
-    if (!p) return;
-    const d = cp.distanceTo(map.latLngToContainerPoint(L.latLng(p.lat, p.lng)));
-    if (d < bestD) { bestD = d; best = id; }
-  });
-  return bestD < 45 ? best : null;   // tolérance 45 px
+
+// ---- PING JOUEURS (signal lumineux 30 s sur toutes les cartes) ----
+function togglePingMode() {
+  if (pingMode) { endPingMode(); return; }
+  pingMode = true;
+  moveMode = false; movingToken = null;
+  addingPOI = false; document.getElementById('btn-add-poi')?.classList.remove('on'); cancelDrawZone();
+  setLayersClickable(false);
+  document.getElementById('btn-ping').classList.add('on');
+  setHint('Clique l\'endroit à signaler aux joueurs.');
+}
+function endPingMode() {
+  pingMode = false; setLayersClickable(true);
+  document.getElementById('btn-ping')?.classList.remove('on'); setHint('');
+}
+function sendPing(latlng) {
+  mapData.ping = { lat: latlng.lat, lng: latlng.lng, ts: Date.now() };
+  saveData();
+  endPingMode();
+}
+function renderPing() {
+  if (pingLayer) { map.removeLayer(pingLayer); pingLayer = null; }
+  const p = mapData.ping; if (!p || !p.ts) return;
+  const remaining = 30000 - (Date.now() - p.ts);
+  if (remaining <= 0) return;
+  pingLayer = L.marker([p.lat, p.lng], { interactive: false, icon: L.divIcon({
+    className: 'ping-pin', html: '<span class="ping-ring"></span><span class="ping-ring r2"></span><span class="ping-dot"></span>', iconSize: [0, 0] }) }).addTo(map);
+  setTimeout(() => { if (pingLayer) { map.removeLayer(pingLayer); pingLayer = null; } }, remaining);
 }
 function handleMoveClick(latlng) {
-  if (!movingToken) {
-    const id = nearestTokenId(latlng);
-    if (!id) { setHint('Aucun jeton à proximité — clique sur un jeton.'); return; }
-    movingToken = { id, from: { ...mapData.tokens[id] } };
-    setHint('« ' + (joueurs[id]?.nom || id) + ' » sélectionné. Clique la destination.');
-    renderTokens();
-  } else {
-    executeMove(movingToken.id, movingToken.from, latlng);
-    endMoveMode();
-  }
+  if (!movingToken) { endMoveMode(); return; }
+  executeMove(movingToken.id, movingToken.from, latlng);
+  endMoveMode();
 }
 function executeMove(id, from, to) {
   const dist = L.latLng(from.lat, from.lng).distanceTo(L.latLng(to.lat, to.lng));
