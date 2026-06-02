@@ -25,12 +25,19 @@
   <!-- ONGLETS DE CARTE -->
   <div id="map-tabs">
     <button class="map-tab on" onclick="switchMapTab('paris')">🗺 PARIS</button>
+    <button class="map-tab" onclick="switchMapTab('metro')">🚇 MÉTRO</button>
     <button class="map-tab" onclick="switchMapTab('lieux')">🏛 LIEUX</button>
   </div>
 
   <!-- ONGLET PARIS -->
   <div id="map-paris-wrap">
     <div id="map"></div>
+  </div>
+
+  <!-- ONGLET MÉTRO -->
+  <div id="map-metro-wrap" style="display:none">
+    <div id="map-metro"></div>
+    <div id="metro-legend"></div>
   </div>
 
   <!-- ONGLET LIEUX -->
