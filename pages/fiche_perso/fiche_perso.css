@@ -74,3 +74,5 @@ html, body { height: 100%; overflow: hidden; }
 .lvl-opt.locked.sel{ opacity:1; cursor:default; }
 .lvl-sec.dim{ opacity:0.45; }
 .lvl-perks.locked{ opacity:0.35; pointer-events:none; filter:grayscale(0.4); }
+
+.iname-cal{ font-size:0.62rem; color:var(--td); letter-spacing:0; margin-left:0.25rem; }

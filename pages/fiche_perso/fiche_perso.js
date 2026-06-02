@@ -371,7 +371,7 @@ function rInvWeap(){
     const tn=getWeaponTN(it);
     el.innerHTML+=`<div class="irow weap-cols${it.equipped?' equipped-row':''}">
       <span class="itag ARMOR" style="border-color:var(--am);color:var(--am)">${db.t||'WEAPON'}</span>
-      <span class="iname${it.equipped?' eq':''}">${it.name}</span>
+      <span class="iname${it.equipped?' eq':''}">${it.name}${db.a&&db.a!=='-'?` <span class="iname-cal">${db.a}</span>`:''}</span>
       <span style="font-family:'Oswald',sans-serif;color:var(--am);font-size:13px">${db.dmg||'?'}</span>
       <span class="ieff">${db.eff||'—'}</span>
       <span style="font-size:9px;color:var(--td)">${db.fr??'—'}</span>
