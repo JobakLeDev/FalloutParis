@@ -82,7 +82,7 @@ const GEO_MARKER_ICONS = { Landmark:'🗼', Settlement:'🏠', Safe:'🛡', Metr
 // L'utilisateur dépose les fichiers dans img/ avec le nom du monument.
 // Si le fichier n'existe pas, l'icône se masque et le marqueur bascule sur le style standard (onerror).
 // IMG_VER : à incrémenter quand on remplace des images (casse le cache navigateur).
-const IMG_VER = '3';
+const IMG_VER = '4';
 // Clé normalisée (sert au nom de fichier ET aux ajustements par monument)
 function landmarkKey(nom){
   return ('' + nom).toLowerCase()
@@ -98,7 +98,7 @@ const LANDMARK_BRIGHT = {
   ladefense:        0.7,
 };
 function landmarkImgPath(nom){
-  return '../../img/' + landmarkKey(nom) + '.png?v=' + IMG_VER;
+  return '../../img/500pix/' + landmarkKey(nom) + '.png?v=' + IMG_VER;
 }
 const GEO_OTHER_COLORS = { mutants:'#a05ad0', independant:'#c0a040', independants:'#c0a040', 'vault-tec':'#3a7bd5' };
 
