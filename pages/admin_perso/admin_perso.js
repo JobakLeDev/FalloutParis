@@ -56,6 +56,7 @@ let editPerks = {};
 let editInventory = [];
 let editAmmo = [];
 let editTagged = [];
+let editCompanions = [];
 
 // ---- LISTE ----
 async function chargerListe(){
@@ -87,6 +88,7 @@ async function charger(id){
   editInventory=[...(d.inventory||[])];
   editAmmo=[...(d.ammo||[])];
   editTagged=[...(d.taggedSkills||[])];
+  editCompanions=JSON.parse(JSON.stringify(d.companions||[]));
 
   // Remplir infos
   document.getElementById('e-id').value=id;
@@ -107,6 +109,8 @@ async function charger(id){
   renderInventory();
   renderAmmo();
   populateInvSelect();
+  populateCompBaseSel();
+  renderCompanions();
 
   document.getElementById('editor').style.display='block';
   document.getElementById('placeholder').style.display='none';
@@ -235,10 +239,101 @@ function addAmmo(){
   renderAmmo();
 }
 
+// ---- COMPAGNONS (PNJ alliés, schéma enemies.json) ----
+function populateCompBaseSel(){
+  const sel=document.getElementById('comp-base-sel'); if(!sel) return;
+  const db2=window.ENNEMIS_DB||{};
+  const opts=Object.keys(db2).sort().map(k=>`<option value="${k}">${k}</option>`).join('');
+  sel.innerHTML='<option value="">— Bestiaire —</option>'+opts;
+}
+function _drNum(dr){ dr=dr||{}; const n=v=>parseInt(v)||0; return {phys:n(dr.phys),energy:n(dr.energy),rad:n(dr.rad),poison:n(dr.poison)}; }
+function compFromFiche(nom,f){
+  return { id:'c'+Date.now().toString(36)+Math.floor(Math.random()*99), nom, type:f.type||'', level:f.level||1,
+    attrs:{body:f.attrs?.body??5, mind:f.attrs?.mind??4, melee:f.attrs?.melee??null, guns:f.attrs?.guns??null, other:f.attrs?.other??null},
+    hpMax:f.hp||6, hpCur:f.hp||6, initiative:(f.initiative==null?null:f.initiative), defense:f.defense??1,
+    dr:_drNum(f.dr), attacks:JSON.parse(JSON.stringify(f.attacks||[])), abilities:JSON.parse(JSON.stringify(f.abilities||[])), desc:f.desc||'' };
+}
+function blankCompanion(){
+  return { id:'c'+Date.now().toString(36)+Math.floor(Math.random()*99), nom:'Compagnon', type:'Mammifère', level:1,
+    attrs:{body:5,mind:4,melee:2,guns:null,other:1}, hpMax:6, hpCur:6, initiative:null, defense:1,
+    dr:{phys:0,energy:0,rad:0,poison:0}, attacks:[], abilities:[], desc:'' };
+}
+function addCompFromBase(){
+  const k=document.getElementById('comp-base-sel').value;
+  const src=(window.ENNEMIS_DB||{})[k];
+  editCompanions.push(src?compFromFiche(k,src):blankCompanion());
+  renderCompanions();
+}
+function addBlankCompanion(){ editCompanions.push(blankCompanion()); renderCompanions(); }
+function rmComp(i){ if(confirm('Supprimer ce compagnon ?')){ editCompanions.splice(i,1); renderCompanions(); } }
+function setComp(i,k,v){
+  const c=editCompanions[i]; if(!c) return;
+  if(k==='level'||k==='hpMax'||k==='defense'){ c[k]=parseInt(v)||0; if(k==='hpMax') c.hpCur=Math.min(c.hpCur??c.hpMax,c.hpMax); }
+  else if(k==='initiative') c.initiative = (v.trim()===''?null:(parseInt(v)||0));
+  else c[k]=v;
+}
+function setCompAttr(i,k,v){ editCompanions[i].attrs[k] = (v.trim()===''?null:(parseInt(v)||0)); }
+function setCompDr(i,k,v){ editCompanions[i].dr[k] = parseInt(v)||0; }
+function setCompAtk(i,j,k,v){ const a=editCompanions[i].attacks[j]; a[k]=(k==='tn'||k==='dmg')?(parseInt(v)||0):v; }
+function setCompAbil(i,j,k,v){ editCompanions[i].abilities[j][k]=v; }
+function addCompAtk(i){ editCompanions[i].attacks.push({name:'Attaque',attr:'body',skill:'melee',tn:8,dmg:3,eff:'',dmgType:'physical'}); renderCompanions(); }
+function rmCompAtk(i,j){ editCompanions[i].attacks.splice(j,1); renderCompanions(); }
+function addCompAbil(i){ editCompanions[i].abilities.push({name:'Capacité',desc:''}); renderCompanions(); }
+function rmCompAbil(i,j){ editCompanions[i].abilities.splice(j,1); renderCompanions(); }
+function renderCompanions(){
+  const el=document.getElementById('comp-grid'); if(!el) return;
+  if(!editCompanions.length){ el.innerHTML='<div class="empty" style="font-size:9px;color:var(--td);padding:8px">Aucun compagnon</div>'; return; }
+  const ni=(v)=>v==null?'':v;
+  el.innerHTML=editCompanions.map((c,i)=>{
+    const atks=(c.attacks||[]).map((a,j)=>`<div class="ceditrow">
+      <input class="ci" style="flex:2" value="${a.name||''}" onchange="setCompAtk(${i},${j},'name',this.value)" placeholder="nom">
+      <input class="ci" style="width:42px" value="${a.attr||''}" onchange="setCompAtk(${i},${j},'attr',this.value)" placeholder="attr" title="body/mind...">
+      <input class="ci" style="width:36px" type="number" value="${ni(a.tn)}" onchange="setCompAtk(${i},${j},'tn',this.value)" placeholder="TN">
+      <input class="ci" style="width:36px" type="number" value="${ni(a.dmg)}" onchange="setCompAtk(${i},${j},'dmg',this.value)" placeholder="DC">
+      <input class="ci" style="flex:1" value="${a.dmgType||''}" onchange="setCompAtk(${i},${j},'dmgType',this.value)" placeholder="type">
+      <input class="ci" style="flex:1" value="${a.eff||''}" onchange="setCompAtk(${i},${j},'eff',this.value)" placeholder="effet">
+      <button class="inv-btn" style="color:var(--rd)" onclick="rmCompAtk(${i},${j})">✕</button></div>`).join('');
+    const abil=(c.abilities||[]).map((a,j)=>`<div class="ceditrow">
+      <input class="ci" style="flex:1" value="${a.name||''}" onchange="setCompAbil(${i},${j},'name',this.value)" placeholder="nom">
+      <input class="ci" style="flex:3" value="${(a.desc||'').replace(/"/g,'&quot;')}" onchange="setCompAbil(${i},${j},'desc',this.value)" placeholder="description">
+      <button class="inv-btn" style="color:var(--rd)" onclick="rmCompAbil(${i},${j})">✕</button></div>`).join('');
+    return `<div class="cedit">
+      <div class="cedit-head">
+        <input class="ci" style="flex:2;font-size:11px" value="${c.nom||''}" onchange="setComp(${i},'nom',this.value)" placeholder="Nom">
+        <input class="ci" style="flex:1" value="${c.type||''}" onchange="setComp(${i},'type',this.value)" placeholder="Type/espèce">
+        <button class="inv-btn" style="color:var(--rd)" onclick="rmComp(${i})">✕ Suppr.</button>
+      </div>
+      <div class="cedit-row">
+        <label>Niv.</label><input class="ci" style="width:40px" type="number" value="${ni(c.level)}" onchange="setComp(${i},'level',this.value)">
+        <label>PV max</label><input class="ci" style="width:46px" type="number" value="${ni(c.hpMax)}" onchange="setComp(${i},'hpMax',this.value)">
+        <label>Déf.</label><input class="ci" style="width:40px" type="number" value="${ni(c.defense)}" onchange="setComp(${i},'defense',this.value)">
+        <label>Init.</label><input class="ci" style="width:50px" value="${ni(c.initiative)}" onchange="setComp(${i},'initiative',this.value)" placeholder="vide=PC">
+      </div>
+      <div class="cedit-row">
+        <label>COR</label><input class="ci" style="width:38px" type="number" value="${ni(c.attrs?.body)}" onchange="setCompAttr(${i},'body',this.value)">
+        <label>ESP</label><input class="ci" style="width:38px" type="number" value="${ni(c.attrs?.mind)}" onchange="setCompAttr(${i},'mind',this.value)">
+        <label>MÊL</label><input class="ci" style="width:38px" type="number" value="${ni(c.attrs?.melee)}" onchange="setCompAttr(${i},'melee',this.value)">
+        <label>ARM</label><input class="ci" style="width:38px" type="number" value="${ni(c.attrs?.guns)}" onchange="setCompAttr(${i},'guns',this.value)">
+        <label>AUT</label><input class="ci" style="width:38px" type="number" value="${ni(c.attrs?.other)}" onchange="setCompAttr(${i},'other',this.value)">
+      </div>
+      <div class="cedit-row">
+        <label>RD Phys</label><input class="ci" style="width:38px" type="number" value="${ni(c.dr?.phys)}" onchange="setCompDr(${i},'phys',this.value)">
+        <label>Én</label><input class="ci" style="width:38px" type="number" value="${ni(c.dr?.energy)}" onchange="setCompDr(${i},'energy',this.value)">
+        <label>Rad</label><input class="ci" style="width:38px" type="number" value="${ni(c.dr?.rad)}" onchange="setCompDr(${i},'rad',this.value)">
+        <label>Poison</label><input class="ci" style="width:38px" type="number" value="${ni(c.dr?.poison)}" onchange="setCompDr(${i},'poison',this.value)">
+      </div>
+      <div class="cedit-sub">Attaques <button class="inv-btn" onclick="addCompAtk(${i})">+ attaque</button></div>
+      ${atks||'<div style="font-size:8px;color:var(--td);padding:2px">—</div>'}
+      <div class="cedit-sub">Capacités <button class="inv-btn" onclick="addCompAbil(${i})">+ capacité</button></div>
+      ${abil||'<div style="font-size:8px;color:var(--td);padding:2px">—</div>'}
+    </div>`;
+  }).join('');
+}
+
 // ---- TABS ----
 function swTab(tab){
   document.querySelectorAll('.etab').forEach((el,i)=>{
-    el.classList.toggle('on',['infos','special','skills','perks','inventaire'][i]===tab);
+    el.classList.toggle('on',['infos','special','skills','perks','inventaire','compagnons'][i]===tab);
   });
   document.querySelectorAll('.etcontent').forEach(el=>el.classList.remove('on'));
   document.getElementById('et-'+tab).classList.add('on');
@@ -267,6 +362,7 @@ async function sauvegarder(){
     taggedSkills:editTagged,
     inventory:editInventory,
     ammo:editAmmo,
+    companions:editCompanions,
     wounds:editData.wounds||{head:false,torso:false,armL:false,armR:false,legL:false,legR:false},
     lastUpdate:Date.now(),
   };

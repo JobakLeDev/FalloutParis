@@ -100,3 +100,12 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .scroll::-webkit-scrollbar{width:3px;}
 .scroll::-webkit-scrollbar-thumb{background:var(--gd);}
 hr.fo{border:none;border-top:1px solid var(--b);margin:8px 0;}
+/* Éditeur de compagnons */
+.cedit{ background:#060d06; border:1px solid var(--b2); padding:7px 8px; margin-bottom:8px; }
+.cedit-head{ display:flex; gap:5px; align-items:center; margin-bottom:5px; }
+.cedit-row{ display:flex; gap:4px; align-items:center; flex-wrap:wrap; margin-bottom:4px; }
+.cedit-row label{ font-size:8px; color:var(--td); letter-spacing:.5px; }
+.cedit-sub{ font-size:9px; color:var(--am); letter-spacing:1px; margin:6px 0 3px; display:flex; align-items:center; gap:6px; }
+.ceditrow{ display:flex; gap:3px; align-items:center; margin-bottom:3px; }
+.ci{ background:#0c150c; border:1px solid var(--b2); color:var(--tb); font-family:'Share Tech Mono',monospace; font-size:9px; padding:3px 5px; outline:none; min-width:0; }
+.ci:focus{ border-color:var(--g); }

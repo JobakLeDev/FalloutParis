@@ -102,3 +102,26 @@ html, body { height: 100%; overflow: hidden; }
 .roll-nom{ color:var(--t); }
 .roll-res{ color:var(--td); text-align:right; }
 .roll-res b{ color:var(--am); }
+
+/* ============================================================
+   COMPAGNONS (fiche joueur)
+   ============================================================ */
+.cmp-card{ background:#060d06; border:1px solid var(--b); padding:0.5rem 0.6rem; margin-bottom:0.5rem; }
+.cmp-card:last-child{ margin-bottom:0; }
+.cmp-head{ display:flex; justify-content:space-between; align-items:baseline; gap:0.5rem; margin-bottom:0.35rem; }
+.cmp-nom{ font-family:'Oswald',sans-serif; font-size:0.95rem; color:var(--tb); letter-spacing:.5px; }
+.cmp-meta{ font-size:0.62rem; color:var(--td); }
+.cmp-hpbar{ height:6px; background:#0c150c; border:1px solid var(--b); overflow:hidden; }
+.cmp-hpfill{ height:100%; background:linear-gradient(90deg,var(--gd),var(--g)); transition:width .2s; }
+.cmp-hprow{ display:flex; align-items:center; gap:0.4rem; font-size:0.66rem; color:var(--td); margin:0.25rem 0 0.4rem; }
+.cmp-hprow b{ color:var(--tb); }
+.cmp-hprow button{ background:var(--gk); border:1px solid var(--b2); color:var(--t); font-family:'Share Tech Mono',monospace; font-size:0.7rem; width:1.3rem; height:1.3rem; cursor:pointer; line-height:1; }
+.cmp-hprow button:hover{ border-color:var(--g); color:var(--tb); }
+.cmp-stats{ display:flex; flex-wrap:wrap; gap:0.3rem 0.5rem; margin-bottom:0.25rem; }
+.cmp-at{ font-size:0.6rem; color:var(--td); letter-spacing:.5px; }
+.cmp-at b{ color:var(--t); font-size:0.7rem; }
+.cmp-dr{ font-size:0.6rem; color:var(--td); margin-bottom:0.3rem; }
+.cmp-sec{ border-top:1px solid var(--b); padding-top:0.3rem; margin-top:0.3rem; }
+.cmp-atk{ font-size:0.64rem; color:var(--t); line-height:1.5; }
+.cmp-abil{ font-size:0.62rem; color:var(--td); line-height:1.4; }
+.cmp-abil b{ color:var(--t); }

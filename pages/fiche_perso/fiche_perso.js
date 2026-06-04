@@ -14,6 +14,7 @@ const char = {
   ammo:[],
   wounds:{head:false,torso:false,armL:false,armR:false,legL:false,legR:false},
   luck_points:0,
+  companions:[],   // PNJ alliés (schéma enemies.json) — créés par le MJ
 };
 
 // ============================================================
@@ -127,7 +128,7 @@ function utiliserItem(i){
 }
 
 
-function rAll(){rSpecial();rGenWeap();rHP();rMeta();rStatus();rWeapEq();rAmmo();rPerkRD();rLocs();rLocsGen();rInventory();rSkills();rPerks();rPerkEff();rCharge();rLevelUp();}
+function rAll(){rSpecial();rGenWeap();rHP();rMeta();rStatus();rWeapEq();rAmmo();rPerkRD();rLocs();rLocsGen();rInventory();rSkills();rPerks();rPerkEff();rCharge();rLevelUp();rCompanions();}
 
 function rSpecial(){
   const ORDER=['S','P','E','C','I','A','L'];
@@ -585,6 +586,48 @@ function saveSpec(){const v=Math.min(10,Math.max(1,parseInt(document.getElementB
 function openMoSk(key,name){_moSkKey=key;document.getElementById('mo-sk-t').textContent='COMPÉTENCE : '+name.toUpperCase();document.getElementById('mo-sk-v').value=char.skills[key]||0;document.getElementById('mo-sk-tag').value=char.taggedSkills.includes(key)?'1':'0';document.getElementById('mo-sk').classList.add('on');}
 function saveSkill(){const v=Math.min(6,Math.max(0,parseInt(document.getElementById('mo-sk-v').value)||0));char.skills[_moSkKey]=v;const tg=document.getElementById('mo-sk-tag').value==='1';if(tg&&!char.taggedSkills.includes(_moSkKey))char.taggedSkills.push(_moSkKey);if(!tg)char.taggedSkills=char.taggedSkills.filter(k=>k!==_moSkKey);closeMo('mo-sk');rAll();}
 function closeMo(id){document.getElementById(id).classList.remove('on');}
+
+// ============================================================
+// COMPAGNONS — PNJ alliés (créés par le MJ, schéma enemies.json)
+// ============================================================
+const COMP_ATTR_LBL = { body:'COR', mind:'ESP', melee:'MÊL', guns:'ARM', other:'AUT' };
+function chCompHP(i,n){
+  const c=char.companions?.[i]; if(!c) return;
+  c.hpCur=Math.max(0,Math.min(c.hpMax||0,(c.hpCur??c.hpMax||0)+n));
+  rAll();
+}
+function compMaxHP(i){ const c=char.companions?.[i]; if(!c) return; c.hpCur=c.hpMax; rAll(); }
+function rCompanions(){
+  const pnl=document.getElementById('pnl-companions');
+  const el=document.getElementById('companions-list');
+  if(!el||!pnl) return;
+  const list=char.companions||[];
+  pnl.style.display = list.length ? 'block' : 'none';
+  el.innerHTML = list.map((c,i)=>{
+    const cur=c.hpCur??c.hpMax??0, max=c.hpMax||0;
+    const pct=max?Math.round(cur/max*100):0;
+    const attrs=Object.entries(c.attrs||{}).filter(([k,v])=>v!=null&&v!=='').map(([k,v])=>`<span class="cmp-at">${COMP_ATTR_LBL[k]||k} <b>${v}</b></span>`).join('');
+    const dr=c.dr||{};
+    const drTxt=[['Phys',dr.phys],['Én',dr.energy],['Rad',dr.rad],['Poison',dr.poison]].filter(([l,v])=>v).map(([l,v])=>`${l} ${v}`).join(' · ')||'—';
+    const atks=(c.attacks||[]).map(a=>`<div class="cmp-atk">⚔ <b>${a.name}</b> — ${(a.attr||'').toUpperCase()}${a.skill?'+'+a.skill:''} · TN ${a.tn} · <span style="color:var(--am)">${a.dmg} DC</span> ${a.dmgType||''}${a.eff?' · '+a.eff:''}</div>`).join('');
+    const abil=(c.abilities||[]).map(a=>`<div class="cmp-abil"><b>${a.name}</b>${a.desc?' — '+a.desc:''}</div>`).join('');
+    const init=(c.initiative==null||c.initiative==='')?'comme toi':c.initiative;
+    return `<div class="cmp-card">
+      <div class="cmp-head"><span class="cmp-nom">${c.nom||'Compagnon'}</span><span class="cmp-meta">${c.type||''}${c.level?' · Niv. '+c.level:''}</span></div>
+      <div class="cmp-hpbar"><div class="cmp-hpfill" style="width:${pct}%"></div></div>
+      <div class="cmp-hprow">PV
+        <button onclick="chCompHP(${i},-1)">−</button>
+        <b>${cur}/${max}</b>
+        <button onclick="chCompHP(${i},1)">+</button>
+        <button onclick="compMaxHP(${i})" title="PV max" style="margin-left:auto">↺</button>
+      </div>
+      <div class="cmp-stats">${attrs}<span class="cmp-at">DÉF <b>${c.defense??1}</b></span><span class="cmp-at">INIT <b>${init}</b></span></div>
+      <div class="cmp-dr">RD : ${drTxt}</div>
+      ${atks?`<div class="cmp-sec">${atks}</div>`:''}
+      ${abil?`<div class="cmp-sec">${abil}</div>`:''}
+    </div>`;
+  }).join('');
+}
 
 // ============================================================
 // MONTÉE DE NIVEAU — répartition rang + perk

@@ -50,6 +50,7 @@ function appliquerDonnees(data) {
   if (data.ammo      !== undefined) char.ammo      = data.ammo;
   if (data.wounds       !== undefined) char.wounds       = data.wounds;
   if (data.luck_points  !== undefined) char.luck_points  = data.luck_points;
+  if (data.companions   !== undefined) char.companions   = data.companions;
 }
 
 // ---- Mettre à jour l'affichage du nom dans le bandeau ----
@@ -85,6 +86,7 @@ function saveToFirebase() {
         ammo:         char.ammo,
         wounds:       char.wounds,
         luck_points:  char.luck_points,
+        companions:   char.companions,
         lastUpdate:   Date.now(),
       }, { merge: true });
       setStatus('✓ Synchronisé', '#5dbe5d');

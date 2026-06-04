@@ -65,6 +65,7 @@
           <div class="etab" onclick="swTab('skills')">COMPÉT.</div>
           <div class="etab" onclick="swTab('perks')">PERKS</div>
           <div class="etab" onclick="swTab('inventaire')">INVENTAIRE</div>
+          <div class="etab" onclick="swTab('compagnons')">COMPAGNONS</div>
         </div>
 
         <!-- INFOS -->
@@ -121,6 +122,18 @@
           <div style="display:flex;gap:6px;margin-top:6px">
             <select class="fo-sel" id="ammo-cal" style="flex:1"><option value="">Calibre...</option></select>
             <button class="btn" onclick="addAmmo()">+ Munitions</button>
+          </div>
+        </div>
+
+        <!-- COMPAGNONS -->
+        <div class="etcontent" id="et-compagnons">
+          <div style="font-size:9px;color:var(--td);margin-bottom:6px;line-height:1.5">PNJ alliés (schéma officiel créature/PNJ). Pars d'une créature du bestiaire puis ajuste, ou crée à blanc.</div>
+          <div id="comp-grid"></div>
+          <hr class="fo">
+          <div style="display:flex;gap:6px;margin-top:6px">
+            <select class="fo-sel" id="comp-base-sel" style="flex:1"></select>
+            <button class="btn" onclick="addCompFromBase()">+ Depuis créature</button>
+            <button class="btn" onclick="addBlankCompanion()">+ Vierge</button>
           </div>
         </div>
 
