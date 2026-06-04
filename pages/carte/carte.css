@@ -105,10 +105,10 @@ body.embed #map-tabs{padding:0;}
 
 /* MONUMENTS (image dédiée img/<nom>.png, fond blanc détouré via invert+screen) */
 .land-pin{display:flex !important;flex-direction:column;align-items:center;gap:1px;white-space:nowrap;}
-.land-icon-wrap{width:64px;height:64px;display:flex;align-items:center;justify-content:center;}
+.land-icon-wrap{width:42px;height:42px;display:flex;align-items:center;justify-content:center;}
 img.land-icon-img{
   display:block;
-  width:64px;height:64px;flex:none;
+  width:42px;height:42px;flex:none;
   object-fit:contain;
   /* luminosité réglable par monument via --lb (défaut 1.25) — voir LANDMARK_BRIGHT */
   filter:invert(1) hue-rotate(180deg) brightness(var(--lb,1.25)) saturate(1.4) drop-shadow(0 0 3px rgba(93,190,93,.55));

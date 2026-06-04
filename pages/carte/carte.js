@@ -344,8 +344,8 @@ function renderGeoLayers() {
               +   `<img class="land-icon-img" src="${imgPath}"${lbStyle} onerror="this.style.display='none';this.nextElementSibling.style.display='block'">`
               +   `<span class="geo-mark-dot${dim?' dim':''}" style="display:none"></span>`
               + `</span>`,
-          iconSize: [64, 64], iconAnchor: [32, 32] }) });
-        m.bindTooltip(nom + lock, { className: 'map-tip', direction: 'top', offset: [0, -34] });
+          iconSize: [42, 42], iconAnchor: [21, 21] }) });
+        m.bindTooltip(nom + lock, { className: 'map-tip', direction: 'top', offset: [0, -23] });
         geoMarkerRefs[nom] = m;
         m.on('popupopen', () => { openItem = { kind: 'geomarker', id: nom }; });
         return m;
