@@ -82,19 +82,28 @@ let curTab='general', curInv='all';
 
 function sw(tab){
   document.querySelectorAll('.tab').forEach((el,i)=>{
-    el.classList.toggle('on',['general','inventaire','perks','carte','journal'][i]===tab);
+    el.classList.toggle('on',['general','inventaire','perks','carte','quetes','journal'][i]===tab);
   });
   document.querySelectorAll('.tc').forEach(el=>el.classList.remove('on'));
   const tc=document.getElementById('tc-'+tab);
   if(tc)tc.classList.add('on');
+  const id=new URLSearchParams(location.search).get('id')||'';
   // Charger la carte (iframe) à la première ouverture de l'onglet ; sinon recentrer sur le joueur
   if(tab==='carte'){
     const f=document.getElementById('carte-frame');
     if(f && !f.src){
-      const id=new URLSearchParams(location.search).get('id')||'';
       f.src='../carte/carte.html?id='+encodeURIComponent(id)+'&embed=1';
     } else if(f && f.contentWindow){
       f.contentWindow.postMessage('carte-recenter','*');   // déjà chargée → recentrer
+    }
+  }
+  // Charger les quêtes (iframe) ; sinon rafraîchir
+  if(tab==='quetes'){
+    const f=document.getElementById('quetes-frame');
+    if(f && !f.src){
+      f.src='../quetes/quetes.html?id='+encodeURIComponent(id)+'&embed=1';
+    } else if(f && f.contentWindow){
+      f.contentWindow.postMessage('quetes-refresh','*');
     }
   }
   curTab=tab; rAll();

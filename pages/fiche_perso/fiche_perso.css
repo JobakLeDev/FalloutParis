@@ -8,13 +8,13 @@ html, body { height: 100%; overflow: hidden; }
 .hdr, .tabs { flex: none; }
 .body { flex: 1 1 auto; min-height: 0; overflow: auto; }
 
-/* Onglet CARTE : remplit la place restante du cadre (plus de calc approximatif) */
-#tc-carte {
+/* Onglets CARTE / QUÊTES : remplissent la place restante du cadre (iframe) */
+#tc-carte, #tc-quetes {
   height: 100%;
   margin: 0;
   overflow: hidden;
 }
-#tc-carte iframe {
+#tc-carte iframe, #tc-quetes iframe {
   display: block;
   width: 100%;
   height: 100%;

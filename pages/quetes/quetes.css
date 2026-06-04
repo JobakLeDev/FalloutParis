@@ -1,0 +1,64 @@
+html,body{height:100%;}
+body{background:var(--bg);color:var(--t);font-family:'Share Tech Mono',monospace;margin:0;padding:0;}
+
+/* Header */
+.qhdr{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--p);border-bottom:1px solid var(--b2);padding:8px 14px;flex-wrap:wrap;}
+.qhdr-title{font-family:'Oswald',sans-serif;font-size:18px;letter-spacing:2px;color:var(--g);}
+.qhdr-title small{display:block;font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--td);letter-spacing:1px;}
+.qhdr-btns{display:flex;gap:6px;flex-wrap:wrap;}
+.qbtn{background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:9px;padding:6px 10px;cursor:pointer;letter-spacing:1px;text-decoration:none;display:inline-block;}
+.qbtn:hover{border-color:var(--g);color:var(--tb);}
+body.embed .qhdr{display:none;}
+
+/* Filtres */
+#q-filters{display:flex;gap:5px;padding:8px 14px;flex-wrap:wrap;}
+.q-filter{background:transparent;border:1px solid var(--b);color:var(--td);font-family:'Share Tech Mono',monospace;font-size:8px;padding:4px 10px;cursor:pointer;letter-spacing:1px;text-transform:uppercase;}
+.q-filter:hover{color:var(--t);}
+.q-filter.on{color:var(--g);border-color:var(--g);background:var(--p2);}
+
+/* Liste */
+#quetes-list{padding:4px 14px 24px;max-width:820px;margin:0 auto;}
+.q-empty{color:var(--td);font-size:11px;letter-spacing:1px;padding:30px 6px;text-align:center;}
+
+/* Carte de quête */
+.q-card{background:var(--p);border:1px solid var(--b);border-left:3px solid var(--am);padding:10px 12px;margin-bottom:10px;}
+.q-card.s-done{border-left-color:var(--g);}
+.q-card.s-failed{border-left-color:var(--rd);opacity:.85;}
+.q-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.q-title{font-family:'Oswald',sans-serif;font-size:16px;color:var(--tb);letter-spacing:.5px;flex:1;}
+.q-badge{font-size:8px;letter-spacing:1px;border:1px solid;padding:2px 6px;border-radius:2px;white-space:nowrap;}
+.q-desc{font-size:11px;color:var(--t);line-height:1.5;margin-bottom:7px;white-space:pre-wrap;}
+.q-progress{font-size:8px;color:var(--td);letter-spacing:1px;margin-bottom:4px;}
+
+/* Objectifs (joueur) */
+.q-objs{display:flex;flex-direction:column;gap:3px;}
+.q-obj{display:flex;gap:7px;align-items:flex-start;font-size:11px;color:var(--t);}
+.q-obj .q-check{color:var(--am);}
+.q-obj.done{color:var(--td);}
+.q-obj.done .q-obj-t{text-decoration:line-through;}
+.q-obj.done .q-check{color:var(--g);}
+.q-obj-none{font-size:10px;color:var(--td);}
+.q-reward{margin-top:7px;font-size:10px;color:var(--am);border-top:1px solid var(--b);padding-top:6px;}
+
+/* Édition MJ */
+.q-inp{background:#060d06;border:1px solid var(--b2);color:var(--tb);font-family:'Share Tech Mono',monospace;font-size:11px;padding:5px 7px;outline:none;width:100%;box-sizing:border-box;}
+.q-inp:focus{border-color:var(--g);}
+.q-title-inp{flex:1;font-family:'Oswald',sans-serif;font-size:15px;}
+.q-status-sel{background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:9px;padding:4px;outline:none;}
+.q-desc-inp{min-height:46px;resize:vertical;margin-bottom:7px;line-height:1.4;}
+.q-sub{font-size:9px;color:var(--am);letter-spacing:1px;margin:6px 0 4px;display:flex;align-items:center;gap:8px;}
+.q-obj-edit{display:flex;gap:4px;align-items:center;margin-bottom:3px;}
+.q-obj-edit.done .q-inp{color:var(--td);text-decoration:line-through;}
+.q-check-btn{background:none;border:1px solid var(--b2);color:var(--am);cursor:pointer;font-size:12px;width:24px;height:24px;flex:none;line-height:1;}
+.q-obj-edit.done .q-check-btn{color:var(--g);border-color:var(--gd);}
+.q-del{background:none;border:1px solid #3a1a1a;color:var(--rd);cursor:pointer;font-size:10px;padding:2px 7px;flex:none;}
+.q-del:hover{background:var(--rdk);}
+.q-addobj,.q-reveal-all{background:var(--gk);border:1px solid var(--b2);color:var(--t);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:8px;padding:3px 7px;letter-spacing:1px;}
+.q-addobj:hover,.q-reveal-all:hover{border-color:var(--g);color:var(--tb);}
+.q-field{display:flex;align-items:center;gap:6px;margin-top:7px;}
+.q-field label{font-size:9px;color:var(--td);white-space:nowrap;}
+.q-reveal-row{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-top:9px;border-top:1px solid var(--b);padding-top:7px;}
+.q-reveal-lbl{font-size:8px;color:var(--td);letter-spacing:1px;}
+.q-reveal{background:#060d06;border:1px solid var(--b);color:var(--td);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:8px;padding:3px 7px;}
+.q-reveal.on{border-color:var(--g);color:var(--g);}
+.q-empty-inline{font-size:8px;color:var(--td);}

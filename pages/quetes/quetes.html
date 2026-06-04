@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fallout Paris — Quêtes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../common/style.css">
+  <link rel="stylesheet" href="quetes.css">
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="qhdr">
+    <div class="qhdr-title">📋 QUÊTES &amp; OBJECTIFS<small id="qhdr-mode">Vue joueur</small></div>
+    <div class="qhdr-btns">
+      <button class="qbtn" id="qmj-btn" onclick="demanderMJ()">🔑 Mode MJ</button>
+      <button class="qbtn" id="qadd-btn" onclick="addQuete()" style="display:none">+ Nouvelle quête</button>
+      <a class="qbtn" href="../mj/mj.html">← MJ</a>
+      <a class="qbtn" href="../../index.html">Accueil</a>
+    </div>
+  </div>
+
+  <!-- FILTRE STATUT -->
+  <div id="q-filters">
+    <button class="q-filter on" data-f="all" onclick="setFilter('all')">Toutes</button>
+    <button class="q-filter" data-f="active" onclick="setFilter('active')">En cours</button>
+    <button class="q-filter" data-f="done" onclick="setFilter('done')">Terminées</button>
+    <button class="q-filter" data-f="failed" onclick="setFilter('failed')">Échouées</button>
+  </div>
+
+  <div id="quetes-list"><div class="q-empty">Chargement…</div></div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="../../common/shared.js"></script>
+  <script src="quetes.js"></script>
+</body>
+</html>
