@@ -656,8 +656,8 @@ function renderJoueursCombat(){
         <span class="jc-arme-name" style="color:var(--td)">👊 Mains nues</span>
         <span class="jc-arme-stat">2D · TN ${getTN(d,'barehand').total}</span>
       </div>
-      <div class="ennemi-dmg" style="margin-top:5px">
-        <input type="number" class="dmg-inp" id="jdmg-${id}" value="1" min="0">
+      <div class="ennemi-dmg" style="margin-top:5px" onclick="event.stopPropagation()">
+        <input type="number" class="dmg-inp" id="jdmg-${id}" value="1" min="0" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">
         <button class="dmg-btn" onclick="event.stopPropagation();dmgJoueur('${id}',parseInt(document.getElementById('jdmg-${id}').value)||1)">Dégâts</button>
         <button class="dmg-btn" style="border-color:var(--gd);color:var(--g)" onclick="event.stopPropagation();soignJoueur('${id}',parseInt(document.getElementById('jdmg-${id}').value)||1)">Soins</button>
       </div>
