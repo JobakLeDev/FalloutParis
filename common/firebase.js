@@ -111,19 +111,22 @@ function startSync() {
   db.collection('joueurs').doc(JOUEUR_ID).onSnapshot((snap) => {
     if (snap.exists) {
       _isRemote = true;
-      appliquerDonnees(snap.data());
-      _rAllOrig();
-      afficherNom();
-      _isRemote = false;
+      try { appliquerDonnees(snap.data()); _rAllOrig(); afficherNom(); }
+      catch (e) { console.error('Erreur rendu/sync fiche :', e); }
+      finally { _isRemote = false; }
       setStatus('✓ Synchronisé', '#5dbe5d');
     }
   }, (err) => {
     setStatus('✗ Connexion perdue', '#e04040');
     console.error(err);
   });
-  db.collection('rolls').doc('current').onSnapshot((snap) => {
-    renderRollJoueur(snap.exists ? snap.data() : null);
-  });
+  // Lancer de dés public — isolé : une erreur ici ne doit jamais casser la fiche
+  try {
+    db.collection('rolls').doc('current').onSnapshot(
+      (snap) => { try { renderRollJoueur(snap.exists ? snap.data() : null); } catch(e){ console.error('roll:', e); } },
+      (err) => console.warn('rolls indisponible:', err && err.code)
+    );
+  } catch(e){ console.warn('rolls listener KO:', e); }
 }
 
 // ============================================================
@@ -202,7 +205,7 @@ async function initFirebase() {
       if (ni && data.nom) ni.textContent = data.nom.toUpperCase();
       const mt = document.getElementById('meta');
       if (mt && data.origine) mt.textContent = `LVL ${data.niveau||1} · ${data.origine} · ${data.xp||0}/${data.niveau>=20?21000:[0,100,300,600,1000,1500,2100,2800,3600,4500][Math.min(data.niveau||1,9)]} XP`;
-      appliquerDonnees(data);
+      try { appliquerDonnees(data); } catch (e) { console.error('appliquerDonnees:', e); }
     } else {
       // Nouveau joueur — créer le document avec les valeurs par défaut
       await db.collection('joueurs').doc(JOUEUR_ID).set({
@@ -213,13 +216,14 @@ async function initFirebase() {
         wounds: char.wounds, lastUpdate: Date.now(),
       });
     }
-    rAll(); // déclenche aussi afficherNom via le patch
-    startSync();
-    setStatus('✓ ' + (char.name || JOUEUR_ID), '#5dbe5d');
   } catch (e) {
     setStatus('✗ Erreur Firebase', '#e04040');
     console.error(e);
   }
+  // TOUJOURS rendre + démarrer la synchro temps réel (même si le get initial a échoué)
+  try { rAll(); } catch (e) { console.error('rAll init:', e); }
+  startSync();
+  setStatus('✓ ' + (char.name || JOUEUR_ID), '#5dbe5d');
 }
 
 window.DB_READY.then(() => {
