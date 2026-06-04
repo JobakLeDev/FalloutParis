@@ -127,3 +127,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .pr-row{ display:flex; justify-content:space-between; gap:6px; font-size:9px; padding:2px 0; border-bottom:1px solid var(--b); }
 .pr-nom{ color:var(--t); }
 .pr-res{ color:var(--td); text-align:right; }
+
+/* Animation des lancers de dés */
+@keyframes dice-shake{ 0%,100%{transform:translateX(0)} 20%{transform:translateX(-2px) rotate(-.4deg)} 40%{transform:translateX(2px) rotate(.4deg)} 60%{transform:translateX(-1px)} 80%{transform:translateX(1px)} }
+@keyframes dice-settle{ 0%{transform:scale(1.12);filter:brightness(1.6)} 100%{transform:scale(1);filter:brightness(1)} }
+#dice-result.rolling{ display:block !important; animation:dice-shake .12s linear infinite; box-shadow:0 0 8px rgba(93,190,93,.35); }
+#dice-result.settled{ animation:dice-settle .36s ease-out; }
+@keyframes roll-pop{ 0%{transform:scale(.85);opacity:0} 60%{transform:scale(1.04)} 100%{transform:scale(1);opacity:1} }
+.pr-row{ animation:roll-pop .25s ease-out; }

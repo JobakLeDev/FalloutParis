@@ -386,14 +386,37 @@ function showMsg(txt, err=false){
 // ============================================================
 // LANCEUR DE DÉS
 // ============================================================
+// Animation « dés qui roulent » : défile des valeurs aléatoires puis se fige
+function animateDiceRoll(el, frameFn, finalHtml, dur=520){
+  el.style.display='block';
+  el.classList.add('rolling');
+  const t0 = performance.now();
+  const tick = () => {
+    const t = performance.now() - t0;
+    if(t < dur){
+      el.innerHTML = frameFn();
+      setTimeout(tick, 45 + (t/dur)*70);   // ralentit vers la fin
+    } else {
+      el.classList.remove('rolling');
+      el.innerHTML = finalHtml;
+      el.classList.add('settled');
+      setTimeout(()=>el.classList.remove('settled'), 360);
+    }
+  };
+  tick();
+}
+
 function lancerDes(){
   const nb = Math.min(20, parseInt(document.getElementById('dice-nb').value)||2);
   const faces = Math.min(100, parseInt(document.getElementById('dice-faces').value)||20);
   const resultats = Array.from({length:nb}, ()=>Math.floor(Math.random()*faces)+1);
   const total = resultats.reduce((a,b)=>a+b,0);
   const el = document.getElementById('dice-result');
-  el.style.display='block';
-  el.innerHTML = `<span style="color:var(--td)">${nb}D${faces} → </span>${resultats.join(' + ')} <span style="color:var(--am);font-family:'Oswald',sans-serif;font-size:16px"> = ${total}</span>`;
+  const finalHtml = `<span style="color:var(--td)">${nb}D${faces} → </span>${resultats.join(' + ')} <span style="color:var(--am);font-family:'Oswald',sans-serif;font-size:16px"> = ${total}</span>`;
+  animateDiceRoll(el, ()=>{
+    const scr = Array.from({length:nb}, ()=>Math.floor(Math.random()*faces)+1);
+    return `<span style="color:var(--td)">${nb}D${faces} → </span><span style="color:var(--tb)">${scr.join(' + ')}</span>`;
+  }, finalHtml);
 }
 
 // Dés de Combat Fallout 2D20 : 1|2dmg, blank, blank, 1dmg+effet, 1dmg+effet
@@ -403,10 +426,13 @@ function lancerCD(){
   const dmg = resultats.reduce((a,f)=>a+(parseInt(f)||0),0);
   const effets = resultats.filter(f=>f.includes('⚡')).length;
   const el = document.getElementById('dice-result');
-  el.style.display='block';
-  el.innerHTML = `<span style="color:var(--td)">${nb}DC → </span>`
+  const finalHtml = `<span style="color:var(--td)">${nb}DC → </span>`
     + resultats.map(f=>`<span style="color:${f.includes('⚡')?'var(--am)':f==='—'?'var(--td)':'var(--tb)'}">` + f + '</span>').join(' ')
     + ` <span style="color:var(--am);font-family:'Oswald',sans-serif;font-size:14px"> = ${dmg} dmg${effets>0?` + ${effets} Effet(s)`:''}</span>`;
+  animateDiceRoll(el, ()=>{
+    const scr = Array.from({length:nb}, ()=>FACES_CD[Math.floor(Math.random()*6)]);
+    return `<span style="color:var(--td)">${nb}DC → </span>` + scr.map(f=>`<span style="color:var(--tb)">${f}</span>`).join(' ');
+  }, finalHtml);
 }
 
 // rollDice défini dans mj_shared.js

@@ -125,3 +125,10 @@ html, body { height: 100%; overflow: hidden; }
 .cmp-atk{ font-size:0.64rem; color:var(--t); line-height:1.5; }
 .cmp-abil{ font-size:0.62rem; color:var(--td); line-height:1.4; }
 .cmp-abil b{ color:var(--t); }
+
+/* Animation lancer de dés (joueur) */
+@keyframes roll-shake{ 0%,100%{transform:translateX(0)} 25%{transform:translateX(-3px) rotate(-.5deg)} 50%{transform:translateX(3px) rotate(.5deg)} 75%{transform:translateX(-2px)} }
+@keyframes roll-pop{ 0%{transform:scale(.8);opacity:0} 60%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
+#roll-box.rolling{ animation:roll-shake .13s linear infinite; }
+#roll-box.rolling #roll-btn::after{ content:' …'; }
+.roll-row{ animation:roll-pop .28s ease-out; }

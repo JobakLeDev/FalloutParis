@@ -164,7 +164,10 @@ function lancerMonDe(){
   if(!(r.players||[]).includes(JOUEUR_ID)) return;
   if(r.results && r.results[JOUEUR_ID]) return;       // déjà lancé
   const res = rollPublicLocal(r);
-  db.collection('rolls').doc('current').update({ ['results.' + JOUEUR_ID]: res });
+  // petite animation de roulement avant d'envoyer le résultat
+  const box = document.getElementById('roll-box');
+  if(box){ box.classList.add('rolling'); setTimeout(()=>box.classList.remove('rolling'), 520); }
+  setTimeout(() => db.collection('rolls').doc('current').update({ ['results.' + JOUEUR_ID]: res }), 480);
 }
 
 function _fmtRollJoueur(res, r){
