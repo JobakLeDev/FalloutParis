@@ -68,10 +68,14 @@ function addQuete() {
 function delQuete(i) { if (confirm('Supprimer cette quête ?')) { qData.quests.splice(i, 1); saveQuetes(); render(); } }
 function setQ(i, k, v) { if (!qData.quests[i]) return; qData.quests[i][k] = v; saveQuetes(); }      // texte : pas de re-render (focus)
 function setStatut(i, v) { if (!qData.quests[i]) return; qData.quests[i].status = v; saveQuetes(); render(); }
-function addObj(i) { qData.quests[i].objectives = qData.quests[i].objectives || []; qData.quests[i].objectives.push({ id: uid(), text: '', done: false }); saveQuetes(); render(); }
+function addObj(i) { qData.quests[i].objectives = qData.quests[i].objectives || []; qData.quests[i].objectives.push({ id: uid(), text: '', done: false, count: 0, target: 0 }); saveQuetes(); render(); }
 function delObj(i, j) { qData.quests[i].objectives.splice(j, 1); saveQuetes(); render(); }
 function setObj(i, j, v) { qData.quests[i].objectives[j].text = v; saveQuetes(); }
 function toggleObj(i, j) { const o = qData.quests[i].objectives[j]; o.done = !o.done; saveQuetes(); render(); }
+// Objectif "compteur" : cible (target) + valeur (count). done dérivé si target>0.
+function setObjTarget(i, j, v) { const o = qData.quests[i].objectives[j]; o.target = Math.max(0, parseInt(v) || 0); if (o.target > 0) o.count = Math.min(o.count || 0, o.target); saveQuetes(); render(); }
+function incObj(i, j, d) { const o = qData.quests[i].objectives[j]; const t = o.target || 0; o.count = Math.max(0, Math.min(t || 9999, (o.count || 0) + d)); saveQuetes(); render(); }
+function objDone(o) { return (o.target || 0) > 0 ? (o.count || 0) >= o.target : !!o.done; }
 
 function toggleRevealQ(i, pid) {
   const q = qData.quests[i]; q.revealedFor = q.revealedFor || [];
@@ -100,16 +104,19 @@ function render() {
     const i = qData.quests.indexOf(q);
     const st = STATUTS[q.status || 'active'] || STATUTS.active;
     const objs = q.objectives || [];
-    const doneN = objs.filter(o => o.done).length;
+    const doneN = objs.filter(objDone).length;
     return isMJ ? renderQuestMJ(q, i, st, objs, doneN) : renderQuestJoueur(q, st, objs, doneN);
   }).join('');
 }
 
 // Vue joueur (lecture seule)
 function renderQuestJoueur(q, st, objs, doneN) {
-  const objHtml = objs.map(o =>
-    `<div class="q-obj${o.done ? ' done' : ''}"><span class="q-check">${o.done ? '☑' : '☐'}</span><span class="q-obj-t">${esc(o.text)}</span></div>`
-  ).join('') || '<div class="q-obj-none">—</div>';
+  const objHtml = objs.map(o => {
+    const d = objDone(o);
+    const counter = (o.target || 0) > 0 ? `<span class="q-count">${o.count || 0}/${o.target}</span>` : '';
+    const mark = (o.target || 0) > 0 ? (d ? '☑' : '▸') : (d ? '☑' : '☐');
+    return `<div class="q-obj${d ? ' done' : ''}"><span class="q-check">${mark}</span><span class="q-obj-t">${esc(o.text)}</span>${counter}</div>`;
+  }).join('') || '<div class="q-obj-none">—</div>';
   return `<div class="q-card s-${q.status || 'active'}">
     <div class="q-head"><span class="q-title">${esc(q.title)}</span><span class="q-badge" style="color:${st.c};border-color:${st.c}">${st.l}</span></div>
     ${q.desc ? `<div class="q-desc">${esc(q.desc)}</div>` : ''}
@@ -121,13 +128,19 @@ function renderQuestJoueur(q, st, objs, doneN) {
 
 // Vue MJ (édition)
 function renderQuestMJ(q, i, st, objs, doneN) {
-  const objHtml = objs.map((o, j) =>
-    `<div class="q-obj-edit${o.done ? ' done' : ''}">
-      <button class="q-check-btn" onclick="toggleObj(${i},${j})" title="Cocher">${o.done ? '☑' : '☐'}</button>
+  const objHtml = objs.map((o, j) => {
+    const d = objDone(o);
+    const hasCounter = (o.target || 0) > 0;
+    const ctrl = hasCounter
+      ? `<button class="q-cnt-btn" onclick="incObj(${i},${j},-1)">−</button><span class="q-cnt">${o.count || 0}/${o.target}</span><button class="q-cnt-btn" onclick="incObj(${i},${j},1)">+</button>`
+      : `<button class="q-check-btn" onclick="toggleObj(${i},${j})" title="Cocher">${o.done ? '☑' : '☐'}</button>`;
+    return `<div class="q-obj-edit${d ? ' done' : ''}">
+      ${ctrl}
       <input class="q-inp" value="${escAttr(o.text)}" placeholder="objectif…" onfocus="_editing=true" onblur="_editing=false" onchange="setObj(${i},${j},this.value)">
+      <input class="q-inp q-target" type="number" min="0" value="${o.target || 0}" title="Cible (0 = case à cocher)" onfocus="_editing=true" onblur="_editing=false" onchange="setObjTarget(${i},${j},this.value)">
       <button class="q-del" onclick="delObj(${i},${j})">✕</button>
-    </div>`
-  ).join('');
+    </div>`;
+  }).join('');
   const pids = Object.keys(joueurs);
   const revealHtml = pids.map(pid => {
     const on = (q.revealedFor || []).includes(pid);

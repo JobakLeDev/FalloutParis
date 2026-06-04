@@ -62,3 +62,12 @@ body.embed .qhdr{display:none;}
 .q-reveal{background:#060d06;border:1px solid var(--b);color:var(--td);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:8px;padding:3px 7px;}
 .q-reveal.on{border-color:var(--g);color:var(--g);}
 .q-empty-inline{font-size:8px;color:var(--td);}
+
+/* Objectifs compteur (x/cible) */
+.q-count{font-family:'Oswald',sans-serif;font-size:11px;color:var(--am);margin-left:auto;padding-left:8px;white-space:nowrap;}
+.q-obj.done .q-count{color:var(--g);}
+.q-cnt-btn{background:var(--gk);border:1px solid var(--b2);color:var(--t);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:11px;width:22px;height:22px;flex:none;line-height:1;}
+.q-cnt-btn:hover{border-color:var(--g);color:var(--tb);}
+.q-cnt{font-family:'Oswald',sans-serif;font-size:12px;color:var(--am);min-width:34px;text-align:center;flex:none;}
+.q-obj-edit.done .q-cnt{color:var(--g);}
+.q-target{width:46px;flex:none;text-align:center;padding:5px 3px;}
