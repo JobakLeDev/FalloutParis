@@ -593,7 +593,7 @@ function closeMo(id){document.getElementById(id).classList.remove('on');}
 const COMP_ATTR_LBL = { body:'COR', mind:'ESP', melee:'MÊL', guns:'ARM', other:'AUT' };
 function chCompHP(i,n){
   const c=char.companions?.[i]; if(!c) return;
-  c.hpCur=Math.max(0,Math.min(c.hpMax||0,(c.hpCur??c.hpMax||0)+n));
+  c.hpCur=Math.max(0,Math.min(c.hpMax||0,(c.hpCur ?? (c.hpMax||0))+n));
   rAll();
 }
 function compMaxHP(i){ const c=char.companions?.[i]; if(!c) return; c.hpCur=c.hpMax; rAll(); }
