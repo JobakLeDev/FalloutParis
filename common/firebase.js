@@ -119,6 +119,72 @@ function startSync() {
     setStatus('✗ Connexion perdue', '#e04040');
     console.error(err);
   });
+  db.collection('rolls').doc('current').onSnapshot((snap) => {
+    renderRollJoueur(snap.exists ? snap.data() : null);
+  });
+}
+
+// ============================================================
+// LANCER DE DÉS PUBLIC (côté joueur)
+// ============================================================
+let _currentRoll = null;
+const _ATTR3_LETTER = { FOR:'S', PER:'P', END:'E', CHR:'C', INT:'I', AGI:'A', LCK:'L' };
+function _skillAttrLetter(key){ const s = (typeof SKILLS_DEF!=='undefined'?SKILLS_DEF:[]).find(x => x.key === key); return s ? _ATTR3_LETTER[s.attr] : 'A'; }
+
+// Calcule le résultat du joueur courant pour le lancer r
+function rollPublicLocal(r){
+  const nom = char.name || JOUEUR_ID;
+  if(r.mode === 'dice'){
+    const dice = Array.from({length: r.n}, () => 1 + Math.floor(Math.random() * r.faces));
+    return { nom, dice, total: dice.reduce((a,b)=>a+b,0) };
+  }
+  // test 2D20
+  let tn, rang = 0, tag = false;
+  if(r.isAttr){ tn = char.special?.[r.skillKey] || 5; }
+  else {
+    const attrVal = char.special?.[_skillAttrLetter(r.skillKey)] || 5;
+    rang = char.skills?.[r.skillKey] || 0;
+    tag = (char.taggedSkills||[]).includes(r.skillKey);
+    tn = attrVal + rang + (tag ? 2 : 0);
+  }
+  const critThresh = Math.max(1, tag ? rang : 1);   // crit sur 1, ou ≤ rang si compétence taguée
+  const dice = [1 + Math.floor(Math.random()*20), 1 + Math.floor(Math.random()*20)];
+  let succ = 0, crit = false, comp = false;
+  dice.forEach(dv => { if(dv <= critThresh){ succ += 2; crit = true; } else if(dv <= tn){ succ += 1; } if(dv === 20) comp = true; });
+  return { nom, dice, total: succ, tn, successes: succ, crit, comp };
+}
+
+function lancerMonDe(){
+  const r = _currentRoll; if(!r || !r.open) return;
+  if(!(r.players||[]).includes(JOUEUR_ID)) return;
+  if(r.results && r.results[JOUEUR_ID]) return;       // déjà lancé
+  const res = rollPublicLocal(r);
+  db.collection('rolls').doc('current').update({ ['results.' + JOUEUR_ID]: res });
+}
+
+function _fmtRollJoueur(res, r){
+  if(r.mode === 'dice') return `[${res.dice.join(', ')}] = <b>${res.total}</b>`;
+  const tags = (res.crit ? ' ✦' : '') + (res.comp ? ' ⚠' : '');
+  return `[${res.dice.join(', ')}] → <b>${res.successes} succ.</b>${tags}`;
+}
+function renderRollJoueur(r){
+  _currentRoll = r;
+  const box = document.getElementById('roll-box'); if(!box) return;
+  if(!r || !r.open){ box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  document.getElementById('roll-title').textContent = '🎲 ' + (r.label || 'Lancer');
+  const involved = (r.players||[]).includes(JOUEUR_ID);
+  const rolled = r.results && r.results[JOUEUR_ID];
+  const btn = document.getElementById('roll-btn');
+  btn.style.display = (involved && !rolled) ? 'block' : 'none';
+  box.classList.toggle('alert', involved && !rolled);
+  const list = (r.players||[]).map(id => {
+    const res = r.results?.[id];
+    const nom = res?.nom || (id === JOUEUR_ID ? (char.name||id) : id);
+    const me = id === JOUEUR_ID ? ' me' : '';
+    return `<div class="roll-row${me}"><span class="roll-nom">${nom}</span><span class="roll-res">${res ? _fmtRollJoueur(res, r) : '⏳…'}</span></div>`;
+  }).join('');
+  document.getElementById('roll-list').innerHTML = list;
 }
 
 // ---- Initialisation ----

@@ -76,3 +76,29 @@ html, body { height: 100%; overflow: hidden; }
 .lvl-perks.locked{ opacity:0.35; pointer-events:none; filter:grayscale(0.4); }
 
 .iname-cal{ font-size:0.62rem; color:var(--td); letter-spacing:0; margin-left:0.25rem; }
+
+/* ============================================================
+   LANCER DE DÉS PUBLIC (joueur)
+   ============================================================ */
+#roll-box{
+  position:fixed; bottom:1rem; right:1rem; z-index:180;
+  width:17rem; max-width:90vw;
+  background:var(--p2); border:1px solid var(--b2);
+  padding:0.7rem 0.8rem; box-shadow:0 0 18px rgba(0,0,0,.6);
+  font-family:'Share Tech Mono',monospace;
+}
+#roll-box.alert{ border-color:var(--am); animation:rollpulse 1.3s ease-in-out infinite; }
+@keyframes rollpulse{ 0%,100%{box-shadow:0 0 0 rgba(232,168,32,0);} 50%{box-shadow:0 0 16px rgba(232,168,32,.5);} }
+.roll-head{ font-size:0.72rem; letter-spacing:1px; color:var(--am); margin-bottom:0.5rem; }
+#roll-btn{
+  display:none; width:100%; margin-bottom:0.5rem; cursor:pointer;
+  background:var(--gk); border:1px solid var(--am); color:var(--am);
+  font-family:'Share Tech Mono',monospace; font-size:0.8rem; letter-spacing:1px;
+  padding:0.5rem; transition:all .1s;
+}
+#roll-btn:hover{ background:var(--am); color:#0c150c; }
+.roll-row{ display:flex; justify-content:space-between; gap:0.5rem; font-size:0.7rem; padding:0.2rem 0; border-bottom:1px solid var(--b); }
+.roll-row.me .roll-nom{ color:var(--tb); }
+.roll-nom{ color:var(--t); }
+.roll-res{ color:var(--td); text-align:right; }
+.roll-res b{ color:var(--am); }

@@ -94,7 +94,59 @@ function startSync(){
     renderJoueurs();
   });
   populateZoneSelectors();
+  populatePublicSkillSel();
   renderCombatsActifs();
+  db.collection('rolls').doc('current').onSnapshot(s => renderPublicRoll(s.exists ? s.data() : null));
+}
+
+// ============================================================
+// LANCER DE DÉS PUBLIC (MJ → joueurs sélectionnés)
+// ============================================================
+const ATTR3_LETTER = { FOR:'S', PER:'P', END:'E', CHR:'C', INT:'I', AGI:'A', LCK:'L' };
+const SPECIAL_LABELS = { S:'FORCE', P:'PERCEPTION', E:'ENDURANCE', C:'CHARISME', I:'INTELLIGENCE', A:'AGILITÉ', L:'CHANCE' };
+
+function populatePublicSkillSel(){
+  const sel = document.getElementById('pub-skill-sel'); if(!sel) return;
+  const attrs = ['S','P','E','C','I','A','L'].map(k => `<option value="attr:${k}">${SPECIAL_LABELS[k]}</option>`).join('');
+  const skills = (typeof SKILLS_DEF!=='undefined'?SKILLS_DEF:[]).map(s => `<option value="sk:${s.key}">${s.name}</option>`).join('');
+  sel.innerHTML = `<optgroup label="S.P.E.C.I.A.L">${attrs}</optgroup><optgroup label="Compétences">${skills}</optgroup>`;
+}
+
+function lancerPublic(mode){
+  if(!selected.size){ showMsg('Aucun joueur sélectionné !', true); return; }
+  const doc = { id: 'r' + Date.now().toString(36), mode, players:[...selected], results:{}, open:true, ts: Date.now() };
+  if(mode === 'dice'){
+    doc.n = Math.min(20, Math.max(1, parseInt(document.getElementById('pub-dice-nb').value)||1));
+    doc.faces = Math.min(100, Math.max(2, parseInt(document.getElementById('pub-dice-faces').value)||6));
+    doc.label = `${doc.n}D${doc.faces}`;
+  } else {
+    const selEl = document.getElementById('pub-skill-sel');
+    const [t, k] = selEl.value.split(':');
+    doc.isAttr = (t === 'attr');
+    doc.skillKey = k;
+    doc.label = (selEl.selectedOptions[0]?.textContent || k) + ' — test 2D20';
+  }
+  db.collection('rolls').doc('current').set(doc);
+  showMsg(`📣 Lancer envoyé à ${selected.size} joueur(s)`);
+}
+function cloreLancer(){ db.collection('rolls').doc('current').set({ open:false, ts: Date.now() }); }
+
+function fmtRollMJ(res, r){
+  if(r.mode === 'dice') return `[${res.dice.join(', ')}] = <b style="color:var(--am)">${res.total}</b>`;
+  const tags = (res.crit?' <span style="color:var(--g)">✦crit</span>':'') + (res.comp?' <span style="color:var(--rd)">⚠compl.</span>':'');
+  return `[${res.dice.join(', ')}] vs TN ${res.tn} → <b style="color:var(--am)">${res.successes} succ.</b>${tags}`;
+}
+function renderPublicRoll(r){
+  const el = document.getElementById('pub-roll-results'); if(!el) return;
+  if(!r || !r.open){ el.style.display='none'; el.innerHTML=''; return; }
+  el.style.display='block';
+  const rows = (r.players||[]).map(id => {
+    const res = r.results?.[id];
+    const nom = joueurs[id]?.nom || id;
+    return `<div class="pr-row"><span class="pr-nom">${nom}</span><span class="pr-res">${res ? fmtRollMJ(res, r) : '⏳ en attente…'}</span></div>`;
+  }).join('');
+  el.innerHTML = `<div style="font-size:9px;letter-spacing:1px;color:var(--am);margin-bottom:4px">🎲 ${r.label}</div>${rows}`
+    + `<button class="action-btn" onclick="cloreLancer()" style="width:100%;margin-top:5px;font-size:9px">Clore le lancer</button>`;
 }
 
 // ============================================================
