@@ -43,7 +43,9 @@ function rdP(type){
 }
 function getLocRD(zone){
   const zm={head:'Head',torso:'Torso',armL:'Arm',armR:'Arm',legL:'Leg',legR:'Leg'};
-  let ph=rdP('phys'),en=rdP('en'),rad=rdP('rad');
+  // RAW p.123 : pour chaque emplacement, prendre la RD la PLUS ÉLEVÉE par type
+  // entre le vêtement et l'armure (PAS la somme). Les perks s'ajoutent ensuite.
+  let aPh=0,aEn=0,aRad=0;
   char.inventory.forEach(it=>{
     if(!it.equipped)return;
     const db=[...DB.armor].find(a=>a.n===it.name);
@@ -53,9 +55,13 @@ function getLocRD(zone){
       || (db.t==='POWERARMOR'&&char.powerArmor)
       || (db.z==='Body'&&zone!=='head')
       || db.z==='All';
-    if(coversZone){ph+=db.ph;en+=db.en;rad+=(db.rad===999?999:db.rad||0);}
+    if(coversZone){
+      aPh=Math.max(aPh,db.ph||0);
+      aEn=Math.max(aEn,db.en||0);
+      aRad=(db.rad===999||aRad===999)?999:Math.max(aRad,db.rad||0);
+    }
   });
-  return{phys:ph,en,rad};
+  return{phys:aPh+rdP('phys'), en:aEn+rdP('en'), rad:aRad===999?999:aRad+rdP('rad')};
 }
 function getWeaponTN(inv){
   const db=DB.weapons.find(w=>w.n===inv.name);if(!db)return 0;
@@ -531,23 +537,29 @@ function toggleAtout(name){const it=char.inventory.find(i=>i.name===name&&i.type
 
 function tEquip(i){
   const it=char.inventory[i];
-  if(!it.equipped){
-    // Si c'est une armure/tenue, déséquiper la même zone d'abord
-    if(['ARMOR','POWERARMOR','CLOTHING','OUTFIT'].includes(it.type)){
-      const zone=it.zone||null;
-      char.inventory.forEach((other,j)=>{
-        if(j===i||!other.equipped)return;
-        if(!['ARMOR','POWERARMOR','CLOTHING','OUTFIT'].includes(other.type))return;
-        // CLOTHING/OUTFIT : une seule tenue à la fois (zone Body)
-        if(['CLOTHING','OUTFIT'].includes(it.type)&&['CLOTHING','OUTFIT'].includes(other.type)){
-          other.equipped=false;
-        }
-        // ARMOR/POWERARMOR : une seule pièce par zone
-        else if(zone&&other.zone===zone){
-          other.equipped=false;
-        }
-      });
-    }
+  const APP=['ARMOR','POWERARMOR','CLOTHING','OUTFIT'];
+  if(!it.equipped && APP.includes(it.type)){
+    // Règles de superposition (RAW p.123) :
+    // - vêtement (CLOTHING) = couche de base ; l'armure se porte PAR-DESSUS
+    // - tenue (OUTFIT) = ne se combine PAS avec une armure de corps
+    // - 1 seule pièce d'armure par emplacement ; 1 seule base (vêtement/tenue)
+    const zone=it.zone||DB.armor.find(a=>a.n===it.name)?.z||null;
+    const isHead=zone==='Head';
+    char.inventory.forEach((other,j)=>{
+      if(j===i||!other.equipped||!APP.includes(other.type))return;
+      const oZone=other.zone||DB.armor.find(a=>a.n===other.name)?.z||null;
+      const oHead=oZone==='Head';
+      const oBase=['CLOTHING','OUTFIT'].includes(other.type);
+      if(it.type==='OUTFIT'){
+        if(oBase) other.equipped=false;            // une seule base
+        else if(!oHead) other.equipped=false;      // tenue → retire l'armure de corps
+      } else if(it.type==='CLOTHING'){
+        if(oBase) other.equipped=false;            // une seule base ; l'armure reste superposée
+      } else { // ARMOR / POWERARMOR
+        if(other.type==='OUTFIT' && !isHead) other.equipped=false;  // pas d'armure sur une tenue
+        else if(zone && oZone===zone) other.equipped=false;          // 1 pièce / emplacement
+      }
+    });
   }
   it.equipped=!it.equipped;
   rAll();
