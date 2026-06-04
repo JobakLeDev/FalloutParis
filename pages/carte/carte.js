@@ -89,14 +89,9 @@ function landmarkKey(nom){
     .normalize('NFD').replace(/[̀-ͯ]/g, '')   // retire les accents
     .replace(/['’‘\-\s]+/g, '');                        // retire apostrophes, tirets, espaces
 }
-// Luminosité par monument (défaut 1.25) — pour égaliser des images sources trop claires/sombres.
-const LANDMARK_BRIGHT = {
-  operagarnier:     0.45,
-  parcdesprinces:   0.9,
-  tourmontparnasse: 0.9,
-  gallerieslafayette: 1.7,
-  ladefense:        0.7,
-};
+// Luminosité par monument (défaut 1.25 via --lb) — vide = toutes uniformes.
+// Ajouter des entrées ici seulement si une image source est trop claire/sombre.
+const LANDMARK_BRIGHT = {};
 function landmarkImgPath(nom){
   return '../../img/500pix/' + landmarkKey(nom) + '.png?v=' + IMG_VER;
 }
