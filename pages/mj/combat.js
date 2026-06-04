@@ -231,17 +231,17 @@ function lancerInitiative(){
   ordreInitiative = [];
   actionsState = {};
 
-  // Joueurs : PER + AGI + Action Boy/Girl
+  // Joueurs : initiative = PER + AGI (RAW p.45). Action Boy/Girl ne joue PAS sur l'initiative
+  // (son effet : pas de malus de difficulté sur la 2e action majeure payée en AP — RAW p.59).
   Object.entries(combattants).forEach(([id, c]) => {
     const d = c.data;
     const per = d.special?.P||5;
     const agi = d.special?.A||5;
-    const bonus = (d.perks?.['Action Boy/Girl']||0)*2;
-    const init = per + agi + bonus;
+    const init = per + agi;
     c.initiative = init;
     ordreInitiative.push({id, nom:(d.nom||id).toUpperCase(), type:'joueur', init});
     initActionsState(id, true, d);
-    addLog('🎲 ' + (d.nom||id) + ' init ' + per + '+' + agi + (bonus?'+'+bonus:'') + ' = ' + init);
+    addLog('🎲 ' + (d.nom||id) + ' init ' + per + '+' + agi + ' = ' + init);
   });
 
   // Ennemis : initiative déjà calculée à la création (Body + Mind du schéma)
