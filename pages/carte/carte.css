@@ -105,7 +105,7 @@ body.embed #map-tabs{padding:0;}
 
 /* MONUMENTS (image dédiée img/<nom>.png, fond blanc détouré via invert+screen) */
 .land-pin{display:flex !important;flex-direction:column;align-items:center;gap:1px;white-space:nowrap;}
-.land-icon-wrap{width:42px;height:42px;display:flex;align-items:center;justify-content:center;}
+.land-icon-wrap{width:42px;height:42px;display:flex;align-items:flex-end;justify-content:center;}
 img.land-icon-img{
   display:block;
   width:42px;height:42px;flex:none;
