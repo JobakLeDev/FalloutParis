@@ -135,3 +135,16 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 #dice-result.settled{ animation:dice-settle .36s ease-out; }
 @keyframes roll-pop{ 0%{transform:scale(.85);opacity:0} 60%{transform:scale(1.04)} 100%{transform:scale(1);opacity:1} }
 .pr-row{ animation:roll-pop .25s ease-out; }
+
+/* Horloge de campagne */
+#clock-pnl{margin-bottom:10px;}
+#clock-display{font-family:'Oswald',sans-serif;font-size:26px;color:var(--am);letter-spacing:1px;text-align:center;margin:2px 0;text-shadow:0 0 8px rgba(232,168,32,.35);}
+#clock-sub{font-size:9px;color:var(--td);letter-spacing:2px;text-align:center;text-transform:uppercase;margin-bottom:8px;}
+.clock-btns{display:flex;flex-wrap:wrap;gap:5px;align-items:center;justify-content:center;}
+.clock-btn{background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:10px;padding:6px 9px;cursor:pointer;letter-spacing:1px;}
+.clock-btn:hover{border-color:var(--am);color:var(--am);}
+.clock-x{width:42px;background:#060d06;border:1px solid var(--b2);color:var(--tb);font-family:'Oswald',sans-serif;font-size:13px;padding:3px;text-align:center;outline:none;}
+.clock-x:focus{border-color:var(--g);}
+.clock-set{display:flex;gap:6px;justify-content:center;margin-top:7px;}
+.clock-mini{background:none;border:1px solid var(--b);color:var(--td);font-family:'Share Tech Mono',monospace;font-size:8px;padding:4px 8px;cursor:pointer;letter-spacing:1px;}
+.clock-mini:hover{border-color:var(--g);color:var(--t);}

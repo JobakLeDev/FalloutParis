@@ -97,6 +97,46 @@ function startSync(){
   populatePublicSkillSel();
   renderCombatsActifs();
   db.collection('rolls').doc('current').onSnapshot(s => renderPublicRoll(s.exists ? s.data() : null));
+  db.collection('temps').doc('data').onSnapshot(s => {
+    if(s.exists && typeof s.data().minutes === 'number') tempsMin = s.data().minutes;
+    renderClock();
+  });
+}
+
+// ============================================================
+// HORLOGE DE CAMPAGNE (temps en jeu, partagé Firebase /temps/data)
+// minutes = total depuis Jour 1 00:00. Sert d'horodatage au journal.
+// ============================================================
+let tempsMin = 480;   // défaut : Jour 1 · 08:00
+const JOURS_SEM = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+function tempsDecompose(m){
+  const jour = Math.floor(m/1440)+1;
+  const h = Math.floor((m%1440)/60);
+  const min = m%60;
+  return { jour, h, min };
+}
+function periodeJour(h){
+  if(h<6) return 'nuit'; if(h<12) return 'matin'; if(h<18) return 'après-midi'; if(h<22) return 'soir'; return 'nuit';
+}
+function fmtTemps(m){ const {jour,h,min}=tempsDecompose(m); return `Jour ${jour} · ${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')}`; }
+function saveTemps(){ if(db) db.collection('temps').doc('data').set({minutes:tempsMin, lastUpdate:Date.now()}).catch(e=>console.error('saveTemps',e)); }
+function avanceTemps(delta){ tempsMin = Math.max(0, tempsMin + (parseInt(delta)||0)); saveTemps(); renderClock(); }
+function reglerHeure(){
+  const {jour,h,min}=tempsDecompose(tempsMin);
+  const nj = parseInt(prompt('Jour :', jour)); if(!nj || nj<1) return;
+  const hhmm = prompt('Heure (HH:MM) :', `${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')}`);
+  if(hhmm==null) return;
+  const mm = hhmm.match(/^(\d{1,2})[:hH]?(\d{0,2})$/); if(!mm) return;
+  const nh = Math.min(23, parseInt(mm[1])||0), nmin = Math.min(59, parseInt(mm[2])||0);
+  tempsMin = (nj-1)*1440 + nh*60 + nmin;
+  saveTemps(); renderClock();
+}
+function renderClock(){
+  const d = document.getElementById('clock-display'); if(!d) return;
+  const {jour,h,min}=tempsDecompose(tempsMin);
+  d.textContent = fmtTemps(tempsMin);
+  const sub = document.getElementById('clock-sub');
+  if(sub) sub.textContent = `${JOURS_SEM[(jour-1)%7]} · ${periodeJour(h)}`;
 }
 
 // ============================================================
