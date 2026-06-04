@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fallout Paris — Fiche Personnage</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../../common/style.css?v=7">
-  <link rel="stylesheet" href="fiche_perso.css?v=7">
+  <link rel="stylesheet" href="../../common/style.css?v=8">
+  <link rel="stylesheet" href="fiche_perso.css?v=8">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
@@ -229,12 +229,7 @@
 
 <!-- JOURNAL -->
 <div class="tc" id="tc-journal">
-  <div class="pnl">
-    <div class="ptitle">Journal de campagne</div>
-    <div style="color:var(--td);font-size:10px;line-height:2">
-      Le journal de campagne sera disponible prochainement.
-    </div>
-  </div>
+  <iframe id="journal-frame" title="Journal"></iframe>
 </div>
 
 </div><!-- /body -->
@@ -284,9 +279,9 @@
   </div>
 </div>
 
-  <script src="../../common/shared.js?v=7"></script>
-  <script src="../../common/db.js?v=7"></script>
-  <script src="fiche_perso.js?v=7"></script>
-  <script src="../../common/firebase.js?v=7"></script>
+  <script src="../../common/shared.js?v=8"></script>
+  <script src="../../common/db.js?v=8"></script>
+  <script src="fiche_perso.js?v=8"></script>
+  <script src="../../common/firebase.js?v=8"></script>
 </body>
 </html>

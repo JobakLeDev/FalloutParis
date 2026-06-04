@@ -80,11 +80,27 @@ function objDone(o) { return (o.target || 0) > 0 ? (o.count || 0) >= o.target : 
 function toggleRevealQ(i, pid) {
   const q = qData.quests[i]; q.revealedFor = q.revealedFor || [];
   const k = q.revealedFor.indexOf(pid);
-  if (k >= 0) q.revealedFor.splice(k, 1); else q.revealedFor.push(pid);
+  if (k >= 0) q.revealedFor.splice(k, 1); else { q.revealedFor.push(pid); logQuete(q, pid); }
   q.revealed = false;
   saveQuetes(); render();
 }
-function revealAllQ(i) { qData.quests[i].revealedFor = Object.keys(joueurs); qData.quests[i].revealed = false; saveQuetes(); render(); }
+function revealAllQ(i) { const q = qData.quests[i]; Object.keys(joueurs).forEach(pid => { if (!(q.revealedFor||[]).includes(pid)) logQuete(q, pid); }); q.revealedFor = Object.keys(joueurs); q.revealed = false; saveQuetes(); render(); }
+
+// ---- Journal : log auto au début de quête (révélation à un joueur, dédup par src) ----
+function logQuete(q, pid) { logJournal({ type: 'quete', title: q.title, text: 'Quête découverte', revealedFor: [pid], src: 'quete:' + q.id + ':' + pid }); }
+function logJournal(entry) {
+  if (!fdb) return;
+  Promise.all([fdb.collection('journal').doc('data').get(), fdb.collection('temps').doc('data').get()])
+    .then(([js, ts]) => {
+      const data = js.exists ? js.data() : {};
+      const entries = Array.isArray(data.entries) ? data.entries : [];
+      if (entry.src && entries.some(e => e.src === entry.src)) return;
+      entry.id = 'j' + Date.now().toString(36) + Math.floor(Math.random() * 999);
+      if (entry.time == null) entry.time = (ts.exists && typeof ts.data().minutes === 'number') ? ts.data().minutes : 480;
+      entries.push(entry);
+      fdb.collection('journal').doc('data').set({ entries });
+    }).catch(e => console.warn('logJournal', e));
+}
 function revealNoneQ(i) { qData.quests[i].revealedFor = []; qData.quests[i].revealed = false; saveQuetes(); render(); }
 
 function setFilter(f) { filter = f; document.querySelectorAll('.q-filter').forEach(b => b.classList.toggle('on', b.dataset.f === f)); render(); }

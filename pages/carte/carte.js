@@ -397,8 +397,30 @@ function _geoAll(stateKey, nom, all) {
   mapData[stateKey][nom] = all ? Object.keys(joueurs) : [];
   saveData();
 }
-function toggleRevealGeo(nom, pid) { _geoToggle('geoReveal', nom, pid); }
-function revealGeoAll(nom, all)    { _geoAll('geoReveal', nom, all); }
+function toggleRevealGeo(nom, pid) {
+  _geoToggle('geoReveal', nom, pid);
+  if ((mapData.geoReveal?.[nom] || []).includes(pid)) logLieu(nom, pid, 'geo:' + nom);
+}
+function revealGeoAll(nom, all)    {
+  _geoAll('geoReveal', nom, all);
+  if (all) Object.keys(joueurs).forEach(pid => logLieu(nom, pid, 'geo:' + nom));
+}
+
+// ---- Journal : log auto d'un lieu découvert (hybride, dédup par src) ----
+function logLieu(nom, pid, baseSrc) { logJournal({ type: 'lieu', title: nom, text: 'Lieu découvert', revealedFor: [pid], src: baseSrc + ':' + pid }); }
+function logJournal(entry) {
+  if (!fdb) return;
+  Promise.all([fdb.collection('journal').doc('data').get(), fdb.collection('temps').doc('data').get()])
+    .then(([js, ts]) => {
+      const data = js.exists ? js.data() : {};
+      const entries = Array.isArray(data.entries) ? data.entries : [];
+      if (entry.src && entries.some(e => e.src === entry.src)) return;     // déjà journalisé
+      entry.id = 'j' + Date.now().toString(36) + Math.floor(Math.random() * 999);
+      if (entry.time == null) entry.time = (ts.exists && typeof ts.data().minutes === 'number') ? ts.data().minutes : 480;
+      entries.push(entry);
+      fdb.collection('journal').doc('data').set({ entries });
+    }).catch(e => console.warn('logJournal', e));
+}
 function toggleVisitGeo(nom, pid)  { _geoToggle('geoVisited', nom, pid); }
 function visitGeoAll(nom, all)     { _geoAll('geoVisited', nom, all); }
 
@@ -1324,12 +1346,14 @@ function toggleRevealFor(kind, id, pid) {
   const i = it.revealedFor.indexOf(pid);
   if (i >= 0) it.revealedFor.splice(i, 1); else it.revealedFor.push(pid);
   saveData();
+  if (kind === 'poi' && it.revealedFor.includes(pid)) logLieu(it.name || 'Lieu', pid, 'poi:' + id);
 }
 function revealForAll(kind, id, all) {
   const it = _item(kind, id); if (!it) return;
   delete it.revealed;
   it.revealedFor = all ? Object.keys(joueurs) : [];
   saveData();
+  if (kind === 'poi' && all) Object.keys(joueurs).forEach(pid => logLieu(it.name || 'Lieu', pid, 'poi:' + id));
 }
 function deletePOI(id) { mapData.pois = mapData.pois.filter(x => x.id !== id); openItem = null; saveData(); map.closePopup(); }
 function deleteZone(id) { mapData.zones = mapData.zones.filter(z => z.id !== id); openItem = null; saveData(); map.closePopup(); }

@@ -106,6 +106,15 @@ function sw(tab){
       f.contentWindow.postMessage('quetes-refresh','*');
     }
   }
+  // Charger le journal (iframe) ; sinon rafraîchir
+  if(tab==='journal'){
+    const f=document.getElementById('journal-frame');
+    if(f && !f.src){
+      f.src='../journal/journal.html?id='+encodeURIComponent(id)+'&embed=1';
+    } else if(f && f.contentWindow){
+      f.contentWindow.postMessage('journal-refresh','*');
+    }
+  }
   curTab=tab; rAll();
 }
 function swInv(sub){

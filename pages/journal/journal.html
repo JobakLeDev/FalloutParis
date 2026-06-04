@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fallout Paris — Journal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../common/style.css">
+  <link rel="stylesheet" href="journal.css?v=1">
+</head>
+<body>
+
+  <div class="jhdr">
+    <div class="jhdr-title">📖 JOURNAL DE CAMPAGNE<small id="jhdr-mode">Vue joueur</small></div>
+    <div class="jhdr-btns">
+      <button class="jbtn" id="jmj-btn" onclick="demanderMJ()">🔑 Mode MJ</button>
+      <span id="j-clock" class="j-clock"></span>
+      <a class="jbtn" href="../mj/mj.html">← MJ</a>
+      <a class="jbtn" href="../../index.html">Accueil</a>
+    </div>
+  </div>
+
+  <div id="j-filters">
+    <button class="j-filter on" data-f="all" onclick="setFilter('all')">Tout</button>
+    <button class="j-filter" data-f="pnj" onclick="setFilter('pnj')">👤 PNJ</button>
+    <button class="j-filter" data-f="lieu" onclick="setFilter('lieu')">📍 Lieux</button>
+    <button class="j-filter" data-f="quete" onclick="setFilter('quete')">📜 Quêtes</button>
+    <button class="j-filter" data-f="info" onclick="setFilter('info')">💡 Infos</button>
+  </div>
+
+  <!-- AJOUT (MJ) -->
+  <div id="j-add" style="display:none">
+    <select id="j-add-type" class="j-inp">
+      <option value="info">💡 Info dévoilée</option>
+      <option value="pnj">👤 Rencontre PNJ</option>
+      <option value="lieu">📍 Lieu découvert</option>
+      <option value="quete">📜 Quête</option>
+    </select>
+    <input id="j-add-title" class="j-inp" placeholder="Titre…">
+    <button class="jbtn add" onclick="addEntry()">+ Ajouter au journal</button>
+  </div>
+
+  <div id="journal-list"><div class="j-empty">Chargement…</div></div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="../../common/shared.js"></script>
+  <script src="journal.js?v=1"></script>
+</body>
+</html>
