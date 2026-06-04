@@ -179,3 +179,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .ap-convert-btn:hover{background:var(--gk);}
 .ap-dmg-btn{border-color:var(--am);color:var(--am);}
 .ap-dmg-btn:hover{background:#1a160a;}
+
+/* Compagnons (alliés) en combat */
+.jc-card.allie{ border-left:3px solid var(--g); }
+.jc-card.allie .jc-name{ color:var(--tb); }
+.tracker-item.allie{ border-left:3px solid var(--g); padding-top:4px; padding-bottom:4px; }
+.tracker-item.allie .tracker-nom{ color:var(--t); font-size:10px; }

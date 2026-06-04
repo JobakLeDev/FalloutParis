@@ -6,6 +6,7 @@ let db;
 let joueurs = {};
 let combattants = {};
 let ennemis = [];
+let allies = [];      // compagnons en combat (PNJ alliés des joueurs)
 let log = [];
 let joueurActif = null;
 let armeActive = null;
@@ -181,6 +182,7 @@ async function restaurerEtatCombat(){
     apPool          = d.apPool         || 0;
     mjApPool        = d.mjApPool       || 0;
     ennemis         = (d.ennemis       || []).map(e => ({...e}));
+    allies          = (d.allies        || []).map(a => ({...a}));
     // Reconstruire combattants depuis l'ordre d'initiative
     ordreInitiative.forEach(c => {
       if(c.type === 'joueur' && joueurs[c.id]){
@@ -253,6 +255,18 @@ function lancerInitiative(){
 
   // Trier par initiative décroissante
   ordreInitiative.sort((a,b) => b.init - a.init);
+
+  // Compagnons (alliés) : agissent juste après leur PC — RAW p.45 (pas d'init propre)
+  buildAlliesFromCompanions();
+  allies.forEach(a => {
+    const ownerIdx = ordreInitiative.findIndex(x => x.id === a.owner);
+    const ownerInit = ownerIdx !== -1 ? ordreInitiative[ownerIdx].init : 0;
+    const entry = { id:'a_'+a.id, nom:a.nom, type:'allie', init: ownerInit, aid:a.id, owner:a.owner, ownerNom:a.ownerNom };
+    if(ownerIdx !== -1) ordreInitiative.splice(ownerIdx+1, 0, entry); else ordreInitiative.push(entry);
+    initActionsState('a_'+a.id, false, {});
+  });
+  if(allies.length) addLog('🐾 ' + allies.length + ' compagnon(s) en soutien');
+
   tourActif = 0;
   numRound = 1;
 
@@ -393,7 +407,53 @@ function estElimine(c){
     const e = ennemis.find(x => x.id === c.eid);
     return !!e && (e.pvCur||0) <= 0;
   }
+  if(c.type === 'allie'){
+    const a = allies.find(x => x.id === c.aid);
+    return !!a && (a.pvCur||0) <= 0;
+  }
   return (combattants[c.id]?.data?.hp ?? 1) <= 0;
+}
+
+// Construit les instances de compagnons depuis les fiches des joueurs en combat
+function buildAlliesFromCompanions(){
+  allies = [];
+  Object.keys(combattants).forEach(id => {
+    const d = combattants[id]?.data; if(!d) return;
+    const ownerNom = (d.nom||id);
+    (d.companions||[]).forEach((c, idx) => {
+      const atk = (c.attacks && c.attacks[0]) || {};
+      allies.push({
+        id: c.id || (id+'_c'+idx), nom: (c.nom||'Compagnon'),
+        owner: id, ownerNom,
+        pvMax: c.hpMax||c.hpCur||6, pvCur: c.hpCur??c.hpMax??6,
+        atq: String(atk.dmg||2), rd: (c.dr?.phys)||0, defense: c.defense||1,
+        body: c.attrs?.body||5, mind: c.attrs?.mind||4,
+        attacks: c.attacks||[], abilities: c.abilities||[],
+      });
+    });
+  });
+}
+
+function dmgAllie(id, val){
+  const a = allies.find(x => x.id === id); if(!a) return;
+  a.pvCur = Math.max(0, a.pvCur - val);
+  addLog('⚔ ' + a.nom + ' subit ' + val + ' (' + a.pvCur + '/' + a.pvMax + ' PV)');
+  if(a.pvCur <= 0) addLog('💀 ' + a.nom + ' est à terre !');
+  renderCombat(); renderTracker(); syncCombatToFirebase();
+}
+function soignAllie(id, val){
+  const a = allies.find(x => x.id === id); if(!a) return;
+  a.pvCur = Math.min(a.pvMax, a.pvCur + val);
+  renderCombat(); syncCombatToFirebase();
+}
+function attaqueAllie(id){
+  const a = allies.find(x => x.id === id); if(!a) return;
+  const nbDC = parseInt(a.atq) || 2;
+  const res = Array.from({length:nbDC}, () => FACES_CD[Math.floor(Math.random()*6)]);
+  const dmg = res.reduce((s,f) => s + (parseInt(f)||0), 0);
+  const eff = res.filter(f => f.includes('⚡')).length;
+  const atk = (a.attacks && a.attacks[0]) || {};
+  addLog('🐾⚔ ' + a.nom + ' — ' + (atk.name||'attaque') + ' : ' + nbDC + ' DC → ' + dmg + ' dégâts' + (eff?' +'+eff+' effet':'') + ' (applique à un ennemi)');
 }
 
 function renderTracker(){
@@ -410,6 +470,16 @@ function renderTracker(){
     const elimine = estElimine(c);
     const s = actionsState[c.id] || {mineure:1,majeure:1,pa:0};
     const key = c.id;
+
+    // Compagnon : agit avec son PC (RAW) — ligne compacte, pas d'actions propres
+    if(c.type === 'allie'){
+      html += '<div class="tracker-item allie' + (isActif?' actif':'') + '"' + (elimine?' style="opacity:0.35"':'') + '>'
+        + '<div class="tracker-top">'
+        + '<span class="tracker-nom"' + (elimine?' style="text-decoration:line-through"':'') + '>' + (elimine?'💀 ':(isActif?'▶ ':'')) + '🐾 ' + c.nom + '</span>'
+        + '<span class="tracker-init" style="font-size:7px;color:var(--td)" title="agit avec ' + (c.ownerNom||'') + '">avec PC</span>'
+        + '</div></div>';
+      return;
+    }
 
     // Combattant éliminé : entrée grisée, aucun contrôle
     if(elimine){
@@ -511,8 +581,38 @@ function supprimerEnnemi(id){
 // ---- RENDER ----
 function renderCombat(){
   renderJoueursCombat();
+  renderAllies();
   renderEnnemis();
   renderTracker();
+}
+
+// Compagnons en combat — cartes vertes appendues sous les joueurs
+function renderAllies(){
+  const el = document.getElementById('joueurs-combat'); if(!el) return;
+  allies.forEach(a => {
+    const pct = a.pvMax ? Math.round(a.pvCur/a.pvMax*100) : 0;
+    const bc = pct<30?'var(--rd)':pct<60?'var(--am)':'var(--g)';
+    const isTourActif = ordreInitiative.length && ordreInitiative[tourActif]?.aid===a.id;
+    el.innerHTML += `<div class="jc-card allie${a.pvCur<=0?' dead':''}${isTourActif?' tour-actif':''}">
+      <div class="jc-top">
+        <span class="jc-name">🐾 ${isTourActif?'▶ ':''}${a.nom}</span>
+        <span class="jc-init" title="Agit avec ${a.ownerNom}" style="font-size:8px;color:var(--td)">↳ ${a.ownerNom}</span>
+      </div>
+      <div class="jc-bar"><div style="width:${pct}%;height:100%;background:${bc}"></div></div>
+      <div class="jc-row">
+        <div class="jc-stat"><span class="jc-sl">PV</span><span class="jc-sv${pct<30?' danger':''}">${a.pvCur}/${a.pvMax}</span></div>
+        <div class="jc-stat"><span class="jc-sl">ATQ</span><span class="jc-sv">${a.atq} DC</span></div>
+        <div class="jc-stat"><span class="jc-sl">RD</span><span class="jc-sv">${a.rd}</span></div>
+        <div class="jc-stat"><span class="jc-sl">DÉF</span><span class="jc-sv">${a.defense}</span></div>
+      </div>
+      <div class="ennemi-dmg">
+        <input type="number" class="dmg-inp" id="admg-${a.id}" value="1" min="0">
+        <button class="dmg-btn" onclick="dmgAllie('${a.id}',parseInt(document.getElementById('admg-${a.id}').value)||1)">Dégâts</button>
+        <button class="dmg-btn" style="border-color:var(--gd);color:var(--g)" onclick="soignAllie('${a.id}',parseInt(document.getElementById('admg-${a.id}').value)||1)">Soins</button>
+        <button class="atq-btn" onclick="attaqueAllie('${a.id}')">⚔</button>
+      </div>
+    </div>`;
+  });
 }
 
 // getHpMax, getTN définis dans mj_shared.js

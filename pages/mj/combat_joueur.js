@@ -590,10 +590,21 @@ function renderCoequipiers(){
   const ordre = combatState.ordreInitiative||[];
   const tourActif = combatState.tourActif||0;
   const coeqs = ordre.filter(c => c.type==='joueur' && c.id !== joueurId);
+  // Mes compagnons (PNJ alliés) — affichés en tête
+  const mesComp = (combatState.allies||[]).filter(a => a.owner === joueurId);
+  let compHtml = mesComp.map(a => {
+    const pct = a.pvMax?Math.round(a.pvCur/a.pvMax*100):0;
+    const bc = pct<30?'var(--rd)':pct<60?'var(--am)':'var(--g)';
+    return '<div class="coeq-card" style="border-left:3px solid var(--g)">'
+      +'<div class="coeq-top"><span class="coeq-nom">🐾 '+a.nom+'</span></div>'
+      +'<div class="coeq-bar"><div style="width:'+pct+'%;height:100%;background:'+bc+'"></div></div>'
+      +'<div class="coeq-stats"><span>PV <b class="'+(pct<30?'danger':'')+'">'+a.pvCur+'/'+a.pvMax+'</b></span><span>ATQ <b>'+a.atq+' DC</b></span></div>'
+      +'</div>';
+  }).join('');
 
-  if(!coeqs.length){ el.innerHTML='<span class="empty">Aucun coéquipier</span>'; return; }
+  if(!coeqs.length && !mesComp.length){ el.innerHTML='<span class="empty">Aucun coéquipier</span>'; return; }
 
-  el.innerHTML = coeqs.map((c, idx) => {
+  el.innerHTML = compHtml + coeqs.map((c, idx) => {
     const d = tousJoueurs[c.id];
     const isTour = ordre.indexOf(c) === tourActif;
     if(!d) return '<div class="coeq-card"><span class="coeq-nom">' + c.nom + '</span></div>';
@@ -625,6 +636,10 @@ function estElimineJ(c){
     const e = (combatState?.ennemis||[]).find(x => x.id === c.eid);
     return !!e && (e.pvCur||0) <= 0;
   }
+  if(c.type === 'allie'){
+    const a = (combatState?.allies||[]).find(x => x.id === c.aid);
+    return !!a && (a.pvCur||0) <= 0;
+  }
   return (tousJoueurs[c.id]?.hp ?? 1) <= 0;
 }
 
@@ -643,6 +658,13 @@ function renderTrackerJoueur(){
         +'<div class="tracker-top">'
         +'<span class="tracker-nom" style="text-decoration:line-through">💀 '+c.nom+'</span>'
         +'<span class="tracker-init">'+c.init+'</span>'
+        +'</div></div>';
+    }
+    if(c.type === 'allie'){
+      return '<div class="tracker-item allie'+(isActif?' actif':'')+'">'
+        +'<div class="tracker-top">'
+        +'<span class="tracker-nom" style="font-size:10px">'+(isActif?'▶ ':'')+'🐾 '+c.nom+'</span>'
+        +'<span class="tracker-init" style="font-size:7px;color:var(--td)">avec PC</span>'
         +'</div></div>';
     }
     return '<div class="tracker-item'+(isActif?' actif':'')+(c.type==='ennemi'?' ennemi':'')+(isMe?' c-est-moi':'')+'">'
