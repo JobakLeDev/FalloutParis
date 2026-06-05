@@ -146,3 +146,6 @@ html, body { height: 100%; overflow: hidden; }
 #loot-alert .loot-ico{ font-size:1.1rem; }
 #loot-alert b{ color:var(--g); }
 @keyframes lootpulse{ 0%,100%{box-shadow:0 0 0 rgba(93,190,93,0);} 50%{box-shadow:0 0 14px rgba(93,190,93,0.45);} }
+
+/* Date/heure du groupe (header fiche) */
+.fiche-clock{ font-family:'Oswald',sans-serif; font-size:0.62rem; color:var(--am); letter-spacing:.5px; margin-top:2px; text-transform:capitalize; }

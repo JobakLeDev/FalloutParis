@@ -134,6 +134,13 @@ function startSync() {
       (err) => console.warn('butin indisponible:', err && err.code)
     );
   } catch(e){ console.warn('butin listener KO:', e); }
+  // Calendrier — date/heure du groupe du joueur
+  try {
+    db.collection('temps').doc('data').onSnapshot(
+      (snap) => { try { renderFicheClock(snap.exists ? snap.data() : null); } catch(e){ console.error('temps:', e); } },
+      (err) => console.warn('temps indisponible:', err && err.code)
+    );
+  } catch(e){ console.warn('temps listener KO:', e); }
 }
 
 // ============================================================
@@ -211,6 +218,14 @@ function renderLootAlert(d){
   al.style.display = accessible ? 'flex' : 'none';
   if(accessible){ const c = document.getElementById('loot-count'); if(c) c.textContent = '(' + items.length + ')'; }
   else { const mo = document.getElementById('mo-loot'); if(mo) mo.classList.remove('on'); }   // accès retiré → ferme la modale
+}
+
+// Affiche la date/heure du groupe (party) du joueur dans le header de la fiche
+function renderFicheClock(d){
+  const el = document.getElementById('fiche-clock'); if(!el) return;
+  if(typeof partyMinutesFor !== 'function'){ el.textContent=''; return; }
+  const m = partyMinutesFor(d, JOUEUR_ID);
+  el.textContent = '📅 ' + fmtDateTime(m);
 }
 
 // ---- Initialisation ----

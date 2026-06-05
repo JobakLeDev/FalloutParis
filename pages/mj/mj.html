@@ -169,24 +169,14 @@
   <!-- COLONNE DROITE -->
   <div class="col-right">
 
-    <!-- HORLOGE -->
+    <!-- CALENDRIER & GROUPES -->
     <div class="rencontre-pnl" id="clock-pnl">
-      <div class="pnl-title">🕐 Horloge de campagne</div>
-      <div id="clock-display">Jour 1 · 08:00</div>
-      <div id="clock-sub">Lundi · matin</div>
-      <div class="clock-btns">
-        <button class="clock-btn" onclick="avanceTemps(60)">+1 h</button>
-        <button class="clock-btn" onclick="avanceTemps(parseInt(document.getElementById('clock-x').value||1)*60)">+X h</button>
-        <input type="number" class="clock-x" id="clock-x" value="3" min="1">
-        <button class="clock-btn" onclick="avanceTemps(720)">+12 h</button>
-        <button class="clock-btn" onclick="avanceTemps(1440)">+1 J</button>
-        <button class="clock-btn" onclick="avanceTemps(parseInt(document.getElementById('clock-xj').value||1)*1440)">+X J</button>
-        <input type="number" class="clock-x" id="clock-xj" value="2" min="1">
+      <div class="pnl-title" style="display:flex;justify-content:space-between;align-items:center">
+        📅 Calendrier &amp; Groupes
+        <button class="sel-btn" onclick="addParty()" style="font-size:9px">+ Groupe</button>
       </div>
-      <div class="clock-set">
-        <button class="clock-mini" onclick="avanceTemps(-60)">−1 h</button>
-        <button class="clock-mini" onclick="reglerHeure()">Régler l'heure…</button>
-      </div>
+      <div id="parties-list"></div>
+      <div id="unassigned-players"></div>
     </div>
 
     <div class="rencontre-pnl">

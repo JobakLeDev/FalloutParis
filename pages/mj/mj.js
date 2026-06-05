@@ -92,14 +92,17 @@ function startSync(){
     joueurs = {};
     snap.forEach(doc => { joueurs[doc.id] = {...doc.data(), _id: doc.id}; });
     renderJoueurs();
+    if(typeof renderParties==='function') renderParties();
+    if(typeof renderLootAccess==='function') renderLootAccess();
   });
   populateZoneSelectors();
   populatePublicSkillSel();
   renderCombatsActifs();
   db.collection('rolls').doc('current').onSnapshot(s => renderPublicRoll(s.exists ? s.data() : null));
   db.collection('temps').doc('data').onSnapshot(s => {
-    if(s.exists && typeof s.data().minutes === 'number') tempsMin = s.data().minutes;
-    renderClock();
+    const d = s.exists ? s.data() : {};
+    tempsData = { parties: Array.isArray(d.parties) ? d.parties : [] };
+    renderParties();
   });
   populateLootCats();
   db.collection('butin').doc('data').onSnapshot(s => {
@@ -208,39 +211,82 @@ function renderButin(){
 }
 
 // ============================================================
-// HORLOGE DE CAMPAGNE (temps en jeu, partagé Firebase /temps/data)
-// minutes = total depuis Jour 1 00:00. Sert d'horodatage au journal.
+// CALENDRIER & GROUPES (parties) — Firebase /temps/data
+// { parties: [{id, name, players:[ids], minutes}] } ; minutes = depuis l'époque (14 juil. 2189)
+// Helpers de date dans shared.js (tempsDate, fmtDateTime, TEMPS_DEFAUT…)
 // ============================================================
-let tempsMin = 480;   // défaut : Jour 1 · 08:00
-const JOURS_SEM = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
-function tempsDecompose(m){
-  const jour = Math.floor(m/1440)+1;
-  const h = Math.floor((m%1440)/60);
-  const min = m%60;
-  return { jour, h, min };
+let tempsData = { parties: [] };
+function uidParty(){ return 'p' + Date.now().toString(36) + Math.floor(Math.random()*99); }
+function saveTemps(){ if(db) db.collection('temps').doc('data').set(tempsData).catch(e=>console.error('saveTemps',e)); }
+function addParty(){
+  tempsData.parties = tempsData.parties || [];
+  tempsData.parties.push({ id: uidParty(), name: 'Groupe ' + (tempsData.parties.length+1), players: [], minutes: TEMPS_DEFAUT });
+  saveTemps(); renderParties();
 }
-function periodeJour(h){
-  if(h<6) return 'nuit'; if(h<12) return 'matin'; if(h<18) return 'après-midi'; if(h<22) return 'soir'; return 'nuit';
+function delParty(i){ if(confirm('Supprimer ce groupe ?')){ tempsData.parties.splice(i,1); saveTemps(); renderParties(); } }
+function setPartyName(i,v){ if(tempsData.parties[i]){ tempsData.parties[i].name = v; saveTemps(); } }
+function avanceParty(i,delta){ const p=tempsData.parties[i]; if(!p) return; p.minutes = Math.max(0,(p.minutes||0)+(parseInt(delta)||0)); saveTemps(); renderParties(); }
+function reglerDateParty(i){
+  const p=tempsData.parties[i]; if(!p) return;
+  const cur = tempsDate(p.minutes);
+  const ds = prompt('Date (JJ/MM/AAAA) :', `${cur.getDate()}/${cur.getMonth()+1}/${cur.getFullYear()}`); if(ds==null) return;
+  const dm = ds.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/); if(!dm){ showMsg('Format date invalide',true); return; }
+  const hs = prompt('Heure (HH:MM) :', fmtHeure(p.minutes)); if(hs==null) return;
+  const hm = hs.match(/^(\d{1,2})[:hH]?(\d{0,2})$/); if(!hm){ showMsg('Format heure invalide',true); return; }
+  const nd = new Date(parseInt(dm[3]), (parseInt(dm[2])||1)-1, parseInt(dm[1])||1, Math.min(23,parseInt(hm[1])||0), Math.min(59,parseInt(hm[2])||0), 0);
+  p.minutes = Math.max(0, tempsMinutesDepuis(nd));
+  saveTemps(); renderParties();
 }
-function fmtTemps(m){ const {jour,h,min}=tempsDecompose(m); return `Jour ${jour} · ${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')}`; }
-function saveTemps(){ if(db) db.collection('temps').doc('data').set({minutes:tempsMin, lastUpdate:Date.now()}).catch(e=>console.error('saveTemps',e)); }
-function avanceTemps(delta){ tempsMin = Math.max(0, tempsMin + (parseInt(delta)||0)); saveTemps(); renderClock(); }
-function reglerHeure(){
-  const {jour,h,min}=tempsDecompose(tempsMin);
-  const nj = parseInt(prompt('Jour :', jour)); if(!nj || nj<1) return;
-  const hhmm = prompt('Heure (HH:MM) :', `${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')}`);
-  if(hhmm==null) return;
-  const mm = hhmm.match(/^(\d{1,2})[:hH]?(\d{0,2})$/); if(!mm) return;
-  const nh = Math.min(23, parseInt(mm[1])||0), nmin = Math.min(59, parseInt(mm[2])||0);
-  tempsMin = (nj-1)*1440 + nh*60 + nmin;
-  saveTemps(); renderClock();
+function addPlayerToParty(i,pid){
+  if(!pid || !tempsData.parties[i]) return;
+  tempsData.parties.forEach(p => { p.players = (p.players||[]).filter(x=>x!==pid); }); // un seul groupe par joueur
+  tempsData.parties[i].players.push(pid);
+  saveTemps(); renderParties();
 }
-function renderClock(){
-  const d = document.getElementById('clock-display'); if(!d) return;
-  const {jour,h,min}=tempsDecompose(tempsMin);
-  d.textContent = fmtTemps(tempsMin);
-  const sub = document.getElementById('clock-sub');
-  if(sub) sub.textContent = `${JOURS_SEM[(jour-1)%7]} · ${periodeJour(h)}`;
+function rmPlayerFromParty(i,pid){ const p=tempsData.parties[i]; if(!p) return; p.players=(p.players||[]).filter(x=>x!==pid); saveTemps(); renderParties(); }
+
+function renderParties(){
+  const el = document.getElementById('parties-list'); if(!el) return;
+  const parties = tempsData.parties || [];
+  const assigned = new Set(); parties.forEach(p => (p.players||[]).forEach(id => assigned.add(id)));
+  if(!parties.length){
+    el.innerHTML = '<div class="empty" style="font-size:9px;color:var(--td);padding:8px">Aucun groupe — clique « + Groupe » pour démarrer.</div>';
+  } else {
+    el.innerHTML = parties.map((p,i) => {
+      const members = (p.players||[]).map(id =>
+        `<span class="pm-chip">${joueurs[id]?.nom||id}<button onclick="rmPlayerFromParty(${i},'${id}')">✕</button></span>`).join('') || '<span class="pm-none">aucun membre</span>';
+      const others = Object.keys(joueurs).filter(id => !(p.players||[]).includes(id));
+      const addSel = others.length ? `<select class="pm-add" onchange="addPlayerToParty(${i},this.value);this.value=''">
+        <option value="">+ joueur…</option>${others.map(id=>`<option value="${id}">${joueurs[id]?.nom||id}</option>`).join('')}</select>` : '';
+      return `<div class="party-card">
+        <div class="party-head">
+          <input class="party-name" value="${(p.name||'').replace(/"/g,'&quot;')}" onchange="setPartyName(${i},this.value)">
+          <button class="party-del" onclick="delParty(${i})">✕</button>
+        </div>
+        <div class="party-date">📅 ${fmtDateLong(p.minutes)}</div>
+        <div class="party-time">🕐 ${fmtHeure(p.minutes)}</div>
+        <div class="clock-btns">
+          <button class="clock-btn" onclick="avanceParty(${i},-60)">−1h</button>
+          <button class="clock-btn" onclick="avanceParty(${i},60)">+1h</button>
+          <button class="clock-btn" onclick="avanceParty(${i},720)">+12h</button>
+          <button class="clock-btn" onclick="avanceParty(${i},1440)">+1J</button>
+          <input type="number" class="clock-x" id="px-${i}" value="2" min="1" title="X">
+          <button class="clock-btn" onclick="avanceParty(${i},(parseInt(document.getElementById('px-${i}').value)||1)*60)">+Xh</button>
+          <button class="clock-btn" onclick="avanceParty(${i},(parseInt(document.getElementById('px-${i}').value)||1)*1440)">+XJ</button>
+          <button class="clock-mini" onclick="reglerDateParty(${i})">Régler…</button>
+        </div>
+        <div class="party-members">${members} ${addSel}</div>
+      </div>`;
+    }).join('');
+  }
+  // joueurs non assignés
+  const un = document.getElementById('unassigned-players');
+  if(un){
+    const orphans = Object.keys(joueurs).filter(id => !assigned.has(id));
+    un.innerHTML = orphans.length
+      ? `<div class="unassigned-lbl">Non groupés : ${orphans.map(id=>`<span class="pm-chip orphan">${joueurs[id]?.nom||id}</span>`).join(' ')}</div>`
+      : '';
+  }
 }
 
 // ============================================================

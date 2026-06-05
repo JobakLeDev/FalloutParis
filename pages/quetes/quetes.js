@@ -96,7 +96,10 @@ function logJournal(entry) {
       const entries = Array.isArray(data.entries) ? data.entries : [];
       if (entry.src && entries.some(e => e.src === entry.src)) return;
       entry.id = 'j' + Date.now().toString(36) + Math.floor(Math.random() * 999);
-      if (entry.time == null) entry.time = (ts.exists && typeof ts.data().minutes === 'number') ? ts.data().minutes : 480;
+      if (entry.time == null) {
+        const pid = (entry.revealedFor || [])[0];
+        entry.time = (typeof partyMinutesFor === 'function') ? partyMinutesFor(ts.exists ? ts.data() : {}, pid) : 480;
+      }
       entries.push(entry);
       fdb.collection('journal').doc('data').set({ entries });
     }).catch(e => console.warn('logJournal', e));

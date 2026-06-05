@@ -13,7 +13,8 @@ let isMJ = !viewerId && sessionStorage.getItem('mj_auth') === '1';
 let fdb;
 let joueurs = {};
 let jData = { entries: [] };
-let tempsMin = 480;
+let tempsData = { parties: [] };
+let curMin = (typeof TEMPS_DEFAUT !== 'undefined') ? TEMPS_DEFAUT : 480;  // temps courant du groupe du viewer
 let filter = 'all';
 let _editing = false;
 
@@ -23,7 +24,6 @@ const TYPES = {
   quete: { icon:'📜', label:'Quête', c:'#e8a820' },
   info:  { icon:'💡', label:'Info',  c:'#b0f0b0' },
 };
-const JOURS_SEM = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
 
 document.addEventListener('DOMContentLoaded', init);
 function init(){
@@ -36,7 +36,11 @@ function init(){
     jData = { entries: Array.isArray(d.entries) ? d.entries : [] };
     if (!_editing) render();
   });
-  fdb.collection('temps').doc('data').onSnapshot(s => { if (s.exists && typeof s.data().minutes === 'number') tempsMin = s.data().minutes; renderClock(); });
+  fdb.collection('temps').doc('data').onSnapshot(s => {
+    tempsData = { parties: s.exists && Array.isArray(s.data().parties) ? s.data().parties : [] };
+    curMin = partyMinutesFor(tempsData, viewerId);
+    renderClock(); if (!_editing) render();
+  });
   window.addEventListener('message', e => { if (e.data === 'journal-refresh') render(); });
 }
 
@@ -48,10 +52,8 @@ function updateModeUI(){
 }
 function saveJournal(){ if (fdb) fdb.collection('journal').doc('data').set(jData).catch(e => console.error('saveJournal', e)); }
 
-// ---- Temps ----
-function tempsDecompose(m){ return { jour: Math.floor(m/1440)+1, h: Math.floor((m%1440)/60), min: m%60 }; }
-function fmtTemps(m){ const t = tempsDecompose(m); return `Jour ${t.jour} · ${String(t.h).padStart(2,'0')}:${String(t.min).padStart(2,'0')}`; }
-function renderClock(){ const el = document.getElementById('j-clock'); if (el) el.textContent = '🕐 ' + fmtTemps(tempsMin); }
+// ---- Temps (helpers de date dans shared.js) ----
+function renderClock(){ const el = document.getElementById('j-clock'); if (el) el.textContent = '📅 ' + fmtDateTime(curMin); }
 
 // ---- Visibilité ----
 function entryVisible(e){ if (isMJ) return true; if (!viewerId) return false; return e.revealed === true || (Array.isArray(e.revealedFor) && e.revealedFor.includes(viewerId)); }
@@ -61,7 +63,7 @@ function uid(){ return 'j' + Date.now().toString(36) + Math.floor(Math.random()*
 function addEntry(){
   const type = document.getElementById('j-add-type').value || 'info';
   const title = document.getElementById('j-add-title').value.trim() || TYPES[type].label;
-  jData.entries.push({ id: uid(), time: tempsMin, type, title, text:'', revealedFor: [] });
+  jData.entries.push({ id: uid(), time: curMin, type, title, text:'', revealedFor: [] });
   document.getElementById('j-add-title').value = '';
   saveJournal(); render();
 }
@@ -69,11 +71,13 @@ function delEntry(idx){ if (confirm('Supprimer cette entrée ?')) { jData.entrie
 function setE(idx, k, v){ if (!jData.entries[idx]) return; jData.entries[idx][k] = v; saveJournal(); }   // texte : pas de re-render
 function setEType(idx, v){ jData.entries[idx].type = v; saveJournal(); render(); }
 function reglerTemps(idx){
-  const e = jData.entries[idx]; const t = tempsDecompose(e.time||0);
-  const nj = parseInt(prompt('Jour :', t.jour)); if (!nj || nj<1) return;
-  const hhmm = prompt('Heure (HH:MM) :', `${String(t.h).padStart(2,'0')}:${String(t.min).padStart(2,'0')}`); if (hhmm==null) return;
-  const mm = hhmm.match(/^(\d{1,2})[:hH]?(\d{0,2})$/); if (!mm) return;
-  e.time = (nj-1)*1440 + (Math.min(23,parseInt(mm[1])||0))*60 + (Math.min(59,parseInt(mm[2])||0));
+  const e = jData.entries[idx]; const cur = tempsDate(e.time||0);
+  const ds = prompt('Date (JJ/MM/AAAA) :', `${cur.getDate()}/${cur.getMonth()+1}/${cur.getFullYear()}`); if (ds==null) return;
+  const dm = ds.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/); if (!dm) return;
+  const hs = prompt('Heure (HH:MM) :', fmtHeure(e.time||0)); if (hs==null) return;
+  const hm = hs.match(/^(\d{1,2})[:hH]?(\d{0,2})$/); if (!hm) return;
+  const nd = new Date(parseInt(dm[3]), (parseInt(dm[2])||1)-1, parseInt(dm[1])||1, Math.min(23,parseInt(hm[1])||0), Math.min(59,parseInt(hm[2])||0), 0);
+  e.time = Math.max(0, tempsMinutesDepuis(nd));
   saveJournal(); render();
 }
 function toggleRevealE(idx, pid){ const e = jData.entries[idx]; e.revealedFor = e.revealedFor || []; const k = e.revealedFor.indexOf(pid); if (k>=0) e.revealedFor.splice(k,1); else e.revealedFor.push(pid); e.revealed = false; saveJournal(); render(); }
@@ -93,31 +97,31 @@ function render(){
   entries.sort((a,b) => (a.e.time||0) - (b.e.time||0));   // chronologique
   if (!entries.length) { el.innerHTML = `<div class="j-empty">${isMJ ? 'Aucune entrée — ajoute-en une ci-dessus.' : 'Aucune entrée pour l\'instant.'}</div>`; return; }
 
-  let html = '', lastJour = null;
+  let html = '', lastDay = null;
   entries.forEach(({ e, idx }) => {
-    const t = tempsDecompose(e.time||0);
-    if (t.jour !== lastJour) { html += `<div class="j-day">Jour ${t.jour} · ${JOURS_SEM[(t.jour-1)%7]}</div>`; lastJour = t.jour; }
-    html += isMJ ? entryMJ(e, idx, t) : entryJoueur(e, t);
+    const dayKey = tempsDate(e.time||0).toDateString();
+    if (dayKey !== lastDay) { html += `<div class="j-day">${fmtDateLong(e.time||0)}</div>`; lastDay = dayKey; }
+    html += isMJ ? entryMJ(e, idx) : entryJoueur(e);
   });
   el.innerHTML = html;
 }
 
-function entryJoueur(e, t){
+function entryJoueur(e){
   const ty = TYPES[e.type] || TYPES.info;
   return `<div class="j-entry t-${e.type||'info'}">
-    <div class="j-time">${String(t.h).padStart(2,'0')}:${String(t.min).padStart(2,'0')}</div>
+    <div class="j-time">${fmtHeure(e.time||0)}</div>
     <div class="j-body">
       <div class="j-line"><span class="j-icon">${ty.icon}</span><span class="j-title">${esc(e.title)}</span></div>
       ${e.text ? `<div class="j-text">${esc(e.text)}</div>` : ''}
     </div>
   </div>`;
 }
-function entryMJ(e, idx, t){
+function entryMJ(e, idx){
   const ty = TYPES[e.type] || TYPES.info;
   const pids = Object.keys(joueurs);
   const reveal = pids.map(pid => { const on = (e.revealedFor||[]).includes(pid); return `<button class="j-reveal${on?' on':''}" onclick="toggleRevealE(${idx},'${pid}')">${on?'👁':'∅'} ${esc(joueurs[pid]?.nom||pid)}</button>`; }).join('');
   return `<div class="j-entry mj t-${e.type||'info'}">
-    <button class="j-time set" onclick="reglerTemps(${idx})" title="Régler l'heure">${String(t.h).padStart(2,'0')}:${String(t.min).padStart(2,'0')}</button>
+    <button class="j-time set" onclick="reglerTemps(${idx})" title="Régler date/heure">${fmtHeure(e.time||0)}</button>
     <div class="j-body">
       <div class="j-line">
         <select class="j-type-sel" onchange="setEType(${idx},this.value)">
