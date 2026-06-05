@@ -4,6 +4,7 @@
 
 // firebaseConfig défini dans common/shared.js
 const fbApp = firebase.initializeApp(firebaseConfig);
+  if(typeof fpActivateAppCheck==="function") fpActivateAppCheck();
 const db = fbApp.firestore();
 
 // ID joueur depuis l'URL

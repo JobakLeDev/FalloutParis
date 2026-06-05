@@ -2,6 +2,7 @@ const MJ_CODE = '1234';
 const FICHE_URL = 'https://jobakledev.github.io/FalloutParis/pages/fiche_perso/fiche_perso.html';
 // firebaseConfig, XP_TABLE définis dans common/shared.js
 const db = firebase.initializeApp(firebaseConfig).firestore();
+  if(typeof fpActivateAppCheck==="function") fpActivateAppCheck();
 
 let joueurs = {};
 let selected = new Set();

@@ -4,6 +4,7 @@ const BASE_URL = 'https://jobakledev.github.io/FalloutParis/pages/fiche_perso/fi
 
 // firebaseConfig défini dans common/shared.js
 const db=firebase.initializeApp(firebaseConfig).firestore();
+  if(typeof fpActivateAppCheck==="function") fpActivateAppCheck();
 
 // ---- LOCK ----
 document.getElementById('lock-input').addEventListener('keydown',e=>{if(e.key==='Enter')unlock();});

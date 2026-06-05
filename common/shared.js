@@ -11,6 +11,23 @@ const firebaseConfig = {
   appId: "1:1063413308699:web:09e0e13c2200283b22c7be"
 };
 
+// ============================================================
+// APP CHECK (reCAPTCHA v3) — n'autorise l'accès Firestore qu'à CE site.
+// Transparent pour les joueurs (aucun login). Pour activer :
+//   1) Console Firebase → App Check → enregistrer l'app web (fournisseur reCAPTCHA v3)
+//   2) Coller la CLÉ DE SITE reCAPTCHA v3 ci-dessous (PAS la clé secrète)
+//   3) Console → App Check → passer Firestore en mode « Appliqué » (Enforce)
+// Tant que la clé est vide, App Check reste inactif (l'app fonctionne comme avant).
+// ============================================================
+const RECAPTCHA_V3_SITE_KEY = ''; // <-- À REMPLIR
+function fpActivateAppCheck(){
+  try {
+    if (RECAPTCHA_V3_SITE_KEY && typeof firebase !== 'undefined' && firebase.appCheck) {
+      firebase.appCheck().activate(RECAPTCHA_V3_SITE_KEY, /* isTokenAutoRefreshEnabled */ true);
+    }
+  } catch(e){ console.warn('App Check non activé :', e && e.message); }
+}
+
 const XP_TABLE = [0,100,300,600,1000,1500,2100,2800,3600,4500,5500,6600,7800,9100,10500,12000,13600,15300,17100,19000,21000];
 
 const SKILLS_DEF = [

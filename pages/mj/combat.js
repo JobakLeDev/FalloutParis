@@ -51,6 +51,7 @@ function init(){
     return;
   }
   const app = firebase.initializeApp(firebaseConfig);
+  if(typeof fpActivateAppCheck==="function") fpActivateAppCheck();
   db = app.firestore();
   deverrouiller();
 }
