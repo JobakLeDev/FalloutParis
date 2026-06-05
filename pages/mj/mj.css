@@ -195,3 +195,10 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 
 /* Contacts (messagerie MJ) */
 .contact-row{display:flex;justify-content:space-between;align-items:center;font-size:9px;color:var(--t);padding:3px 4px;border-bottom:1px solid var(--b);}
+
+/* Réduction des groupes */
+.party-toggle{background:none;border:none;color:var(--g);cursor:pointer;font-size:11px;padding:0 4px;flex:none;}
+.party-toggle:hover{color:var(--tb);}
+.party-card.collapsed{padding:5px 8px;}
+.party-card.collapsed .party-members{margin-top:5px;padding-top:5px;}
+.party-time-mini{font-family:'Oswald',sans-serif;font-size:12px;color:var(--am);margin-left:auto;padding:0 6px;}

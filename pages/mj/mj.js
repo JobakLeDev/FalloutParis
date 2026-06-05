@@ -255,6 +255,8 @@ function renderButin(){
 // Helpers de date dans shared.js (tempsDate, fmtDateTime, TEMPS_DEFAUT…)
 // ============================================================
 let tempsData = { parties: [] };
+const collapsedParties = new Set();   // état UI local (réduit/déplié), non persisté
+function togglePartyCollapse(id){ if(collapsedParties.has(id)) collapsedParties.delete(id); else collapsedParties.add(id); renderParties(); }
 function uidParty(){ return 'p' + Date.now().toString(36) + Math.floor(Math.random()*99); }
 function saveTemps(){ if(db) db.collection('temps').doc('data').set(tempsData).catch(e=>console.error('saveTemps',e)); }
 function findParty(id){ return (tempsData.parties||[]).find(p => p.id === id); }
@@ -326,20 +328,23 @@ function renderParties(){
   const solos  = (tempsData.parties||[]).filter(p=>p.solo);
   let h = '';
   groups.forEach(p => {
+    const col = collapsedParties.has(p.id);
     const members = (p.players||[]).map(id =>
-      `<span class="pm-chip">${joueurs[id]?.nom||id}<button onclick="rmPlayerFromParty('${p.id}','${id}')">✕</button></span>`).join('') || '<span class="pm-none">aucun membre</span>';
+      `<span class="pm-chip">${joueurs[id]?.nom||id}${col?'':`<button onclick="rmPlayerFromParty('${p.id}','${id}')">✕</button>`}</span>`).join('') || '<span class="pm-none">aucun membre</span>';
     const others = Object.keys(joueurs).filter(id => !(p.players||[]).includes(id));
     const addSel = others.length ? `<select class="pm-add" onchange="addPlayerToParty('${p.id}',this.value);this.value=''">
       <option value="">+ joueur…</option>${others.map(id=>`<option value="${id}">${joueurs[id]?.nom||id}</option>`).join('')}</select>` : '';
-    h += `<div class="party-card">
+    h += `<div class="party-card${col?' collapsed':''}">
       <div class="party-head">
+        <button class="party-toggle" onclick="togglePartyCollapse('${p.id}')" title="${col?'Déplier':'Réduire'}">${col?'▸':'▾'}</button>
         <input class="party-name" value="${(p.name||'').replace(/"/g,'&quot;')}" onchange="setPartyName('${p.id}',this.value)">
+        ${col?`<span class="party-time-mini">${fmtHeure(p.minutes)}</span>`:''}
         <button class="party-del" onclick="delParty('${p.id}')">✕</button>
       </div>
-      <div class="party-date">📅 ${fmtDateLong(p.minutes)}</div>
+      ${col ? '' : `<div class="party-date">📅 ${fmtDateLong(p.minutes)}</div>
       <div class="party-time">🕐 ${fmtHeure(p.minutes)}</div>
-      ${clockBtns(p)}
-      <div class="party-members">${members} ${addSel}</div>
+      ${clockBtns(p)}`}
+      <div class="party-members">${members}${col?'':' '+addSel}</div>
     </div>`;
   });
   if(solos.length){
