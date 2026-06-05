@@ -144,7 +144,7 @@ function startSync() {
   // Messagerie — noms des joueurs + contacts (numéros échangés)
   try {
     db.collection('joueurs').onSnapshot((s) => { _allJoueurs = {}; s.forEach(d => _allJoueurs[d.id] = d.data()); if (document.getElementById('mo-msg')?.classList.contains('on')) renderContacts(); });
-    db.collection('messagerie').doc('data').onSnapshot((s) => { const d = s.exists ? s.data() : {}; _msgLinks = (d.links && typeof d.links === 'object') ? d.links : {}; updateMsgIcon(); if (document.getElementById('mo-msg')?.classList.contains('on')) renderContacts(); });
+    db.collection('messagerie').doc('data').onSnapshot((s) => { const d = s.exists ? s.data() : {}; _msgLinks = (d.links && typeof d.links === 'object') ? d.links : {}; _syncConvWatchers(); updateMsgIcon(); if (document.getElementById('mo-msg')?.classList.contains('on')) renderContacts(); });
   } catch(e){ console.warn('messagerie listener KO:', e); }
 }
 
@@ -240,11 +240,33 @@ let _allJoueurs = {};
 let _msgLinks = {};
 let _activeConv = null;     // id du contact courant
 let _convUnsub = null;
+let _convLatest = {};       // convId -> ts du dernier message REÇU (from !== moi)
+let _convWatch = {};        // convId -> unsub (écoute non-lus)
+let _msgRead = (()=>{ try{ return JSON.parse(localStorage.getItem('fp_msgRead_'+JOUEUR_ID)||'{}'); }catch(e){ return {}; } })();
+function _saveMsgRead(){ try{ localStorage.setItem('fp_msgRead_'+JOUEUR_ID, JSON.stringify(_msgRead)); }catch(e){} }
 function _convId(a, b){ return [a, b].sort().join('__'); }
 function _myContacts(){ return Array.isArray(_msgLinks[JOUEUR_ID]) ? _msgLinks[JOUEUR_ID] : []; }
+function _latestIncoming(msgs){ let t=0; (msgs||[]).forEach(m=>{ if(m && m.from!==JOUEUR_ID && (m.ts||0)>t) t=m.ts||0; }); return t; }
+function _hasUnread(){ return Object.keys(_convLatest).some(cid => (_convLatest[cid]||0) > (_msgRead[cid]||0)); }
+// (Ré)abonne une écoute légère à chaque conversation de mes contacts pour repérer les non-lus
+function _syncConvWatchers(){
+  const wanted = {};
+  _myContacts().forEach(id => { wanted[_convId(JOUEUR_ID, id)] = true; });
+  Object.keys(_convWatch).forEach(cid => { if(!wanted[cid]){ _convWatch[cid](); delete _convWatch[cid]; delete _convLatest[cid]; } });
+  Object.keys(wanted).forEach(cid => {
+    if(_convWatch[cid]) return;
+    _convWatch[cid] = db.collection('messages').doc(cid).onSnapshot((s) => {
+      const msgs = (s.exists && Array.isArray(s.data().msgs)) ? s.data().msgs : [];
+      _convLatest[cid] = _latestIncoming(msgs);
+      // si la conversation est ouverte, on considère le contenu comme lu
+      if(_activeConv && _convId(JOUEUR_ID, _activeConv) === cid){ _msgRead[cid] = Math.max(_msgRead[cid]||0, _convLatest[cid]); _saveMsgRead(); }
+      updateMsgIcon();
+    }, (e)=>console.warn('conv-watch:', e && e.code));
+  });
+}
 function updateMsgIcon(){
-  const ic = document.getElementById('msg-icon'); if(!ic) return;
-  ic.style.display = _myContacts().length ? 'inline-block' : 'inline-block';   // toujours visible
+  const ic = document.getElementById('msg-icon'); if(ic) ic.style.display = 'inline-block';   // toujours visible
+  const dot = document.getElementById('msg-dot'); if(dot) dot.style.display = _hasUnread() ? 'block' : 'none';
 }
 function openMsg(){
   const mo = document.getElementById('mo-msg'); if(!mo) return;
@@ -268,9 +290,15 @@ function openConv(otherId){
   document.getElementById('msg-conv-head').textContent = '💬 ' + (_allJoueurs[otherId]?.nom || otherId);
   document.getElementById('msg-input-row').style.display = 'flex';
   if(_convUnsub){ _convUnsub(); _convUnsub = null; }
-  _convUnsub = db.collection('messages').doc(_convId(JOUEUR_ID, otherId)).onSnapshot((s) => {
+  const cid = _convId(JOUEUR_ID, otherId);
+  _convUnsub = db.collection('messages').doc(cid).onSnapshot((s) => {
     const msgs = (s.exists && Array.isArray(s.data().msgs)) ? s.data().msgs : [];
     renderMsgs(msgs);
+    // conversation ouverte → marquée lue
+    _convLatest[cid] = _latestIncoming(msgs);
+    _msgRead[cid] = Math.max(_msgRead[cid]||0, _convLatest[cid]);
+    _saveMsgRead();
+    updateMsgIcon();
   }, (e)=>console.warn('conv:', e && e.code));
 }
 function renderMsgs(msgs){
