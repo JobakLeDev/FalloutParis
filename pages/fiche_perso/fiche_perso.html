@@ -2,12 +2,12 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg?v=2">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fallout Paris — Fiche Personnage</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../../common/style.css?v=14">
-  <link rel="stylesheet" href="fiche_perso.css?v=14">
+  <link rel="stylesheet" href="../../common/style.css?v=15">
+  <link rel="stylesheet" href="fiche_perso.css?v=15">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
@@ -16,7 +16,11 @@
 
 <!-- HEADER -->
 <div class="hdr">
-  <div><div class="logo">PIP-BOY 3000<small>Fallout Paris</small></div></div>
+  <div class="hdr-left">
+    <img id="msg-icon" src="../../img/messagerie.png" alt="Messagerie" title="Messagerie" onclick="openMsg()">
+    <span id="msg-badge" style="display:none">0</span>
+    <div class="logo">PIP-BOY 3000<small>Fallout Paris</small></div>
+  </div>
   <div class="hdr-mid">
     <div class="name-inp" id="name-inp">...</div>
     <div class="meta" id="meta">Chargement...</div>
@@ -26,8 +30,6 @@
     <div class="mini-hp">PV <b id="mini-hp">3/13</b></div>
     <div class="mini-rad-lbl">RAD <b id="mini-rad">0</b></div>
     <div class="mini-rad-lbl" style="color:var(--am)">LUCK <b id="mini-luck" style="font-family:'Oswald',sans-serif;font-size:13px">0</b>/<span id="mini-luck-max" style="font-size:9px">5</span></div>
-    <img id="msg-icon" src="../../img/messagerie.png" alt="Messagerie" title="Messagerie" onclick="openMsg()">
-    <span id="msg-badge" style="display:none">0</span>
     <div class="bdgs" id="bdgs"></div>
   </div>
 </div>
@@ -317,9 +319,9 @@
   </div>
 </div>
 
-  <script src="../../common/shared.js?v=14"></script>
-  <script src="../../common/db.js?v=14"></script>
-  <script src="fiche_perso.js?v=14"></script>
-  <script src="../../common/firebase.js?v=14"></script>
+  <script src="../../common/shared.js?v=15"></script>
+  <script src="../../common/db.js?v=15"></script>
+  <script src="fiche_perso.js?v=15"></script>
+  <script src="../../common/firebase.js?v=15"></script>
 </body>
 </html>

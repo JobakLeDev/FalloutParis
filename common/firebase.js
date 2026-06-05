@@ -230,7 +230,7 @@ function renderFicheClock(d){
   const el = document.getElementById('fiche-clock'); if(!el) return;
   if(typeof partyMinutesFor !== 'function'){ el.textContent=''; return; }
   const m = partyMinutesFor(d, JOUEUR_ID);
-  el.textContent = '📅 ' + fmtDateTime(m);
+  el.textContent = fmtDateTime(m);
 }
 
 // ============================================================

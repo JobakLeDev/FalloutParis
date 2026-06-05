@@ -178,3 +178,6 @@ html, body { height: 100%; overflow: hidden; }
 .msg-input input:focus{ border-color:var(--g); }
 .msg-input button{ background:var(--gk); border:1px solid var(--g); color:var(--tb); font-family:'Share Tech Mono',monospace; font-size:0.7rem; padding:0.4rem 0.8rem; cursor:pointer; }
 .msg-input button:hover{ background:var(--g); color:#0c150c; }
+
+/* Icône messagerie à gauche, alignée verticalement avec les stats de droite */
+.hdr-left{ display:flex; align-items:center; gap:0.6rem; }
