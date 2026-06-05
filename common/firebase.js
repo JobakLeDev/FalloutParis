@@ -143,7 +143,7 @@ function startSync() {
   } catch(e){ console.warn('temps listener KO:', e); }
   // Messagerie — noms des joueurs + contacts (numéros échangés)
   try {
-    db.collection('joueurs').onSnapshot((s) => { _allJoueurs = {}; s.forEach(d => _allJoueurs[d.id] = d.data()); if (document.getElementById('mo-msg')?.classList.contains('on')) renderContacts(); });
+    db.collection('joueurs').onSnapshot((s) => { _allJoueurs = {}; s.forEach(d => _allJoueurs[d.id] = d.data()); if (document.getElementById('mo-msg')?.classList.contains('on')) renderContacts(); renderFicheGroup(_tempsData); });
     db.collection('messagerie').doc('data').onSnapshot((s) => { const d = s.exists ? s.data() : {}; _msgLinks = (d.links && typeof d.links === 'object') ? d.links : {}; _syncConvWatchers(); updateMsgIcon(); if (document.getElementById('mo-msg')?.classList.contains('on')) renderContacts(); });
   } catch(e){ console.warn('messagerie listener KO:', e); }
   // Échanges entre joueurs — bandeau d'alerte (la proposition s'accepte dans l'onglet CARTE)
@@ -243,11 +243,22 @@ function renderLootAlert(d){
 }
 
 // Affiche la date/heure du groupe (party) du joueur dans le header de la fiche
+let _tempsData = null;
 function renderFicheClock(d){
-  const el = document.getElementById('fiche-clock'); if(!el) return;
-  if(typeof partyMinutesFor !== 'function'){ el.textContent=''; return; }
-  const m = partyMinutesFor(d, JOUEUR_ID);
-  el.textContent = fmtDateTime(m);
+  _tempsData = d;
+  const el = document.getElementById('fiche-clock');
+  if(el && typeof partyMinutesFor === 'function') el.textContent = fmtDateTime(partyMinutesFor(d, JOUEUR_ID));
+  renderFicheGroup(d);
+}
+// Affiche le groupe (party) du joueur + ses coéquipiers
+function renderFicheGroup(d){
+  const el = document.getElementById('fiche-group'); if(!el) return;
+  const parties = (d && Array.isArray(d.parties)) ? d.parties : [];
+  const p = parties.find(x => Array.isArray(x.players) && x.players.includes(JOUEUR_ID) && !x.solo);
+  if(!p){ el.style.display = 'none'; el.innerHTML = ''; return; }
+  const others = (p.players || []).filter(id => id !== JOUEUR_ID).map(id => esc(_allJoueurs[id]?.nom || id));
+  el.style.display = '';
+  el.innerHTML = `👥 <b>${esc(p.name || 'Groupe')}</b> — ` + (others.length ? others.join(', ') : 'toi seul pour l\'instant');
 }
 
 // ============================================================

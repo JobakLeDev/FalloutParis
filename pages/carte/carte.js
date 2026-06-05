@@ -1525,7 +1525,12 @@ function _sendProposal(to, type, extra){
     .catch(e=>{ console.error('echange', e); carteToast("Échec de l'envoi"); });
   if (map) map.closePopup();
 }
-function propGroup(to){ _sendProposal(to, 'group'); }
+function propGroup(to){
+  const def = joueurs[viewerId]?.nom ? ('Groupe de ' + joueurs[viewerId].nom) : 'Groupe';
+  const name = prompt('Nom du groupe à proposer :', def);
+  if(name === null) return;   // annulé
+  _sendProposal(to, 'group', { groupName: name.trim() || 'Groupe' });
+}
 function propNumbers(to){ _sendProposal(to, 'numbers'); }
 function propBeacon(to){ _sendProposal(to, 'beacon'); }
 
@@ -1586,7 +1591,7 @@ function watchEchanges(){
 function showProp(p){
   _activeProp = p;
   let body = '';
-  if(p.type === 'group')   body = `<b>${_exEsc(p.fromNom)}</b> te propose de <b>former un groupe</b> (vous partagerez le même temps de jeu).`;
+  if(p.type === 'group')   body = `<b>${_exEsc(p.fromNom)}</b> te propose de rejoindre le groupe <b>« ${_exEsc(p.groupName || 'Groupe')} »</b> (vous partagerez le même temps de jeu).`;
   if(p.type === 'numbers') body = `<b>${_exEsc(p.fromNom)}</b> veut <b>échanger vos numéros</b> (vous pourrez vous envoyer des messages).`;
   if(p.type === 'beacon')  body = `<b>${_exEsc(p.fromNom)}</b> veut <b>échanger vos balises GPS</b> (vous vous verrez en permanence sur la carte, même à distance).`;
   if(p.type === 'give'){
@@ -1649,7 +1654,7 @@ async function _applyGroup(p){
     const mins = (solo && solo.minutes != null) ? solo.minutes : (typeof TEMPS_DEFAUT !== 'undefined' ? TEMPS_DEFAUT : 480);
     detach(p.from); detach(p.to);
     parties.push({ id: 'p' + Date.now().toString(36) + Math.floor(Math.random()*999),
-      name: (p.fromNom || 'Groupe'), players: [p.from, p.to], minutes: mins, solo: false });
+      name: (p.groupName || p.fromNom || 'Groupe'), players: [p.from, p.to], minutes: mins, solo: false });
   }
   parties = parties.filter(x => !(x.solo && (x.players||[]).length === 0));
   await ref.set({ ...data, parties });

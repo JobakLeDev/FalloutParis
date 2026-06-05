@@ -161,6 +161,8 @@ html, body { height: 100%; overflow: hidden; }
 
 /* Date/heure du groupe (header fiche) */
 .fiche-clock{ font-family:'Oswald',sans-serif; font-size:0.62rem; color:var(--am); letter-spacing:.5px; margin-top:2px; text-transform:capitalize; }
+.fiche-group{ font-family:'Share Tech Mono',monospace; font-size:0.6rem; color:var(--t); letter-spacing:.3px; margin-top:2px; }
+.fiche-group b{ color:var(--g); }
 
 /* Icône messagerie (header) + animation d'enfoncement au clic */
 .msg-wrap{ position:relative; display:inline-block; margin-left:0.5rem; vertical-align:middle; line-height:0; }
