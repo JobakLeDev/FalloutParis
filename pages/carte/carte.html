@@ -107,6 +107,34 @@
     </div>
   </div>
 
+  <!-- TOAST (retours d'échange) -->
+  <div id="carte-toast"></div>
+
+  <!-- MODALE : DON D'OBJETS -->
+  <div id="give-mo" class="ex-mo">
+    <div class="ex-box">
+      <div class="ex-title" id="give-title">🎁 Donner des objets</div>
+      <div class="ex-sub" id="give-sub"></div>
+      <div id="give-list" class="ex-list"></div>
+      <div class="ex-btns">
+        <button class="ex-ok" onclick="confirmGive()">✓ Proposer le don</button>
+        <button class="ex-cancel" onclick="closeGive()">✗ Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALE : PROPOSITION REÇUE -->
+  <div id="prop-mo" class="ex-mo">
+    <div class="ex-box">
+      <div class="ex-title" id="prop-title">Proposition</div>
+      <div class="ex-sub" id="prop-body"></div>
+      <div class="ex-btns">
+        <button class="ex-ok" onclick="acceptProp()">✓ Accepter</button>
+        <button class="ex-cancel" onclick="declineProp()">✗ Refuser</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>

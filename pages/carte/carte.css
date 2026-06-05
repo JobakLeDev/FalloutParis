@@ -180,3 +180,27 @@ img.land-icon-img{
 .metro-stn{display:flex;flex-direction:column;align-items:center;pointer-events:none;}
 .metro-stn .ms-dot{width:7px;height:7px;border-radius:50%;background:#5dff5d;border:1.5px solid #0c150c;box-shadow:0 0 4px rgba(93,255,93,.8);}
 .metro-stn .ms-label{margin-top:1px;font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--tb);letter-spacing:.5px;white-space:nowrap;text-shadow:0 0 3px #000,0 0 2px #000;}
+
+/* ===== ÉCHANGES ENTRE JOUEURS (proximité) ===== */
+.tok-actions{display:flex;flex-direction:column;gap:4px;margin-top:6px;}
+.tok-actions button{background:var(--gk);border:1px solid var(--g);color:var(--tb);font-family:'Share Tech Mono',monospace;font-size:11px;padding:5px 8px;cursor:pointer;text-align:left;}
+.tok-actions button:hover{background:var(--g);color:#0c150c;}
+.ex-mo{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;z-index:10000;}
+.ex-mo.on{display:flex;}
+.ex-box{width:24rem;max-width:92vw;max-height:86vh;display:flex;flex-direction:column;background:var(--p);border:1px solid var(--b2);box-shadow:0 0 30px rgba(0,0,0,.6);padding:0;}
+.ex-title{font-family:'Oswald',sans-serif;letter-spacing:2px;color:var(--g);padding:.6rem .8rem;border-bottom:1px solid var(--b2);font-size:.95rem;}
+.ex-sub{padding:.5rem .8rem;font-size:.78rem;color:var(--tb);line-height:1.4;}
+.ex-list{overflow-y:auto;padding:0 .8rem;flex:1;}
+.ex-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--b);font-size:.74rem;}
+.ex-row .ex-name{flex:1;color:var(--t);}
+.ex-row .ex-have{color:var(--td);font-size:.68rem;}
+.ex-row input{width:46px;background:#060d06;border:1px solid var(--b2);color:var(--tb);font-family:'Share Tech Mono',monospace;font-size:.74rem;padding:3px 4px;text-align:center;}
+.ex-btns{display:flex;gap:.5rem;padding:.6rem .8rem;border-top:1px solid var(--b);}
+.ex-btns button{flex:1;font-family:'Share Tech Mono',monospace;font-size:.74rem;padding:.45rem;cursor:pointer;}
+.ex-ok{background:var(--gk);border:1px solid var(--g);color:var(--tb);}
+.ex-ok:hover{background:var(--g);color:#0c150c;}
+.ex-cancel{background:#1a0505;border:1px solid var(--rd);color:var(--rd);}
+.ex-cancel:hover{background:var(--rd);color:#0c150c;}
+.ex-empty{color:var(--td);font-size:.74rem;text-align:center;padding:1rem;}
+#carte-toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--p);border:1px solid var(--g);color:var(--tb);font-family:'Share Tech Mono',monospace;font-size:.78rem;padding:.6rem 1rem;z-index:10001;opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;box-shadow:0 0 14px rgba(93,190,93,.5);}
+#carte-toast.on{opacity:1;transform:translateX(-50%) translateY(0);}

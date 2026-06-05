@@ -53,6 +53,10 @@ service cloud.firestore {
       allow delete: if false;  // on ne supprime pas un historique côté client
     }
 
+    // ---------- Échanges entre joueurs (groupe / numéros / don d'objets) ----------
+    // Propositions transitoires : from, to, type, status, items?. Supprimées après traitement.
+    match /echanges/{id} { allow read, write: if true; }
+
     // ---------- Tout le reste : INTERDIT ----------
     // Empêche la création de collections/documents non prévus.
     match /{document=**} {
