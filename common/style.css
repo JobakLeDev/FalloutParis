@@ -270,3 +270,11 @@ hr.fo{border:none;border-top:1px solid var(--b);margin:0.5rem 0;}
 .mf input,.mf select{width:100%;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:0.917rem;padding:0.417rem;outline:none;}
 .mf input:focus{border-color:var(--g);}
 .mbtns{display:flex;gap:0.583rem;margin-top:1rem;}
+
+/* Scrollbars discrètes : vert foncé, sans fond ni bordure (toutes les pages) */
+*{ scrollbar-width: thin; scrollbar-color: var(--gd) transparent; }
+*::-webkit-scrollbar{ width:8px; height:8px; }
+*::-webkit-scrollbar-track{ background:transparent; }
+*::-webkit-scrollbar-thumb{ background:var(--gd); border:0; border-radius:0; }
+*::-webkit-scrollbar-thumb:hover{ background:var(--g); }
+*::-webkit-scrollbar-corner{ background:transparent; }
