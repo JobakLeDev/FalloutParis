@@ -325,7 +325,17 @@ function addParty(){
   tempsData.parties.push({ id: uidParty(), name: 'Groupe ' + n, players: [], minutes: TEMPS_DEFAUT, solo:false });
   saveTemps(); renderParties();
 }
-function delParty(id){ if(confirm('Supprimer ce groupe ? Ses membres redeviennent individuels.')){ const nom=findParty(id)?.name||'Groupe'; tempsData.parties = tempsData.parties.filter(p=>p.id!==id); saveTemps(); renderParties(); logAction(`Groupe « ${nom} » dissous`); } }
+function delParty(id){
+  const p = findParty(id); if(!p) return;
+  if(!confirm('Supprimer ce groupe ? Ses membres redeviennent individuels (ils gardent l\'heure du groupe).')) return;
+  const mins = (p.minutes != null) ? p.minutes : TEMPS_DEFAUT;
+  const members = (p.players || []).slice();
+  tempsData.parties = tempsData.parties.filter(x => x.id !== id);
+  // chaque membre devient une party solo qui hérite de l'heure du groupe au moment de la dissolution
+  members.forEach(pid => tempsData.parties.push({ id: uidParty(), name: joueurs[pid]?.nom || pid, players:[pid], minutes: mins, solo:true }));
+  saveTemps(); renderParties();
+  logAction(`Groupe « ${p.name||'Groupe'} » dissous (heure conservée : ${fmtHeure(mins)})`);
+}
 function setPartyName(id,v){ const p=findParty(id); if(p){ p.name=v; saveTemps(); } }
 function avanceParty(id,delta){ const p=findParty(id); if(!p) return; p.minutes = Math.max(0,(p.minutes||0)+(parseInt(delta)||0)); saveTemps(); renderParties(); }
 function reglerDateParty(id){
@@ -349,7 +359,15 @@ function addPlayerToParty(targetId,pid){
   saveTemps(); renderParties();
   if(t) logAction(`${joueurs[pid]?.nom||pid} rejoint le groupe « ${t.name||'Groupe'} »`);
 }
-function rmPlayerFromParty(id,pid){ const p=findParty(id); if(!p) return; p.players=(p.players||[]).filter(x=>x!==pid); saveTemps(); renderParties(); logAction(`${joueurs[pid]?.nom||pid} quitte le groupe « ${p.name||'Groupe'} »`); }
+function rmPlayerFromParty(id,pid){
+  const p=findParty(id); if(!p) return;
+  const mins = (p.minutes != null) ? p.minutes : TEMPS_DEFAUT;
+  p.players=(p.players||[]).filter(x=>x!==pid);
+  // le joueur retiré devient solo en gardant l'heure du groupe
+  tempsData.parties.push({ id: uidParty(), name: joueurs[pid]?.nom || pid, players:[pid], minutes: mins, solo:true });
+  saveTemps(); renderParties();
+  logAction(`${joueurs[pid]?.nom||pid} quitte le groupe « ${p.name||'Groupe'} » (heure conservée)`);
+}
 // Grouper un joueur solo : vers un groupe existant (val=id) ou nouveau groupe (val='new')
 function groupSolo(pid,val){
   if(!val) return;
