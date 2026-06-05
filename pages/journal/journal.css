@@ -54,3 +54,22 @@ body.embed .jhdr{display:none;}
 .j-reveal.on{border-color:var(--g);color:var(--g);}
 .j-reveal-all{background:var(--gk);border:1px solid var(--b2);color:var(--t);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:8px;padding:3px 7px;letter-spacing:1px;}
 .j-empty-inline{font-size:8px;color:var(--td);}
+
+/* ===== MISE EN PAGE : NOTES (gauche) + TIMELINE (droite) ===== */
+#j-layout{ display:flex; gap:12px; align-items:flex-start; }
+#j-timeline{ flex:1; min-width:0; }
+#j-notes{ flex:0 0 230px; max-width:230px; display:none; flex-direction:column; gap:7px;
+  background:#0a140a; border:1px solid var(--b); padding:9px; position:sticky; top:8px; }
+.jn-title{ font-family:'Oswald',sans-serif; letter-spacing:2px; color:var(--g); font-size:.9rem; }
+.jn-input{ width:100%; min-height:62px; resize:vertical; background:#060d06; border:1px solid var(--b2);
+  color:var(--tb); font-family:'Share Tech Mono',monospace; font-size:.75rem; padding:6px 8px; outline:none; }
+.jn-input:focus{ border-color:var(--g); }
+.jn-add{ width:100%; }
+#j-notes-list{ display:flex; flex-direction:column; gap:6px; margin-top:2px; max-height:55vh; overflow-y:auto; }
+.jn-note{ position:relative; background:var(--p2); border:1px solid var(--b); padding:6px 22px 6px 8px;
+  font-size:.74rem; color:var(--t); white-space:pre-wrap; word-break:break-word; }
+.jn-del{ position:absolute; top:3px; right:3px; background:none; border:0; color:var(--td);
+  cursor:pointer; font-size:.7rem; line-height:1; padding:2px; }
+.jn-del:hover{ color:var(--rd); }
+.jn-empty{ color:var(--td); font-size:.72rem; font-style:italic; padding:4px 2px; }
+@media(max-width:720px){ #j-layout{ flex-direction:column; } #j-notes{ flex-basis:auto; max-width:none; width:100%; position:static; } }

@@ -7,7 +7,7 @@
   <title>Fallout Paris — Journal</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css">
-  <link rel="stylesheet" href="journal.css?v=1">
+  <link rel="stylesheet" href="journal.css?v=2">
 </head>
 <body>
 
@@ -20,6 +20,18 @@
       <a class="jbtn" href="../../index.html">Accueil</a>
     </div>
   </div>
+
+  <div id="j-layout">
+
+  <!-- BLOC NOTES PERSONNELLES (joueur) -->
+  <aside id="j-notes" style="display:none">
+    <div class="jn-title">📝 Mes notes</div>
+    <textarea id="jn-input" class="jn-input" placeholder="Ajouter une note…" maxlength="1000"></textarea>
+    <button class="jbtn add jn-add" onclick="addNote()">+ Ajouter une note</button>
+    <div id="j-notes-list"></div>
+  </aside>
+
+  <div id="j-timeline">
 
   <div id="j-filters">
     <button class="j-filter on" data-f="all" onclick="setFilter('all')">Tout</button>
@@ -43,9 +55,12 @@
 
   <div id="journal-list"><div class="j-empty">Chargement…</div></div>
 
+  </div><!-- /j-timeline -->
+  </div><!-- /j-layout -->
+
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="../../common/shared.js"></script>
-  <script src="journal.js?v=2"></script>
+  <script src="journal.js?v=3"></script>
 </body>
 </html>

@@ -30,7 +30,7 @@ function init(){
   if (embed) document.body.classList.add('embed');
   fdb = firebase.initializeApp(firebaseConfig).firestore();
   updateModeUI();
-  fdb.collection('joueurs').onSnapshot(s => { joueurs = {}; s.forEach(d => joueurs[d.id] = { ...d.data(), _id:d.id }); render(); });
+  fdb.collection('joueurs').onSnapshot(s => { joueurs = {}; s.forEach(d => joueurs[d.id] = { ...d.data(), _id:d.id }); render(); renderNotes(); });
   fdb.collection('journal').doc('data').onSnapshot(s => {
     const d = s.exists ? s.data() : {};
     jData = { entries: Array.isArray(d.entries) ? d.entries : [] };
@@ -49,6 +49,30 @@ function updateModeUI(){
   const m = document.getElementById('jhdr-mode'); if (m) m.textContent = isMJ ? 'Vue MJ' : (viewerId ? 'Vue joueur' : 'Visiteur');
   const mb = document.getElementById('jmj-btn'); if (mb) mb.style.display = (isMJ || viewerId) ? 'none' : '';
   const add = document.getElementById('j-add'); if (add) add.style.display = isMJ ? 'flex' : 'none';
+  const notes = document.getElementById('j-notes'); if (notes) notes.style.display = (!isMJ && viewerId) ? 'flex' : 'none';
+}
+
+// ---- Notes personnelles du joueur (/joueurs/{id}.notes) ----
+function _myNotes(){ const n = joueurs[viewerId]?.notes; return Array.isArray(n) ? n : []; }
+function renderNotes(){
+  const el = document.getElementById('j-notes-list'); if (!el || !viewerId || isMJ) return;
+  const notes = _myNotes().slice().sort((a,b)=>(b.ts||0)-(a.ts||0));
+  if (!notes.length){ el.innerHTML = '<div class="jn-empty">Aucune note. Note ce que tu veux retenir…</div>'; return; }
+  el.innerHTML = notes.map(n => `<div class="jn-note"><button class="jn-del" onclick="delNote('${n.id}')" title="Supprimer">✕</button><div class="jn-text">${esc(n.text)}</div></div>`).join('');
+}
+function addNote(){
+  if (!fdb || !viewerId) return;
+  const inp = document.getElementById('jn-input'); if (!inp) return;
+  const text = inp.value.trim(); if (!text) return;
+  const notes = _myNotes().slice();
+  notes.push({ id: 'n' + Date.now().toString(36) + Math.floor(Math.random()*999), text, ts: Date.now() });
+  inp.value = '';
+  fdb.collection('joueurs').doc(viewerId).set({ notes }, { merge: true }).catch(e => console.error('addNote', e));
+}
+function delNote(id){
+  if (!fdb || !viewerId) return;
+  const notes = _myNotes().filter(n => n.id !== id);
+  fdb.collection('joueurs').doc(viewerId).set({ notes }, { merge: true }).catch(e => console.error('delNote', e));
 }
 function saveJournal(){ if (fdb) fdb.collection('journal').doc('data').set(jData).catch(e => console.error('saveJournal', e)); }
 
