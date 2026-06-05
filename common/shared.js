@@ -11,6 +11,17 @@ const firebaseConfig = {
   appId: "1:1063413308699:web:09e0e13c2200283b22c7be"
 };
 
+// Journal d'actions partagé (/log/data {entries:[{ts,who,text}]}) — appelable depuis n'importe quelle page.
+// arrayUnion : sûr face aux écritures concurrentes (pas de read-modify-write).
+function fpLogAction(dbInst, who, text){
+  if(!dbInst || !text) return;
+  try {
+    dbInst.collection('log').doc('data').set({
+      entries: firebase.firestore.FieldValue.arrayUnion({ ts: Date.now(), who: who || '?', text: '' + text })
+    }, { merge: true });
+  } catch(e){ console.warn('fpLogAction', e); }
+}
+
 const XP_TABLE = [0,100,300,600,1000,1500,2100,2800,3600,4500,5500,6600,7800,9100,10500,12000,13600,15300,17100,19000,21000];
 
 const SKILLS_DEF = [

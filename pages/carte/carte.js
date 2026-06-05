@@ -1625,4 +1625,5 @@ function _logMJ(p){
   if(p.type === 'beacon')  txt = `${p.fromNom} et ${p.toNom} ont échangé leurs balises GPS (visibles en permanence sur la carte).`;
   if(p.type === 'give'){ const lst = (p.items||[]).map(it => `${it.n}× ${it.name}`).join(', '); txt = `${p.fromNom} a donné à ${p.toNom} : ${lst}.`; }
   if(typeof logJournal === 'function') logJournal({ type:'info', title:'Échange entre joueurs', text: txt, revealedFor: [], src: 'echange:' + (p.ts || Date.now()) });
+  if(typeof fpLogAction === 'function') fpLogAction(fdb, joueurs[viewerId]?.nom || viewerId, txt);
 }

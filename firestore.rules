@@ -57,6 +57,9 @@ service cloud.firestore {
     // Propositions transitoires : from, to, type, status, items?. Supprimées après traitement.
     match /echanges/{id} { allow read, write: if true; }
 
+    // ---------- Journal d'actions (dashboard MJ) ----------
+    match /log/{doc} { allow read, write: if true; }
+
     // ---------- Tout le reste : INTERDIT ----------
     // Empêche la création de collections/documents non prévus.
     match /{document=**} {

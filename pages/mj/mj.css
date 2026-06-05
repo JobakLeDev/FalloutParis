@@ -202,6 +202,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .pnl-toggle{background:none;border:none;color:var(--g);cursor:pointer;font-size:12px;padding:0 2px;flex:none;line-height:1;}
 .pnl-toggle:hover{color:var(--tb);}
 .rencontre-pnl.collapsed > :not(.pnl-title){display:none !important;}
+.actions-pnl.collapsed > :not(.pnl-title){display:none !important;}
 
 /* Réduction des groupes */
 .party-toggle{background:none;border:none;color:var(--g);cursor:pointer;font-size:11px;padding:0 4px;flex:none;}
@@ -239,3 +240,17 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .msg-txt{font-size:12px;color:var(--t);word-break:break-word;}
 .msg-bubble.me .msg-txt{color:var(--tb);}
 .msg-ts{font-size:9px;color:var(--td);text-align:right;margin-top:1px;}
+
+/* ===== Rangée horizontale Rencontres + Butin (sous Actions rapides) ===== */
+.lower-row{display:flex;gap:12px;align-items:flex-start;}
+.lower-row > .lr-col{flex:1 1 0;min-width:0;margin-top:0;}
+@media(max-width:900px){ .lower-row{flex-direction:column;} }
+
+/* ===== Journal d'actions (colonne droite) ===== */
+#actionlog-list{max-height:46vh;overflow-y:auto;display:flex;flex-direction:column;}
+.alog-row{display:flex;gap:6px;font-size:9px;padding:3px 4px;border-bottom:1px solid var(--b);line-height:1.35;}
+.alog-time{color:var(--td);flex:none;font-size:8px;}
+.alog-who{flex:none;font-weight:bold;}
+.alog-who.mj{color:var(--am);}
+.alog-who.pj{color:var(--g);}
+.alog-text{color:var(--t);word-break:break-word;}

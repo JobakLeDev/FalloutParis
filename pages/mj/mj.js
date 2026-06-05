@@ -119,7 +119,29 @@ function startSync(){
     msgLinks = (d.links && typeof d.links === 'object') ? d.links : {};
     renderContactsList();
   });
+  db.collection('log').doc('data').onSnapshot(s => {
+    const d = s.exists ? s.data() : {};
+    actionLog = Array.isArray(d.entries) ? d.entries : [];
+    renderActionLog();
+  });
 }
+
+// ============================================================
+// JOURNAL D'ACTIONS — toutes les actions joueur/MJ (/log/data)
+// ============================================================
+let actionLog = [];
+function logAction(text){ if(typeof fpLogAction === 'function') fpLogAction(db, 'MJ', text); }
+function clearActionLog(){ if(confirm('Vider le journal d\'actions ?')) db.collection('log').doc('data').set({ entries: [] }).catch(e=>console.error(e)); }
+function renderActionLog(){
+  const el = document.getElementById('actionlog-list'); if(!el) return;
+  if(!actionLog.length){ el.innerHTML = '<div class="empty" style="font-size:8px;color:var(--td);padding:10px">Aucune action enregistrée.</div>'; return; }
+  const fmtT = ts => { const d = new Date(ts||0); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
+  el.innerHTML = actionLog.slice().sort((a,b)=>(b.ts||0)-(a.ts||0)).map(e => {
+    const cls = e.who === 'MJ' ? 'mj' : 'pj';
+    return `<div class="alog-row"><span class="alog-time">${fmtT(e.ts)}</span><span class="alog-who ${cls}">${_logEsc(e.who)}</span><span class="alog-text">${_logEsc(e.text)}</span></div>`;
+  }).join('');
+}
+function _logEsc(s){ return (s==null?'':''+s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ============================================================
 // MESSAGERIE — contacts (échange de numéros) /messagerie/data {links:{id:[ids]}}
@@ -137,6 +159,7 @@ function lierContacts(){
   if(!a||!b||a===b){ showMsg('Choisis deux joueurs différents',true); return; }
   _link(a,b); _link(b,a); saveLinks(); renderContactsList();
   showMsg('📟 '+(joueurs[a]?.nom||a)+' ↔ '+(joueurs[b]?.nom||b)+' — numéros échangés');
+  logAction('Numéros liés : '+(joueurs[a]?.nom||a)+' ↔ '+(joueurs[b]?.nom||b));
 }
 function delierContacts(a,b){
   if(msgLinks[a]) msgLinks[a]=msgLinks[a].filter(x=>x!==b);
@@ -217,6 +240,7 @@ function genButin(){
   }
   saveButin();
   showMsg(`🎒 Butin généré — ${added} objet(s)${cats.includes('caps')?' + caps':''}`);
+  logAction(`Butin généré — ${added} objet(s)${cats.includes('caps')?' + caps':''}`);
 }
 function rmButin(i){ butinData.items.splice(i,1); saveButin(); }
 function clearButin(){ if(confirm('Vider le pool de butin ?')){ butinData = {items:[],caps:0,players:[]}; saveButin(); } }
@@ -265,7 +289,7 @@ function togglePartyCollapse(id){ if(collapsedParties.has(id)) collapsedParties.
 
 // Réduction des panneaux de la colonne droite (mémorisé en localStorage)
 const collapsedPanels = new Set((()=>{ try{ return JSON.parse(localStorage.getItem('fp_collapsedPanels')||'[]'); }catch(e){ return []; } })());
-const PANEL_IDS = ['clock-pnl','rencontre-pnl-main','combats-actifs','butin-pnl','contacts-pnl'];
+const PANEL_IDS = ['actions-pnl','actionlog-pnl','clock-pnl','rencontre-pnl-main','combats-actifs','butin-pnl','contacts-pnl'];
 function applyPanelState(id){
   const el = document.getElementById(id); if(!el) return;
   const col = collapsedPanels.has(id);
@@ -421,6 +445,8 @@ function lancerPublic(mode){
   }
   db.collection('rolls').doc('current').set(doc);
   showMsg(`📣 Lancer envoyé à ${selected.size} joueur(s)`);
+  const noms = [...selected].map(id => joueurs[id]?.nom || id).join(', ');
+  logAction(`Lancer public « ${doc.label} » → ${noms}`);
 }
 function cloreLancer(){ db.collection('rolls').doc('current').set({ open:false, ts: Date.now() }); }
 
@@ -517,6 +543,10 @@ async function appliquer(action){
   await Promise.all(promises);
   const lbls={dmg:'Dégâts',heal:'Soins',fullheal:'Soin complet',rad:'Radiation',derad:'Rad soignée','derad-full':'Rad retirée',xp:'XP','xp-500':'+500 XP','xp-1000':'+1000 XP','repos-court':'Repos court','repos-long':'Repos long','reset-wounds':'Blessures effacées','luck-init':'Luck initialisé','luck-recover':'Luck récupéré'};
   showMsg(`✓ ${lbls[action]||action} — ${selected.size} joueur(s)`);
+  const names = [...selected].map(id => joueurs[id]?.nom || id).join(', ');
+  const valMap = { dmg:'val-dmg', heal:'val-heal', rad:'val-rad', derad:'val-derad', xp:'val-xp', 'luck-recover':'val-luck-rec' };
+  const v = valMap[action] ? (document.getElementById(valMap[action])?.value || '') : '';
+  logAction(`${lbls[action]||action}${v?' ('+v+')':''} → ${names}`);
 }
 
 // ============================================================
@@ -608,6 +638,7 @@ async function lancerCombat(){
   if(btn){ btn.textContent = '⏳ Création...'; btn.disabled = true; }
   try {
     await createCombatSession(ennemisData, joueurIds, zone);
+    logAction(`Combat lancé — ${zone||'?'} (${ennemisData.length} ennemi(s))`);
     window.location.href = 'combat.html';
   } catch(e){
     console.error('lancerCombat:', e);

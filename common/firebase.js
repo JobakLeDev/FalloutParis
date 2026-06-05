@@ -202,6 +202,8 @@ function lancerMonDe(){
   const box = document.getElementById('roll-box');
   if(box){ box.classList.add('rolling'); setTimeout(()=>box.classList.remove('rolling'), 520); }
   setTimeout(() => db.collection('rolls').doc('current').update({ ['results.' + JOUEUR_ID]: res }), 480);
+  const detail = r.mode === 'dice' ? `${res.dice.join(', ')} = ${res.total}` : `${res.successes} succ.${res.crit?' ✦':''}${res.comp?' ⚠':''}`;
+  if(typeof fpLogAction === 'function') fpLogAction(db, char.name || JOUEUR_ID, `a lancé « ${r.label||'dés'} » : ${detail}`);
 }
 
 function _fmtRollJoueur(res, r){
