@@ -67,7 +67,6 @@ function initJoueur(){
   if(!combatId){ document.getElementById('attente').innerHTML = '<div style="color:var(--td);padding:40px;text-align:center">Aucun combat en cours — demande le lien à ton MJ</div>'; return; }
 
   const app = firebase.initializeApp(firebaseConfig);
-  if(typeof fpActivateAppCheck==="function") fpActivateAppCheck();
   db = app.firestore();
 
   // Mes données

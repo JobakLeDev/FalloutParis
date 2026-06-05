@@ -1,6 +1,5 @@
 // firebaseConfig défini dans common/shared.js
 const fbApp = firebase.initializeApp(firebaseConfig);
-  if(typeof fpActivateAppCheck==="function") fpActivateAppCheck();
 const db = fbApp.firestore();
 
 // Entrée clavier → connexion au Enter

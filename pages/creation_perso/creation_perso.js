@@ -1,6 +1,5 @@
 // firebaseConfig défini dans common/shared.js
 const db=firebase.initializeApp(firebaseConfig).firestore();
-  if(typeof fpActivateAppCheck==="function") fpActivateAppCheck();
 
 async function creer(){
   const id=document.getElementById('f-id').value.trim();

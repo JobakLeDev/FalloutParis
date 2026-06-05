@@ -15,7 +15,6 @@ const CAT_ICON = { weapons:'🔫', armor:'🛡', ammo:'▪', food:'🍖', drinks
 document.addEventListener('DOMContentLoaded', () => {
   if (embed) document.body.classList.add('embed');
   fdb = firebase.initializeApp(firebaseConfig).firestore();
-  if(typeof fpActivateAppCheck==="function") fpActivateAppCheck();
   const m = document.getElementById('bhdr-mode'); if (m) m.textContent = viewerId ? 'Vue joueur' : 'Vue MJ (lecture)';
   fdb.collection('butin').doc('data').onSnapshot(s => {
     const d = s.exists ? s.data() : {};

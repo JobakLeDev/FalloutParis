@@ -29,7 +29,6 @@ document.addEventListener('DOMContentLoaded', init);
 function init(){
   if (embed) document.body.classList.add('embed');
   fdb = firebase.initializeApp(firebaseConfig).firestore();
-  if(typeof fpActivateAppCheck==="function") fpActivateAppCheck();
   updateModeUI();
   fdb.collection('joueurs').onSnapshot(s => { joueurs = {}; s.forEach(d => joueurs[d.id] = { ...d.data(), _id:d.id }); render(); });
   fdb.collection('journal').doc('data').onSnapshot(s => {

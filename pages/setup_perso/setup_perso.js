@@ -1,6 +1,5 @@
 // firebaseConfig défini dans common/shared.js
 const db=firebase.initializeApp(firebaseConfig).firestore();
-  if(typeof fpActivateAppCheck==="function") fpActivateAppCheck();
 
 const JOUEUR_ID=new URLSearchParams(window.location.search).get('id')||'';
 const BASE_URL='https://jobakledev.github.io/FalloutParis/pages/fiche_perso/fiche_perso.html';

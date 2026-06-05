@@ -134,7 +134,6 @@ function geoZoneGenQuery(props) {
 function init() {
   if (embed) document.body.classList.add('embed');
   fdb = firebase.initializeApp(firebaseConfig).firestore();
-  if(typeof fpActivateAppCheck==="function") fpActivateAppCheck();
   buildMap();
 }
 
