@@ -89,17 +89,35 @@
           </div>
         </div>
 
-        <!-- LANCEUR DE DÉS -->
-        <div class="action-group">
-          <div class="action-group-title">🎲 Lanceur de dés</div>
-          <div class="action-row">
-            <input type="number" class="action-input" id="dice-nb" value="2" min="1" max="12" style="width:45px">
-            <span style="font-size:11px;color:var(--td);padding:0 4px">D</span>
-            <input type="number" class="action-input" id="dice-faces" value="20" min="2" max="100" style="width:50px">
-            <button class="action-btn" onclick="lancerDes()" style="flex:1">Lancer</button>
-            <button class="action-btn" onclick="lancerCD()" style="flex:1;border-color:var(--am);color:var(--am)">Dés Combat</button>
+        <!-- LANCEUR DE DÉS + LANCER PUBLIC (empilés, 1 créneau) -->
+        <div class="action-col">
+          <div class="action-group">
+            <div class="action-group-title">🎲 Lanceur de dés</div>
+            <div class="action-row">
+              <input type="number" class="action-input" id="dice-nb" value="2" min="1" max="12" style="width:42px">
+              <span style="font-size:11px;color:var(--td);padding:0 3px">D</span>
+              <input type="number" class="action-input" id="dice-faces" value="20" min="2" max="100" style="width:46px">
+              <button class="action-btn" onclick="lancerDes()" style="flex:1">Lancer</button>
+              <button class="action-btn" onclick="lancerCD()" style="flex:1;border-color:var(--am);color:var(--am)">Dés CD</button>
+            </div>
+            <div id="dice-result" style="font-size:10px;color:var(--tb);margin-top:4px;min-height:18px;padding:3px 6px;background:#060d06;border:1px solid var(--b);display:none;letter-spacing:1px"></div>
           </div>
-          <div id="dice-result" style="font-size:10px;color:var(--tb);margin-top:4px;min-height:18px;padding:3px 6px;background:#060d06;border:1px solid var(--b);display:none;letter-spacing:1px"></div>
+
+          <!-- LANCER PUBLIC -->
+          <div class="action-group">
+            <div class="action-group-title">📣 Lancer public</div>
+            <div class="action-row" style="flex-wrap:wrap;gap:4px">
+              <select class="ctrl-sel" id="pub-skill-sel" style="flex:1 1 100%;min-width:0"></select>
+              <button class="action-btn" onclick="lancerPublic('skill')" style="border-color:var(--am);color:var(--am);flex:1">Test 2D20</button>
+            </div>
+            <div class="action-row" style="gap:4px;margin-top:4px">
+              <input type="number" class="action-input" id="pub-dice-nb" value="1" min="1" max="20" style="width:42px">
+              <span style="font-size:11px;color:var(--td);padding:0 3px">D</span>
+              <input type="number" class="action-input" id="pub-dice-faces" value="6" min="2" max="100" style="width:46px">
+              <button class="action-btn" onclick="lancerPublic('dice')" style="flex:1">Lancer dés</button>
+            </div>
+            <div id="pub-roll-results" style="display:none;margin-top:6px"></div>
+          </div>
         </div>
 
         <div class="action-group">
@@ -138,20 +156,6 @@
             <input type="number" class="action-input" id="val-luck-rec" value="1" min="1" max="10">
             <button class="action-btn heal" onclick="appliquer('luck-recover')">Récupérer Luck</button>
           </div>
-        </div>
-
-        <!-- LANCER DE DÉS PUBLIC (pleine largeur) -->
-        <div class="action-group full-row">
-          <div class="action-group-title">📣 Lancer public — joueurs sélectionnés</div>
-          <div class="action-row" style="flex-wrap:wrap;gap:5px">
-            <select class="ctrl-sel" id="pub-skill-sel" style="flex:1;min-width:150px"></select>
-            <button class="action-btn" onclick="lancerPublic('skill')" style="border-color:var(--am);color:var(--am);flex:none;padding:5px 12px">Test 2D20</button>
-            <input type="number" class="action-input" id="pub-dice-nb" value="1" min="1" max="20" style="width:45px">
-            <span style="font-size:11px;color:var(--td);padding:0 4px">D</span>
-            <input type="number" class="action-input" id="pub-dice-faces" value="6" min="2" max="100" style="width:50px">
-            <button class="action-btn" onclick="lancerPublic('dice')" style="flex:none;padding:5px 12px">Lancer dés</button>
-          </div>
-          <div id="pub-roll-results" style="display:none;margin-top:6px"></div>
         </div>
 
       </div>
