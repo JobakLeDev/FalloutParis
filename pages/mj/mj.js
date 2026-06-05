@@ -104,6 +104,7 @@ function startSync(){
   db.collection('temps').doc('data').onSnapshot(s => {
     const d = s.exists ? s.data() : {};
     tempsData = { parties: Array.isArray(d.parties) ? d.parties : [] };
+    tempsLoaded = true;
     renderParties();
   });
   populateLootCats();
@@ -256,6 +257,7 @@ function renderButin(){
 // Helpers de date dans shared.js (tempsDate, fmtDateTime, TEMPS_DEFAUT…)
 // ============================================================
 let tempsData = { parties: [] };
+let tempsLoaded = false;   // vrai une fois /temps/data reçu — évite d'écraser les groupes au chargement
 // état UI local (réduit/déplié) — mémorisé en localStorage (survit au rafraîchissement)
 const collapsedParties = new Set((()=>{ try{ return JSON.parse(localStorage.getItem('fp_collapsedParties')||'[]'); }catch(e){ return []; } })());
 function saveCollapsed(){ try{ localStorage.setItem('fp_collapsedParties', JSON.stringify([...collapsedParties])); }catch(e){} }
@@ -284,6 +286,7 @@ function findParty(id){ return (tempsData.parties||[]).find(p => p.id === id); }
 // Chaque joueur a une ligne de temps individuelle par défaut (groupe "solo" auto-créé).
 // Un GROUPE explicite (solo:false) sert à synchroniser plusieurs joueurs.
 function ensureSoloParties(){
+  if(!tempsLoaded) return;   // tant que /temps/data n'est pas reçu, ne rien créer (sinon on écrase les groupes)
   tempsData.parties = tempsData.parties || [];
   const assigned = new Set(); tempsData.parties.forEach(p => (p.players||[]).forEach(id => assigned.add(id)));
   const orphans = Object.keys(joueurs).filter(id => !assigned.has(id));
