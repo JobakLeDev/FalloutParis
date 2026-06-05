@@ -206,3 +206,9 @@ html, body { height: 100%; overflow: hidden; }
 
 /* Icône messagerie à gauche, alignée verticalement avec les stats de droite */
 .hdr-left{ display:flex; align-items:center; gap:0.6rem; }
+
+/* Caps (argent) sous le SPECIAL */
+.caps-box{ display:flex; align-items:center; gap:6px; margin-top:7px; padding:6px 8px; background:#0a140a; border:1px solid var(--b); }
+.caps-ic{ color:var(--am); font-size:0.9rem; }
+.caps-lbl{ font-size:0.6rem; letter-spacing:2px; color:var(--td); }
+.caps-val{ margin-left:auto; font-family:'Oswald',sans-serif; font-size:1.05rem; color:var(--am); }

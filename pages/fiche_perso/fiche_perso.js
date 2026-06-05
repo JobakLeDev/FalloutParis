@@ -14,6 +14,7 @@ const char = {
   ammo:[],
   wounds:{head:false,torso:false,armL:false,armR:false,legL:false,legR:false},
   luck_points:0,
+  caps:0,          // capsules (argent)
   companions:[],   // PNJ alliés (schéma enemies.json) — créés par le MJ
 };
 
@@ -152,7 +153,8 @@ function utiliserItem(i){
 }
 
 
-function rAll(){rSpecial();rGenWeap();rHP();rMeta();rStatus();rWeapEq();rAmmo();rPerkRD();rLocs();rLocsGen();rInventory();rSkills();rPerks();rPerkEff();rCharge();rLevelUp();rCompanions();}
+function rAll(){rSpecial();rCaps();rGenWeap();rHP();rMeta();rStatus();rWeapEq();rAmmo();rPerkRD();rLocs();rLocsGen();rInventory();rSkills();rPerks();rPerkEff();rCharge();rLevelUp();rCompanions();}
+function rCaps(){const el=document.getElementById('caps-val');if(el)el.textContent=(char.caps||0).toLocaleString('fr-FR');}
 
 function rSpecial(){
   const ORDER=['S','P','E','C','I','A','L'];
