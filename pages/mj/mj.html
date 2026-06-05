@@ -168,16 +168,20 @@
 
     <!-- CALENDRIER & GROUPES -->
     <div class="rencontre-pnl" id="clock-pnl">
-      <div class="pnl-title" style="display:flex;justify-content:space-between;align-items:center">
-        📅 Calendrier &amp; Groupes
+      <div class="pnl-title pnl-head">
+        <button class="pnl-toggle" onclick="togglePanel('clock-pnl')">▾</button>
+        <span class="pnl-head-label">📅 Calendrier &amp; Groupes</span>
         <button class="sel-btn" onclick="addParty()" style="font-size:9px">+ Groupe</button>
       </div>
       <div id="parties-list"></div>
       <div id="unassigned-players"></div>
     </div>
 
-    <div class="rencontre-pnl">
-      <div class="pnl-title">Rencontres & Déplacements</div>
+    <div class="rencontre-pnl" id="rencontre-pnl-main">
+      <div class="pnl-title pnl-head">
+        <button class="pnl-toggle" onclick="togglePanel('rencontre-pnl-main')">▾</button>
+        <span class="pnl-head-label">Rencontres & Déplacements</span>
+      </div>
 
       <div class="rencontre-controls">
         <div class="ctrl-row">
@@ -225,8 +229,9 @@
 
     <!-- COMBATS ACTIFS -->
     <div class="rencontre-pnl" id="combats-actifs" style="margin-top:10px">
-      <div class="pnl-title" style="display:flex;justify-content:space-between;align-items:center">
-        ⚔ Combats actifs
+      <div class="pnl-title pnl-head">
+        <button class="pnl-toggle" onclick="togglePanel('combats-actifs')">▾</button>
+        <span class="pnl-head-label">⚔ Combats actifs</span>
         <button class="sel-btn" onclick="renderCombatsActifs()" style="font-size:9px">↻ Rafraîchir</button>
       </div>
       <div id="combats-actifs-list"><div class="empty" style="font-size:8px;color:var(--td);padding:10px">Chargement...</div></div>
@@ -234,7 +239,10 @@
 
     <!-- BUTIN / FOUILLE -->
     <div class="rencontre-pnl" id="butin-pnl" style="margin-top:10px">
-      <div class="pnl-title">🎒 Butin / Fouille</div>
+      <div class="pnl-title pnl-head">
+        <button class="pnl-toggle" onclick="togglePanel('butin-pnl')">▾</button>
+        <span class="pnl-head-label">🎒 Butin / Fouille</span>
+      </div>
       <div class="ctrl-row">
         <span class="ctrl-lbl">Lieu</span>
         <select class="ctrl-sel" id="loot-scale">
@@ -261,7 +269,10 @@
 
     <!-- MESSAGERIE / CONTACTS -->
     <div class="rencontre-pnl" id="contacts-pnl" style="margin-top:10px">
-      <div class="pnl-title">📟 Messagerie — Échange de numéros</div>
+      <div class="pnl-title pnl-head">
+        <button class="pnl-toggle" onclick="togglePanel('contacts-pnl')">▾</button>
+        <span class="pnl-head-label">📟 Messagerie — Échange de numéros</span>
+      </div>
       <div class="ctrl-row">
         <select class="ctrl-sel" id="contact-a"></select>
         <span style="color:var(--td);font-size:11px">↔</span>

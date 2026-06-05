@@ -196,6 +196,13 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 /* Contacts (messagerie MJ) */
 .contact-row{display:flex;justify-content:space-between;align-items:center;font-size:9px;color:var(--t);padding:3px 4px;border-bottom:1px solid var(--b);}
 
+/* Réduction des panneaux (colonne droite) */
+.pnl-head{display:flex;align-items:center;gap:6px;}
+.pnl-head-label{flex:1;}
+.pnl-toggle{background:none;border:none;color:var(--g);cursor:pointer;font-size:12px;padding:0 2px;flex:none;line-height:1;}
+.pnl-toggle:hover{color:var(--tb);}
+.rencontre-pnl.collapsed > :not(.pnl-title){display:none !important;}
+
 /* Réduction des groupes */
 .party-toggle{background:none;border:none;color:var(--g);cursor:pointer;font-size:11px;padding:0 4px;flex:none;}
 .party-toggle:hover{color:var(--tb);}

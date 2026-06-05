@@ -259,6 +259,23 @@ let tempsData = { parties: [] };
 const collapsedParties = new Set((()=>{ try{ return JSON.parse(localStorage.getItem('fp_collapsedParties')||'[]'); }catch(e){ return []; } })());
 function saveCollapsed(){ try{ localStorage.setItem('fp_collapsedParties', JSON.stringify([...collapsedParties])); }catch(e){} }
 function togglePartyCollapse(id){ if(collapsedParties.has(id)) collapsedParties.delete(id); else collapsedParties.add(id); saveCollapsed(); renderParties(); }
+
+// Réduction des panneaux de la colonne droite (mémorisé en localStorage)
+const collapsedPanels = new Set((()=>{ try{ return JSON.parse(localStorage.getItem('fp_collapsedPanels')||'[]'); }catch(e){ return []; } })());
+const PANEL_IDS = ['clock-pnl','rencontre-pnl-main','combats-actifs','butin-pnl','contacts-pnl'];
+function applyPanelState(id){
+  const el = document.getElementById(id); if(!el) return;
+  const col = collapsedPanels.has(id);
+  el.classList.toggle('collapsed', col);
+  const t = el.querySelector('.pnl-toggle'); if(t) t.textContent = col ? '▸' : '▾';
+}
+function togglePanel(id){
+  if(collapsedPanels.has(id)) collapsedPanels.delete(id); else collapsedPanels.add(id);
+  try{ localStorage.setItem('fp_collapsedPanels', JSON.stringify([...collapsedPanels])); }catch(e){}
+  applyPanelState(id);
+}
+function initPanelCollapse(){ PANEL_IDS.forEach(applyPanelState); }
+window.addEventListener('DOMContentLoaded', initPanelCollapse);
 function uidParty(){ return 'p' + Date.now().toString(36) + Math.floor(Math.random()*99); }
 function saveTemps(){ if(db) db.collection('temps').doc('data').set(tempsData).catch(e=>console.error('saveTemps',e)); }
 function findParty(id){ return (tempsData.parties||[]).find(p => p.id === id); }
