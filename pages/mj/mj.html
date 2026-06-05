@@ -261,6 +261,14 @@
       <div class="gen-btns" style="margin-top:6px">
         <button class="gen-btn" style="grid-column:1/-1" onclick="genButin()">🎲 Générer le butin</button>
       </div>
+      <div class="loot-access">
+        <div class="ctrl-lbl" style="min-width:0">Accès joueurs <span style="color:var(--td)">(bandeau sur leur fiche)</span></div>
+        <div id="loot-access-list"></div>
+        <div style="display:flex;gap:5px;margin-top:4px">
+          <button class="bp-mini" onclick="lootAccessAll(true)">Tous</button>
+          <button class="bp-mini" onclick="lootAccessAll(false)">Aucun (fermer)</button>
+        </div>
+      </div>
       <div id="butin-pool"></div>
     </div>
 

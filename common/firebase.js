@@ -127,6 +127,13 @@ function startSync() {
       (err) => console.warn('rolls indisponible:', err && err.code)
     );
   } catch(e){ console.warn('rolls listener KO:', e); }
+  // Butin partagé — bandeau d'alerte si du butin est accessible à ce joueur
+  try {
+    db.collection('butin').doc('data').onSnapshot(
+      (snap) => { try { renderLootAlert(snap.exists ? snap.data() : null); } catch(e){ console.error('loot:', e); } },
+      (err) => console.warn('butin indisponible:', err && err.code)
+    );
+  } catch(e){ console.warn('butin listener KO:', e); }
 }
 
 // ============================================================
@@ -193,6 +200,17 @@ function renderRollJoueur(r){
     return `<div class="roll-row${me}"><span class="roll-nom">${nom}</span><span class="roll-res">${res ? _fmtRollJoueur(res, r) : '⏳…'}</span></div>`;
   }).join('');
   document.getElementById('roll-list').innerHTML = list;
+}
+
+// Bandeau butin : visible si le pool n'est pas vide ET ce joueur a l'accès (players)
+function renderLootAlert(d){
+  const al = document.getElementById('loot-alert'); if(!al) return;
+  const items = d && Array.isArray(d.items) ? d.items : [];
+  const players = d && Array.isArray(d.players) ? d.players : [];
+  const accessible = items.length > 0 && players.includes(JOUEUR_ID);
+  al.style.display = accessible ? 'flex' : 'none';
+  if(accessible){ const c = document.getElementById('loot-count'); if(c) c.textContent = '(' + items.length + ')'; }
+  else { const mo = document.getElementById('mo-loot'); if(mo) mo.classList.remove('on'); }   // accès retiré → ferme la modale
 }
 
 // ---- Initialisation ----

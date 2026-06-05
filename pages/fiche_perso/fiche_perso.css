@@ -132,3 +132,17 @@ html, body { height: 100%; overflow: hidden; }
 #roll-box.rolling{ animation:roll-shake .13s linear infinite; }
 #roll-box.rolling #roll-btn::after{ content:' …'; }
 .roll-row{ animation:roll-pop .28s ease-out; }
+
+/* Bandeau BUTIN (alerte, façon montée de niveau, teinte verte) */
+#loot-alert{
+  display:none; align-items:center; gap:0.6rem;
+  margin:0.4rem 0; padding:0.55rem 0.9rem; cursor:pointer;
+  background:linear-gradient(90deg, rgba(93,190,93,0.18), rgba(93,190,93,0.05));
+  border:1px solid var(--g); color:var(--tb);
+  font-family:'Share Tech Mono',monospace; font-size:0.8rem; letter-spacing:1px;
+  animation:lootpulse 1.5s ease-in-out infinite;
+}
+#loot-alert:hover{ background:rgba(93,190,93,0.28); }
+#loot-alert .loot-ico{ font-size:1.1rem; }
+#loot-alert b{ color:var(--g); }
+@keyframes lootpulse{ 0%,100%{box-shadow:0 0 0 rgba(93,190,93,0);} 50%{box-shadow:0 0 14px rgba(93,190,93,0.45);} }

@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fallout Paris — Fiche Personnage</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../../common/style.css?v=9">
-  <link rel="stylesheet" href="fiche_perso.css?v=9">
+  <link rel="stylesheet" href="../../common/style.css?v=10">
+  <link rel="stylesheet" href="fiche_perso.css?v=10">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
@@ -35,6 +35,12 @@
   <span>MONTÉE DE NIVEAU <b id="lvlup-count"></b> — clique pour répartir ton rang &amp; ta perk</span>
 </div>
 
+<!-- ALERTE BUTIN -->
+<div id="loot-alert" onclick="openLoot()">
+  <span class="loot-ico">🎒</span>
+  <span>BUTIN À PORTÉE <b id="loot-count"></b> — clique pour fouiller</span>
+</div>
+
 <!-- TABS -->
 <div class="tabs">
   <div class="tab on" onclick="sw('general')">GÉNÉRAL</div>
@@ -43,7 +49,6 @@
   <div class="tab" onclick="sw('carte')">CARTE</div>
   <div class="tab" onclick="sw('quetes')">QUÊTES</div>
   <div class="tab" onclick="sw('journal')">JOURNAL</div>
-  <div class="tab" onclick="sw('butin')">BUTIN</div>
 </div>
 
 <div class="body">
@@ -228,11 +233,6 @@
   <iframe id="quetes-frame" title="Quêtes"></iframe>
 </div>
 
-<!-- BUTIN -->
-<div class="tc" id="tc-butin">
-  <iframe id="butin-frame" title="Butin"></iframe>
-</div>
-
 <!-- JOURNAL -->
 <div class="tc" id="tc-journal">
   <iframe id="journal-frame" title="Journal"></iframe>
@@ -261,6 +261,17 @@
 </div>
 
 
+<!-- MODALE BUTIN -->
+<div class="mo" id="mo-loot">
+  <div class="mbox" style="width:42rem;max-width:94vw;padding:0;overflow:hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0.8rem;border-bottom:1px solid var(--b2)">
+      <span class="mtitle" style="margin:0">🎒 BUTIN</span>
+      <button class="btn" onclick="closeMo('mo-loot')">✕ Repartir</button>
+    </div>
+    <iframe id="loot-frame" title="Butin" style="display:block;width:100%;height:60vh;border:0"></iframe>
+  </div>
+</div>
+
 <!-- LANCER DE DÉS PUBLIC (alerte + résultats) -->
 <div id="roll-box" style="display:none">
   <div class="roll-head"><span id="roll-title">🎲 Lancer</span></div>
@@ -285,9 +296,9 @@
   </div>
 </div>
 
-  <script src="../../common/shared.js?v=9"></script>
-  <script src="../../common/db.js?v=9"></script>
-  <script src="fiche_perso.js?v=9"></script>
-  <script src="../../common/firebase.js?v=9"></script>
+  <script src="../../common/shared.js?v=10"></script>
+  <script src="../../common/db.js?v=10"></script>
+  <script src="fiche_perso.js?v=10"></script>
+  <script src="../../common/firebase.js?v=10"></script>
 </body>
 </html>

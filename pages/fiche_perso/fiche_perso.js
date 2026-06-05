@@ -82,7 +82,7 @@ let curTab='general', curInv='all';
 
 function sw(tab){
   document.querySelectorAll('.tab').forEach((el,i)=>{
-    el.classList.toggle('on',['general','inventaire','perks','carte','quetes','journal','butin'][i]===tab);
+    el.classList.toggle('on',['general','inventaire','perks','carte','quetes','journal'][i]===tab);
   });
   document.querySelectorAll('.tc').forEach(el=>el.classList.remove('on'));
   const tc=document.getElementById('tc-'+tab);
@@ -113,15 +113,6 @@ function sw(tab){
       f.src='../journal/journal.html?id='+encodeURIComponent(id)+'&embed=1';
     } else if(f && f.contentWindow){
       f.contentWindow.postMessage('journal-refresh','*');
-    }
-  }
-  // Charger le butin (iframe) ; sinon rafraîchir
-  if(tab==='butin'){
-    const f=document.getElementById('butin-frame');
-    if(f && !f.src){
-      f.src='../butin/butin.html?id='+encodeURIComponent(id)+'&embed=1';
-    } else if(f && f.contentWindow){
-      f.contentWindow.postMessage('butin-refresh','*');
     }
   }
   curTab=tab; rAll();
@@ -625,6 +616,15 @@ function saveSpec(){const v=Math.min(10,Math.max(1,parseInt(document.getElementB
 function openMoSk(key,name){_moSkKey=key;document.getElementById('mo-sk-t').textContent='COMPÉTENCE : '+name.toUpperCase();document.getElementById('mo-sk-v').value=char.skills[key]||0;document.getElementById('mo-sk-tag').value=char.taggedSkills.includes(key)?'1':'0';document.getElementById('mo-sk').classList.add('on');}
 function saveSkill(){const v=Math.min(6,Math.max(0,parseInt(document.getElementById('mo-sk-v').value)||0));char.skills[_moSkKey]=v;const tg=document.getElementById('mo-sk-tag').value==='1';if(tg&&!char.taggedSkills.includes(_moSkKey))char.taggedSkills.push(_moSkKey);if(!tg)char.taggedSkills=char.taggedSkills.filter(k=>k!==_moSkKey);closeMo('mo-sk');rAll();}
 function closeMo(id){document.getElementById(id).classList.remove('on');}
+
+// Butin : ouvre la modale (charge l'iframe paresseusement) ; le bandeau est piloté par firebase.js
+function openLoot(){
+  const f=document.getElementById('loot-frame');
+  const id=new URLSearchParams(location.search).get('id')||'';
+  if(f && !f.src) f.src='../butin/butin.html?id='+encodeURIComponent(id)+'&embed=1';
+  else if(f && f.contentWindow) f.contentWindow.postMessage('butin-refresh','*');
+  document.getElementById('mo-loot').classList.add('on');
+}
 
 // ============================================================
 // COMPAGNONS — PNJ alliés (créés par le MJ, schéma enemies.json)

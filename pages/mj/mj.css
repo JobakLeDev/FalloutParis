@@ -165,3 +165,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .bp-del{background:none;border:none;color:var(--rd);cursor:pointer;font-size:10px;padding:0 4px;}
 .bp-clear{width:100%;margin-top:6px;background:var(--rdk);border:1px solid var(--rd);color:var(--rd);font-family:'Share Tech Mono',monospace;font-size:9px;padding:5px;cursor:pointer;letter-spacing:1px;}
 .bp-clear:hover{background:#2a0808;}
+
+/* Accès joueurs au butin */
+.loot-access{margin-top:8px;border-top:1px solid var(--b);padding-top:7px;}
+#loot-access-list{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;}
+.loot-acc{background:#060d06;border:1px solid var(--b);color:var(--td);font-family:'Share Tech Mono',monospace;font-size:8px;padding:3px 7px;cursor:pointer;}
+.loot-acc.on{border-color:var(--g);color:var(--g);}

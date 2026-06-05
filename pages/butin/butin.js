@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const m = document.getElementById('bhdr-mode'); if (m) m.textContent = viewerId ? 'Vue joueur' : 'Vue MJ (lecture)';
   fdb.collection('butin').doc('data').onSnapshot(s => {
     const d = s.exists ? s.data() : {};
-    bData = { items: Array.isArray(d.items) ? d.items : [], caps: d.caps || 0 };
+    bData = { items: Array.isArray(d.items) ? d.items : [], caps: d.caps || 0, players: Array.isArray(d.players) ? d.players : [] };
     render();
   });
   window.addEventListener('message', e => { if (e.data === 'butin-refresh') render(); });
@@ -74,6 +74,8 @@ function render(){
   const caps = document.getElementById('b-caps');
   if (caps) caps.innerHTML = `💰 <b>${bData.caps||0}</b> caps`;
   const el = document.getElementById('butin-list'); if (!el) return;
+  // Gate d'accès : un joueur ne voit le pool que s'il est autorisé (players)
+  if (viewerId && !(bData.players||[]).includes(viewerId)){ el.innerHTML = '<div class="b-empty">Aucun butin accessible pour l\'instant.</div>'; return; }
   const items = bData.items || [];
   if (!items.length){ el.innerHTML = '<div class="b-empty">Le pool de butin est vide. Le MJ le remplit en fouillant.</div>'; return; }
   el.innerHTML = items.map((it,i) =>

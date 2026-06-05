@@ -104,15 +104,16 @@ function startSync(){
   populateLootCats();
   db.collection('butin').doc('data').onSnapshot(s => {
     const d = s.exists ? s.data() : {};
-    butinData = { items: Array.isArray(d.items) ? d.items : [], caps: d.caps || 0 };
+    butinData = { items: Array.isArray(d.items) ? d.items : [], caps: d.caps || 0, players: Array.isArray(d.players) ? d.players : [] };
     renderButin();
+    renderLootAccess();
   });
 }
 
 // ============================================================
 // BUTIN / FOUILLE (générateur MJ → pool partagé Firebase /butin/data)
 // ============================================================
-let butinData = { items: [], caps: 0 };
+let butinData = { items: [], caps: 0, players: [] };
 const LOOT_CATS = [
   {k:'weapons',l:'Armes'},{k:'armor',l:'Armure'},{k:'ammo',l:'Munitions'},
   {k:'food',l:'Nourriture'},{k:'drinks',l:'Boissons'},{k:'drugs',l:'Chems'},
@@ -174,8 +175,26 @@ function genButin(){
   showMsg(`🎒 Butin généré — ${added} objet(s)${cats.includes('caps')?' + caps':''}`);
 }
 function rmButin(i){ butinData.items.splice(i,1); saveButin(); }
-function clearButin(){ if(confirm('Vider le pool de butin ?')){ butinData = {items:[],caps:0}; saveButin(); } }
+function clearButin(){ if(confirm('Vider le pool de butin ?')){ butinData = {items:[],caps:0,players:[]}; saveButin(); } }
 function chButinCaps(d){ butinData.caps = Math.max(0,(butinData.caps||0)+d); saveButin(); }
+
+// Accès joueurs au butin (bandeau sur leur fiche)
+function renderLootAccess(){
+  const el = document.getElementById('loot-access-list'); if(!el) return;
+  const ids = Object.keys(joueurs);
+  if(!ids.length){ el.innerHTML = '<span class="empty" style="font-size:8px;color:var(--td)">Aucun joueur</span>'; return; }
+  el.innerHTML = ids.map(id => {
+    const on = (butinData.players||[]).includes(id);
+    return `<button class="loot-acc${on?' on':''}" onclick="toggleLootAccess('${id}')">${on?'👁':'∅'} ${joueurs[id]?.nom||id}</button>`;
+  }).join('');
+}
+function toggleLootAccess(id){
+  butinData.players = butinData.players || [];
+  const i = butinData.players.indexOf(id);
+  if(i>=0) butinData.players.splice(i,1); else butinData.players.push(id);
+  saveButin(); renderLootAccess();
+}
+function lootAccessAll(all){ butinData.players = all ? Object.keys(joueurs) : []; saveButin(); renderLootAccess(); }
 function renderButin(){
   const el = document.getElementById('butin-pool'); if(!el) return;
   const items = butinData.items||[], caps = butinData.caps||0;
