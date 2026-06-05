@@ -63,10 +63,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 /* ACTIONS */
 .actions-pnl{background:var(--p2);border:1px solid var(--b2);padding:10px;}
 .pnl-title{font-size:8px;letter-spacing:4px;color:var(--td);text-transform:uppercase;border-bottom:1px solid var(--b);padding-bottom:4px;margin-bottom:8px;}
-.actions-grid{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;}
-.actions-left{display:grid;grid-template-columns:repeat(2,minmax(135px,170px));gap:8px;flex:0 0 auto;}
-.actions-right{display:flex;flex-direction:column;gap:8px;flex:0 1 320px;min-width:260px;max-width:340px;}
-.actions-right .action-group{width:100%;}
+.actions-grid{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;}
+.actions-grid > .action-group{flex:1 1 150px;min-width:140px;}
+.actions-grid > .action-group.full-row{flex-basis:100%;width:100%;min-width:0;}
 .action-group{background:#080f08;border:1px solid var(--b);padding:8px;}
 .action-group-title{font-size:7px;color:var(--td);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
 .action-row{display:flex;gap:4px;align-items:center;margin-bottom:4px;}
