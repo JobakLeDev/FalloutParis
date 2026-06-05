@@ -12,17 +12,21 @@
 const GEOJSON_BASE = '../../map/';
 const MJ_CODE = '1234';
 
+// Icône SVG ligne (style Pip-Boy / Vault-Tec) — monochrome, couleur via currentColor
+function _pic(inner){
+  return '<svg class="poi-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + inner + '</svg>';
+}
 const POI_TYPES = {
-  settlement: { label: 'Maison / Colonie', color: '#5dbe5d', icon: '🏠' },
-  danger:     { label: 'Danger',     color: '#e04040', icon: '☢' },
-  faction:    { label: 'QG Faction', color: '#4a7ba6', icon: '🚩' },
-  loot:       { label: 'Cache',      color: '#e8a820', icon: '📦' },
-  trader:     { label: 'Marchand',   color: '#e8a820', icon: '💰' },
-  water:      { label: "Point d'eau",color: '#4a9bd5', icon: '💧' },
-  camp:       { label: 'Campement',  color: '#d57b30', icon: '🔥' },
-  quest:      { label: 'Objectif',   color: '#f1c40f', icon: '❗' },
-  npc:        { label: 'PNJ',        color: '#b0f0b0', icon: '👤' },
-  other:      { label: 'Lieu',       color: '#7ed87e', icon: '📍' },
+  settlement: { label: 'Maison / Colonie', color: '#5dbe5d', icon: _pic('<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/>') },
+  danger:     { label: 'Danger',     color: '#e04040', icon: _pic('<path d="M12 3L22 20H2z"/><path d="M12 9v5"/><path d="M12 17.3v.2"/>') },
+  faction:    { label: 'QG Faction', color: '#4a7ba6', icon: _pic('<path d="M6 3v18"/><path d="M6 4h12l-3 3 3 3H6"/>') },
+  loot:       { label: 'Cache',      color: '#c8923a', icon: _pic('<path d="M4 8h16v11H4z"/><path d="M4 8l1.5-3h13L20 8"/><path d="M12 8v11"/><path d="M10 12h4"/>') },
+  trader:     { label: 'Marchand (caps)', color: '#e8a820', icon: _pic('<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.4"/>') },
+  water:      { label: "Point d'eau",color: '#4a9bd5', icon: _pic('<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>') },
+  camp:       { label: 'Campement',  color: '#d57b30', icon: _pic('<path d="M3 20L12 5l9 15z"/><path d="M12 5v15"/><path d="M9 20l3-5 3 5"/>') },
+  quest:      { label: 'Objectif',   color: '#f1c40f', icon: _pic('<path d="M12 2.5l2.9 6 6.6.6-5 4.4 1.5 6.4L12 16.6 6 19.9l1.5-6.4-5-4.4 6.6-.6z"/>') },
+  npc:        { label: 'PNJ',        color: '#b0f0b0', icon: _pic('<circle cx="12" cy="8" r="3.5"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/>') },
+  other:      { label: 'Lieu',       color: '#7ed87e', icon: _pic('<path d="M12 21s7-7.2 7-12a7 7 0 1 0-14 0c0 4.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.4"/>') },
 };
 
 const VARIATION_LABELS = { irradiated: 'Irradiée', abandoned: 'Abandonnée', occupied: 'Occupée', dark: 'Sombre', flooded: 'Inondée' };
@@ -1339,7 +1343,7 @@ function centerOnToken(id) {
 function buildPoiPicker(){
   const el = document.getElementById('poi-picker'); if (!el) return;
   el.innerHTML = Object.entries(POI_TYPES).map(([k,t]) =>
-    `<button class="poi-pick" id="poi-pick-${k}" title="${t.label}" onclick="startAddPOI('${k}')">
+    `<button class="poi-pick" id="poi-pick-${k}" title="${t.label}" onclick="startAddPOI('${k}')" style="color:${t.color}">
        <span class="pp-ic">${t.icon}</span></button>`).join('');
   updatePoiPicker();
 }
