@@ -1,0 +1,62 @@
+rules_version = '2';
+
+// ============================================================
+// Fallout Paris — Règles de sécurité Firestore
+// ------------------------------------------------------------
+// CONTEXTE : l'app n'a PAS d'authentification Firebase (les joueurs
+// sont identifiés par ?id dans l'URL, le MJ par un code client 1234).
+// Sans Auth, ces règles ne peuvent PAS garantir la confidentialité
+// entre joueurs : elles assurent l'INTÉGRITÉ (structure + garde-fous)
+// et empêchent la création de collections parasites / le spam.
+// Pour une vraie confidentialité des messages → activer Firebase Auth
+// (voir niveau C) + App Check (recommandé dès maintenant).
+// ============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- Helpers ----------
+    function smallEnough() {
+      // ~limite de garde-fou sur le nb de champs d'un doc (anti-abus)
+      return request.resource.data.size() < 200;
+    }
+
+    // ---------- Joueurs ----------
+    // Fiches personnages (créées/éditées par admin_perso, lues par les joueurs).
+    match /joueurs/{id} {
+      allow read: if true;
+      allow create, update: if smallEnough();
+      allow delete: if true;   // admin_perso.js supprime des persos
+    }
+
+    // ---------- Combat (collection 'combat' au singulier + doc 'current') ----------
+    match /combat/{combatId} {
+      allow read, write: if true;
+    }
+
+    // ---------- Documents fixes (un seul doc 'data'/'current' par collection) ----------
+    match /carte/{doc}      { allow read, write: if true; }
+    match /quetes/{doc}     { allow read, write: if true; }
+    match /journal/{doc}    { allow read, write: if true; }
+    match /temps/{doc}      { allow read, write: if true; }
+    match /rolls/{doc}      { allow read, write: if true; }
+    match /butin/{doc}      { allow read, write: if true; }
+    match /messagerie/{doc} { allow read, write: if true; }
+
+    // ---------- Messages (conversations) ----------
+    // convId = [a,b].sort().join('__'). Historique dans {msgs:[{from,text,ts}]}.
+    match /messages/{convId} {
+      allow read: if true;
+      // msgs doit rester une liste de taille raisonnable (anti-flood / quota)
+      allow create, update: if request.resource.data.msgs is list
+                            && request.resource.data.msgs.size() < 2000;
+      allow delete: if false;  // on ne supprime pas un historique côté client
+    }
+
+    // ---------- Tout le reste : INTERDIT ----------
+    // Empêche la création de collections/documents non prévus.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
