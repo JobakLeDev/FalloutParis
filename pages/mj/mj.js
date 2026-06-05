@@ -325,7 +325,7 @@ function addParty(){
   tempsData.parties.push({ id: uidParty(), name: 'Groupe ' + n, players: [], minutes: TEMPS_DEFAUT, solo:false });
   saveTemps(); renderParties();
 }
-function delParty(id){ if(confirm('Supprimer ce groupe ? Ses membres redeviennent individuels.')){ tempsData.parties = tempsData.parties.filter(p=>p.id!==id); saveTemps(); renderParties(); } }
+function delParty(id){ if(confirm('Supprimer ce groupe ? Ses membres redeviennent individuels.')){ const nom=findParty(id)?.name||'Groupe'; tempsData.parties = tempsData.parties.filter(p=>p.id!==id); saveTemps(); renderParties(); logAction(`Groupe « ${nom} » dissous`); } }
 function setPartyName(id,v){ const p=findParty(id); if(p){ p.name=v; saveTemps(); } }
 function avanceParty(id,delta){ const p=findParty(id); if(!p) return; p.minutes = Math.max(0,(p.minutes||0)+(parseInt(delta)||0)); saveTemps(); renderParties(); }
 function reglerDateParty(id){
@@ -347,12 +347,13 @@ function addPlayerToParty(targetId,pid){
   if(!pid) return; _detach(pid);
   const t = findParty(targetId); if(t) t.players.push(pid);
   saveTemps(); renderParties();
+  if(t) logAction(`${joueurs[pid]?.nom||pid} rejoint le groupe « ${t.name||'Groupe'} »`);
 }
-function rmPlayerFromParty(id,pid){ const p=findParty(id); if(!p) return; p.players=(p.players||[]).filter(x=>x!==pid); saveTemps(); renderParties(); }
+function rmPlayerFromParty(id,pid){ const p=findParty(id); if(!p) return; p.players=(p.players||[]).filter(x=>x!==pid); saveTemps(); renderParties(); logAction(`${joueurs[pid]?.nom||pid} quitte le groupe « ${p.name||'Groupe'} »`); }
 // Grouper un joueur solo : vers un groupe existant (val=id) ou nouveau groupe (val='new')
 function groupSolo(pid,val){
   if(!val) return;
-  if(val==='new'){ _detach(pid); tempsData.parties.push({ id:uidParty(), name:'Groupe '+(tempsData.parties.filter(p=>!p.solo).length+1), players:[pid], minutes:TEMPS_DEFAUT, solo:false }); saveTemps(); renderParties(); }
+  if(val==='new'){ const nom='Groupe '+(tempsData.parties.filter(p=>!p.solo).length+1); _detach(pid); tempsData.parties.push({ id:uidParty(), name:nom, players:[pid], minutes:TEMPS_DEFAUT, solo:false }); saveTemps(); renderParties(); logAction(`${joueurs[pid]?.nom||pid} placé dans un nouveau groupe « ${nom} »`); }
   else addPlayerToParty(val,pid);
 }
 
