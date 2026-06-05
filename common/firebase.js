@@ -261,6 +261,7 @@ function _syncConvWatchers(){
       // si la conversation est ouverte, on considère le contenu comme lu
       if(_activeConv && _convId(JOUEUR_ID, _activeConv) === cid){ _msgRead[cid] = Math.max(_msgRead[cid]||0, _convLatest[cid]); _saveMsgRead(); }
       updateMsgIcon();
+      if(document.getElementById('mo-msg')?.classList.contains('on')) renderContacts();
     }, (e)=>console.warn('conv-watch:', e && e.code));
   });
 }
@@ -280,7 +281,9 @@ function renderContacts(){
   el.innerHTML = contacts.map(id => {
     const nom = _allJoueurs[id]?.nom || id;
     const on = _activeConv === id;
-    return `<button class="msg-contact${on?' on':''}" onclick="openConv('${id}')">${esc(nom)}</button>`;
+    const cid = _convId(JOUEUR_ID, id);
+    const unread = (_convLatest[cid]||0) > (_msgRead[cid]||0);
+    return `<button class="msg-contact${on?' on':''}${unread?' unread':''}" onclick="openConv('${id}')">${esc(nom)}${unread?'<span class="msg-contact-dot"></span>':''}</button>`;
   }).join('');
 }
 function esc(s){ return (s==null?'':''+s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
