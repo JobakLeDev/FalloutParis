@@ -187,3 +187,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .pm-none{font-size:8px;color:var(--td);}
 .pm-add{background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:8px;padding:3px;outline:none;}
 .unassigned-lbl{font-size:8px;color:var(--td);margin-top:6px;}
+
+/* Cartes solo (joueurs individuels) */
+.solo-lbl{font-size:8px;letter-spacing:2px;color:var(--td);text-transform:uppercase;margin:8px 0 4px;border-top:1px solid var(--b);padding-top:6px;}
+.party-card.solo{background:#0a120a;}
+.solo-nom{font-family:'Oswald',sans-serif;font-size:13px;color:var(--tb);letter-spacing:.5px;}

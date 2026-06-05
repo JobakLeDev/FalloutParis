@@ -53,6 +53,5 @@ function fmtDateTime(min){ return fmtDateLong(min) + ' · ' + fmtHeure(min); }
 function partyMinutesFor(tempsData, pid){
   const parties = (tempsData && Array.isArray(tempsData.parties)) ? tempsData.parties : [];
   const p = parties.find(x => (x.players || []).includes(pid));
-  if (p) return p.minutes || 0;
-  return parties.length ? (parties[0].minutes || 0) : TEMPS_DEFAUT;
+  return p ? (p.minutes || 0) : TEMPS_DEFAUT;   // non groupé → son propre temps par défaut
 }

@@ -218,16 +218,30 @@ function renderButin(){
 let tempsData = { parties: [] };
 function uidParty(){ return 'p' + Date.now().toString(36) + Math.floor(Math.random()*99); }
 function saveTemps(){ if(db) db.collection('temps').doc('data').set(tempsData).catch(e=>console.error('saveTemps',e)); }
+function findParty(id){ return (tempsData.parties||[]).find(p => p.id === id); }
+
+// Chaque joueur a une ligne de temps individuelle par défaut (groupe "solo" auto-créé).
+// Un GROUPE explicite (solo:false) sert à synchroniser plusieurs joueurs.
+function ensureSoloParties(){
+  tempsData.parties = tempsData.parties || [];
+  const assigned = new Set(); tempsData.parties.forEach(p => (p.players||[]).forEach(id => assigned.add(id)));
+  const orphans = Object.keys(joueurs).filter(id => !assigned.has(id));
+  if(orphans.length){
+    orphans.forEach(id => tempsData.parties.push({ id: uidParty(), name: joueurs[id]?.nom||id, players:[id], minutes: TEMPS_DEFAUT, solo:true }));
+    saveTemps();   // converge : au prochain snapshot, plus d'orphelins
+  }
+}
 function addParty(){
   tempsData.parties = tempsData.parties || [];
-  tempsData.parties.push({ id: uidParty(), name: 'Groupe ' + (tempsData.parties.length+1), players: [], minutes: TEMPS_DEFAUT });
+  const n = tempsData.parties.filter(p=>!p.solo).length + 1;
+  tempsData.parties.push({ id: uidParty(), name: 'Groupe ' + n, players: [], minutes: TEMPS_DEFAUT, solo:false });
   saveTemps(); renderParties();
 }
-function delParty(i){ if(confirm('Supprimer ce groupe ?')){ tempsData.parties.splice(i,1); saveTemps(); renderParties(); } }
-function setPartyName(i,v){ if(tempsData.parties[i]){ tempsData.parties[i].name = v; saveTemps(); } }
-function avanceParty(i,delta){ const p=tempsData.parties[i]; if(!p) return; p.minutes = Math.max(0,(p.minutes||0)+(parseInt(delta)||0)); saveTemps(); renderParties(); }
-function reglerDateParty(i){
-  const p=tempsData.parties[i]; if(!p) return;
+function delParty(id){ if(confirm('Supprimer ce groupe ? Ses membres redeviennent individuels.')){ tempsData.parties = tempsData.parties.filter(p=>p.id!==id); saveTemps(); renderParties(); } }
+function setPartyName(id,v){ const p=findParty(id); if(p){ p.name=v; saveTemps(); } }
+function avanceParty(id,delta){ const p=findParty(id); if(!p) return; p.minutes = Math.max(0,(p.minutes||0)+(parseInt(delta)||0)); saveTemps(); renderParties(); }
+function reglerDateParty(id){
+  const p=findParty(id); if(!p) return;
   const cur = tempsDate(p.minutes);
   const ds = prompt('Date (JJ/MM/AAAA) :', `${cur.getDate()}/${cur.getMonth()+1}/${cur.getFullYear()}`); if(ds==null) return;
   const dm = ds.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/); if(!dm){ showMsg('Format date invalide',true); return; }
@@ -237,56 +251,73 @@ function reglerDateParty(i){
   p.minutes = Math.max(0, tempsMinutesDepuis(nd));
   saveTemps(); renderParties();
 }
-function addPlayerToParty(i,pid){
-  if(!pid || !tempsData.parties[i]) return;
-  tempsData.parties.forEach(p => { p.players = (p.players||[]).filter(x=>x!==pid); }); // un seul groupe par joueur
-  tempsData.parties[i].players.push(pid);
+function _detach(pid){   // retire le joueur de toutes les parties + nettoie les solos vides
+  tempsData.parties.forEach(p => p.players = (p.players||[]).filter(x=>x!==pid));
+  tempsData.parties = tempsData.parties.filter(p => !(p.solo && (p.players||[]).length===0));
+}
+function addPlayerToParty(targetId,pid){
+  if(!pid) return; _detach(pid);
+  const t = findParty(targetId); if(t) t.players.push(pid);
   saveTemps(); renderParties();
 }
-function rmPlayerFromParty(i,pid){ const p=tempsData.parties[i]; if(!p) return; p.players=(p.players||[]).filter(x=>x!==pid); saveTemps(); renderParties(); }
+function rmPlayerFromParty(id,pid){ const p=findParty(id); if(!p) return; p.players=(p.players||[]).filter(x=>x!==pid); saveTemps(); renderParties(); }
+// Grouper un joueur solo : vers un groupe existant (val=id) ou nouveau groupe (val='new')
+function groupSolo(pid,val){
+  if(!val) return;
+  if(val==='new'){ _detach(pid); tempsData.parties.push({ id:uidParty(), name:'Groupe '+(tempsData.parties.filter(p=>!p.solo).length+1), players:[pid], minutes:TEMPS_DEFAUT, solo:false }); saveTemps(); renderParties(); }
+  else addPlayerToParty(val,pid);
+}
 
+function clockBtns(p){
+  return `<div class="clock-btns">
+    <button class="clock-btn" onclick="avanceParty('${p.id}',-60)">−1h</button>
+    <button class="clock-btn" onclick="avanceParty('${p.id}',60)">+1h</button>
+    <button class="clock-btn" onclick="avanceParty('${p.id}',720)">+12h</button>
+    <button class="clock-btn" onclick="avanceParty('${p.id}',1440)">+1J</button>
+    <input type="number" class="clock-x" id="px-${p.id}" value="2" min="1" title="X">
+    <button class="clock-btn" onclick="avanceParty('${p.id}',(parseInt(document.getElementById('px-${p.id}').value)||1)*60)">+Xh</button>
+    <button class="clock-btn" onclick="avanceParty('${p.id}',(parseInt(document.getElementById('px-${p.id}').value)||1)*1440)">+XJ</button>
+    <button class="clock-mini" onclick="reglerDateParty('${p.id}')">Régler…</button>
+  </div>`;
+}
 function renderParties(){
   const el = document.getElementById('parties-list'); if(!el) return;
-  const parties = tempsData.parties || [];
-  const assigned = new Set(); parties.forEach(p => (p.players||[]).forEach(id => assigned.add(id)));
-  if(!parties.length){
-    el.innerHTML = '<div class="empty" style="font-size:9px;color:var(--td);padding:8px">Aucun groupe — clique « + Groupe » pour démarrer.</div>';
-  } else {
-    el.innerHTML = parties.map((p,i) => {
-      const members = (p.players||[]).map(id =>
-        `<span class="pm-chip">${joueurs[id]?.nom||id}<button onclick="rmPlayerFromParty(${i},'${id}')">✕</button></span>`).join('') || '<span class="pm-none">aucun membre</span>';
-      const others = Object.keys(joueurs).filter(id => !(p.players||[]).includes(id));
-      const addSel = others.length ? `<select class="pm-add" onchange="addPlayerToParty(${i},this.value);this.value=''">
-        <option value="">+ joueur…</option>${others.map(id=>`<option value="${id}">${joueurs[id]?.nom||id}</option>`).join('')}</select>` : '';
-      return `<div class="party-card">
-        <div class="party-head">
-          <input class="party-name" value="${(p.name||'').replace(/"/g,'&quot;')}" onchange="setPartyName(${i},this.value)">
-          <button class="party-del" onclick="delParty(${i})">✕</button>
-        </div>
-        <div class="party-date">📅 ${fmtDateLong(p.minutes)}</div>
-        <div class="party-time">🕐 ${fmtHeure(p.minutes)}</div>
-        <div class="clock-btns">
-          <button class="clock-btn" onclick="avanceParty(${i},-60)">−1h</button>
-          <button class="clock-btn" onclick="avanceParty(${i},60)">+1h</button>
-          <button class="clock-btn" onclick="avanceParty(${i},720)">+12h</button>
-          <button class="clock-btn" onclick="avanceParty(${i},1440)">+1J</button>
-          <input type="number" class="clock-x" id="px-${i}" value="2" min="1" title="X">
-          <button class="clock-btn" onclick="avanceParty(${i},(parseInt(document.getElementById('px-${i}').value)||1)*60)">+Xh</button>
-          <button class="clock-btn" onclick="avanceParty(${i},(parseInt(document.getElementById('px-${i}').value)||1)*1440)">+XJ</button>
-          <button class="clock-mini" onclick="reglerDateParty(${i})">Régler…</button>
-        </div>
-        <div class="party-members">${members} ${addSel}</div>
+  ensureSoloParties();
+  const groups = (tempsData.parties||[]).filter(p=>!p.solo);
+  const solos  = (tempsData.parties||[]).filter(p=>p.solo);
+  let h = '';
+  groups.forEach(p => {
+    const members = (p.players||[]).map(id =>
+      `<span class="pm-chip">${joueurs[id]?.nom||id}<button onclick="rmPlayerFromParty('${p.id}','${id}')">✕</button></span>`).join('') || '<span class="pm-none">aucun membre</span>';
+    const others = Object.keys(joueurs).filter(id => !(p.players||[]).includes(id));
+    const addSel = others.length ? `<select class="pm-add" onchange="addPlayerToParty('${p.id}',this.value);this.value=''">
+      <option value="">+ joueur…</option>${others.map(id=>`<option value="${id}">${joueurs[id]?.nom||id}</option>`).join('')}</select>` : '';
+    h += `<div class="party-card">
+      <div class="party-head">
+        <input class="party-name" value="${(p.name||'').replace(/"/g,'&quot;')}" onchange="setPartyName('${p.id}',this.value)">
+        <button class="party-del" onclick="delParty('${p.id}')">✕</button>
+      </div>
+      <div class="party-date">📅 ${fmtDateLong(p.minutes)}</div>
+      <div class="party-time">🕐 ${fmtHeure(p.minutes)}</div>
+      ${clockBtns(p)}
+      <div class="party-members">${members} ${addSel}</div>
+    </div>`;
+  });
+  if(solos.length){
+    h += '<div class="solo-lbl">Joueurs individuels</div>';
+    solos.forEach(p => {
+      const pid = (p.players||[])[0];
+      const grpOpts = groups.map(g=>`<option value="${g.id}">→ ${g.name||'Groupe'}</option>`).join('');
+      h += `<div class="party-card solo">
+        <div class="party-head"><span class="solo-nom">🧍 ${joueurs[pid]?.nom||pid}</span></div>
+        <div class="party-date">📅 ${fmtDateLong(p.minutes)} · <span style="color:var(--am)">${fmtHeure(p.minutes)}</span></div>
+        ${clockBtns(p)}
+        <div class="party-members"><select class="pm-add" onchange="groupSolo('${pid}',this.value);this.value=''"><option value="">grouper…</option>${grpOpts}<option value="new">+ Nouveau groupe</option></select></div>
       </div>`;
-    }).join('');
+    });
   }
-  // joueurs non assignés
-  const un = document.getElementById('unassigned-players');
-  if(un){
-    const orphans = Object.keys(joueurs).filter(id => !assigned.has(id));
-    un.innerHTML = orphans.length
-      ? `<div class="unassigned-lbl">Non groupés : ${orphans.map(id=>`<span class="pm-chip orphan">${joueurs[id]?.nom||id}</span>`).join(' ')}</div>`
-      : '';
-  }
+  el.innerHTML = h || '<div class="empty" style="font-size:9px;color:var(--td);padding:8px">Aucun joueur.</div>';
+  const un = document.getElementById('unassigned-players'); if(un) un.innerHTML = '';
 }
 
 // ============================================================
