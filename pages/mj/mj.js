@@ -101,6 +101,91 @@ function startSync(){
     if(s.exists && typeof s.data().minutes === 'number') tempsMin = s.data().minutes;
     renderClock();
   });
+  populateLootCats();
+  db.collection('butin').doc('data').onSnapshot(s => {
+    const d = s.exists ? s.data() : {};
+    butinData = { items: Array.isArray(d.items) ? d.items : [], caps: d.caps || 0 };
+    renderButin();
+  });
+}
+
+// ============================================================
+// BUTIN / FOUILLE (générateur MJ → pool partagé Firebase /butin/data)
+// ============================================================
+let butinData = { items: [], caps: 0 };
+const LOOT_CATS = [
+  {k:'weapons',l:'Armes'},{k:'armor',l:'Armure'},{k:'ammo',l:'Munitions'},
+  {k:'food',l:'Nourriture'},{k:'drinks',l:'Boissons'},{k:'drugs',l:'Chems'},
+  {k:'stuff',l:'Divers'},{k:'caps',l:'Caps'},
+];
+const CAT_ICON = {weapons:'🔫',armor:'🛡',ammo:'▪',food:'🍖',drinks:'🥤',drugs:'💊',stuff:'🔧'};
+
+function populateLootCats(){
+  const el = document.getElementById('loot-cats'); if(!el) return;
+  el.innerHTML = LOOT_CATS.map(c =>
+    `<label class="loot-cat"><input type="checkbox" class="loot-cat-cb" value="${c.k}" checked> ${c.l}</label>`
+  ).join('');
+}
+function lootSource(cat){ return ({weapons:DB.weapons,armor:DB.armor,food:DB.food,drinks:DB.drinks,drugs:DB.drugs,stuff:DB.stuff})[cat] || []; }
+// Tirage pondéré par rareté (commun r1 = plus fréquent, légendaire r5 = rare)
+function weightedPick(list){
+  let tot=0; const w=list.map(it=>{ const x=Math.max(1,6-(it.r||3)); tot+=x; return x; });
+  let r=Math.random()*tot;
+  for(let i=0;i<list.length;i++){ r-=w[i]; if(r<=0) return list[i]; }
+  return list[list.length-1];
+}
+// Munitions : jet 2D20 sur la table officielle AMMO_LOOT → {ammo, qty}
+function rollAmmoLoot(){
+  const tbl = window.AMMO_LOOT; if(!tbl||!tbl.length) return null;
+  const roll = (1+Math.floor(Math.random()*20)) + (1+Math.floor(Math.random()*20));
+  const e = tbl.find(x => roll>=x.min && roll<=x.max); if(!e) return null;
+  let q = e.base||0;
+  for(let i=0;i<(e.cd||0);i++) q += parseInt(FACES_CD[Math.floor(Math.random()*6)])||0;
+  return { ammo: e.ammo, qty: Math.max(1, q*(e.mult||1)) };
+}
+function addToPool(item){
+  butinData.items = butinData.items || [];
+  const ex = butinData.items.find(x => x.name===item.name && x.cat===item.cat);
+  if(ex) ex.qty += item.qty;
+  else { item.id = 'b'+Date.now().toString(36)+Math.floor(Math.random()*999); butinData.items.push(item); }
+}
+function saveButin(){ if(db) db.collection('butin').doc('data').set(butinData).catch(e=>console.error('saveButin',e)); }
+function genButin(){
+  const scale = parseInt(document.getElementById('loot-scale').value)||2;
+  const ranges = {1:[1,2],2:[2,4],3:[4,6],4:[6,10]};
+  const [mn,mx] = ranges[scale] || [2,4];
+  const rolls = mn + Math.floor(Math.random()*(mx-mn+1));
+  const cats = [...document.querySelectorAll('.loot-cat-cb:checked')].map(c=>c.value);
+  const itemCats = cats.filter(c=>c!=='caps');
+  let added = 0;
+  for(let i=0;i<rolls && itemCats.length;i++){
+    const cat = itemCats[Math.floor(Math.random()*itemCats.length)];
+    if(cat==='ammo'){ const a=rollAmmoLoot(); if(a){ addToPool({name:a.ammo,type:'AMMO',cat:'ammo',qty:a.qty}); added++; } continue; }
+    const src = lootSource(cat); if(!src.length) continue;
+    const it = weightedPick(src);
+    addToPool({name:it.n, type:it.t||cat, cat, qty:1, w:it.w||0, r:it.r||3});
+    added++;
+  }
+  if(cats.includes('caps')){
+    const caps = scale * ((1+Math.floor(Math.random()*20)) + (1+Math.floor(Math.random()*20)));
+    butinData.caps = (butinData.caps||0) + caps;
+  }
+  saveButin();
+  showMsg(`🎒 Butin généré — ${added} objet(s)${cats.includes('caps')?' + caps':''}`);
+}
+function rmButin(i){ butinData.items.splice(i,1); saveButin(); }
+function clearButin(){ if(confirm('Vider le pool de butin ?')){ butinData = {items:[],caps:0}; saveButin(); } }
+function chButinCaps(d){ butinData.caps = Math.max(0,(butinData.caps||0)+d); saveButin(); }
+function renderButin(){
+  const el = document.getElementById('butin-pool'); if(!el) return;
+  const items = butinData.items||[], caps = butinData.caps||0;
+  let h = `<div class="butin-caps">💰 Caps : <b>${caps}</b> <button class="bp-mini" onclick="chButinCaps(-10)">−10</button><button class="bp-mini" onclick="chButinCaps(10)">+10</button><button class="bp-mini" onclick="chButinCaps(-${caps})">0</button></div>`;
+  if(!items.length){ h += '<div class="empty" style="font-size:8px;color:var(--td);padding:6px">Pool vide</div>'; }
+  else {
+    h += items.map((it,i)=>`<div class="bp-row"><span class="bp-cat">${CAT_ICON[it.cat]||'▪'}</span><span class="bp-nom">${it.name}${it.qty>1?' <b>×'+it.qty+'</b>':''}</span><button class="bp-del" onclick="rmButin(${i})">✕</button></div>`).join('');
+    h += `<button class="bp-clear" onclick="clearButin()">Vider le pool</button>`;
+  }
+  el.innerHTML = h;
 }
 
 // ============================================================
