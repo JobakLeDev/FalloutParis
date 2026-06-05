@@ -82,7 +82,7 @@ let curTab='general', curInv='all';
 
 function sw(tab){
   document.querySelectorAll('.tab').forEach((el,i)=>{
-    el.classList.toggle('on',['general','inventaire','perks','carte','quetes','journal'][i]===tab);
+    el.classList.toggle('on',['general','inventaire','perks','carte','quetes','journal','butin'][i]===tab);
   });
   document.querySelectorAll('.tc').forEach(el=>el.classList.remove('on'));
   const tc=document.getElementById('tc-'+tab);
@@ -113,6 +113,15 @@ function sw(tab){
       f.src='../journal/journal.html?id='+encodeURIComponent(id)+'&embed=1';
     } else if(f && f.contentWindow){
       f.contentWindow.postMessage('journal-refresh','*');
+    }
+  }
+  // Charger le butin (iframe) ; sinon rafraîchir
+  if(tab==='butin'){
+    const f=document.getElementById('butin-frame');
+    if(f && !f.src){
+      f.src='../butin/butin.html?id='+encodeURIComponent(id)+'&embed=1';
+    } else if(f && f.contentWindow){
+      f.contentWindow.postMessage('butin-refresh','*');
     }
   }
   curTab=tab; rAll();

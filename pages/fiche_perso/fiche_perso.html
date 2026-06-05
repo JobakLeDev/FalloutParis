@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fallout Paris — Fiche Personnage</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../../common/style.css?v=8">
-  <link rel="stylesheet" href="fiche_perso.css?v=8">
+  <link rel="stylesheet" href="../../common/style.css?v=9">
+  <link rel="stylesheet" href="fiche_perso.css?v=9">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
@@ -43,6 +43,7 @@
   <div class="tab" onclick="sw('carte')">CARTE</div>
   <div class="tab" onclick="sw('quetes')">QUÊTES</div>
   <div class="tab" onclick="sw('journal')">JOURNAL</div>
+  <div class="tab" onclick="sw('butin')">BUTIN</div>
 </div>
 
 <div class="body">
@@ -227,6 +228,11 @@
   <iframe id="quetes-frame" title="Quêtes"></iframe>
 </div>
 
+<!-- BUTIN -->
+<div class="tc" id="tc-butin">
+  <iframe id="butin-frame" title="Butin"></iframe>
+</div>
+
 <!-- JOURNAL -->
 <div class="tc" id="tc-journal">
   <iframe id="journal-frame" title="Journal"></iframe>
@@ -279,9 +285,9 @@
   </div>
 </div>
 
-  <script src="../../common/shared.js?v=8"></script>
-  <script src="../../common/db.js?v=8"></script>
-  <script src="fiche_perso.js?v=8"></script>
-  <script src="../../common/firebase.js?v=8"></script>
+  <script src="../../common/shared.js?v=9"></script>
+  <script src="../../common/db.js?v=9"></script>
+  <script src="fiche_perso.js?v=9"></script>
+  <script src="../../common/firebase.js?v=9"></script>
 </body>
 </html>

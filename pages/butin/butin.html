@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fallout Paris — Butin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../common/style.css">
+  <link rel="stylesheet" href="butin.css?v=1">
+</head>
+<body>
+
+  <div class="bhdr">
+    <div class="bhdr-title">🎒 BUTIN PARTAGÉ<small id="bhdr-mode">Vue joueur</small></div>
+    <a class="bbtn" href="../mj/mj.html">← MJ</a>
+  </div>
+
+  <div class="b-caps" id="b-caps"></div>
+  <div id="butin-list"><div class="b-empty">Chargement…</div></div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="../../common/shared.js"></script>
+  <script src="../../common/db.js"></script>
+  <script src="butin.js?v=1"></script>
+</body>
+</html>
