@@ -94,6 +94,7 @@ function startSync(){
     renderJoueurs();
     if(typeof renderParties==='function') renderParties();
     if(typeof renderLootAccess==='function') renderLootAccess();
+    if(typeof populateContactSelects==='function'){ populateContactSelects(); renderContactsList(); }
   });
   populateZoneSelectors();
   populatePublicSkillSel();
@@ -111,6 +112,44 @@ function startSync(){
     renderButin();
     renderLootAccess();
   });
+  db.collection('messagerie').doc('data').onSnapshot(s => {
+    const d = s.exists ? s.data() : {};
+    msgLinks = (d.links && typeof d.links === 'object') ? d.links : {};
+    renderContactsList();
+  });
+}
+
+// ============================================================
+// MESSAGERIE — contacts (échange de numéros) /messagerie/data {links:{id:[ids]}}
+// ============================================================
+let msgLinks = {};
+function populateContactSelects(){
+  const ids = Object.keys(joueurs);
+  const opts = '<option value="">— joueur —</option>' + ids.map(id=>`<option value="${id}">${joueurs[id]?.nom||id}</option>`).join('');
+  ['contact-a','contact-b'].forEach(s => { const el=document.getElementById(s); if(el) el.innerHTML = opts; });
+}
+function saveLinks(){ if(db) db.collection('messagerie').doc('data').set({links:msgLinks}).catch(e=>console.error('saveLinks',e)); }
+function _link(a,b){ msgLinks[a]=msgLinks[a]||[]; if(!msgLinks[a].includes(b)) msgLinks[a].push(b); }
+function lierContacts(){
+  const a=document.getElementById('contact-a').value, b=document.getElementById('contact-b').value;
+  if(!a||!b||a===b){ showMsg('Choisis deux joueurs différents',true); return; }
+  _link(a,b); _link(b,a); saveLinks(); renderContactsList();
+  showMsg('📟 '+(joueurs[a]?.nom||a)+' ↔ '+(joueurs[b]?.nom||b)+' — numéros échangés');
+}
+function delierContacts(a,b){
+  if(msgLinks[a]) msgLinks[a]=msgLinks[a].filter(x=>x!==b);
+  if(msgLinks[b]) msgLinks[b]=msgLinks[b].filter(x=>x!==a);
+  saveLinks(); renderContactsList();
+}
+function renderContactsList(){
+  const el = document.getElementById('contacts-list'); if(!el) return;
+  const pairs = []; const seen = new Set();
+  Object.keys(msgLinks).forEach(a => (msgLinks[a]||[]).forEach(b => {
+    const k = [a,b].sort().join('__'); if(seen.has(k)) return; seen.add(k); pairs.push([a,b]);
+  }));
+  el.innerHTML = pairs.length
+    ? pairs.map(([a,b]) => `<div class="contact-row"><span>${joueurs[a]?.nom||a} ↔ ${joueurs[b]?.nom||b}</span><button class="bp-del" onclick="delierContacts('${a}','${b}')">✕</button></div>`).join('')
+    : '<div class="empty" style="font-size:8px;color:var(--td);padding:6px">Aucun contact établi</div>';
 }
 
 // ============================================================

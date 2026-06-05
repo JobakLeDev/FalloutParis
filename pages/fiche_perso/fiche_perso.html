@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fallout Paris — Fiche Personnage</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../../common/style.css?v=13">
-  <link rel="stylesheet" href="fiche_perso.css?v=13">
+  <link rel="stylesheet" href="../../common/style.css?v=14">
+  <link rel="stylesheet" href="fiche_perso.css?v=14">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
@@ -26,6 +26,8 @@
     <div class="mini-hp">PV <b id="mini-hp">3/13</b></div>
     <div class="mini-rad-lbl">RAD <b id="mini-rad">0</b></div>
     <div class="mini-rad-lbl" style="color:var(--am)">LUCK <b id="mini-luck" style="font-family:'Oswald',sans-serif;font-size:13px">0</b>/<span id="mini-luck-max" style="font-size:9px">5</span></div>
+    <img id="msg-icon" src="../../img/messagerie.png" alt="Messagerie" title="Messagerie" onclick="openMsg()">
+    <span id="msg-badge" style="display:none">0</span>
     <div class="bdgs" id="bdgs"></div>
   </div>
 </div>
@@ -262,6 +264,24 @@
 </div>
 
 
+<!-- MODALE MESSAGERIE -->
+<div class="mo" id="mo-msg">
+  <div class="mbox msg-box">
+    <div class="msg-head"><span>📟 PIP-MESSAGER</span><button class="btn" onclick="closeMo('mo-msg')">✕</button></div>
+    <div class="msg-body">
+      <div class="msg-contacts" id="msg-contacts"></div>
+      <div class="msg-conv">
+        <div class="msg-conv-head" id="msg-conv-head"></div>
+        <div class="msg-list" id="msg-list"><div class="msg-empty">Sélectionne un contact</div></div>
+        <div class="msg-input" id="msg-input-row" style="display:none">
+          <input id="msg-text" placeholder="Écrire un message…" maxlength="500" onkeydown="if(event.key==='Enter')sendMsg()">
+          <button onclick="sendMsg()">Envoyer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- MODALE BUTIN -->
 <div class="mo" id="mo-loot">
   <div class="mbox" style="width:42rem;max-width:94vw;padding:0;overflow:hidden">
@@ -297,9 +317,9 @@
   </div>
 </div>
 
-  <script src="../../common/shared.js?v=13"></script>
-  <script src="../../common/db.js?v=13"></script>
-  <script src="fiche_perso.js?v=13"></script>
-  <script src="../../common/firebase.js?v=13"></script>
+  <script src="../../common/shared.js?v=14"></script>
+  <script src="../../common/db.js?v=14"></script>
+  <script src="fiche_perso.js?v=14"></script>
+  <script src="../../common/firebase.js?v=14"></script>
 </body>
 </html>

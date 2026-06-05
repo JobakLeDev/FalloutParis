@@ -141,6 +141,11 @@ function startSync() {
       (err) => console.warn('temps indisponible:', err && err.code)
     );
   } catch(e){ console.warn('temps listener KO:', e); }
+  // Messagerie — noms des joueurs + contacts (numéros échangés)
+  try {
+    db.collection('joueurs').onSnapshot((s) => { _allJoueurs = {}; s.forEach(d => _allJoueurs[d.id] = d.data()); if (document.getElementById('mo-msg')?.classList.contains('on')) renderContacts(); });
+    db.collection('messagerie').doc('data').onSnapshot((s) => { const d = s.exists ? s.data() : {}; _msgLinks = (d.links && typeof d.links === 'object') ? d.links : {}; updateMsgIcon(); if (document.getElementById('mo-msg')?.classList.contains('on')) renderContacts(); });
+  } catch(e){ console.warn('messagerie listener KO:', e); }
 }
 
 // ============================================================
@@ -226,6 +231,67 @@ function renderFicheClock(d){
   if(typeof partyMinutesFor !== 'function'){ el.textContent=''; return; }
   const m = partyMinutesFor(d, JOUEUR_ID);
   el.textContent = '📅 ' + fmtDateTime(m);
+}
+
+// ============================================================
+// MESSAGERIE (PIP-MESSAGER) — contacts via /messagerie/data, historique /messages/{convId}
+// ============================================================
+let _allJoueurs = {};
+let _msgLinks = {};
+let _activeConv = null;     // id du contact courant
+let _convUnsub = null;
+function _convId(a, b){ return [a, b].sort().join('__'); }
+function _myContacts(){ return Array.isArray(_msgLinks[JOUEUR_ID]) ? _msgLinks[JOUEUR_ID] : []; }
+function updateMsgIcon(){
+  const ic = document.getElementById('msg-icon'); if(!ic) return;
+  ic.style.display = _myContacts().length ? 'inline-block' : 'inline-block';   // toujours visible
+}
+function openMsg(){
+  const mo = document.getElementById('mo-msg'); if(!mo) return;
+  renderContacts();
+  mo.classList.add('on');
+}
+function renderContacts(){
+  const el = document.getElementById('msg-contacts'); if(!el) return;
+  const contacts = _myContacts();
+  if(!contacts.length){ el.innerHTML = '<div class="msg-empty">Aucun contact. Échange ton numéro avec quelqu\'un (via le MJ).</div>'; return; }
+  el.innerHTML = contacts.map(id => {
+    const nom = _allJoueurs[id]?.nom || id;
+    const on = _activeConv === id;
+    return `<button class="msg-contact${on?' on':''}" onclick="openConv('${id}')">${esc(nom)}</button>`;
+  }).join('');
+}
+function esc(s){ return (s==null?'':''+s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function openConv(otherId){
+  _activeConv = otherId;
+  renderContacts();
+  document.getElementById('msg-conv-head').textContent = '💬 ' + (_allJoueurs[otherId]?.nom || otherId);
+  document.getElementById('msg-input-row').style.display = 'flex';
+  if(_convUnsub){ _convUnsub(); _convUnsub = null; }
+  _convUnsub = db.collection('messages').doc(_convId(JOUEUR_ID, otherId)).onSnapshot((s) => {
+    const msgs = (s.exists && Array.isArray(s.data().msgs)) ? s.data().msgs : [];
+    renderMsgs(msgs);
+  }, (e)=>console.warn('conv:', e && e.code));
+}
+function renderMsgs(msgs){
+  const el = document.getElementById('msg-list'); if(!el) return;
+  if(!msgs.length){ el.innerHTML = '<div class="msg-empty">Aucun message. Dis bonjour !</div>'; return; }
+  el.innerHTML = msgs.slice().sort((a,b)=>(a.ts||0)-(b.ts||0)).map(m => {
+    const me = m.from === JOUEUR_ID;
+    const t = new Date(m.ts||0);
+    const hh = String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0');
+    return `<div class="msg-bubble${me?' me':''}"><div class="msg-txt">${esc(m.text)}</div><div class="msg-ts">${hh}</div></div>`;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+function sendMsg(){
+  const inp = document.getElementById('msg-text'); if(!inp || !_activeConv) return;
+  const text = inp.value.trim(); if(!text) return;
+  inp.value = '';
+  const msg = { from: JOUEUR_ID, text, ts: Date.now() };
+  db.collection('messages').doc(_convId(JOUEUR_ID, _activeConv))
+    .set({ msgs: firebase.firestore.FieldValue.arrayUnion(msg) }, { merge: true })
+    .catch(e => console.error('sendMsg:', e));
 }
 
 // ---- Initialisation ----

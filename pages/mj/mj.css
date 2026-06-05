@@ -192,3 +192,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .solo-lbl{font-size:8px;letter-spacing:2px;color:var(--td);text-transform:uppercase;margin:8px 0 4px;border-top:1px solid var(--b);padding-top:6px;}
 .party-card.solo{background:#0a120a;}
 .solo-nom{font-family:'Oswald',sans-serif;font-size:13px;color:var(--tb);letter-spacing:.5px;}
+
+/* Contacts (messagerie MJ) */
+.contact-row{display:flex;justify-content:space-between;align-items:center;font-size:9px;color:var(--t);padding:3px 4px;border-bottom:1px solid var(--b);}
