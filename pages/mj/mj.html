@@ -28,6 +28,10 @@
   <div class="hdr">
     <div><div class="hdr-title">FALLOUT PARIS<small>ÉCRAN MAÎTRE DU JEU</small></div></div>
     <div class="hdr-btns">
+      <button class="hbtn mj-msg-btn" onclick="openMsgMJ()" title="Messagerie joueurs" style="position:relative">
+        <img src="../../img/messagerie.png" class="mj-msg-ico" alt="">Messagerie
+        <span id="mj-msg-dot" class="mj-msg-dot" style="display:none"></span>
+      </button>
       <button class="hbtn" onclick="location.reload()">↻ Rafraîchir</button>
       <button class="hbtn" style="border-color:#e04040;color:#e04040;cursor:pointer" onclick="document.getElementById('combats-actifs').scrollIntoView({behavior:'smooth'});renderCombatsActifs()">⚔ Combats actifs</button>
       <a class="hbtn" href="../carte/carte.html">🗺 Carte</a>
@@ -287,6 +291,24 @@
 </div>
 
 <div class="msg-bar" id="msg-bar"></div>
+
+<!-- MESSAGERIE MJ -->
+<div class="mj-mo" id="mj-msg-modal">
+  <div class="mj-msg-box">
+    <div class="mj-msg-head"><span>📟 MESSAGERIE — Écrire aux joueurs</span><button class="hbtn" onclick="closeMsgMJ()">✕</button></div>
+    <div class="mj-msg-body">
+      <div class="mj-msg-contacts" id="mj-msg-contacts"></div>
+      <div class="mj-msg-conv">
+        <div class="mj-msg-conv-head" id="mj-msg-conv-head">Sélectionne un joueur</div>
+        <div class="mj-msg-list" id="mj-msg-list"><div class="msg-empty">Sélectionne un joueur à gauche.</div></div>
+        <div class="mj-msg-input" id="mj-msg-input-row" style="display:none">
+          <input id="mj-msg-text" placeholder="Écrire au joueur…" maxlength="500" onkeydown="if(event.key==='Enter')sendMsgMJ()">
+          <button onclick="sendMsgMJ()">Envoyer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>

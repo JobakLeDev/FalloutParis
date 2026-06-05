@@ -95,6 +95,7 @@ function startSync(){
     if(typeof renderParties==='function') renderParties();
     if(typeof renderLootAccess==='function') renderLootAccess();
     if(typeof populateContactSelects==='function'){ populateContactSelects(); renderContactsList(); }
+    if(typeof mjSyncWatchers==='function') mjSyncWatchers();
   });
   populateZoneSelectors();
   populatePublicSkillSel();
@@ -792,3 +793,84 @@ function renderCombatsActifs() {
 }
 
 
+
+// ============================================================
+// MESSAGERIE MJ — écrire à chaque joueur (identité 'mj')
+// ============================================================
+const MJ_ID = 'mj';
+let mjActiveConv = null;
+let mjConvUnsub = null;
+let mjConvLatest = {};   // convId -> ts du dernier message reçu (from !== mj)
+let mjConvWatch = {};    // convId -> unsub
+let mjMsgRead = (()=>{ try{ return JSON.parse(localStorage.getItem('fp_msgRead_mj')||'{}'); }catch(e){ return {}; } })();
+function mjSaveRead(){ try{ localStorage.setItem('fp_msgRead_mj', JSON.stringify(mjMsgRead)); }catch(e){} }
+function mjConvIdFor(pid){ return [MJ_ID, pid].sort().join('__'); }
+function mjEsc(s){ return (s==null?'':''+s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function mjLatestIncoming(msgs){ let t=0; (msgs||[]).forEach(m=>{ if(m && m.from!==MJ_ID && (m.ts||0)>t) t=m.ts||0; }); return t; }
+function mjHasUnread(){ return Object.keys(mjConvLatest).some(cid => (mjConvLatest[cid]||0) > (mjMsgRead[cid]||0)); }
+function mjUpdateIcon(){ const d=document.getElementById('mj-msg-dot'); if(d) d.style.display = mjHasUnread()?'block':'none'; }
+
+// (Ré)abonne une écoute légère à chaque conversation MJ↔joueur pour repérer les non-lus
+function mjSyncWatchers(){
+  const wanted = {};
+  Object.keys(joueurs).forEach(pid => { wanted[mjConvIdFor(pid)] = true; });
+  Object.keys(mjConvWatch).forEach(cid => { if(!wanted[cid]){ mjConvWatch[cid](); delete mjConvWatch[cid]; delete mjConvLatest[cid]; } });
+  Object.keys(wanted).forEach(cid => {
+    if(mjConvWatch[cid]) return;
+    mjConvWatch[cid] = db.collection('messages').doc(cid).onSnapshot((s) => {
+      const msgs = (s.exists && Array.isArray(s.data().msgs)) ? s.data().msgs : [];
+      mjConvLatest[cid] = mjLatestIncoming(msgs);
+      if(mjActiveConv && mjConvIdFor(mjActiveConv) === cid){ mjMsgRead[cid] = Math.max(mjMsgRead[cid]||0, mjConvLatest[cid]); mjSaveRead(); }
+      mjUpdateIcon();
+      if(document.getElementById('mj-msg-modal')?.classList.contains('on')) mjRenderContacts();
+    }, (e)=>console.warn('mj conv-watch:', e && e.code));
+  });
+}
+function openMsgMJ(){ const m=document.getElementById('mj-msg-modal'); if(!m) return; m.classList.add('on'); mjRenderContacts(); }
+function closeMsgMJ(){ const m=document.getElementById('mj-msg-modal'); if(m) m.classList.remove('on'); }
+function mjRenderContacts(){
+  const el = document.getElementById('mj-msg-contacts'); if(!el) return;
+  const ids = Object.keys(joueurs);
+  if(!ids.length){ el.innerHTML = '<div class="msg-empty">Aucun joueur.</div>'; return; }
+  el.innerHTML = ids.map(pid => {
+    const nom = joueurs[pid]?.nom || pid;
+    const on = mjActiveConv === pid;
+    const cid = mjConvIdFor(pid);
+    const unread = (mjConvLatest[cid]||0) > (mjMsgRead[cid]||0);
+    return `<button class="msg-contact${on?' on':''}${unread?' unread':''}" onclick="openConvMJ('${pid}')">${mjEsc(nom)}${unread?'<span class="msg-contact-dot"></span>':''}</button>`;
+  }).join('');
+}
+function openConvMJ(pid){
+  mjActiveConv = pid;
+  mjRenderContacts();
+  document.getElementById('mj-msg-conv-head').textContent = '💬 ' + (joueurs[pid]?.nom || pid);
+  document.getElementById('mj-msg-input-row').style.display = 'flex';
+  if(mjConvUnsub){ mjConvUnsub(); mjConvUnsub = null; }
+  const cid = mjConvIdFor(pid);
+  mjConvUnsub = db.collection('messages').doc(cid).onSnapshot((s) => {
+    const msgs = (s.exists && Array.isArray(s.data().msgs)) ? s.data().msgs : [];
+    mjRenderMsgs(msgs);
+    mjConvLatest[cid] = mjLatestIncoming(msgs);
+    mjMsgRead[cid] = Math.max(mjMsgRead[cid]||0, mjConvLatest[cid]); mjSaveRead(); mjUpdateIcon();
+  }, (e)=>console.warn('mj conv:', e && e.code));
+}
+function mjRenderMsgs(msgs){
+  const el = document.getElementById('mj-msg-list'); if(!el) return;
+  if(!msgs.length){ el.innerHTML = '<div class="msg-empty">Aucun message. Dis bonjour !</div>'; return; }
+  el.innerHTML = msgs.slice().sort((a,b)=>(a.ts||0)-(b.ts||0)).map(m => {
+    const me = m.from === MJ_ID;
+    const t = new Date(m.ts||0);
+    const hh = String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0');
+    return `<div class="msg-bubble${me?' me':''}"><div class="msg-txt">${mjEsc(m.text)}</div><div class="msg-ts">${hh}</div></div>`;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+function sendMsgMJ(){
+  const inp = document.getElementById('mj-msg-text'); if(!inp || !mjActiveConv) return;
+  const text = inp.value.trim(); if(!text) return;
+  inp.value = '';
+  const msg = { from: MJ_ID, text, ts: Date.now() };
+  db.collection('messages').doc(mjConvIdFor(mjActiveConv))
+    .set({ msgs: firebase.firestore.FieldValue.arrayUnion(msg) }, { merge: true })
+    .catch(e => console.error('sendMsgMJ:', e));
+}

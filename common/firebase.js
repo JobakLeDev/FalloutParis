@@ -245,7 +245,12 @@ let _convWatch = {};        // convId -> unsub (écoute non-lus)
 let _msgRead = (()=>{ try{ return JSON.parse(localStorage.getItem('fp_msgRead_'+JOUEUR_ID)||'{}'); }catch(e){ return {}; } })();
 function _saveMsgRead(){ try{ localStorage.setItem('fp_msgRead_'+JOUEUR_ID, JSON.stringify(_msgRead)); }catch(e){} }
 function _convId(a, b){ return [a, b].sort().join('__'); }
-function _myContacts(){ return Array.isArray(_msgLinks[JOUEUR_ID]) ? _msgLinks[JOUEUR_ID] : []; }
+function _contactName(id){ return id === 'mj' ? '📟 Maître du Jeu' : (_allJoueurs[id]?.nom || id); }
+function _myContacts(){
+  const arr = Array.isArray(_msgLinks[JOUEUR_ID]) ? _msgLinks[JOUEUR_ID].slice() : [];
+  if(!arr.includes('mj')) arr.unshift('mj');   // le MJ est toujours joignable
+  return arr;
+}
 function _latestIncoming(msgs){ let t=0; (msgs||[]).forEach(m=>{ if(m && m.from!==JOUEUR_ID && (m.ts||0)>t) t=m.ts||0; }); return t; }
 function _hasUnread(){ return Object.keys(_convLatest).some(cid => (_convLatest[cid]||0) > (_msgRead[cid]||0)); }
 // (Ré)abonne une écoute légère à chaque conversation de mes contacts pour repérer les non-lus
@@ -279,7 +284,7 @@ function renderContacts(){
   const contacts = _myContacts();
   if(!contacts.length){ el.innerHTML = '<div class="msg-empty">Aucun contact. Échange ton numéro avec quelqu\'un (via le MJ).</div>'; return; }
   el.innerHTML = contacts.map(id => {
-    const nom = _allJoueurs[id]?.nom || id;
+    const nom = _contactName(id);
     const on = _activeConv === id;
     const cid = _convId(JOUEUR_ID, id);
     const unread = (_convLatest[cid]||0) > (_msgRead[cid]||0);
@@ -290,7 +295,7 @@ function esc(s){ return (s==null?'':''+s).replace(/&/g,'&amp;').replace(/</g,'&l
 function openConv(otherId){
   _activeConv = otherId;
   renderContacts();
-  document.getElementById('msg-conv-head').textContent = '💬 ' + (_allJoueurs[otherId]?.nom || otherId);
+  document.getElementById('msg-conv-head').textContent = '💬 ' + _contactName(otherId);
   document.getElementById('msg-input-row').style.display = 'flex';
   if(_convUnsub){ _convUnsub(); _convUnsub = null; }
   const cid = _convId(JOUEUR_ID, otherId);
