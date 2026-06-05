@@ -270,8 +270,15 @@ function buildMap() {
     });
     // Échanges entre joueurs (proximité) — uniquement en vue joueur
     if (!isMJ && viewerId) watchEchanges();
+    // Boutiques (POI marchands) — pour afficher le bon bouton dans les popups
+    fdb.collection('boutiques').doc('data').onSnapshot(s => {
+      const d = s.exists ? s.data() : {};
+      shopsData = (d.shops && typeof d.shops === 'object') ? d.shops : {};
+      if (currentTab === 'paris') renderPOIs();
+    }, e => console.warn('boutiques:', e && e.code));
   });
 }
+let shopsData = {};
 
 async function loadGeoJsonLayers() {
   await window.DB_READY;                   // FACTIONS dispo pour couleurs/labels
@@ -1219,9 +1226,51 @@ function zonePopup(z) {
 function poiPopup(p, t) {
   let h = `<div class="zpop"><div class="zpop-title">${t.icon} ${p.name}</div>
     <div class="zpop-pool">${t.label}${p.desc ? ' — ' + p.desc : ''}</div>`;
+  // POI marchand : boutique
+  if (p.type === 'trader') {
+    if (isMJ) {
+      h += `<div class="zpop-mj"><button onclick="genPoiShop('${p.id}')">🛒 ${shopsData[p.id] ? 'Régénérer' : 'Générer'} la boutique</button></div>`;
+    } else if (viewerId) {
+      if (shopsData[p.id]) {
+        h += _poiInRange(p)
+          ? `<div class="tok-actions"><button onclick="enterPoiShop('${p.id}')">🛒 Entrer dans la boutique</button></div>`
+          : `<div class="zpop-pool" style="color:var(--td)">🛒 Trop loin pour commercer.</div>`;
+      }
+    }
+  }
   if (isMJ) h += `<div class="zpop-mj"><button onclick="editPOI('${p.id}')">✎ Éditer</button>
     <button onclick="deletePOI('${p.id}')" class="del">🗑</button></div>` + revealControls('poi', p.id, p);
   return h + '</div>';
+}
+function _poiInRange(p){ const t = mapData.tokens?.[viewerId]; return !!(t && L.latLng(t.lat,t.lng).distanceTo(L.latLng(p.lat,p.lng)) <= VISION_RADIUS_M); }
+function enterPoiShop(poiId){
+  if (window.parent && window.parent !== window) window.parent.postMessage({ type:'open-shop', shop: poiId }, '*');
+  else window.open('../boutique/boutique.html?id=' + encodeURIComponent(viewerId||'') + '&shop=' + encodeURIComponent(poiId), '_blank');
+}
+function _genShopItems(n){
+  const DBs = window.DB || {};
+  const cats = [['weapons','WEAPON'],['armor','ARMOR'],['food','FOOD'],['drinks','DRINK'],['drugs','DRUGS'],['stuff','STUFF']];
+  const pick = list => { let tot=0; const w=list.map(it=>{ const x=Math.max(1,6-(it.r||3)); tot+=x; return x; }); let r=Math.random()*tot; for(let i=0;i<list.length;i++){ r-=w[i]; if(r<=0) return list[i]; } return list[list.length-1]; };
+  const items = [];
+  for(let i=0;i<n*2 && items.length<n;i++){
+    const [ck,ctype] = cats[Math.floor(Math.random()*cats.length)];
+    const src = DBs[ck] || []; if(!src.length) continue;
+    const it = pick(src);
+    const ex = items.find(x => x.name === it.n); if(ex){ ex.qty++; continue; }
+    items.push({ id:'s'+Date.now().toString(36)+i, name:it.n, type:(ck==='armor'?(it.t||'ARMOR'):ctype), cat:ck, r:it.r||3, w:it.w||0, qty:1+Math.floor(Math.random()*4) });
+  }
+  return items;
+}
+async function genPoiShop(poiId){
+  const poi = (mapData.pois||[]).find(x => x.id === poiId); if(!poi) return;
+  const nb = parseInt(prompt('Nombre d\'articles dans la boutique :', '12')) || 12;
+  const ref = fdb.collection('boutiques').doc('data');
+  let shops = {};
+  try { const s = await ref.get(); shops = (s.exists && s.data().shops) || {}; } catch(e){}
+  shops[poiId] = { id: poiId, name: poi.name || 'Marchand', markup: 1, items: _genShopItems(Math.min(40, Math.max(1, nb))), openFor: [] };
+  try { await ref.set({ shops }, { merge:true }); carteToast('🛒 Boutique générée : ' + (poi.name||'Marchand')); }
+  catch(e){ console.error(e); carteToast('Échec', true); }
+  map.closePopup();
 }
 
 // Contrôles de révélation par joueur (MJ)

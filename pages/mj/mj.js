@@ -124,6 +124,59 @@ function startSync(){
     actionLog = Array.isArray(d.entries) ? d.entries : [];
     renderActionLog();
   });
+  db.collection('boutiques').doc('data').onSnapshot(s => {
+    const d = s.exists ? s.data() : {};
+    boutiqueData = { shops: (d.shops && typeof d.shops === 'object') ? d.shops : {} };
+    renderBoutiqueMJ();
+  });
+}
+
+// ============================================================
+// BOUTIQUE / MARCHAND — /boutiques/data {shops:{[id]:shop}} ; itinérante = id 'mj'
+// ============================================================
+let boutiqueData = { shops: {} };
+function saveBoutique(){ if(db) db.collection('boutiques').doc('data').set(boutiqueData).catch(e=>console.error('saveBoutique',e)); }
+function _shopType(cat, it){ return cat==='weapons'?'WEAPON':cat==='armor'?(it.t||'ARMOR'):cat==='food'?'FOOD':cat==='drinks'?'DRINK':cat==='drugs'?'DRUGS':'STUFF'; }
+function genBoutique(){
+  const name = (document.getElementById('shop-name').value||'').trim() || 'Marchand itinérant';
+  const markup = Math.max(0.1, parseFloat(document.getElementById('shop-markup').value)||1);
+  const n = Math.min(40, Math.max(1, parseInt(document.getElementById('shop-size').value)||12));
+  const cats = ['weapons','armor','food','drinks','drugs','stuff'];
+  const items = [];
+  for(let i=0;i<n*2 && items.length<n;i++){
+    const cat = cats[Math.floor(Math.random()*cats.length)];
+    const src = lootSource(cat); if(!src.length) continue;
+    const it = weightedPick(src);
+    const ex = items.find(x => x.name===it.n);
+    if(ex){ ex.qty++; continue; }
+    items.push({ id:'s'+Date.now().toString(36)+i, name:it.n, type:_shopType(cat,it), cat, r:it.r||3, w:it.w||0, qty:1+Math.floor(Math.random()*4) });
+  }
+  boutiqueData.shops = boutiqueData.shops || {};
+  const prev = boutiqueData.shops['mj'] || {};
+  boutiqueData.shops['mj'] = { id:'mj', name, markup, items, openFor: prev.openFor || [] };
+  saveBoutique(); renderBoutiqueMJ();
+  logAction('Boutique « '+name+' » générée ('+items.length+' articles)');
+  showMsg('🛒 Boutique générée — '+items.length+' articles');
+}
+function ouvrirBoutique(){
+  if(!selected.size){ showMsg('Aucun joueur sélectionné !', true); return; }
+  if(!boutiqueData.shops || !boutiqueData.shops['mj']){ showMsg('Génère d\'abord un stock', true); return; }
+  boutiqueData.shops['mj'].openFor = [...selected];
+  saveBoutique(); renderBoutiqueMJ();
+  const noms = [...selected].map(id=>joueurs[id]?.nom||id).join(', ');
+  showMsg('🛒 Boutique ouverte à '+selected.size+' joueur(s)');
+  logAction('Boutique ouverte à '+noms);
+}
+function fermerBoutique(){ if(boutiqueData.shops && boutiqueData.shops['mj']){ boutiqueData.shops['mj'].openFor = []; saveBoutique(); renderBoutiqueMJ(); showMsg('Boutique fermée'); } }
+function clearBoutique(){ if(confirm('Supprimer la boutique itinérante ?')){ if(boutiqueData.shops) delete boutiqueData.shops['mj']; saveBoutique(); renderBoutiqueMJ(); } }
+function renderBoutiqueMJ(){
+  const el = document.getElementById('shop-summary'); if(!el) return;
+  const sh = boutiqueData.shops && boutiqueData.shops['mj'];
+  if(!sh){ el.innerHTML = '<span style="font-size:9px;color:var(--td)">Aucune boutique itinérante.</span>'; return; }
+  const nb = (sh.items||[]).reduce((a,x)=>a+(x.qty||0),0);
+  const open = (sh.openFor||[]).length;
+  el.innerHTML = `<div style="font-size:9px;color:var(--t);line-height:1.5">🛒 <b style="color:var(--tb)">${sh.name}</b> — ${nb} article(s) · marge ×${sh.markup}<br>`
+    + (open ? `<span style="color:var(--g)">● ouverte à ${open} joueur(s)</span>` : '<span style="color:var(--td)">○ fermée</span>') + '</div>';
 }
 
 // ============================================================
@@ -289,7 +342,7 @@ function togglePartyCollapse(id){ if(collapsedParties.has(id)) collapsedParties.
 
 // Réduction des panneaux de la colonne droite (mémorisé en localStorage)
 const collapsedPanels = new Set((()=>{ try{ return JSON.parse(localStorage.getItem('fp_collapsedPanels')||'[]'); }catch(e){ return []; } })());
-const PANEL_IDS = ['actions-pnl','actionlog-pnl','clock-pnl','rencontre-pnl-main','combats-actifs','butin-pnl','contacts-pnl'];
+const PANEL_IDS = ['actions-pnl','actionlog-pnl','clock-pnl','rencontre-pnl-main','combats-actifs','butin-pnl','boutique-pnl','contacts-pnl'];
 function applyPanelState(id){
   const el = document.getElementById(id); if(!el) return;
   const col = collapsedPanels.has(id);

@@ -60,6 +60,9 @@ service cloud.firestore {
     // ---------- Journal d'actions (dashboard MJ) ----------
     match /log/{doc} { allow read, write: if true; }
 
+    // ---------- Boutiques / marchands ----------
+    match /boutiques/{doc} { allow read, write: if true; }
+
     // ---------- Tout le reste : INTERDIT ----------
     // Empêche la création de collections/documents non prévus.
     match /{document=**} {

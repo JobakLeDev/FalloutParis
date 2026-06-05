@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg?v=2">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fallout Paris — Boutique</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../common/style.css">
+  <link rel="stylesheet" href="boutique.css?v=1">
+</head>
+<body>
+
+  <div class="sh-hdr">
+    <div class="sh-title">🛒 <span id="sh-name">Boutique</span></div>
+    <div class="sh-caps">◉ <b id="sh-caps">0</b> caps</div>
+  </div>
+
+  <div class="sh-barter" id="sh-barter"></div>
+
+  <div class="sh-tabs">
+    <button class="sh-tab on" id="tab-buy" onclick="swShop('buy')">ACHETER</button>
+    <button class="sh-tab" id="tab-sell" onclick="swShop('sell')">VENDRE</button>
+  </div>
+
+  <div id="sh-buy" class="sh-pane"><div class="sh-empty">Chargement…</div></div>
+  <div id="sh-sell" class="sh-pane" style="display:none"><div class="sh-empty">…</div></div>
+
+  <div id="sh-toast"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="../../common/shared.js"></script>
+  <script src="../../common/db.js"></script>
+  <script src="boutique.js?v=1"></script>
+</body>
+</html>

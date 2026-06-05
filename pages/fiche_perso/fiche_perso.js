@@ -619,6 +619,20 @@ function openMoSk(key,name){_moSkKey=key;document.getElementById('mo-sk-t').text
 function saveSkill(){const v=Math.min(6,Math.max(0,parseInt(document.getElementById('mo-sk-v').value)||0));char.skills[_moSkKey]=v;const tg=document.getElementById('mo-sk-tag').value==='1';if(tg&&!char.taggedSkills.includes(_moSkKey))char.taggedSkills.push(_moSkKey);if(!tg)char.taggedSkills=char.taggedSkills.filter(k=>k!==_moSkKey);closeMo('mo-sk');rAll();}
 function closeMo(id){document.getElementById(id).classList.remove('on');}
 
+// Boutique : ouvre la modale sur une boutique donnée ('mj' itinérante, ou id d'un POI marchand)
+function openShop(shopId){
+  shopId = shopId || 'mj';
+  const f=document.getElementById('shop-frame');
+  const id=new URLSearchParams(location.search).get('id')||'';
+  if(f && f.getAttribute('data-shop')!==shopId){
+    f.src='../boutique/boutique.html?id='+encodeURIComponent(id)+'&shop='+encodeURIComponent(shopId)+'&embed=1';
+    f.setAttribute('data-shop',shopId);
+  }
+  document.getElementById('mo-shop').classList.add('on');
+}
+// La carte (iframe) demande l'ouverture d'une boutique de POI marchand
+window.addEventListener('message', e=>{ const d=e.data; if(d && d.type==='open-shop' && d.shop) openShop(d.shop); });
+
 // Butin : ouvre la modale (charge l'iframe paresseusement) ; le bandeau est piloté par firebase.js
 function openLoot(){
   const f=document.getElementById('loot-frame');

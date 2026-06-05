@@ -155,6 +155,22 @@ function startSync() {
       (err) => console.warn('echanges indisponible:', err && err.code)
     );
   } catch(e){ console.warn('echanges listener KO:', e); }
+  // Boutique itinérante — bandeau si le marchand est ouvert à ce joueur
+  try {
+    db.collection('boutiques').doc('data').onSnapshot(
+      (s) => { try { renderShopAlert(s.exists ? s.data() : null); } catch(e){ console.error('shop:', e); } },
+      (err) => console.warn('boutiques indisponible:', err && err.code)
+    );
+  } catch(e){ console.warn('boutiques listener KO:', e); }
+}
+
+// Bandeau « marchand disponible » → ouvre la modale boutique itinérante ('mj')
+function renderShopAlert(d){
+  const al = document.getElementById('shop-alert'); if(!al) return;
+  const sh = d && d.shops && d.shops['mj'];
+  const open = !!(sh && Array.isArray(sh.openFor) && sh.openFor.includes(JOUEUR_ID) && (sh.items||[]).length);
+  al.style.display = open ? 'flex' : 'none';
+  if(!open){ const mo = document.getElementById('mo-shop'); if(mo) mo.classList.remove('on'); }
 }
 
 // Bandeau « proposition d'un autre joueur » → ouvre l'onglet CARTE pour accepter/refuser

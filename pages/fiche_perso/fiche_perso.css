@@ -158,6 +158,16 @@ html, body { height: 100%; overflow: hidden; }
 #prop-alert .prop-ico{ font-size:1.1rem; }
 #prop-alert b{ color:var(--am); }
 @keyframes proppulse{ 0%,100%{box-shadow:0 0 0 rgba(232,168,32,0);} 50%{box-shadow:0 0 14px rgba(232,168,32,0.45);} }
+#shop-alert{
+  display:none; align-items:center; gap:0.6rem;
+  margin:0.4rem 0; padding:0.55rem 0.9rem; cursor:pointer;
+  background:linear-gradient(90deg, rgba(93,190,93,0.18), rgba(93,190,93,0.05));
+  border:1px solid var(--g); color:var(--tb);
+  font-family:'Share Tech Mono',monospace; font-size:0.8rem; letter-spacing:1px;
+  animation:lootpulse 1.5s ease-in-out infinite;
+}
+#shop-alert:hover{ background:rgba(93,190,93,0.28); }
+#shop-alert .shop-ico{ font-size:1.1rem; }
 
 /* Date/heure du groupe (header fiche) */
 .fiche-clock{ font-family:'Oswald',sans-serif; font-size:0.62rem; color:var(--am); letter-spacing:.5px; margin-top:2px; text-transform:capitalize; }

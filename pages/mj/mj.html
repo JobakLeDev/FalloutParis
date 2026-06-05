@@ -293,6 +293,35 @@
       <div id="combats-actifs-list"><div class="empty" style="font-size:8px;color:var(--td);padding:10px">Chargement...</div></div>
     </div>
 
+    <!-- BOUTIQUE / MARCHAND -->
+    <div class="rencontre-pnl" id="boutique-pnl" style="margin-top:10px">
+      <div class="pnl-title pnl-head">
+        <button class="pnl-toggle" onclick="togglePanel('boutique-pnl')">▾</button>
+        <span class="pnl-head-label">🛒 Boutique / Marchand</span>
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-lbl">Nom</span>
+        <input type="text" class="ctrl-sel" id="shop-name" placeholder="Marchand itinérant" style="flex:1">
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-lbl">Marge ×</span>
+        <input type="number" class="ctrl-input" id="shop-markup" value="1" min="0.1" step="0.1" title="Multiplicateur de prix (1 = normal, 1.5 = cher)">
+        <span class="ctrl-lbl" style="margin-left:8px">Articles</span>
+        <input type="number" class="ctrl-input" id="shop-size" value="12" min="1" max="40">
+      </div>
+      <div class="gen-btns" style="margin-top:6px">
+        <button class="gen-btn" style="grid-column:1/-1" onclick="genBoutique()">🎲 Générer le stock (par rareté)</button>
+      </div>
+      <div id="shop-summary" style="margin-top:6px"></div>
+      <div class="gen-btns" style="margin-top:6px">
+        <button class="gen-btn" onclick="ouvrirBoutique()">🔓 Ouvrir aux sélectionnés</button>
+        <button class="gen-btn dep" onclick="fermerBoutique()">🔒 Fermer</button>
+      </div>
+      <div class="gen-btns" style="margin-top:6px">
+        <button class="gen-btn" style="grid-column:1/-1;border-color:var(--b2);color:var(--td)" onclick="clearBoutique()">🗑 Supprimer la boutique</button>
+      </div>
+    </div>
+
     <!-- MESSAGERIE / CONTACTS -->
     <div class="rencontre-pnl" id="contacts-pnl" style="margin-top:10px">
       <div class="pnl-title pnl-head">

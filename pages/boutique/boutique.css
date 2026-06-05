@@ -1,0 +1,33 @@
+body{ background:var(--bg); color:var(--t); font-family:'Share Tech Mono',monospace; padding:10px; }
+body.embed{ padding:6px; }
+
+.sh-hdr{ display:flex; align-items:center; justify-content:space-between; padding:6px 4px; border-bottom:1px solid var(--b2); margin-bottom:6px; }
+.sh-title{ font-family:'Oswald',sans-serif; letter-spacing:2px; color:var(--g); font-size:1rem; }
+.sh-caps{ font-family:'Oswald',sans-serif; color:var(--am); font-size:1rem; }
+.sh-caps b{ font-size:1.1rem; }
+
+.sh-barter{ font-size:.66rem; color:var(--td); padding:3px 4px 7px; letter-spacing:.3px; }
+.sh-barter b{ color:var(--t); }
+
+.sh-tabs{ display:flex; gap:4px; margin-bottom:6px; }
+.sh-tab{ flex:1; background:#060d06; border:1px solid var(--b2); color:var(--td); font-family:'Share Tech Mono',monospace; font-size:.72rem; padding:7px; cursor:pointer; letter-spacing:2px; }
+.sh-tab.on{ border-color:var(--g); color:var(--tb); background:var(--gk); }
+
+.sh-pane{ display:flex; flex-direction:column; gap:4px; max-height:62vh; overflow-y:auto; }
+.sh-empty{ color:var(--td); font-size:.74rem; text-align:center; padding:1.4rem .5rem; }
+
+.sh-row{ display:flex; align-items:center; gap:8px; padding:6px 8px; background:var(--p2); border:1px solid var(--b); }
+.sh-ic{ flex:none; width:20px; text-align:center; color:var(--g); }
+.sh-nom{ flex:1; min-width:0; color:var(--t); font-size:.78rem; overflow:hidden; text-overflow:ellipsis; }
+.sh-nom small{ color:var(--td); }
+.sh-qty{ flex:none; font-size:.66rem; color:var(--td); }
+.sh-price{ flex:none; font-family:'Oswald',sans-serif; color:var(--am); font-size:.95rem; min-width:48px; text-align:right; }
+.sh-act{ flex:none; background:var(--gk); border:1px solid var(--g); color:var(--tb); font-family:'Share Tech Mono',monospace; font-size:.7rem; padding:5px 10px; cursor:pointer; }
+.sh-act:hover{ background:var(--g); color:#0c150c; }
+.sh-act:disabled{ opacity:.4; cursor:not-allowed; border-color:var(--b2); color:var(--td); background:#060d06; }
+.sh-act.sell{ border-color:var(--am); }
+.sh-act.sell:hover{ background:var(--am); color:#0c150c; }
+
+#sh-toast{ position:fixed; bottom:14px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--p); border:1px solid var(--g); color:var(--tb); font-size:.76rem; padding:.5rem 1rem; opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; z-index:50; box-shadow:0 0 14px rgba(93,190,93,.5); }
+#sh-toast.on{ opacity:1; transform:translateX(-50%) translateY(0); }
+#sh-toast.err{ border-color:var(--rd); color:#f0b0b0; box-shadow:0 0 14px rgba(224,64,64,.5); }
