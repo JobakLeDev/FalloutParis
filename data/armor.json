@@ -1,4 +1,10 @@
 [
+  {"n":"Brassard synthétique",              "t":"ARMOR",     "ph":2,"en":3,"rad":0,"z":"Arm",  "w":1.36},
+  {"n":"Jambières synthétiques",            "t":"ARMOR",     "ph":2,"en":3,"rad":0,"z":"Leg",  "w":1.36},
+  {"n":"Brassard de combat lourd",          "t":"ARMOR",     "ph":4,"en":4,"rad":0,"z":"Arm",  "w":3.18},
+  {"n":"Jambières de combat lourdes",       "t":"ARMOR",     "ph":4,"en":4,"rad":0,"z":"Leg",  "w":3.18},
+  {"n":"Brassard en métal renforcé",        "t":"ARMOR",     "ph":3,"en":2,"rad":0,"z":"Arm",  "w":3.63},
+  {"n":"Jambières en métal renforcées",     "t":"ARMOR",     "ph":3,"en":2,"rad":0,"z":"Leg",  "w":3.63},
   {"n":"Plastron de saccageur",             "t":"ARMOR",     "ph":1,"en":1,"rad":0,"z":"Torso","w":3.18},
   {"n":"Jambières de saccageur",            "t":"ARMOR",     "ph":1,"en":1,"rad":0,"z":"Leg",  "w":1.36},
   {"n":"Brassard de saccageur",             "t":"ARMOR",     "ph":1,"en":1,"rad":0,"z":"Arm",  "w":1.36},
