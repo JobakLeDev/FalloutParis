@@ -351,12 +351,17 @@ function renderParties(){
     h += '<div class="solo-lbl">Joueurs individuels</div>';
     solos.forEach(p => {
       const pid = (p.players||[])[0];
+      const col = collapsedParties.has(p.id);
       const grpOpts = groups.map(g=>`<option value="${g.id}">→ ${g.name||'Groupe'}</option>`).join('');
-      h += `<div class="party-card solo">
-        <div class="party-head"><span class="solo-nom">🧍 ${joueurs[pid]?.nom||pid}</span></div>
-        <div class="party-date">📅 ${fmtDateLong(p.minutes)} · <span style="color:var(--am)">${fmtHeure(p.minutes)}</span></div>
+      h += `<div class="party-card solo${col?' collapsed':''}">
+        <div class="party-head">
+          <button class="party-toggle" onclick="togglePartyCollapse('${p.id}')" title="${col?'Déplier':'Réduire'}">${col?'▸':'▾'}</button>
+          <span class="solo-nom">🧍 ${joueurs[pid]?.nom||pid}</span>
+          ${col?`<span class="party-time-mini">${fmtHeure(p.minutes)}</span>`:''}
+        </div>
+        ${col ? '' : `<div class="party-date">📅 ${fmtDateLong(p.minutes)} · <span style="color:var(--am)">${fmtHeure(p.minutes)}</span></div>
         ${clockBtns(p)}
-        <div class="party-members"><select class="pm-add" onchange="groupSolo('${pid}',this.value);this.value=''"><option value="">grouper…</option>${grpOpts}<option value="new">+ Nouveau groupe</option></select></div>
+        <div class="party-members"><select class="pm-add" onchange="groupSolo('${pid}',this.value);this.value=''"><option value="">grouper…</option>${grpOpts}<option value="new">+ Nouveau groupe</option></select></div>`}
       </div>`;
     });
   }
