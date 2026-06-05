@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fallout Paris — Fiche Personnage</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../../common/style.css?v=20">
-  <link rel="stylesheet" href="fiche_perso.css?v=20">
+  <link rel="stylesheet" href="../../common/style.css?v=21">
+  <link rel="stylesheet" href="fiche_perso.css?v=21">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
@@ -47,6 +47,12 @@
 <div id="loot-alert" onclick="openLoot()">
   <span class="loot-ico">🎒</span>
   <span>BUTIN À PORTÉE <b id="loot-count"></b> — clique pour fouiller</span>
+</div>
+
+<!-- ALERTE PROPOSITION ENTRE JOUEURS -->
+<div id="prop-alert" onclick="openPropOnMap()">
+  <span class="prop-ico">🤝</span>
+  <span>UN JOUEUR TE FAIT UNE PROPOSITION <b id="prop-count"></b> — clique pour ouvrir la carte</span>
 </div>
 
 <!-- TABS -->
@@ -322,9 +328,9 @@
   </div>
 </div>
 
-  <script src="../../common/shared.js?v=20"></script>
-  <script src="../../common/db.js?v=20"></script>
-  <script src="fiche_perso.js?v=20"></script>
-  <script src="../../common/firebase.js?v=20"></script>
+  <script src="../../common/shared.js?v=21"></script>
+  <script src="../../common/db.js?v=21"></script>
+  <script src="fiche_perso.js?v=21"></script>
+  <script src="../../common/firebase.js?v=21"></script>
 </body>
 </html>

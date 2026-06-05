@@ -146,7 +146,22 @@ function startSync() {
     db.collection('joueurs').onSnapshot((s) => { _allJoueurs = {}; s.forEach(d => _allJoueurs[d.id] = d.data()); if (document.getElementById('mo-msg')?.classList.contains('on')) renderContacts(); });
     db.collection('messagerie').doc('data').onSnapshot((s) => { const d = s.exists ? s.data() : {}; _msgLinks = (d.links && typeof d.links === 'object') ? d.links : {}; _syncConvWatchers(); updateMsgIcon(); if (document.getElementById('mo-msg')?.classList.contains('on')) renderContacts(); });
   } catch(e){ console.warn('messagerie listener KO:', e); }
+  // Échanges entre joueurs — bandeau d'alerte (la proposition s'accepte dans l'onglet CARTE)
+  try {
+    db.collection('echanges').where('to','==',JOUEUR_ID).onSnapshot(
+      (s) => { let n = 0; s.forEach(d => { if(d.data().status === 'pending') n++; }); renderPropAlert(n); },
+      (err) => console.warn('echanges indisponible:', err && err.code)
+    );
+  } catch(e){ console.warn('echanges listener KO:', e); }
 }
+
+// Bandeau « proposition d'un autre joueur » → ouvre l'onglet CARTE pour accepter/refuser
+function renderPropAlert(n){
+  const al = document.getElementById('prop-alert'); if(!al) return;
+  al.style.display = n > 0 ? 'flex' : 'none';
+  const c = document.getElementById('prop-count'); if(c) c.textContent = n > 1 ? '(' + n + ')' : '';
+}
+function openPropOnMap(){ if(typeof sw === 'function') sw('carte'); }
 
 // ============================================================
 // LANCER DE DÉS PUBLIC (côté joueur)

@@ -56,7 +56,7 @@ let metroLinesByName = {};                         // {ligne: [{lat,lng}]} — s
 let metroVertexFlat = [];                          // [{lat,lng,line,lk}] — sommets allégés (ligne la plus proche)
 let metroMoveMode = false, movingMetroToken = null;
 let editMode = false, addingPOI = false, drawingZone = null;
-let mapData = { pois: [], zones: [], tokens: {}, fog: {}, geoReveal: {}, geoVisited: {}, ping: null, metroTokens: {}, metroFog: {}, underground: {} };
+let mapData = { pois: [], zones: [], tokens: {}, fog: {}, geoReveal: {}, geoVisited: {}, ping: null, metroTokens: {}, metroFog: {}, underground: {}, beacons: {} };
 const geoMarkerRefs = {};                          // nom → layer (pour réouverture popup)
 let lieux = [];            // [{id, name, image, pois:[]}] — plans de bâtiments
 let lieuActif = null;      // lieu sélectionné dans l'onglet LIEUX
@@ -252,7 +252,7 @@ function buildMap() {
     });
     fdb.collection('carte').doc('data').onSnapshot(s => {
       const d = s.exists ? s.data() : {};
-      mapData = { pois: d.pois || [], zones: normZones(d.zones), tokens: d.tokens || {}, fog: d.fog || {}, geoReveal: d.geoReveal || {}, geoVisited: d.geoVisited || {}, ping: d.ping || null, metroTokens: d.metroTokens || {}, metroFog: d.metroFog || {}, underground: d.underground || {} };
+      mapData = { pois: d.pois || [], zones: normZones(d.zones), tokens: d.tokens || {}, fog: d.fog || {}, geoReveal: d.geoReveal || {}, geoVisited: d.geoVisited || {}, ping: d.ping || null, metroTokens: d.metroTokens || {}, metroFog: d.metroFog || {}, underground: d.underground || {}, beacons: d.beacons || {} };
       renderAll();
       tryCenterPlayer();   // au 1er chargement : centrer sur le jeton du joueur
     });
@@ -982,10 +982,13 @@ function renderTokens() {
   Object.entries(mapData.tokens || {}).forEach(([id, pos]) => {
     if (!pos) return;
     if (mapData.underground?.[id]) return;            // sous terre → visible sur la carte métro, pas en surface
-    // Vue joueur : alliés visibles uniquement dans VISION_RADIUS_M mètres
+    // Vue joueur : alliés visibles dans VISION_RADIUS_M m, OU en permanence si balise GPS partagée
     if (!isMJ && viewerId && id !== viewerId) {
-      if (!my) return;
-      if (L.latLng(my.lat, my.lng).distanceTo(L.latLng(pos.lat, pos.lng)) > VISION_RADIUS_M) return;
+      const beaconShared = (mapData.beacons?.[viewerId] || []).includes(id);
+      if (!beaconShared) {
+        if (!my) return;
+        if (L.latLng(my.lat, my.lng).distanceTo(L.latLng(pos.lat, pos.lng)) > VISION_RADIUS_M) return;
+      }
     }
     const nom = joueurs[id]?.nom || id;
     const me = id === viewerId;
@@ -1005,10 +1008,13 @@ function renderTokens() {
     // Vue joueur : sur le jeton d'un AUTRE joueur (forcément à portée ici), actions d'interaction
     let exBtns = '';
     if (!isMJ && viewerId && id !== viewerId) {
+      const shared = (mapData.beacons?.[viewerId] || []).includes(id);
       exBtns = `<div class="tok-actions">
         <button onclick="propGroup('${id}')">👥 Proposer de grouper</button>
         <button onclick="propNumbers('${id}')">📟 Échanger les numéros</button>
         <button onclick="openGive('${id}')">🎁 Donner des objets</button>
+        ${shared ? '<button disabled style="opacity:.6;cursor:default">📡 Balise GPS partagée ✓</button>'
+                 : `<button onclick="propBeacon('${id}')">📡 Échanger les balises GPS</button>`}
       </div>`;
     }
     m.bindPopup('<b>' + nom + '</b>' + mjBtns + exBtns);
@@ -1459,6 +1465,7 @@ function _sendProposal(to, type, extra){
 }
 function propGroup(to){ _sendProposal(to, 'group'); }
 function propNumbers(to){ _sendProposal(to, 'numbers'); }
+function propBeacon(to){ _sendProposal(to, 'beacon'); }
 
 // ---- Don d'objets (sens unique) ----
 let _giveTo = null;
@@ -1519,12 +1526,16 @@ function showProp(p){
   let body = '';
   if(p.type === 'group')   body = `<b>${_exEsc(p.fromNom)}</b> te propose de <b>former un groupe</b> (vous partagerez le même temps de jeu).`;
   if(p.type === 'numbers') body = `<b>${_exEsc(p.fromNom)}</b> veut <b>échanger vos numéros</b> (vous pourrez vous envoyer des messages).`;
+  if(p.type === 'beacon')  body = `<b>${_exEsc(p.fromNom)}</b> veut <b>échanger vos balises GPS</b> (vous vous verrez en permanence sur la carte, même à distance).`;
   if(p.type === 'give'){
     const lst = (p.items||[]).map(it => `${it.n}× ${_exEsc(it.name)}`).join(', ');
     body = `<b>${_exEsc(p.fromNom)}</b> veut te <b>donner</b> : ${lst || '—'}.`;
   }
   document.getElementById('prop-title').textContent =
-    p.type === 'give' ? '🎁 Don proposé' : (p.type === 'group' ? '👥 Proposition de groupe' : '📟 Échange de numéros');
+    p.type === 'give' ? '🎁 Don proposé'
+    : p.type === 'group' ? '👥 Proposition de groupe'
+    : p.type === 'beacon' ? '📡 Balises GPS'
+    : '📟 Échange de numéros';
   document.getElementById('prop-body').innerHTML = body;
   document.getElementById('prop-mo').classList.add('on');
 }
@@ -1541,9 +1552,10 @@ async function declineProp(){
 async function acceptProp(){
   const p = _activeProp; if(!p) return;
   try {
-    if(p.type === 'numbers')    await _applyNumbers(p);
-    else if(p.type === 'group') await _applyGroup(p);
-    else if(p.type === 'give')  await _applyGive(p);
+    if(p.type === 'numbers')     await _applyNumbers(p);
+    else if(p.type === 'group')  await _applyGroup(p);
+    else if(p.type === 'beacon') await _applyBeacon(p);
+    else if(p.type === 'give')   await _applyGive(p);
     await fdb.collection('echanges').doc(p.id).update({ status:'accepted' });
     _logMJ(p);
     carteToast('✓ Accepté.');
@@ -1580,6 +1592,14 @@ async function _applyGroup(p){
   parties = parties.filter(x => !(x.solo && (x.players||[]).length === 0));
   await ref.set({ ...data, parties });
 }
+async function _applyBeacon(p){
+  const ref = fdb.collection('carte').doc('data');
+  const snap = await ref.get();
+  const beacons = (snap.exists && snap.data().beacons && typeof snap.data().beacons === 'object') ? snap.data().beacons : {};
+  const add = (a,b) => { beacons[a] = Array.isArray(beacons[a]) ? beacons[a] : []; if(!beacons[a].includes(b)) beacons[a].push(b); };
+  add(p.from, p.to); add(p.to, p.from);
+  await ref.set({ beacons }, { merge: true });
+}
 async function _applyGive(p){
   const fromRef = fdb.collection('joueurs').doc(p.from);
   const toRef   = fdb.collection('joueurs').doc(p.to);
@@ -1602,6 +1622,7 @@ function _logMJ(p){
   let txt = '';
   if(p.type === 'group')   txt = `${p.fromNom} et ${p.toNom} forment un groupe.`;
   if(p.type === 'numbers') txt = `${p.fromNom} et ${p.toNom} ont échangé leurs numéros.`;
+  if(p.type === 'beacon')  txt = `${p.fromNom} et ${p.toNom} ont échangé leurs balises GPS (visibles en permanence sur la carte).`;
   if(p.type === 'give'){ const lst = (p.items||[]).map(it => `${it.n}× ${it.name}`).join(', '); txt = `${p.fromNom} a donné à ${p.toNom} : ${lst}.`; }
   if(typeof logJournal === 'function') logJournal({ type:'info', title:'Échange entre joueurs', text: txt, revealedFor: [], src: 'echange:' + (p.ts || Date.now()) });
 }
