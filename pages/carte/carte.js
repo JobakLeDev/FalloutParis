@@ -13,10 +13,13 @@ const GEOJSON_BASE = '../../map/';
 const MJ_CODE = '1234';
 
 const POI_TYPES = {
-  settlement: { label: 'Colonie',    color: '#5dbe5d', icon: '🏠' },
-  faction:    { label: 'QG Faction', color: '#4a7ba6', icon: '🚩' },
+  settlement: { label: 'Maison / Colonie', color: '#5dbe5d', icon: '🏠' },
   danger:     { label: 'Danger',     color: '#e04040', icon: '☢' },
+  faction:    { label: 'QG Faction', color: '#4a7ba6', icon: '🚩' },
   loot:       { label: 'Cache',      color: '#e8a820', icon: '📦' },
+  trader:     { label: 'Marchand',   color: '#e8a820', icon: '💰' },
+  water:      { label: "Point d'eau",color: '#4a9bd5', icon: '💧' },
+  camp:       { label: 'Campement',  color: '#d57b30', icon: '🔥' },
   quest:      { label: 'Objectif',   color: '#f1c40f', icon: '❗' },
   npc:        { label: 'PNJ',        color: '#b0f0b0', icon: '👤' },
   other:      { label: 'Lieu',       color: '#7ed87e', icon: '📍' },
@@ -56,6 +59,7 @@ let metroLinesByName = {};                         // {ligne: [{lat,lng}]} — s
 let metroVertexFlat = [];                          // [{lat,lng,line,lk}] — sommets allégés (ligne la plus proche)
 let metroMoveMode = false, movingMetroToken = null;
 let editMode = false, addingPOI = false, drawingZone = null;
+let pendingPoiType = 'other';   // type de POI sélectionné dans le picker
 let mapData = { pois: [], zones: [], tokens: {}, fog: {}, geoReveal: {}, geoVisited: {}, ping: null, metroTokens: {}, metroFog: {}, underground: {}, beacons: {} };
 const geoMarkerRefs = {};                          // nom → layer (pour réouverture popup)
 let lieux = [];            // [{id, name, image, pois:[]}] — plans de bâtiments
@@ -888,7 +892,7 @@ function updateModeUI() {
   const ml = document.getElementById('mj-left');  if (ml) ml.style.display = isMJ ? 'block' : 'none';
   const mr = document.getElementById('mj-right'); if (mr) mr.style.display = isMJ ? 'block' : 'none';
   // MJ : outils d'édition directement disponibles (plus de toggle)
-  if (isMJ) { editMode = true; const t = document.getElementById('mjp-tools'); if (t) t.style.display = 'block'; }
+  if (isMJ) { editMode = true; const t = document.getElementById('mjp-tools'); if (t) t.style.display = 'block'; buildPoiPicker(); }
 }
 function toggleEdit() {
   editMode = !editMode;
@@ -1249,7 +1253,7 @@ function startMoveFromToken(id) {
   const t = mapData.tokens?.[id]; if (!t) return;
   map.closePopup();
   pingMode = false; document.getElementById('btn-ping')?.classList.remove('on');
-  addingPOI = false; document.getElementById('btn-add-poi')?.classList.remove('on'); cancelDrawZone();
+  addingPOI = false; if(typeof updatePoiPicker==='function')updatePoiPicker(); cancelDrawZone();
   moveMode = true; movingToken = { id, from: { ...t } };
   setLayersClickable(false);                        // les clics passent à la carte
   setHint('Clique la destination pour « ' + (joueurs[id]?.nom || id) + ' ».');
@@ -1267,7 +1271,7 @@ function togglePingMode() {
   if (pingMode) { endPingMode(); return; }
   pingMode = true;
   moveMode = false; movingToken = null;
-  addingPOI = false; document.getElementById('btn-add-poi')?.classList.remove('on'); cancelDrawZone();
+  addingPOI = false; if(typeof updatePoiPicker==='function')updatePoiPicker(); cancelDrawZone();
   setLayersClickable(false);
   document.getElementById('btn-ping').classList.add('on');
   setHint('Clique l\'endroit à signaler aux joueurs.');
@@ -1331,19 +1335,31 @@ function centerOnToken(id) {
   const t = mapData.tokens?.[id]; if (!t) return;
   map.setView([t.lat, t.lng], map.getZoom(), { animate: true });
 }
-function toggleAddPOI() {
-  addingPOI = !addingPOI;
-  if (addingPOI) cancelDrawZone();
-  document.getElementById('btn-add-poi').classList.toggle('on', addingPOI);
-  setHint(addingPOI ? 'Clique sur la carte pour placer le POI.' : '');
+// Barre de pictos pour ajouter un POI (MJ)
+function buildPoiPicker(){
+  const el = document.getElementById('poi-picker'); if (!el) return;
+  el.innerHTML = Object.entries(POI_TYPES).map(([k,t]) =>
+    `<button class="poi-pick" id="poi-pick-${k}" title="${t.label}" onclick="startAddPOI('${k}')">
+       <span class="pp-ic">${t.icon}</span></button>`).join('');
+  updatePoiPicker();
+}
+function updatePoiPicker(){
+  document.querySelectorAll('.poi-pick').forEach(b => b.classList.remove('on'));
+  if (addingPOI){ const b = document.getElementById('poi-pick-' + pendingPoiType); if (b) b.classList.add('on'); }
+}
+function startAddPOI(type){
+  if (!POI_TYPES[type]) type = 'other';
+  if (addingPOI && pendingPoiType === type){ addingPOI = false; updatePoiPicker(); setHint(''); return; }   // re-clic = annuler
+  addingPOI = true; pendingPoiType = type; cancelDrawZone();
+  updatePoiPicker();
+  setHint('Clique sur la carte pour placer : ' + POI_TYPES[type].label);
 }
 function creerPOI(latlng) {
-  addingPOI = false; document.getElementById('btn-add-poi').classList.remove('on'); setHint('');
-  const name = prompt('Nom du lieu :'); if (!name) return;
-  const keys = Object.keys(POI_TYPES);
-  const type = prompt('Type (' + keys.join(', ') + ') :', 'settlement');
+  const type = POI_TYPES[pendingPoiType] ? pendingPoiType : 'other';
+  addingPOI = false; updatePoiPicker(); setHint('');
+  const name = prompt('Nom du ' + POI_TYPES[type].label + ' :'); if (!name) return;
   const desc = prompt('Description (optionnel) :') || '';
-  mapData.pois.push({ id: 'p' + Date.now(), name, type: POI_TYPES[type] ? type : 'other',
+  mapData.pois.push({ id: 'p' + Date.now(), name, type,
     lat: latlng.lat, lng: latlng.lng, desc, revealedFor: [] });
   saveData();
 }
@@ -1357,7 +1373,7 @@ function editPOI(id) {
 }
 function toggleDrawZone() {
   if (drawingZone) { cancelDrawZone(); return; }
-  addingPOI = false; document.getElementById('btn-add-poi').classList.remove('on');
+  addingPOI = false; updatePoiPicker();
   drawingZone = { pts: [], layer: L.polyline([], { color: '#e8a820', weight: 2, dashArray: '4 4' }).addTo(map) };
   document.getElementById('draw-actions').style.display = 'block';
   document.getElementById('btn-draw-zone').classList.add('on');

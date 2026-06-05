@@ -216,3 +216,10 @@ img.land-icon-img{
 .mt-sub{font-size:9px;color:var(--am);letter-spacing:1px;margin-top:6px;text-transform:uppercase;}
 .mt-glob{display:flex;flex-direction:column;gap:4px;margin-top:8px;}
 .mt-glob .mt-btn{text-align:center;}
+
+/* ===== Picker de pictos POI (MJ) ===== */
+.mjp-sublabel{font-size:9px;color:var(--td);margin:2px 0 4px;letter-spacing:.5px;}
+.poi-picker{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;}
+.poi-pick{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:#060d06;border:1px solid var(--b2);cursor:pointer;font-size:15px;line-height:1;padding:0;transition:all .1s;}
+.poi-pick:hover{border-color:var(--g);background:var(--gk);}
+.poi-pick.on{border-color:var(--am);background:#2a2410;box-shadow:0 0 6px rgba(232,168,32,.5);}
