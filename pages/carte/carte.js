@@ -1086,6 +1086,7 @@ function recordFog(id, lat, lng) {
 
 function renderMJPanel() {
   if (!isMJ) return;
+  renderMJMaintenance();
   const el = document.getElementById('player-zones'); if (!el) return;
   const ids = Object.keys(joueurs);
   if (!ids.length) { el.innerHTML = '<span class="empty">Aucun joueur</span>'; return; }
@@ -1108,6 +1109,67 @@ function renderMJPanel() {
       <div class="pp-pos">${label}</div>
     </div>`;
   }).join('');
+}
+
+// ---- Maintenance MJ : reset brouillards / jetons, nettoyage des orphelins ----
+function _mapPresenceIds(){
+  const s = new Set();
+  ['tokens','metroTokens','fog','metroFog','underground','beacons'].forEach(k => {
+    Object.keys(mapData[k] || {}).forEach(id => s.add(id));
+  });
+  return [...s];
+}
+function renderMJMaintenance(){
+  const el = document.getElementById('mj-maintenance'); if (!el) return;
+  const ids = Object.keys(joueurs);
+  const orphans = _mapPresenceIds().filter(id => !joueurs[id]);
+  let h = ids.map(id => `<div class="mt-row"><span class="mt-nom">${_exEsc(joueurs[id]?.nom || id)}</span>
+      <button class="mt-btn" onclick="resetFog('${id}')" title="Réinitialiser le brouillard de ce joueur">🌫</button>
+      <button class="mt-btn del" onclick="removeToken('${id}')" title="Retirer son jeton de la carte">✖</button></div>`).join('');
+  if (orphans.length){
+    h += `<div class="mt-sub">Jetons orphelins (joueur supprimé)</div>`;
+    h += orphans.map(id => `<div class="mt-row"><span class="mt-nom" style="color:var(--td)">${_exEsc(id)}</span>
+      <button class="mt-btn del" onclick="removeToken('${id}')" title="Supprimer ce jeton orphelin">✖ supprimer</button></div>`).join('');
+  }
+  h += `<div class="mt-glob">
+      <button class="mt-btn" onclick="resetAllFog()">🌫 Reset tous les brouillards</button>
+      <button class="mt-btn del" onclick="cleanOrphanTokens()">🧹 Nettoyer les orphelins</button>
+      <button class="mt-btn del" onclick="resetAllTokens()">✖ Reset tous les jetons</button>
+    </div>`;
+  el.innerHTML = h || '<span class="empty">—</span>';
+}
+function resetFog(id){
+  if (!confirm('Réinitialiser le brouillard de ' + (joueurs[id]?.nom || id) + ' ?')) return;
+  if (mapData.fog) delete mapData.fog[id];
+  if (mapData.metroFog) delete mapData.metroFog[id];
+  saveData();
+  if (typeof fpLogAction === 'function') fpLogAction(fdb, 'MJ', 'Brouillard réinitialisé : ' + (joueurs[id]?.nom || id));
+}
+function resetAllFog(){
+  if (!confirm('Réinitialiser le brouillard de TOUS les joueurs ?')) return;
+  mapData.fog = {}; mapData.metroFog = {};
+  saveData();
+  if (typeof fpLogAction === 'function') fpLogAction(fdb, 'MJ', 'Tous les brouillards réinitialisés');
+}
+function removeToken(id){
+  if (!confirm('Retirer ' + (joueurs[id]?.nom || id) + ' de la carte (jeton + brouillard) ?')) return;
+  ['tokens','metroTokens','fog','metroFog','underground','beacons'].forEach(k => { if (mapData[k]) delete mapData[k][id]; });
+  // retire aussi cet id des listes de balises des autres
+  if (mapData.beacons) Object.keys(mapData.beacons).forEach(k => { mapData.beacons[k] = (mapData.beacons[k] || []).filter(x => x !== id); });
+  saveData();
+}
+function cleanOrphanTokens(){
+  const orphans = _mapPresenceIds().filter(id => !joueurs[id]);
+  if (!orphans.length){ alert('Aucun jeton orphelin.'); return; }
+  if (!confirm('Supprimer ' + orphans.length + ' jeton(s) orphelin(s) ?')) return;
+  orphans.forEach(id => ['tokens','metroTokens','fog','metroFog','underground','beacons'].forEach(k => { if (mapData[k]) delete mapData[k][id]; }));
+  if (mapData.beacons) Object.keys(mapData.beacons).forEach(k => { mapData.beacons[k] = (mapData.beacons[k] || []).filter(x => joueurs[x]); });
+  saveData();
+}
+function resetAllTokens(){
+  if (!confirm('Retirer TOUS les jetons de la carte ? (le brouillard est conservé)')) return;
+  mapData.tokens = {}; mapData.metroTokens = {}; mapData.underground = {};
+  saveData();
 }
 
 // Marqueur GeoJSON le plus proche d'un point → {nom, dist} ou null
