@@ -255,8 +255,10 @@ function renderButin(){
 // Helpers de date dans shared.js (tempsDate, fmtDateTime, TEMPS_DEFAUT…)
 // ============================================================
 let tempsData = { parties: [] };
-const collapsedParties = new Set();   // état UI local (réduit/déplié), non persisté
-function togglePartyCollapse(id){ if(collapsedParties.has(id)) collapsedParties.delete(id); else collapsedParties.add(id); renderParties(); }
+// état UI local (réduit/déplié) — mémorisé en localStorage (survit au rafraîchissement)
+const collapsedParties = new Set((()=>{ try{ return JSON.parse(localStorage.getItem('fp_collapsedParties')||'[]'); }catch(e){ return []; } })());
+function saveCollapsed(){ try{ localStorage.setItem('fp_collapsedParties', JSON.stringify([...collapsedParties])); }catch(e){} }
+function togglePartyCollapse(id){ if(collapsedParties.has(id)) collapsedParties.delete(id); else collapsedParties.add(id); saveCollapsed(); renderParties(); }
 function uidParty(){ return 'p' + Date.now().toString(36) + Math.floor(Math.random()*99); }
 function saveTemps(){ if(db) db.collection('temps').doc('data').set(tempsData).catch(e=>console.error('saveTemps',e)); }
 function findParty(id){ return (tempsData.parties||[]).find(p => p.id === id); }
