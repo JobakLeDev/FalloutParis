@@ -1,0 +1,13 @@
+{
+  "folder": "audio/sfx",
+  "volume": 0.5,
+  "sounds": {
+    "tab":    "",
+    "click":  "",
+    "open":   "",
+    "close":  "",
+    "equip":  "",
+    "lvlup":  "",
+    "alert":  ""
+  }
+}

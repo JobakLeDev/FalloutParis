@@ -799,4 +799,39 @@ window.DB_READY.then(() => {
 });
 
 // ============================================================
+// SFX d'interface — bruitages de navigation (manifeste data/sfx.json + dossier audio/sfx/)
+// Le joueur peut couper via le bouton flottant (🔈, bas-gauche).
+// ============================================================
+let _sfx = { vol:0.5, folder:'audio/sfx', map:{}, buf:{}, muted: localStorage.getItem('fp_sfxMuted')==='1' };
+const _SFX_ON  = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 9v6h4l5 4V5L8 9H4z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M15.5 9a4 4 0 0 1 0 6"/></svg>';
+const _SFX_OFF = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 9v6h4l5 4V5L8 9H4z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M16 9.5l5 5M21 9.5l-5 5"/></svg>';
+function _sfxSrc(f){ return '../../' + _sfx.folder + '/' + f.split('/').map(encodeURIComponent).join('/'); }
+function fpSfx(name){
+  if(_sfx.muted) return;
+  const a = _sfx.buf[name]; if(!a) return;
+  try{ const n = a.cloneNode(); n.volume = _sfx.vol; n.play().catch(()=>{}); }catch(e){}
+}
+function _sfxUpdateBtn(){ const b=document.getElementById('sfx-toggle'); if(b){ b.innerHTML = _sfx.muted ? _SFX_OFF : _SFX_ON; b.classList.toggle('off', _sfx.muted); } }
+function toggleSfx(){ _sfx.muted = !_sfx.muted; try{ localStorage.setItem('fp_sfxMuted', _sfx.muted?'1':'0'); }catch(e){} _sfxUpdateBtn(); if(!_sfx.muted) fpSfx('click'); }
+function initSfx(){
+  const btn = document.createElement('button'); btn.id='sfx-toggle'; btn.title='Sons interface'; btn.onclick=toggleSfx;
+  document.body.appendChild(btn); _sfxUpdateBtn();
+  fetch('../../data/sfx.json?ts=' + Date.now()).then(r=>r.json()).then(d=>{
+    _sfx.folder = d.folder || 'audio/sfx';
+    _sfx.vol = (d.volume != null) ? d.volume : 0.5;
+    _sfx.map = d.sounds || {};
+    Object.entries(_sfx.map).forEach(([k,f]) => { if(f){ const a=new Audio(_sfxSrc(f)); a.preload='auto'; a.volume=_sfx.vol; _sfx.buf[k]=a; } });
+  }).catch(e=>console.warn('sfx.json', e));
+  document.addEventListener('click', e => {
+    const t = e.target; if(!t || !t.closest) return;
+    if(t.closest('#sfx-toggle')) return;
+    if(t.closest('#loot-alert,#shop-alert,#prop-alert,#lvlup-alert')) return fpSfx('open');
+    if(t.closest('.tab,.inv-tab')) return fpSfx('tab');
+    if(t.closest('.ieq-btn')) return fpSfx('equip');
+    if(t.closest('button,.btn,.sel-btn,.gen-btn,.hbtn,.jbtn,.iqbtn,.idel-btn,.mf-die-btn,.hr-btn,.md')) return fpSfx('click');
+  }, true);
+}
+initSfx();
+
+// ============================================================
 //
