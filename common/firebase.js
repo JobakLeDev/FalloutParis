@@ -187,7 +187,9 @@ function radioInitFollower(){
   const v = document.getElementById('rad-vol'); if(v) v.value = _radioVol;
   _radioUpdateMuteBtn();
 }
-function _radioUpdateMuteBtn(){ const b=document.getElementById('rad-mute'); if(b){ b.textContent = _radioMuted ? '🔇' : '🔊'; b.classList.toggle('off', _radioMuted); } }
+const _SPK_ON  = '<svg class="ic" viewBox="0 0 24 24"><path fill="currentColor" d="M4 9v6h4l5 4V5L8 9H4z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>';
+const _SPK_OFF = '<svg class="ic" viewBox="0 0 24 24"><path fill="currentColor" d="M4 9v6h4l5 4V5L8 9H4z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M16 9.5l5 5M21 9.5l-5 5"/></svg>';
+function _radioUpdateMuteBtn(){ const b=document.getElementById('rad-mute'); if(b){ b.innerHTML = _radioMuted ? _SPK_OFF : _SPK_ON; b.classList.toggle('off', _radioMuted); } }
 function applyRadio(){
   if(!_radioAudio) radioInitFollower();
   const box = document.getElementById('hdr-radio');

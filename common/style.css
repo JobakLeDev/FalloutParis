@@ -8,7 +8,7 @@
 
 :root{
   --ui-scale: clamp(1, calc(100vw / 1600), 1.5);
-  --g:#5dbe5d;--gd:#3a7a3a;--gk:#1a3a1a;--bg:#0c150c;--p:#111d11;--p2:#162016;--b:#253825;--b2:#3a5c3a;--t:#7ed87e;--td:#4a7a4a;--tb:#b0f0b0;--am:#e8a820;--rd:#e04040;--rdk:#5a1a1a;--sc:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.12) 2px,rgba(0,0,0,0.12) 4px);
+  --g:#5dbe5d;--gd:#3a7a3a;--gk:#1a3a1a;--bg:#0c150c;--p:#111d11;--p2:#162016;--b:#253825;--b2:#3a5c3a;--t:#7ed87e;--td:#4a7a4a;--tb:#b0f0b0;--am:#b6a258;--am-br:#e8a820;--rd:#e04040;--rdk:#5a1a1a;--sc:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.12) 2px,rgba(0,0,0,0.12) 4px);
 }
 /* Échelle globale : 1rem = font-size racine, pilotée par --ui-scale */
 html{font-size:clamp(14px, calc(12px * var(--ui-scale)), 22px);}

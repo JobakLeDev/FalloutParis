@@ -28,7 +28,7 @@ html, body { height: 100%; overflow: hidden; }
   display:none; align-items:center; gap:0.6rem;
   margin:0.4rem 0; padding:0.55rem 0.9rem; cursor:pointer;
   background:linear-gradient(90deg, rgba(232,168,32,0.18), rgba(232,168,32,0.05));
-  border:1px solid var(--am); color:var(--am);
+  border:1px solid var(--am-br); color:var(--am-br);
   font-family:'Share Tech Mono',monospace; font-size:0.8rem; letter-spacing:1px;
   animation:lvlpulse 1.4s ease-in-out infinite;
 }
@@ -150,13 +150,13 @@ html, body { height: 100%; overflow: hidden; }
   display:none; align-items:center; gap:0.6rem;
   margin:0.4rem 0; padding:0.55rem 0.9rem; cursor:pointer;
   background:linear-gradient(90deg, rgba(232,168,32,0.18), rgba(232,168,32,0.05));
-  border:1px solid var(--am); color:var(--tb);
+  border:1px solid var(--am-br); color:var(--tb);
   font-family:'Share Tech Mono',monospace; font-size:0.8rem; letter-spacing:1px;
   animation:proppulse 1.5s ease-in-out infinite;
 }
 #prop-alert:hover{ background:rgba(232,168,32,0.28); }
 #prop-alert .prop-ico{ font-size:1.1rem; }
-#prop-alert b{ color:var(--am); }
+#prop-alert b{ color:var(--am-br); }
 @keyframes proppulse{ 0%,100%{box-shadow:0 0 0 rgba(232,168,32,0);} 50%{box-shadow:0 0 14px rgba(232,168,32,0.45);} }
 #shop-alert{
   display:none; align-items:center; gap:0.6rem;
@@ -247,7 +247,8 @@ html, body { height: 100%; overflow: hidden; }
 /* ===== RADIO (widget bandeau, diffusion MJ) ===== */
 .hdr-left-col{ display:flex; flex-direction:column; gap:3px; }
 .hdr-radio{ display:none; align-items:center; gap:5px; margin-top:2px; padding:2px 6px; border:1px solid var(--b2); background:#0a140a; max-width:14rem; }
-.hr-btn{ background:none; border:0; color:var(--g); cursor:pointer; font-size:0.95rem; line-height:1; padding:1px 2px; }
+.hr-btn{ background:none; border:0; color:var(--g); cursor:pointer; line-height:0; padding:1px 2px; display:flex; align-items:center; }
+.hr-btn .ic{ width:1.05rem; height:1.05rem; display:block; }
 .hr-btn.off{ color:var(--td); }
 .hr-btn:hover{ filter:drop-shadow(0 0 4px rgba(93,190,93,.8)); }
 .hr-vol{ width:64px; accent-color:var(--g); vertical-align:middle; }
