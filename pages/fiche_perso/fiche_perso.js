@@ -149,7 +149,11 @@ function renderRadioStations(){
       <span class="rs-desc">${esc(s.desc||'')} · ${n} titre${n>1?'s':''}</span></button>`;
   }).join('');
 }
-function _radioSrc(track){ return /^https?:/i.test(track) ? track : ('../../'+_radio.folder+'/'+track); }
+function _radioSrc(track){
+  if(/^https?:/i.test(track)) return track;
+  const enc = track.split('/').map(encodeURIComponent).join('/');   // gère espaces/accents/!
+  return '../../' + _radio.folder + '/' + enc;
+}
 function radioPlayStation(id){
   const s = _radio.stations.find(x=>x.id===id); if(!s) return;
   _radio.station = s; _radio.idx = 0;
