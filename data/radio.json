@@ -1,0 +1,17 @@
+{
+  "folder": "audio",
+  "stations": [
+    {
+      "id": "libre",
+      "name": "Radio Libre Paris",
+      "desc": "Chansons d'avant-guerre",
+      "tracks": []
+    },
+    {
+      "id": "ambiance",
+      "name": "Fréquence Souterraine",
+      "desc": "Nappes et ambiances du métro",
+      "tracks": []
+    }
+  ]
+}

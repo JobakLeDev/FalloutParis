@@ -222,3 +222,24 @@ html, body { height: 100%; overflow: hidden; }
 .caps-ic{ color:var(--am); font-size:0.9rem; }
 .caps-lbl{ font-size:0.6rem; letter-spacing:2px; color:var(--td); }
 .caps-val{ margin-left:auto; font-family:'Oswald',sans-serif; font-size:1.05rem; color:var(--am); }
+
+/* ===== RADIO ===== */
+.radio-wrap{ display:flex; gap:10px; align-items:flex-start; flex-wrap:wrap; }
+.radio-stations{ flex:1 1 240px; min-width:200px; display:flex; flex-direction:column; gap:5px; max-height:46vh; overflow-y:auto; }
+.rad-station{ display:flex; flex-direction:column; gap:2px; text-align:left; background:#060d06; border:1px solid var(--b2); color:var(--t); font-family:'Share Tech Mono',monospace; padding:8px 10px; cursor:pointer; }
+.rad-station:hover{ border-color:var(--g); background:var(--gk); }
+.rad-station.on{ border-color:var(--g); background:var(--gk); box-shadow:0 0 8px rgba(93,190,93,.35); }
+.rs-name{ font-size:.82rem; color:var(--tb); letter-spacing:.5px; }
+.rs-desc{ font-size:.64rem; color:var(--td); }
+.radio-player{ flex:1 1 240px; min-width:220px; background:#0a140a; border:1px solid var(--b); padding:12px; display:flex; flex-direction:column; gap:10px; }
+.rad-now{ font-family:'Oswald',sans-serif; font-size:1rem; color:var(--g); letter-spacing:1px; }
+.rad-track{ font-size:.8rem; color:var(--tb); min-height:1em; text-transform:capitalize; }
+.rad-ctrls{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.rad-btn{ background:#060d06; border:1px solid var(--b2); color:var(--t); font-size:1rem; width:34px; height:30px; cursor:pointer; }
+.rad-btn:hover{ border-color:var(--g); color:var(--tb); }
+.rad-btn.on{ border-color:var(--am); color:var(--am); }
+.rad-play{ width:42px; color:var(--g); }
+.rad-vol-wrap{ display:flex; align-items:center; gap:5px; margin-left:auto; font-size:.8rem; color:var(--td); }
+.rad-vol-wrap input{ width:90px; accent-color:var(--g); }
+.rad-hint{ font-size:.62rem; color:var(--td); margin-top:8px; }
+.rad-empty{ color:var(--td); font-size:.72rem; padding:1rem; text-align:center; }
