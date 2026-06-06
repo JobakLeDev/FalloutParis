@@ -212,7 +212,16 @@ function applyRadio(){
   } else {
     if(_radioMuted) _radioAudio.pause(); else if(_radioAudio.paused) _radioAudio.play().catch(()=>{});
   }
-  if(lbl) lbl.textContent = (d.name || d.station || 'Radio') + ((d.trackLabel) ? ' — ' + d.trackLabel : '');
+  if(lbl){
+    const text = (d.name || d.station || 'Radio') + (d.trackLabel ? ' — ' + d.trackLabel : '');
+    lbl.innerHTML = '<span class="mq">' + esc(text) + '</span>';
+    requestAnimationFrame(() => {
+      const mq = lbl.querySelector('.mq'); if(!mq) return;
+      const over = mq.scrollWidth - lbl.clientWidth;
+      if(over > 4){ lbl.classList.add('scrolling'); lbl.style.setProperty('--mq-shift', (-over - 6) + 'px'); lbl.style.setProperty('--mq-dur', Math.max(4, (over + 6) / 22) + 's'); }
+      else { lbl.classList.remove('scrolling'); lbl.style.removeProperty('--mq-shift'); }
+    });
+  }
 }
 function radioMute(){
   _radioMuted = !_radioMuted;

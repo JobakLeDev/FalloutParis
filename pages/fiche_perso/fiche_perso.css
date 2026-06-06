@@ -251,4 +251,7 @@ html, body { height: 100%; overflow: hidden; }
 .hr-btn.off{ color:var(--td); }
 .hr-btn:hover{ filter:drop-shadow(0 0 4px rgba(93,190,93,.8)); }
 .hr-vol{ width:64px; accent-color:var(--g); vertical-align:middle; }
-.hr-track{ font-size:0.58rem; color:var(--am); max-width:170px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-transform:capitalize; }
+.hr-track{ font-size:0.58rem; color:var(--am); max-width:170px; overflow:hidden; white-space:nowrap; text-transform:capitalize; }
+.hr-track .mq{ display:inline-block; white-space:nowrap; }
+.hr-track.scrolling .mq{ animation:hrMarquee var(--mq-dur,8s) linear infinite alternate; }
+@keyframes hrMarquee{ from{ transform:translateX(0); } to{ transform:translateX(var(--mq-shift,0)); } }
