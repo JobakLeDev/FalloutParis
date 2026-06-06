@@ -179,80 +179,125 @@
       </div>
     </div>
 
-    <!-- RENCONTRES + BUTIN (horizontal, sous Actions rapides) -->
+    <!-- 2 colonnes : (Rencontres → Combats actifs) · (Butin → Boutique) -->
     <div class="lower-row">
 
-      <div class="rencontre-pnl lr-col" id="rencontre-pnl-main">
-        <div class="pnl-title pnl-head">
-          <button class="pnl-toggle" onclick="togglePanel('rencontre-pnl-main')">▾</button>
-          <span class="pnl-head-label">Rencontres & Déplacements</span>
-        </div>
-        <div class="rencontre-controls">
-          <div class="ctrl-row">
-            <span class="ctrl-lbl">Zone</span>
-            <select class="ctrl-sel" id="zone-sel"></select>
+      <div class="lr-col">
+
+        <div class="rencontre-pnl" id="rencontre-pnl-main">
+          <div class="pnl-title pnl-head">
+            <button class="pnl-toggle" onclick="togglePanel('rencontre-pnl-main')">▾</button>
+            <span class="pnl-head-label">Rencontres & Déplacements</span>
           </div>
-          <div class="ctrl-row">
-            <span class="ctrl-lbl">Occupation</span>
-            <select class="ctrl-sel" id="occ-sel"></select>
+          <div class="rencontre-controls">
+            <div class="ctrl-row">
+              <span class="ctrl-lbl">Zone</span>
+              <select class="ctrl-sel" id="zone-sel"></select>
+            </div>
+            <div class="ctrl-row">
+              <span class="ctrl-lbl">Occupation</span>
+              <select class="ctrl-sel" id="occ-sel"></select>
+            </div>
+            <div class="ctrl-row">
+              <span class="ctrl-lbl">Variation</span>
+              <select class="ctrl-sel" id="var-sel"></select>
+            </div>
+            <div class="ctrl-row">
+              <span class="ctrl-lbl">Menace</span>
+              <select class="ctrl-sel" id="threat-sel"></select>
+            </div>
+            <div class="ctrl-row">
+              <span class="ctrl-lbl">Créneaux</span>
+              <input type="number" class="ctrl-input" id="nb-slots" value="4" min="1" max="12" title="Nombre de jets sur le pool (none = créneau vide)">
+              <span class="ctrl-lbl" style="margin-left:8px">Unités dépl.</span>
+              <input type="number" class="ctrl-input" id="nb-unites" value="1" min="1" max="20">
+            </div>
           </div>
-          <div class="ctrl-row">
-            <span class="ctrl-lbl">Variation</span>
-            <select class="ctrl-sel" id="var-sel"></select>
+          <div class="gen-btns">
+            <button class="gen-btn" onclick="genRencontre()">⚔ Générer rencontre</button>
+            <button class="gen-btn dep" onclick="genDeplacement()">🚶 Déplacement</button>
           </div>
-          <div class="ctrl-row">
-            <span class="ctrl-lbl">Menace</span>
-            <select class="ctrl-sel" id="threat-sel"></select>
+          <div class="gen-btns" style="margin-top:6px">
+            <button class="gen-btn" style="grid-column:1/-1;border-color:var(--b2);color:var(--td)" onclick="apercuPool()">📊 Aperçu des probabilités</button>
           </div>
-          <div class="ctrl-row">
-            <span class="ctrl-lbl">Créneaux</span>
-            <input type="number" class="ctrl-input" id="nb-slots" value="4" min="1" max="12" title="Nombre de jets sur le pool (none = créneau vide)">
-            <span class="ctrl-lbl" style="margin-left:8px">Unités dépl.</span>
-            <input type="number" class="ctrl-input" id="nb-unites" value="1" min="1" max="20">
+          <div id="rencontre-panel"></div>
+          <div id="btn-combat-wrap" style="display:none;margin-top:10px">
+            <button id="btn-vers-combat" class="gen-btn" onclick="lancerCombat()" style="width:100%;border-color:var(--rd);color:var(--rd);background:var(--rdk)">
+              ⚔ Ouvrir l'écran combat
+            </button>
           </div>
         </div>
-        <div class="gen-btns">
-          <button class="gen-btn" onclick="genRencontre()">⚔ Générer rencontre</button>
-          <button class="gen-btn dep" onclick="genDeplacement()">🚶 Déplacement</button>
+
+        <div class="rencontre-pnl" id="combats-actifs">
+          <div class="pnl-title pnl-head">
+            <button class="pnl-toggle" onclick="togglePanel('combats-actifs')">▾</button>
+            <span class="pnl-head-label">⚔ Combats actifs</span>
+            <button class="sel-btn" onclick="renderCombatsActifs()" style="font-size:9px">↻ Rafraîchir</button>
+          </div>
+          <div id="combats-actifs-list"><div class="empty" style="font-size:8px;color:var(--td);padding:10px">Chargement...</div></div>
         </div>
-        <div class="gen-btns" style="margin-top:6px">
-          <button class="gen-btn" style="grid-column:1/-1;border-color:var(--b2);color:var(--td)" onclick="apercuPool()">📊 Aperçu des probabilités</button>
-        </div>
-        <div id="rencontre-panel"></div>
-        <div id="btn-combat-wrap" style="display:none;margin-top:10px">
-          <button id="btn-vers-combat" class="gen-btn" onclick="lancerCombat()" style="width:100%;border-color:var(--rd);color:var(--rd);background:var(--rdk)">
-            ⚔ Ouvrir l'écran combat
-          </button>
-        </div>
+
       </div>
 
-      <div class="rencontre-pnl lr-col" id="butin-pnl">
-        <div class="pnl-title pnl-head">
-          <button class="pnl-toggle" onclick="togglePanel('butin-pnl')">▾</button>
-          <span class="pnl-head-label">🎒 Butin / Fouille</span>
+      <div class="lr-col">
+
+        <div class="rencontre-pnl" id="butin-pnl">
+          <div class="pnl-title pnl-head">
+            <button class="pnl-toggle" onclick="togglePanel('butin-pnl')">▾</button>
+            <span class="pnl-head-label">🎒 Butin / Fouille</span>
+          </div>
+          <div class="ctrl-row">
+            <span class="ctrl-lbl">Lieu</span>
+            <select class="ctrl-sel" id="loot-scale">
+              <option value="1">Placard / coffre (1-2 jets)</option>
+              <option value="2" selected>Pièce (2-4 jets)</option>
+              <option value="3">Bâtiment (4-6 jets)</option>
+              <option value="4">Grande zone / cache (6-10 jets)</option>
+            </select>
+          </div>
+          <div id="loot-cats" class="loot-cats"></div>
+          <div class="gen-btns" style="margin-top:6px">
+            <button class="gen-btn" style="grid-column:1/-1" onclick="genButin()">🎲 Générer le butin</button>
+          </div>
+          <div class="loot-access">
+            <div class="ctrl-lbl" style="min-width:0">Accès joueurs <span style="color:var(--td)">(bandeau sur leur fiche)</span></div>
+            <div id="loot-access-list"></div>
+            <div style="display:flex;gap:5px;margin-top:4px">
+              <button class="bp-mini" onclick="lootAccessAll(true)">Tous</button>
+              <button class="bp-mini" onclick="lootAccessAll(false)">Aucun (fermer)</button>
+            </div>
+          </div>
+          <div id="butin-pool"></div>
         </div>
-        <div class="ctrl-row">
-          <span class="ctrl-lbl">Lieu</span>
-          <select class="ctrl-sel" id="loot-scale">
-            <option value="1">Placard / coffre (1-2 jets)</option>
-            <option value="2" selected>Pièce (2-4 jets)</option>
-            <option value="3">Bâtiment (4-6 jets)</option>
-            <option value="4">Grande zone / cache (6-10 jets)</option>
-          </select>
-        </div>
-        <div id="loot-cats" class="loot-cats"></div>
-        <div class="gen-btns" style="margin-top:6px">
-          <button class="gen-btn" style="grid-column:1/-1" onclick="genButin()">🎲 Générer le butin</button>
-        </div>
-        <div class="loot-access">
-          <div class="ctrl-lbl" style="min-width:0">Accès joueurs <span style="color:var(--td)">(bandeau sur leur fiche)</span></div>
-          <div id="loot-access-list"></div>
-          <div style="display:flex;gap:5px;margin-top:4px">
-            <button class="bp-mini" onclick="lootAccessAll(true)">Tous</button>
-            <button class="bp-mini" onclick="lootAccessAll(false)">Aucun (fermer)</button>
+
+        <div class="rencontre-pnl" id="boutique-pnl">
+          <div class="pnl-title pnl-head">
+            <button class="pnl-toggle" onclick="togglePanel('boutique-pnl')">▾</button>
+            <span class="pnl-head-label">🛒 Boutique / Marchand</span>
+          </div>
+          <div class="ctrl-row">
+            <span class="ctrl-lbl">Nom</span>
+            <input type="text" class="ctrl-sel" id="shop-name" placeholder="Marchand itinérant" style="flex:1">
+          </div>
+          <div class="ctrl-row">
+            <span class="ctrl-lbl">Marge ×</span>
+            <input type="number" class="ctrl-input" id="shop-markup" value="1" min="0.1" step="0.1" title="Multiplicateur de prix (1 = normal, 1.5 = cher)">
+            <span class="ctrl-lbl" style="margin-left:8px">Articles</span>
+            <input type="number" class="ctrl-input" id="shop-size" value="12" min="1" max="40">
+          </div>
+          <div class="gen-btns" style="margin-top:6px">
+            <button class="gen-btn" style="grid-column:1/-1" onclick="genBoutique()">🎲 Générer le stock (par rareté)</button>
+          </div>
+          <div id="shop-summary" style="margin-top:6px"></div>
+          <div class="gen-btns" style="margin-top:6px">
+            <button class="gen-btn" onclick="ouvrirBoutique()">🔓 Ouvrir aux sélectionnés</button>
+            <button class="gen-btn dep" onclick="fermerBoutique()">🔒 Fermer</button>
+          </div>
+          <div class="gen-btns" style="margin-top:6px">
+            <button class="gen-btn" style="grid-column:1/-1;border-color:var(--b2);color:var(--td)" onclick="clearBoutique()">🗑 Supprimer la boutique</button>
           </div>
         </div>
-        <div id="butin-pool"></div>
+
       </div>
 
     </div>
@@ -281,45 +326,6 @@
       </div>
       <div id="parties-list"></div>
       <div id="unassigned-players"></div>
-    </div>
-
-    <!-- COMBATS ACTIFS -->
-    <div class="rencontre-pnl" id="combats-actifs" style="margin-top:10px">
-      <div class="pnl-title pnl-head">
-        <button class="pnl-toggle" onclick="togglePanel('combats-actifs')">▾</button>
-        <span class="pnl-head-label">⚔ Combats actifs</span>
-        <button class="sel-btn" onclick="renderCombatsActifs()" style="font-size:9px">↻ Rafraîchir</button>
-      </div>
-      <div id="combats-actifs-list"><div class="empty" style="font-size:8px;color:var(--td);padding:10px">Chargement...</div></div>
-    </div>
-
-    <!-- BOUTIQUE / MARCHAND -->
-    <div class="rencontre-pnl" id="boutique-pnl" style="margin-top:10px">
-      <div class="pnl-title pnl-head">
-        <button class="pnl-toggle" onclick="togglePanel('boutique-pnl')">▾</button>
-        <span class="pnl-head-label">🛒 Boutique / Marchand</span>
-      </div>
-      <div class="ctrl-row">
-        <span class="ctrl-lbl">Nom</span>
-        <input type="text" class="ctrl-sel" id="shop-name" placeholder="Marchand itinérant" style="flex:1">
-      </div>
-      <div class="ctrl-row">
-        <span class="ctrl-lbl">Marge ×</span>
-        <input type="number" class="ctrl-input" id="shop-markup" value="1" min="0.1" step="0.1" title="Multiplicateur de prix (1 = normal, 1.5 = cher)">
-        <span class="ctrl-lbl" style="margin-left:8px">Articles</span>
-        <input type="number" class="ctrl-input" id="shop-size" value="12" min="1" max="40">
-      </div>
-      <div class="gen-btns" style="margin-top:6px">
-        <button class="gen-btn" style="grid-column:1/-1" onclick="genBoutique()">🎲 Générer le stock (par rareté)</button>
-      </div>
-      <div id="shop-summary" style="margin-top:6px"></div>
-      <div class="gen-btns" style="margin-top:6px">
-        <button class="gen-btn" onclick="ouvrirBoutique()">🔓 Ouvrir aux sélectionnés</button>
-        <button class="gen-btn dep" onclick="fermerBoutique()">🔒 Fermer</button>
-      </div>
-      <div class="gen-btns" style="margin-top:6px">
-        <button class="gen-btn" style="grid-column:1/-1;border-color:var(--b2);color:var(--td)" onclick="clearBoutique()">🗑 Supprimer la boutique</button>
-      </div>
     </div>
 
     <!-- RADIO (diffusion synchronisée) -->
