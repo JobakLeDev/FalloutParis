@@ -215,6 +215,21 @@ function rGenWeap(){
     </div>`;
   });
 }
+// Noms de TOUTES les pièces équipées couvrant une zone (tenue Body/All + armure spécifique).
+// Pièce spécifique à la zone affichée en premier (couche externe la plus pertinente).
+function armorNamesFor(k){
+  const ZM={head:'Head',torso:'Torso',armL:'Arm',armR:'Arm',legL:'Leg',legR:'Leg'};
+  const arms=char.inventory.filter(it=>{
+    if(!it.equipped)return false;
+    const db=DB.armor.find(a=>a.n===it.name);if(!db)return false;
+    return db.z===ZM[k] || (db.z==='Body'&&k!=='head') || db.z==='All';
+  });
+  arms.sort((a,b)=>{
+    const za=DB.armor.find(x=>x.n===a.name)?.z, zb=DB.armor.find(x=>x.n===b.name)?.z;
+    return ((za===ZM[k])?0:1)-((zb===ZM[k])?0:1);
+  });
+  return arms.map(a=>a.name);
+}
 function rLocsGen(){
   const ZM={head:'Head',torso:'Torso',armL:'Arm',armR:'Arm',legL:'Leg',legR:'Leg'};
   const LOCS={
@@ -228,19 +243,11 @@ function rLocsGen(){
   Object.entries(LOCS).forEach(([k,loc])=>{
     const el=document.getElementById(loc.el);if(!el)return;
     const rd=getLocRD(k);
-    // Chercher armure spécifique à la zone OU tenue Body (sauf tête)
-    const arm=char.inventory.find(it=>{
-      if(!it.equipped)return false;
-      const db=DB.armor.find(a=>a.n===it.name);if(!db)return false;
-      if(db.z===ZM[k])return true;
-      if(db.z==='Body'&&k!=='head')return true;
-      if(db.z==='All')return true;
-      return false;
-    });
     const center=k==='torso';
+    const names=armorNamesFor(k);
     el.innerHTML=`<div class="loc-card-cross${char.wounds[k]?' hurt':''}${center?' center-loc':''}">
       <span class="lcc-name">${loc.l}</span>
-      <span class="lcc-arm">${arm?arm.name:'—'}</span>
+      <span class="lcc-arm">${names.length?names.join(' + '):'—'}</span>
       <div class="lcc-rds">
         <span class="lcc-rd">Ph:<b class="${rd.phys>0?'nz':''}">${rd.phys}</b></span>
         <span class="lcc-rd">En:<b class="${rd.en>0?'nz':''}">${rd.en}</b></span>
@@ -342,8 +349,8 @@ function rLocs(){
   el.innerHTML='';
   LOCS.forEach(loc=>{
     const rd=getLocRD(loc.k);
-    const arm=char.inventory.find(it=>it.equipped&&DB.armor.find(a=>a.n===it.name&&a.z===ZM[loc.k]));
-    el.innerHTML+=`<div class="lcard"><div class="lname">${loc.l}<div class="wdot${char.wounds[loc.k]?' hurt':''}" onclick="tWound('${loc.k}')"></div></div><div class="larm">${arm?arm.name:'—'}</div><div class="lrds"><div class="rdi"><span class="rdl">Ph:</span><span class="rdv${rd.phys>0?' nz':''}">${rd.phys}</span></div><div class="rdi"><span class="rdl">En:</span><span class="rdv${rd.en>0?' nz':''}">${rd.en}</span></div><div class="rdi"><span class="rdl">Ra:</span><span class="rdv${rd.rad>0?' nz':''}">${rd.rad}</span></div></div></div>`;
+    const names=armorNamesFor(loc.k);
+    el.innerHTML+=`<div class="lcard"><div class="lname">${loc.l}<div class="wdot${char.wounds[loc.k]?' hurt':''}" onclick="tWound('${loc.k}')"></div></div><div class="larm">${names.length?names.join(' + '):'—'}</div><div class="lrds"><div class="rdi"><span class="rdl">Ph:</span><span class="rdv${rd.phys>0?' nz':''}">${rd.phys}</span></div><div class="rdi"><span class="rdl">En:</span><span class="rdv${rd.en>0?' nz':''}">${rd.en}</span></div><div class="rdi"><span class="rdl">Ra:</span><span class="rdv${rd.rad>0?' nz':''}">${rd.rad}</span></div></div></div>`;
   });
 }
 
