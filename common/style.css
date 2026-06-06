@@ -16,6 +16,29 @@ html{font-size:clamp(14px, calc(12px * var(--ui-scale)), 22px);}
 body{background:var(--bg);color:var(--t);font-family:'Share Tech Mono',monospace;min-height:100vh;background-image:var(--sc);}
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 50% 20%,#182818 0%,#0c150c 65%);z-index:-1;}
 
+/* ============================================================
+   EFFET CRT GLOBAL (toutes les pages incluant common/style.css)
+   --crt-green : intensité du voile phosphore vert (0 = off)
+   --crt-scan  : opacité des lignes de balayage
+   ============================================================ */
+:root{ --crt-green:0.20; --crt-scan:0.22; }
+/* Scanlines + vignette (courbure du tube) + léger scintillement */
+html::before{
+  content:''; position:fixed; inset:-2px; z-index:99998; pointer-events:none;
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,var(--crt-scan)) 0, rgba(0,0,0,var(--crt-scan)) 1px, transparent 1.6px, transparent 3px),
+    radial-gradient(ellipse 130% 130% at 50% 50%, transparent 58%, rgba(0,0,0,0.30) 84%, rgba(0,0,0,0.6) 100%);
+  mix-blend-mode:multiply;
+  animation:crtFlicker 6s steps(48) infinite;
+}
+/* Voile phosphore vert : recolore tout (y compris les pictos) vers le vert CRT */
+html::after{
+  content:''; position:fixed; inset:0; z-index:99999; pointer-events:none;
+  background:#5dbe5d; opacity:var(--crt-green); mix-blend-mode:color;
+}
+@keyframes crtFlicker{ 0%,100%{opacity:.92} 8%{opacity:1} 9%{opacity:.85} 12%{opacity:.97} 50%{opacity:.95} 51%{opacity:1} }
+@media (prefers-reduced-motion: reduce){ html::before{ animation:none; } }
+
 /* Conteneur Pip-Boy : largeur responsive, plus de zoom fixe (transform) */
 .pip{width:min(96vw,2200px);margin:0 auto;padding:1.333rem;}
 
