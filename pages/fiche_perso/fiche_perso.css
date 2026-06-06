@@ -246,7 +246,10 @@ html, body { height: 100%; overflow: hidden; }
 
 /* ===== RADIO (widget bandeau, diffusion MJ) ===== */
 .hdr-left-col{ display:flex; flex-direction:column; gap:3px; }
-.hdr-radio{ display:none; align-items:center; gap:5px; margin-top:2px; padding:2px 6px; border:1px solid var(--b2); background:#0a140a; max-width:14rem; }
+/* Radio en élément flottant, bas-gauche de la page */
+.hdr-radio{ display:none; position:fixed; left:0.8rem; bottom:0.8rem; z-index:90;
+  align-items:center; gap:7px; padding:6px 10px; border:1px solid var(--b2); background:#0a140a;
+  box-shadow:0 0 12px rgba(0,0,0,.6); max-width:20rem; }
 .hr-btn{ background:none; border:0; color:var(--g); cursor:pointer; line-height:0; padding:1px 2px; display:flex; align-items:center; }
 .hr-btn .ic{ width:1.05rem; height:1.05rem; display:block; }
 .hr-btn.off{ color:var(--td); }
