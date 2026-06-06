@@ -116,68 +116,9 @@ function sw(tab){
       f.contentWindow.postMessage('journal-refresh','*');
     }
   }
-  if(tab==='radio') initRadio();
   curTab=tab; rAll();
 }
-
-// ============================================================
-// RADIO — manifeste data/radio.json + dossier audio/ ; lecteur HTML5 persistant
-// ============================================================
-let _radio = { loaded:false, stations:[], folder:'audio', station:null, idx:0, shuffle:false, audio:null };
-function initRadio(){
-  if(_radio.loaded) return;
-  _radio.loaded = true;
-  _radio.audio = new Audio();
-  _radio.audio.volume = (parseInt(localStorage.getItem('fp_radioVol')||'70')/100);
-  const v=document.getElementById('rad-vol'); if(v) v.value = Math.round(_radio.audio.volume*100);
-  _radio.audio.addEventListener('ended', radioNext);
-  _radio.audio.addEventListener('play',  ()=>{ const b=document.getElementById('rad-play'); if(b) b.textContent='⏸'; });
-  _radio.audio.addEventListener('pause', ()=>{ const b=document.getElementById('rad-play'); if(b) b.textContent='▶'; });
-  fetch('../../data/radio.json?ts='+Date.now())
-    .then(r=>r.json())
-    .then(d=>{ _radio.folder = d.folder || 'audio'; _radio.stations = Array.isArray(d.stations)?d.stations:[]; renderRadioStations(); })
-    .catch(e=>{ console.warn('radio.json', e); const el=document.getElementById('radio-stations'); if(el) el.innerHTML='<div class="rad-empty">Aucune radio (data/radio.json introuvable).</div>'; });
-}
-function renderRadioStations(){
-  const el=document.getElementById('radio-stations'); if(!el) return;
-  if(!_radio.stations.length){ el.innerHTML='<div class="rad-empty">Aucune station configurée.</div>'; return; }
-  el.innerHTML = _radio.stations.map(s=>{
-    const on = _radio.station && _radio.station.id===s.id;
-    const n = (s.tracks||[]).length;
-    return `<button class="rad-station${on?' on':''}" onclick="radioPlayStation('${s.id}')">
-      <span class="rs-name">📻 ${esc(s.name||s.id)}</span>
-      <span class="rs-desc">${esc(s.desc||'')} · ${n} titre${n>1?'s':''}</span></button>`;
-  }).join('');
-}
-function _radioSrc(track){
-  if(/^https?:/i.test(track)) return track;
-  const enc = track.split('/').map(encodeURIComponent).join('/');   // gère espaces/accents/!
-  return '../../' + _radio.folder + '/' + enc;
-}
-function radioPlayStation(id){
-  const s = _radio.stations.find(x=>x.id===id); if(!s) return;
-  _radio.station = s; _radio.idx = 0;
-  renderRadioStations();
-  if(!(s.tracks||[]).length){ document.getElementById('rad-now').textContent='Station vide — ajoute des MP3 dans data/radio.json'; document.getElementById('rad-track').textContent=''; return; }
-  _radio.idx = _radio.shuffle ? Math.floor(Math.random()*s.tracks.length) : 0;
-  radioPlayCurrent();
-}
-function radioPlayCurrent(){
-  const s=_radio.station; if(!s||!(s.tracks||[]).length) return;
-  const track = s.tracks[_radio.idx % s.tracks.length];
-  _radio.audio.src = _radioSrc(track);
-  _radio.audio.play().catch(e=>{ document.getElementById('rad-now').textContent='⚠ Lecture impossible (fichier manquant ?)'; });
-  document.getElementById('rad-now').textContent = '📡 ' + (s.name||s.id);
-  document.getElementById('rad-track').textContent = track.replace(/^.*\//,'').replace(/\.(mp3|ogg|m4a|wav)$/i,'').replace(/[-_]/g,' ');
-}
-function radioToggle(){
-  if(!_radio.station){ const f=_radio.stations[0]; if(f) radioPlayStation(f.id); return; }
-  if(_radio.audio.paused) _radio.audio.play().catch(()=>{}); else _radio.audio.pause();
-}
-function radioNext(){ const s=_radio.station; if(!s||!(s.tracks||[]).length) return; _radio.idx = _radio.shuffle ? Math.floor(Math.random()*s.tracks.length) : (_radio.idx+1)%s.tracks.length; radioPlayCurrent(); }
-function radioPrev(){ const s=_radio.station; if(!s||!(s.tracks||[]).length) return; _radio.idx = (_radio.idx-1+s.tracks.length)%s.tracks.length; radioPlayCurrent(); }
-function radioShuffle(){ _radio.shuffle=!_radio.shuffle; const b=document.getElementById('rad-shuffle'); if(b) b.classList.toggle('on',_radio.shuffle); }
-function radioVol(v){ if(_radio.audio) _radio.audio.volume = (parseInt(v)||0)/100; try{ localStorage.setItem('fp_radioVol', v); }catch(e){} }
+// Radio : diffusion synchronisée pilotée par le MJ — suiveur défini dans firebase.js (header)
 
 function swInv(sub){
   document.querySelectorAll('.inv-tab').forEach((el,i)=>{

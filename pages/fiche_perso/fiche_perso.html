@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fallout Paris — Fiche Personnage</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../../common/style.css?v=28">
-  <link rel="stylesheet" href="fiche_perso.css?v=28">
+  <link rel="stylesheet" href="../../common/style.css?v=29">
+  <link rel="stylesheet" href="fiche_perso.css?v=29">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
@@ -23,6 +23,11 @@
     </span>
     <span id="msg-badge" style="display:none">0</span>
     <div class="logo">PIP-BOY 3000<small>Fallout Paris</small></div>
+    <div class="hdr-radio" id="hdr-radio" style="display:none">
+      <button class="hr-btn" id="rad-mute" onclick="radioMute()" title="Couper / Reprendre">🔊</button>
+      <input type="range" id="rad-vol" class="hr-vol" min="0" max="100" value="70" oninput="radioVol(this.value)" title="Volume">
+      <span class="hr-track" id="rad-bc-track"></span>
+    </div>
   </div>
   <div class="hdr-mid">
     <div class="name-inp" id="name-inp">...</div>
@@ -70,7 +75,6 @@
   <div class="tab" onclick="sw('carte')">CARTE</div>
   <div class="tab" onclick="sw('quetes')">QUÊTES</div>
   <div class="tab" onclick="sw('journal')">JOURNAL</div>
-  <div class="tab" onclick="sw('radio')">RADIO</div>
 </div>
 
 <div class="body">
@@ -261,28 +265,6 @@
   <iframe id="journal-frame" title="Journal"></iframe>
 </div>
 
-<!-- RADIO -->
-<div class="tc" id="tc-radio">
-  <div class="pnl">
-    <div class="ptitle">📻 Radio</div>
-    <div class="radio-wrap">
-      <div class="radio-stations" id="radio-stations"><div class="rad-empty">Chargement…</div></div>
-      <div class="radio-player">
-        <div class="rad-now" id="rad-now">— Sélectionne une station —</div>
-        <div class="rad-track" id="rad-track"></div>
-        <div class="rad-ctrls">
-          <button class="rad-btn" id="rad-prev" onclick="radioPrev()" title="Précédent">⏮</button>
-          <button class="rad-btn rad-play" id="rad-play" onclick="radioToggle()" title="Lecture/Pause">▶</button>
-          <button class="rad-btn" id="rad-next" onclick="radioNext()" title="Suivant">⏭</button>
-          <button class="rad-btn" id="rad-shuffle" onclick="radioShuffle()" title="Aléatoire">🔀</button>
-          <span class="rad-vol-wrap">🔊<input type="range" id="rad-vol" min="0" max="100" value="70" oninput="radioVol(this.value)"></span>
-        </div>
-      </div>
-    </div>
-    <div class="rad-hint">Ajoute des MP3 dans le dossier <b>audio/</b> et liste-les dans <b>data/radio.json</b>.</div>
-  </div>
-</div>
-
 </div><!-- /body -->
 </div><!-- /pip -->
 
@@ -370,9 +352,9 @@
   </div>
 </div>
 
-  <script src="../../common/shared.js?v=28"></script>
-  <script src="../../common/db.js?v=28"></script>
-  <script src="fiche_perso.js?v=28"></script>
-  <script src="../../common/firebase.js?v=28"></script>
+  <script src="../../common/shared.js?v=29"></script>
+  <script src="../../common/db.js?v=29"></script>
+  <script src="fiche_perso.js?v=29"></script>
+  <script src="../../common/firebase.js?v=29"></script>
 </body>
 </html>

@@ -162,7 +162,65 @@ function startSync() {
       (err) => console.warn('boutiques indisponible:', err && err.code)
     );
   } catch(e){ console.warn('boutiques listener KO:', e); }
+  // Radio — diffusion synchronisée pilotée par le MJ (le joueur suit ; couper + volume)
+  try {
+    radioInitFollower();
+    db.collection('radio').doc('current').onSnapshot(
+      (s) => { try { _radioState = s.exists ? s.data() : null; applyRadio(); } catch(e){ console.error('radio:', e); } },
+      (err) => console.warn('radio indisponible:', err && err.code)
+    );
+  } catch(e){ console.warn('radio listener KO:', e); }
 }
+
+// ============================================================
+// RADIO (côté joueur) — suit /radio/current, audio persistant dans le header
+// ============================================================
+let _radioAudio = null, _radioState = null;
+let _radioMuted = (localStorage.getItem('fp_radioMuted') === '1');
+let _radioVol   = parseInt(localStorage.getItem('fp_radioVol') || '70');
+function _radioSrcBuild(folder, track){
+  if(/^https?:/i.test(track)) return track;
+  return '../../' + (folder||'audio') + '/' + track.split('/').map(encodeURIComponent).join('/');
+}
+function radioInitFollower(){
+  if(!_radioAudio){ _radioAudio = new Audio(); _radioAudio.volume = _radioVol/100; }
+  const v = document.getElementById('rad-vol'); if(v) v.value = _radioVol;
+  _radioUpdateMuteBtn();
+}
+function _radioUpdateMuteBtn(){ const b=document.getElementById('rad-mute'); if(b){ b.textContent = _radioMuted ? '🔇' : '🔊'; b.classList.toggle('off', _radioMuted); } }
+function applyRadio(){
+  if(!_radioAudio) radioInitFollower();
+  const box = document.getElementById('hdr-radio');
+  const lbl = document.getElementById('rad-bc-track');
+  const d = _radioState;
+  if(!d || !d.playing || !d.track){
+    if(_radioAudio){ _radioAudio.pause(); _radioAudio.dataset.k=''; }
+    if(box) box.style.display = 'none';
+    return;
+  }
+  if(box) box.style.display = 'flex';
+  const key = (d.track||'') + '@' + (d.startedAt||0);
+  if(_radioAudio.dataset.k !== key){
+    _radioAudio.dataset.k = key;
+    _radioAudio.src = _radioSrcBuild(d.folder, d.track);
+    const off = (Date.now() - (d.startedAt||Date.now())) / 1000;
+    _radioAudio.addEventListener('loadedmetadata', function h(){
+      _radioAudio.removeEventListener('loadedmetadata', h);
+      if(off > 0 && isFinite(_radioAudio.duration) && off < _radioAudio.duration){ try{ _radioAudio.currentTime = off; }catch(e){} }
+    });
+    if(!_radioMuted) _radioAudio.play().catch(()=>{ if(lbl) lbl.textContent = '🔇 clique pour activer le son'; });
+  } else {
+    if(_radioMuted) _radioAudio.pause(); else if(_radioAudio.paused) _radioAudio.play().catch(()=>{});
+  }
+  if(lbl) lbl.textContent = (d.name || d.station || 'Radio') + ((d.trackLabel) ? ' — ' + d.trackLabel : '');
+}
+function radioMute(){
+  _radioMuted = !_radioMuted;
+  try{ localStorage.setItem('fp_radioMuted', _radioMuted ? '1' : '0'); }catch(e){}
+  _radioUpdateMuteBtn();
+  applyRadio();
+}
+function radioVol(v){ _radioVol = parseInt(v)||0; if(_radioAudio) _radioAudio.volume = _radioVol/100; try{ localStorage.setItem('fp_radioVol', _radioVol); }catch(e){} }
 
 // Bandeau « marchand disponible » → ouvre la modale boutique itinérante ('mj')
 function renderShopAlert(d){

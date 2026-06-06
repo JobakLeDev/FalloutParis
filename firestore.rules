@@ -63,6 +63,9 @@ service cloud.firestore {
     // ---------- Boutiques / marchands ----------
     match /boutiques/{doc} { allow read, write: if true; }
 
+    // ---------- Radio (diffusion synchronisée MJ) ----------
+    match /radio/{doc} { allow read, write: if true; }
+
     // ---------- Tout le reste : INTERDIT ----------
     // Empêche la création de collections/documents non prévus.
     match /{document=**} {

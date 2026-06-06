@@ -243,3 +243,11 @@ html, body { height: 100%; overflow: hidden; }
 .rad-vol-wrap input{ width:90px; accent-color:var(--g); }
 .rad-hint{ font-size:.62rem; color:var(--td); margin-top:8px; }
 .rad-empty{ color:var(--td); font-size:.72rem; padding:1rem; text-align:center; }
+
+/* ===== RADIO (widget bandeau, diffusion MJ) ===== */
+.hdr-radio{ display:none; align-items:center; gap:5px; margin-left:0.6rem; padding:2px 7px; border:1px solid var(--b2); background:#0a140a; }
+.hr-btn{ background:none; border:0; color:var(--g); cursor:pointer; font-size:0.95rem; line-height:1; padding:1px 2px; }
+.hr-btn.off{ color:var(--td); }
+.hr-btn:hover{ filter:drop-shadow(0 0 4px rgba(93,190,93,.8)); }
+.hr-vol{ width:64px; accent-color:var(--g); vertical-align:middle; }
+.hr-track{ font-size:0.58rem; color:var(--am); max-width:170px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-transform:capitalize; }

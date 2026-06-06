@@ -322,6 +322,31 @@
       </div>
     </div>
 
+    <!-- RADIO (diffusion synchronisée) -->
+    <div class="rencontre-pnl" id="radio-pnl" style="margin-top:10px">
+      <div class="pnl-title pnl-head">
+        <button class="pnl-toggle" onclick="togglePanel('radio-pnl')">▾</button>
+        <span class="pnl-head-label">📻 Radio — diffusion</span>
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-lbl">Station</span>
+        <select class="ctrl-sel" id="mj-radio-sel" onchange="mjRadioSelect()"></select>
+      </div>
+      <div id="mj-radio-now" style="font-size:9px;color:var(--td);margin:5px 0">Aucune diffusion.</div>
+      <div style="display:flex;gap:6px">
+        <button class="gen-btn" onclick="mjRadioPrev()" style="flex:none">⏮</button>
+        <button class="gen-btn" id="mj-radio-play" onclick="mjRadioToggle()" style="flex:1">▶ Diffuser</button>
+        <button class="gen-btn" onclick="mjRadioNext()" style="flex:none">⏭</button>
+      </div>
+      <div class="gen-btns" style="margin-top:6px">
+        <button class="gen-btn" style="grid-column:1/-1;border-color:var(--rd);color:var(--rd)" onclick="mjRadioStop()">⏹ Couper la radio (tous)</button>
+      </div>
+      <div class="ctrl-row" style="margin-top:6px">
+        <span class="ctrl-lbl">Écoute MJ</span>
+        <input type="range" id="mj-radio-vol" min="0" max="100" value="60" oninput="mjRadioVol(this.value)" style="flex:1;accent-color:var(--g)">
+      </div>
+    </div>
+
     <!-- MESSAGERIE / CONTACTS -->
     <div class="rencontre-pnl" id="contacts-pnl" style="margin-top:10px">
       <div class="pnl-title pnl-head">

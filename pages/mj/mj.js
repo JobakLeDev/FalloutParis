@@ -129,6 +129,75 @@ function startSync(){
     boutiqueData = { shops: (d.shops && typeof d.shops === 'object') ? d.shops : {} };
     renderBoutiqueMJ();
   });
+  mjRadioLoad();
+}
+
+// ============================================================
+// RADIO — conducteur MJ : choisit station/piste, écrit /radio/current (les joueurs suivent)
+// ============================================================
+let _mjRadio = { loaded:false, stations:[], folder:'audio', station:null, idx:0, audio:null, playing:false };
+function mjRadioLoad(){
+  if(_mjRadio.loaded) return; _mjRadio.loaded = true;
+  _mjRadio.audio = new Audio();
+  _mjRadio.audio.volume = (parseInt(localStorage.getItem('fp_mjRadioVol')||'60')/100);
+  const v = document.getElementById('mj-radio-vol'); if(v) v.value = Math.round(_mjRadio.audio.volume*100);
+  _mjRadio.audio.addEventListener('ended', mjRadioNext);
+  fetch('../../data/radio.json?ts='+Date.now()).then(r=>r.json()).then(d=>{
+    _mjRadio.folder = d.folder || 'audio';
+    _mjRadio.stations = Array.isArray(d.stations) ? d.stations : [];
+    const sel = document.getElementById('mj-radio-sel');
+    if(sel) sel.innerHTML = _mjRadio.stations.map(s => `<option value="${s.id}">${s.name||s.id} (${(s.tracks||[]).length})</option>`).join('');
+    _mjRadio.station = _mjRadio.stations[0] || null;
+    renderMjRadio();
+  }).catch(e => console.warn('radio.json', e));
+}
+function _mjStation(){ const id = document.getElementById('mj-radio-sel')?.value; return _mjRadio.stations.find(s => s.id === id) || _mjRadio.stations[0] || null; }
+function _mjRadioSrc(track){ if(/^https?:/i.test(track)) return track; return '../../' + _mjRadio.folder + '/' + track.split('/').map(encodeURIComponent).join('/'); }
+function mjRadioBroadcast(startedAt){
+  const s = _mjRadio.station; if(!s || !(s.tracks||[]).length) return;
+  const track = s.tracks[_mjRadio.idx % s.tracks.length];
+  const label = String(track).replace(/^.*\//,'').replace(/\.(mp3|ogg|m4a|wav)$/i,'').replace(/[-_]/g,' ');
+  db.collection('radio').doc('current').set({ playing:true, station:s.id, name:s.name||s.id, folder:_mjRadio.folder, track, trackLabel:label, startedAt: startedAt||Date.now(), ts:Date.now() }).catch(e=>console.error('radio',e));
+}
+function mjRadioPlayIdx(){
+  const s = _mjRadio.station; if(!s || !(s.tracks||[]).length){ showMsg('Station vide', true); return; }
+  _mjRadio.audio.src = _mjRadioSrc(s.tracks[_mjRadio.idx % s.tracks.length]);
+  _mjRadio.audio.play().catch(()=>{}); _mjRadio.playing = true;
+  mjRadioBroadcast(Date.now());
+  renderMjRadio();
+  logAction('Radio : « '+(s.name||s.id)+' » diffusée');
+}
+function mjRadioSelect(){ const s = _mjStation(); _mjRadio.station = s; _mjRadio.idx = 0; if(_mjRadio.playing) mjRadioPlayIdx(); else renderMjRadio(); }
+function mjRadioToggle(){
+  if(!_mjRadio.station) _mjRadio.station = _mjStation();
+  if(_mjRadio.playing){
+    _mjRadio.audio.pause(); _mjRadio.playing = false;
+    db.collection('radio').doc('current').set({ playing:false, ts:Date.now() }, { merge:true });
+    renderMjRadio();
+  } else {
+    if(_mjRadio.audio.src && _mjRadio.audio.currentTime > 0){
+      _mjRadio.audio.play().catch(()=>{}); _mjRadio.playing = true;
+      mjRadioBroadcast(Date.now() - _mjRadio.audio.currentTime*1000);
+      renderMjRadio();
+    } else mjRadioPlayIdx();
+  }
+}
+function mjRadioNext(){ const s = _mjRadio.station || _mjStation(); _mjRadio.station = s; if(!s || !(s.tracks||[]).length) return; _mjRadio.idx = (_mjRadio.idx+1) % s.tracks.length; mjRadioPlayIdx(); }
+function mjRadioPrev(){ const s = _mjRadio.station || _mjStation(); _mjRadio.station = s; if(!s || !(s.tracks||[]).length) return; _mjRadio.idx = (_mjRadio.idx-1+s.tracks.length) % s.tracks.length; mjRadioPlayIdx(); }
+function mjRadioStop(){
+  if(_mjRadio.audio){ _mjRadio.audio.pause(); _mjRadio.audio.removeAttribute('src'); }
+  _mjRadio.playing = false;
+  db.collection('radio').doc('current').set({ playing:false, track:null, ts:Date.now() });
+  renderMjRadio(); logAction('Radio coupée');
+}
+function mjRadioVol(v){ if(_mjRadio.audio) _mjRadio.audio.volume = (parseInt(v)||0)/100; try{ localStorage.setItem('fp_mjRadioVol', v); }catch(e){} }
+function renderMjRadio(){
+  const b = document.getElementById('mj-radio-play'); if(b) b.textContent = _mjRadio.playing ? '⏸ Pause' : '▶ Diffuser';
+  const el = document.getElementById('mj-radio-now'); if(!el) return;
+  const s = _mjRadio.station;
+  if(!s){ el.textContent = 'Aucune station.'; return; }
+  const t = (s.tracks||[])[_mjRadio.idx % ((s.tracks||[]).length||1)] || '—';
+  el.textContent = (_mjRadio.playing ? '📡 ' : '⏸ ') + (s.name||s.id) + ' — ' + String(t).replace(/^.*\//,'');
 }
 
 // ============================================================
@@ -342,7 +411,7 @@ function togglePartyCollapse(id){ if(collapsedParties.has(id)) collapsedParties.
 
 // Réduction des panneaux de la colonne droite (mémorisé en localStorage)
 const collapsedPanels = new Set((()=>{ try{ return JSON.parse(localStorage.getItem('fp_collapsedPanels')||'[]'); }catch(e){ return []; } })());
-const PANEL_IDS = ['actions-pnl','actionlog-pnl','clock-pnl','rencontre-pnl-main','combats-actifs','butin-pnl','boutique-pnl','contacts-pnl'];
+const PANEL_IDS = ['actions-pnl','actionlog-pnl','clock-pnl','rencontre-pnl-main','combats-actifs','butin-pnl','boutique-pnl','radio-pnl','contacts-pnl'];
 function applyPanelState(id){
   const el = document.getElementById(id); if(!el) return;
   const col = collapsedPanels.has(id);
