@@ -55,6 +55,7 @@ let lastRollDice = [];       // [{val, rerolled}]
 let lastRollTN = 0;
 let aimRerolled = false;      // true si le re-roll Aim a déjà été utilisé ce lancer
 let cibleAttaque = '';        // nom de l'ennemi ciblé (sélecteur)
+const AIM_ZONES = ['', 'Tête', 'Torse', 'Bras G.', 'Bras D.', 'Jambe G.', 'Jambe D.'];  // '' = zone non ciblée
 let lastAttackResultTs = 0;   // dédup notification résultat attaque
 let actionState = null;       // extrait de combatState.actionsDeclarees[joueurId]
 let selectedActionDraft = null; // {category, type, desc} — action en cours de saisie
@@ -843,12 +844,33 @@ function renderActionsDeclarees(){
 
   // Panneau de confirmation (action sélectionnée, pas encore envoyée)
   if(selectedActionDraft){
+    const isAtk = (selectedActionDraft.type === 'Attack' || selectedActionDraft.type === 'Aim');
+    const ennemisV = (combatState?.ennemis || []).filter(e => e.pvCur > 0);
+    const savedCible = document.getElementById('j-act-cible')?.value || cibleAttaque || '';
+    const savedZone  = document.getElementById('j-act-zone')?.value || '';
+    const inputStyle = 'box-sizing:border-box;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:monospace;font-size:8px;padding:3px 5px;outline:none';
+
+    let body = '';
+    if(isAtk){
+      if(ennemisV.length){
+        body += '<div style="display:flex;gap:4px;margin-bottom:4px">'
+          + '<select id="j-act-cible" style="flex:2;' + inputStyle + '">'
+          + ennemisV.map(e => '<option value="' + e.nom + '"' + (e.nom===savedCible?' selected':'') + '>' + e.nom + ' (' + e.pvCur + ' PV)</option>').join('')
+          + '</select>'
+          + '<select id="j-act-zone" style="flex:1;' + inputStyle + '">'
+          + AIM_ZONES.map(z => '<option value="' + z + '"' + (z===savedZone?' selected':'') + '>' + (z || '— zone —') + '</option>').join('')
+          + '</select></div>';
+      } else {
+        body += '<div style="font-size:7px;color:var(--rd);margin-bottom:4px">Aucun ennemi vivant à cibler</div>';
+      }
+    }
+    body += '<input type="text" id="j-action-details" placeholder="Precisions optionnelles (arme, note...)" style="width:100%;margin-bottom:4px;' + inputStyle + '">';
+
     html += '<div style="margin-bottom:6px;padding:5px;border:1px solid var(--am);background:#1a1200;font-size:8px">'
       + '<div style="color:var(--am);margin-bottom:2px">' + selectedActionDraft.type
       + ' <span style="color:var(--td);font-size:7px">(' + selectedActionDraft.category + ')</span></div>'
       + '<div style="color:var(--td);font-size:7px;margin-bottom:5px">' + selectedActionDraft.desc + '</div>'
-      + '<input type="text" id="j-action-details" placeholder="Precisions optionnelles (cible, objet...)"'
-      + ' style="width:100%;box-sizing:border-box;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:monospace;font-size:8px;padding:3px 5px;outline:none;margin-bottom:4px">'
+      + body
       + '<div style="display:flex;gap:4px">'
       + '<button onclick="submitActionDeclaree()" style="flex:1;background:none;border:1px solid var(--g);color:var(--g);font-family:monospace;font-size:8px;padding:3px;cursor:pointer;letter-spacing:0">→ Envoyer au MJ</button>'
       + '<button onclick="cancelActionDeclaree()" style="background:none;border:1px solid var(--rd);color:var(--rd);font-family:monospace;font-size:8px;padding:3px 8px;cursor:pointer;letter-spacing:0">✕</button>'
@@ -924,7 +946,12 @@ function prepareAction(category, type){
 async function submitActionDeclaree(){
   if(!selectedActionDraft || !db) return;
   const { category, type } = selectedActionDraft;
-  const details = document.getElementById('j-action-details')?.value?.trim() || '';
+  const free  = document.getElementById('j-action-details')?.value?.trim() || '';
+  const cible = document.getElementById('j-act-cible')?.value || '';
+  const zone  = document.getElementById('j-act-zone')?.value || '';
+  let details = '';
+  if(cible) details = '🎯 ' + cible + (zone ? ' — ' + zone : '');
+  if(free)  details += (details ? ' · ' : '') + free;
   const upd = {};
   upd['actionsDeclarees.' + joueurId + '.' + category + '.pending'] = { type, details, requestedAt: Date.now(), status: 'waiting' };
   try {
