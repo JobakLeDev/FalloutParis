@@ -7,12 +7,12 @@
   <title>Fallout Paris — Journal</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css">
-  <link rel="stylesheet" href="journal.css?v=2">
+  <link rel="stylesheet" href="journal.css?v=3">
 </head>
 <body>
 
   <div class="jhdr">
-    <div class="jhdr-title">📖 JOURNAL DE CAMPAGNE<small id="jhdr-mode">Vue joueur</small></div>
+    <div class="jhdr-title"><svg class="jic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5s3-1.4 9-1.4S21 5 21 5v14s-3-1.4-9-1.4S3 19 3 19z"/><path d="M12 4.2v14"/></svg> JOURNAL DE CAMPAGNE<small id="jhdr-mode">Vue joueur</small></div>
     <div class="jhdr-btns">
       <button class="jbtn" id="jmj-btn" onclick="demanderMJ()">🔑 Mode MJ</button>
       <span id="j-clock" class="j-clock"></span>
@@ -25,7 +25,7 @@
 
   <!-- BLOC NOTES PERSONNELLES (joueur) -->
   <aside id="j-notes" style="display:none">
-    <div class="jn-title">📝 Mes notes</div>
+    <div class="jn-title"><svg class="jic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L18 10l-4-4L4 16z"/><path d="M13 7l4 4"/></svg> Mes notes</div>
     <textarea id="jn-input" class="jn-input" placeholder="Ajouter une note…" maxlength="1000"></textarea>
     <button class="jbtn add jn-add" onclick="addNote()">+ Ajouter une note</button>
     <div id="j-notes-list"></div>
@@ -35,19 +35,19 @@
 
   <div id="j-filters">
     <button class="j-filter on" data-f="all" onclick="setFilter('all')">Tout</button>
-    <button class="j-filter" data-f="pnj" onclick="setFilter('pnj')">👤 PNJ</button>
-    <button class="j-filter" data-f="lieu" onclick="setFilter('lieu')">📍 Lieux</button>
-    <button class="j-filter" data-f="quete" onclick="setFilter('quete')">📜 Quêtes</button>
-    <button class="j-filter" data-f="info" onclick="setFilter('info')">💡 Infos</button>
+    <button class="j-filter" data-f="pnj" onclick="setFilter('pnj')">PNJ</button>
+    <button class="j-filter" data-f="lieu" onclick="setFilter('lieu')">Lieux</button>
+    <button class="j-filter" data-f="quete" onclick="setFilter('quete')">Quêtes</button>
+    <button class="j-filter" data-f="info" onclick="setFilter('info')">Infos</button>
   </div>
 
   <!-- AJOUT (MJ) -->
   <div id="j-add" style="display:none">
     <select id="j-add-type" class="j-inp">
-      <option value="info">💡 Info dévoilée</option>
-      <option value="pnj">👤 Rencontre PNJ</option>
-      <option value="lieu">📍 Lieu découvert</option>
-      <option value="quete">📜 Quête</option>
+      <option value="info">Info dévoilée</option>
+      <option value="pnj">Rencontre PNJ</option>
+      <option value="lieu">Lieu découvert</option>
+      <option value="quete">Quête</option>
     </select>
     <input id="j-add-title" class="j-inp" placeholder="Titre…">
     <button class="jbtn add" onclick="addEntry()">+ Ajouter au journal</button>
@@ -61,6 +61,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="../../common/shared.js"></script>
-  <script src="journal.js?v=3"></script>
+  <script src="journal.js?v=4"></script>
 </body>
 </html>

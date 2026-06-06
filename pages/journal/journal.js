@@ -18,11 +18,12 @@ let curMin = (typeof TEMPS_DEFAUT !== 'undefined') ? TEMPS_DEFAUT : 480;  // tem
 let filter = 'all';
 let _editing = false;
 
+function _jic(inner){ return '<svg class="jic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+inner+'</svg>'; }
 const TYPES = {
-  pnj:   { icon:'👤', label:'PNJ',   c:'#5dbe5d' },
-  lieu:  { icon:'📍', label:'Lieu',  c:'#3a7bd5' },
-  quete: { icon:'📜', label:'Quête', c:'#e8a820' },
-  info:  { icon:'💡', label:'Info',  c:'#b0f0b0' },
+  pnj:   { icon:_jic('<circle cx="12" cy="8" r="3.5"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/>'),                  label:'PNJ',   c:'#5dbe5d' },
+  lieu:  { icon:_jic('<path d="M12 21s7-7.2 7-12a7 7 0 1 0-14 0c0 4.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.4"/>'), label:'Lieu',  c:'#5dbe5d' },
+  quete: { icon:_jic('<path d="M7 4h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7z"/><path d="M9.5 8h5M9.5 12h5M9.5 16h3"/>'), label:'Quête', c:'#9fce6a' },
+  info:  { icon:_jic('<circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.6v.2"/>'),               label:'Info',  c:'#b0f0b0' },
 };
 
 document.addEventListener('DOMContentLoaded', init);
@@ -30,6 +31,7 @@ function init(){
   if (embed) document.body.classList.add('embed');
   fdb = firebase.initializeApp(firebaseConfig).firestore();
   updateModeUI();
+  initFilterIcons();
   fdb.collection('joueurs').onSnapshot(s => { joueurs = {}; s.forEach(d => joueurs[d.id] = { ...d.data(), _id:d.id }); render(); renderNotes(); });
   fdb.collection('journal').doc('data').onSnapshot(s => {
     const d = s.exists ? s.data() : {};
@@ -44,6 +46,12 @@ function init(){
   window.addEventListener('message', e => { if (e.data === 'journal-refresh') render(); });
 }
 
+function initFilterIcons(){
+  document.querySelectorAll('.j-filter[data-f]').forEach(b => {
+    const t = TYPES[b.dataset.f]; if(!t) return;
+    b.innerHTML = t.icon + ' ' + b.textContent.trim();
+  });
+}
 function demanderMJ(){ if (isMJ || viewerId) return; if (prompt('Code MJ :') !== MJ_CODE) return; sessionStorage.setItem('mj_auth','1'); isMJ = true; updateModeUI(); render(); }
 function updateModeUI(){
   const m = document.getElementById('jhdr-mode'); if (m) m.textContent = isMJ ? 'Vue MJ' : (viewerId ? 'Vue joueur' : 'Visiteur');
@@ -77,7 +85,8 @@ function delNote(id){
 function saveJournal(){ if (fdb) fdb.collection('journal').doc('data').set(jData).catch(e => console.error('saveJournal', e)); }
 
 // ---- Temps (helpers de date dans shared.js) ----
-function renderClock(){ const el = document.getElementById('j-clock'); if (el) el.textContent = '📅 ' + fmtDateTime(curMin); }
+const _JIC_CLOCK = _jic('<circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/>');
+function renderClock(){ const el = document.getElementById('j-clock'); if (el) el.innerHTML = _JIC_CLOCK + ' ' + esc(fmtDateTime(curMin)); }
 
 // ---- Visibilité ----
 function entryVisible(e){ if (isMJ) return true; if (!viewerId) return false; return e.revealed === true || (Array.isArray(e.revealedFor) && e.revealedFor.includes(viewerId)); }
@@ -149,7 +158,7 @@ function entryMJ(e, idx){
     <div class="j-body">
       <div class="j-line">
         <select class="j-type-sel" onchange="setEType(${idx},this.value)">
-          ${Object.entries(TYPES).map(([k,v]) => `<option value="${k}"${(e.type||'info')===k?' selected':''}>${v.icon} ${v.label}</option>`).join('')}
+          ${Object.entries(TYPES).map(([k,v]) => `<option value="${k}"${(e.type||'info')===k?' selected':''}>${v.label}</option>`).join('')}
         </select>
         <input class="j-inp j-title-inp" value="${escAttr(e.title)}" placeholder="Titre…" onfocus="_editing=true" onblur="_editing=false" onchange="setE(${idx},'title',this.value)">
         <button class="j-del" onclick="delEntry(${idx})">✕</button>

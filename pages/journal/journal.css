@@ -73,3 +73,12 @@ body.embed .jhdr{display:none;}
 .jn-del:hover{ color:var(--rd); }
 .jn-empty{ color:var(--td); font-size:.72rem; font-style:italic; padding:4px 2px; }
 @media(max-width:720px){ #j-layout{ flex-direction:column; } #j-notes{ flex-basis:auto; max-width:none; width:100%; position:static; } }
+
+/* ===== Icônes SVG (vert) ===== */
+.jic{ width:1em; height:1em; vertical-align:-0.15em; flex:none; }
+.jhdr-title .jic{ width:1.05rem; height:1.05rem; color:var(--g); }
+.jn-title .jic{ width:0.95rem; height:0.95rem; color:var(--g); }
+.j-clock .jic{ color:var(--g); }
+.j-filter .jic{ width:0.85rem; height:0.85rem; margin-right:2px; vertical-align:-2px; }
+.j-icon{ color:var(--g); display:inline-flex; align-items:center; }
+.j-icon .jic{ width:0.95rem; height:0.95rem; }
