@@ -50,7 +50,7 @@ function enemyInstanceFromDB(nom, lvl = 1) {
     atq: (atk.dmg != null ? atk.dmg : 3) + 'D',
     rd: phys,
     initiative: e.initiative || ((e.attrs?.body || 6) + (e.attrs?.mind || 4)),
-    xp: (e.xp || 0) * L,
+    xp: Math.round((e.xp || 0) * scale),   // XP suit le facteur de difficulté (×1 au niv.1 = XP du bestiaire)
     body: e.attrs?.body || 6,
     mind: e.attrs?.mind || 4,
     tn: atk.tn ?? null,

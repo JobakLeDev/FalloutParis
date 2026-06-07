@@ -198,7 +198,7 @@ function renderCombatTermine(data){
   html += '<div style="display:inline-flex;gap:24px;border:1px solid var(--b2);padding:12px 24px;margin-bottom:20px">';
   html += '<div><div style="font-size:7px;color:var(--td)">ROUNDS</div><div style="font-family:\'Oswald\',sans-serif;font-size:22px;color:var(--tb)">'+nbRounds+'</div></div>';
   html += '<div><div style="font-size:7px;color:var(--td)">ENNEMIS</div><div style="font-family:\'Oswald\',sans-serif;font-size:22px;color:var(--rd)">'+defaits.length+'/'+ennemis.length+'</div></div>';
-  html += '<div><div style="font-size:7px;color:var(--td)">XP POTENTIEL</div><div style="font-family:\'Oswald\',sans-serif;font-size:22px;color:var(--am)">'+xpTotal+'</div></div>';
+  html += '<div><div style="font-size:7px;color:var(--td)">XP GAGNÉE</div><div style="font-family:\'Oswald\',sans-serif;font-size:22px;color:var(--am)">'+xpTotal+'</div></div>';
   html += '<div><div style="font-size:7px;color:var(--td)">PV RESTANTS</div><div style="font-family:\'Oswald\',sans-serif;font-size:22px;color:'+(joueurMort?'var(--rd)':'var(--g)')+'">'+hpFin+'</div></div>';
   if(radFin > 0) html += '<div><div style="font-size:7px;color:var(--td)">RAD</div><div style="font-family:\'Oswald\',sans-serif;font-size:22px;color:var(--am)">'+radFin+'</div></div>';
   html += '</div>';
