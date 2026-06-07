@@ -8,7 +8,7 @@
 }
 .cj-grid {
   display: grid;
-  grid-template-columns: 300px 1fr 230px;
+  grid-template-columns: 300px minmax(0,440px) 230px 1fr;  /* ennemis ~440px (moitié) + espace résiduel */
   gap: 10px;
   align-items: start;
 }
