@@ -509,18 +509,12 @@ function initCombatListener() {
       const currentCombatant = ordre[tourActif];
       const isMonTour = currentCombatant?.id === JOUEUR_ID;
       const nomActif = currentCombatant?.nom || '?';
-      const tourText = isMonTour ? "▶ C'EST TON TOUR !" : "Tour de " + nomActif;
-      const tourColor = isMonTour ? '#5dbe5d' : '#e8a820';
+      const tourText = isMonTour ? "C'EST TON TOUR !" : 'Tour de ' + nomActif;
 
       banner.style.display = 'flex';
-      banner.style.background = isMonTour ? '#0a1a0a' : '#1a0505';
-      banner.style.borderColor = isMonTour ? '#5dbe5d' : '#e04040';
-      banner.innerHTML =
-        '<span style="color:#e04040;font-size:9px;letter-spacing:2px">⚔ COMBAT · Round ' + (data.numRound||1) + '</span>' +
-        '<span style="color:' + tourColor + ';font-size:10px;letter-spacing:2px;font-weight:bold">' + tourText + '</span>' +
-        '<a href="../mj/combat_joueur.html?id=' + JOUEUR_ID + '&combat=' + combatId + '" ' +
-          'style="color:#e04040;font-size:8px;border:1px solid #e04040;padding:3px 10px;text-decoration:none;letter-spacing:2px"' +
-        '>⚔ REJOINDRE</a>';
+      banner.onclick = () => { window.location.href = '../mj/combat_joueur.html?id=' + JOUEUR_ID + '&combat=' + combatId; };
+      banner.innerHTML = '<span class="loot-ico">⚔</span>'
+        + '<span>COMBAT · Round ' + (data.numRound||1) + ' — <b>' + tourText + '</b> · clique pour rejoindre</span>';
     });
   }
 

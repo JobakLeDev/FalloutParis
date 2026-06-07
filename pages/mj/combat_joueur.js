@@ -60,8 +60,12 @@ let lastAttackResultTs = 0;   // dédup notification résultat attaque
 let actionState = null;       // extrait de combatState.actionsDeclarees[joueurId]
 let selectedActionDraft = null; // {category, type, desc} — action en cours de saisie
 let myAim = null;            // {cible, zone} — visée déclarée ce tour (Attack/Aim) ; zone '' = non visée
-let hasAttacked = false;     // a déjà lancé les dés de combat ce tour (verrou anti-spam)
-let j2D20Rolled = false;     // a déjà lancé son 2D20 d'attaque (empêche de relancer le toucher)
+let attacksDone = 0;         // nb d'attaques (CD) résolues ce tour
+let twoD20Done = -1;         // index d'attaque pour lequel le 2D20 a déjà été lancé (anti-relance)
+// Nb d'attaques validées par le MJ (chaque action majeure Attack consommée)
+function attacksValidated(){ return (actionState?.majeure?.used || []).filter(t => t === 'Attack').length; }
+// Une attaque validée reste-t-elle à résoudre (jet) ?
+function canAttackNow(){ return attacksValidated() > attacksDone; }
 let turnEnded = false;       // a cliqué « Terminer mon tour »
 let _turnKey = '';           // clé round:tourActif pour réinitialiser au changement de tour
 let _declWeaps = [];         // armes proposées dans la déclaration d'attaque (index → params)
@@ -229,7 +233,7 @@ function renderCombatJoueur(){
   // Réinitialiser visée / attaque / fin de tour quand le tour change
   const tk = (combatState.numRound||0) + ':' + (combatState.tourActif||0);
   if(tk !== _turnKey){
-    _turnKey = tk; myAim = null; hasAttacked = false; turnEnded = false; j2D20Rolled = false;
+    _turnKey = tk; myAim = null; turnEnded = false; attacksDone = 0; twoD20Done = -1;
     currentArmeInfo = null; armeSelectionnee = null;
     const dc = document.getElementById('mes-des-context'); if(dc) dc.textContent = 'Déclare une attaque pour viser';
   }
@@ -747,7 +751,7 @@ function selArme(nom, tn, dmg, persoBonus=false){
 }
 
 async function jLancer2D20(){
-  if(hasAttacked || j2D20Rolled) return;   // anti-spam : un seul jet de toucher par attaque
+  if(!canAttackNow() || twoD20Done === attacksDone) return;   // anti-spam : un seul toucher par attaque
   aimRerolled = false;
   const tn = parseInt(document.getElementById('j-tn-val').value)||10;
   const diff = 1;
@@ -789,7 +793,7 @@ async function jLancer2D20(){
   if(echec) r+=' <span style="color:var(--rd)">ÉCHEC</span>';
   else r+='→<b style="color:var(--am)">'+dcTotal+'DC</b>';
   document.getElementById('j-dice-result').innerHTML = r;
-  j2D20Rolled = true; renderDiceAccess();   // verrouille le bouton 2D20 (un seul toucher)
+  twoD20Done = attacksDone; renderDiceAccess();   // verrouille le 2D20 pour cette attaque
 
   // Stocker pour Miss Fortune + reset Stacked Deck
   lastRollDice = dés.map(v=>({val:v, rerolled:false}));
@@ -921,24 +925,22 @@ function renderActionsDeclarees(){
   if(isMoTour && turnEnded){
     html += '<div style="padding:6px;border:1px solid var(--gd);background:#0a140a;font-size:8px;color:var(--gd);text-align:center">✓ Tour terminé — en attente du MJ</div>';
   } else if(isMoTour){
-    if(hasAttacked){
+    if(attacksDone > 0){
       html += '<button onclick="finMonTour()" style="width:100%;margin-bottom:6px;background:var(--gk);border:1px solid var(--g);color:var(--g);font-family:monospace;font-size:9px;padding:5px;cursor:pointer;letter-spacing:1px">✓ TERMINER MON TOUR</button>';
     }
-    const minorUsed    = as.mineure?.used || [];
     const minorPending = as.mineure?.pending;
     const minorWaiting = minorPending?.status === 'waiting';
-    const noMinorSlots = (s.mineure || 1) <= 0;
+    const noMinorSlots = (s.mineure ?? 1) <= 0;   // grisé si plus d'action mineure dispo
 
-    html += '<div style="font-size:7px;color:var(--td);letter-spacing:1px;margin-bottom:3px;margin-top:2px">ACTIONS MINEURES</div>'
+    html += '<div style="font-size:7px;color:var(--td);letter-spacing:1px;margin-bottom:3px;margin-top:2px">ACTIONS MINEURES <span style="color:var(--g)">' + (s.mineure ?? 1) + '</span></div>'
       + '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px">';
     MINOR_ACTIONS.forEach(a => {
-      const isUsed        = minorUsed.includes(a.type);
       const isPendingThis = minorWaiting && minorPending.type === a.type;
       const moveBlocked   = a.mouvement && !!as.mouvement_used;
-      const disabled      = isUsed || moveBlocked || noMinorSlots || (minorWaiting && !isPendingThis) || !!selectedActionDraft || (hasAttacked && a.type==='Aim');
-      const col = isPendingThis ? 'var(--am)' : isUsed ? 'var(--gd)' : disabled ? '#1e2e1e' : 'var(--t)';
-      const bdr = isPendingThis ? 'var(--am)' : isUsed ? 'var(--gd)' : disabled ? '#1e2e1e' : 'var(--b2)';
-      const lbl = isPendingThis ? '⏳ ' + a.type : isUsed ? '✓ ' + a.type : a.type;
+      const disabled      = moveBlocked || noMinorSlots || (minorWaiting && !isPendingThis) || !!selectedActionDraft;
+      const col = isPendingThis ? 'var(--am)' : disabled ? '#1e2e1e' : 'var(--t)';
+      const bdr = isPendingThis ? 'var(--am)' : disabled ? '#1e2e1e' : 'var(--b2)';
+      const lbl = isPendingThis ? '⏳ ' + a.type : a.type;
       html += '<button onclick="prepareAction(\'mineure\',\'' + a.type + '\')"'
         + (disabled ? ' disabled' : '')
         + ' style="background:none;border:1px solid ' + bdr + ';color:' + col + ';font-family:monospace;font-size:7px;padding:2px 5px;cursor:' + (disabled?'default':'pointer') + ';letter-spacing:0"'
@@ -946,21 +948,19 @@ function renderActionsDeclarees(){
     });
     html += '</div>';
 
-    const majorUsed    = as.majeure?.used || [];
     const majorPending = as.majeure?.pending;
     const majorWaiting = majorPending?.status === 'waiting';
-    const noMajorSlots = (s.majeure || 1) <= 0;
+    const noMajorSlots = (s.majeure ?? 1) <= 0;   // grisé si plus d'action majeure dispo
 
-    html += '<div style="font-size:7px;color:var(--td);letter-spacing:1px;margin-bottom:3px">ACTIONS MAJEURES</div>'
+    html += '<div style="font-size:7px;color:var(--td);letter-spacing:1px;margin-bottom:3px">ACTIONS MAJEURES <span style="color:var(--g)">' + (s.majeure ?? 1) + '</span></div>'
       + '<div style="display:flex;flex-wrap:wrap;gap:3px">';
     MAJOR_ACTIONS.forEach(a => {
-      const isUsed        = majorUsed.includes(a.type);
       const isPendingThis = majorWaiting && majorPending.type === a.type;
       const moveBlocked   = a.mouvement && !!as.mouvement_used;
-      const disabled      = isUsed || moveBlocked || noMajorSlots || (majorWaiting && !isPendingThis) || !!selectedActionDraft || (hasAttacked && a.type==='Attack');
-      const col = isPendingThis ? 'var(--am)' : isUsed ? 'var(--gd)' : disabled ? '#1e2e1e' : 'var(--t)';
-      const bdr = isPendingThis ? 'var(--am)' : isUsed ? 'var(--gd)' : disabled ? '#1e2e1e' : 'var(--b2)';
-      const lbl = isPendingThis ? '⏳ ' + a.type : isUsed ? '✓ ' + a.type : a.type;
+      const disabled      = moveBlocked || noMajorSlots || (majorWaiting && !isPendingThis) || !!selectedActionDraft;
+      const col = isPendingThis ? 'var(--am)' : disabled ? '#1e2e1e' : 'var(--t)';
+      const bdr = isPendingThis ? 'var(--am)' : disabled ? '#1e2e1e' : 'var(--b2)';
+      const lbl = isPendingThis ? '⏳ ' + a.type : a.type;
       html += '<button onclick="prepareAction(\'majeure\',\'' + a.type + '\')"'
         + (disabled ? ' disabled' : '')
         + ' style="background:none;border:1px solid ' + bdr + ';color:' + col + ';font-family:monospace;font-size:7px;padding:2px 5px;cursor:' + (disabled?'default':'pointer') + ';letter-spacing:0"'
@@ -1048,26 +1048,21 @@ async function dismissRefused(category){
 
 // ---- ACCÈS AUX DÉS (conditionné par validation de l'attaque) ----
 function renderDiceAccess(){
-  const attackValidated = (actionState?.majeure?.used || []).includes('Attack');
+  const attackReady = canAttackNow();          // attaque validée par le MJ, pas encore résolue
   const lockEl  = document.getElementById('j-dice-lock');
   const cibleEl = document.getElementById('j-cible-wrap');
-  const arEl    = document.getElementById('j-attack-result');
 
-  if(lockEl) lockEl.style.display = attackValidated ? 'none' : 'flex';
+  if(lockEl) lockEl.style.display = attackReady ? 'none' : 'flex';
 
-  // Activer/désactiver les boutons de lancer (verrouillés tant que l'attaque n'est pas validée, ou après avoir attaqué)
-  const lockDice = !attackValidated || hasAttacked;
-  const lance = document.getElementById('j-lance-btn'); if(lance) lance.disabled = lockDice || j2D20Rolled;  // 2D20 : un seul toucher
-  ['j-d20-2','j-d20-3','j-d20-4','j-d20-5','j-stacked-deck-btn'].forEach(id => {
-    const b = document.getElementById(id); if(b) b.disabled = lockDice;
-  });
+  // Boutons de lancer : actifs seulement s'il reste une attaque à résoudre
+  const lockDice = !attackReady;
+  const lance = document.getElementById('j-lance-btn'); if(lance) lance.disabled = lockDice || (twoD20Done === attacksDone);  // un seul 2D20 par attaque
   const cdBtn = document.querySelector('.cd-btn');
   if(cdBtn) cdBtn.disabled = lockDice;
 
-  // Réinitialiser le résultat si Attack plus dans used
-  if(!attackValidated){
+  // Pas d'attaque à résoudre → masquer le sélecteur de cible (on garde le dernier résultat affiché)
+  if(!attackReady){
     if(cibleEl){ cibleEl.style.display='none'; cibleEl.innerHTML=''; }
-    if(arEl){ arEl.style.display='none'; arEl.innerHTML=''; }
     return;
   }
 
@@ -1103,9 +1098,9 @@ function renderDiceAccess(){
 }
 
 function jLancerCD(){
-  if(hasAttacked) return;          // anti-spam : un seul lancer de dégâts par attaque
-  hasAttacked = true;
-  renderDiceAccess();              // verrouille immédiatement les boutons d'attaque
+  if(!canAttackNow()) return;      // anti-spam : pas d'attaque en attente de résolution
+  attacksDone++;                   // l'attaque est résolue (réactive les dés s'il reste une attaque validée)
+  renderDiceAccess();              // verrouille immédiatement si plus d'attaque dispo
   const nb = nbDCActuel || 2;
   const vals = Array.from({length:nb},()=>FACES_CD[Math.floor(Math.random()*6)]);
   const dmgRaw = vals.reduce((a,v)=>a+(parseInt(v)||0),0);
