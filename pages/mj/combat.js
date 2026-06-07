@@ -21,6 +21,7 @@ let actionsState = {};
 let apPool = 0;     // Pool groupe partagé (max 6)
 let mjApPool = 0;   // Pool MJ (masqué des joueurs)
 let defenseBonus = {};  // {joueurId: n} — bonus de Défense (action Defend), jusqu'au prochain tour du joueur
+let _assistDie = {};    // {allyId: {...}} — dé d'assistance en attente (action Assist) pour compagnons
 let nbDiceMJ = 2;   // Nombre de d20 sélectionnés
 let lastExcessMJ = 0;
 let lastSkKeyMJ = '';
@@ -71,6 +72,8 @@ function deverrouiller(){
     if(data.mjApPool !== undefined && data.mjApPool !== mjApPool) {
       mjApPool = data.mjApPool; renderAPPool();
     }
+    if(data.assistDie) _assistDie = data.assistDie;
+    if(data.defenseBonus) defenseBonus = data.defenseBonus;
     // Notification info joueur
     if(data.infoRequest && data.infoRequest.ts > lastInfoRequestTs) {
       lastInfoRequestTs = data.infoRequest.ts;
@@ -214,6 +217,7 @@ async function restaurerEtatCombat(){
     apPool          = d.apPool         || 0;
     mjApPool        = d.mjApPool       || 0;
     defenseBonus    = d.defenseBonus   || {};
+    _assistDie      = d.assistDie       || {};
     ennemis         = (d.ennemis       || []).map(e => ({...e}));
     allies          = (d.allies        || []).map(a => ({...a}));
     // Reconstruire combattants depuis l'ordre d'initiative
@@ -495,6 +499,7 @@ function attaqueAllie(id){
   panel._modeEnnemi = true;            // attaque PNJ : log via _ennemNom, pas de dés bonus AP
   panel._ennemNom = '🐾 ' + a.nom;
   panel._atkMode = 'ally';             // dégâts auto sur l'ennemi ciblé après le CD
+  panel._allyId = a.id;                // pour consommer un éventuel dé d'assistance
   panel._lastHit = true;
   const vivants = ennemis.filter(e => (e.pvCur||0) > 0);
   let html = '<div class="ctx-nom" style="color:var(--g)">🐾 ' + a.nom.toUpperCase() + ' attaque</div>';
@@ -813,7 +818,7 @@ function setAttaqueEnnemi(eid){
     html += '<option value="' + c.data._id + '">' + (c.data.nom||c.data._id).toUpperCase() + ' (AGI ' + agi + ')</option>';
   });
   html += '</select></div>';
-  html += '<div class="ctx-diff">Difficulté : <select id="diff-sel" onchange="majDC()" style="background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:monospace;font-size:9px;padding:2px 4px;outline:none"><option value="0">D0</option><option value="1" selected>D1</option><option value="2">D2</option><option value="3">D3</option></select></div>';
+  html += '<div class="ctx-diff">Difficulté : <select id="diff-sel" onchange="majDC()" style="background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:monospace;font-size:9px;padding:2px 4px;outline:none"><option value="0">D0</option><option value="1" selected>D1</option><option value="2">D2</option><option value="3">D3</option></select><span id="cible-def-note" style="color:var(--g);font-size:8px;margin-left:6px"></span></div>';
   html += '<div id="dc-suggest" class="ctx-dc">DC : <b style="color:var(--rd)" id="dc-nb">' + nbDC + '</b> (' + e.atq + ')</div>';
   document.getElementById('tn-val').value = 10;
   panel.innerHTML = html;
@@ -821,9 +826,17 @@ function setAttaqueEnnemi(eid){
 
 function majTNCible(){
   const sel = document.getElementById('cible-sel'); if(!sel) return;
-  const id = sel.value; if(!id) return;
+  const id = sel.value;
+  const note = document.getElementById('cible-def-note');
+  if(!id){ if(note) note.textContent=''; return; }
   const d = combattants[id]?.data; if(!d) return;
   document.getElementById('tn-val').value = d.special?.A||5;
+  // La Défense de la cible (bonus Defend) augmente la difficulté de l'attaque
+  const defB = defenseBonus[id]||0;
+  const diffSel = document.getElementById('diff-sel');
+  if(diffSel) diffSel.value = String(Math.min(3, 1 + defB));
+  if(note) note.textContent = defB>0 ? '🛡 Défense +'+defB : '';
+  if(typeof majDC === 'function') majDC();
 }
 
 function setArme(id, arme){
@@ -975,7 +988,17 @@ function lancer2D20(){
     }
   }
 
-  const dés = Array.from({length:nbDiceMJ},()=>Math.floor(Math.random()*20)+1);
+  // Dé bonus d'assistance pour un compagnon (action Assist) → +1 dé, consommé
+  let assistBonus = 0;
+  const _aid = panel._allyId != null ? String(panel._allyId) : null;
+  if(panel._atkMode === 'ally' && _aid && _assistDie[_aid]){
+    assistBonus = 1;
+    delete _assistDie[_aid];
+    if(db && currentCombatId) db.collection(COMBATS_COLL).doc(currentCombatId).update({ ['assistDie.'+_aid]: null }).catch(()=>{});
+    addLog('🤝 Dé d\'assistance utilisé pour '+(panel._ennemNom||'le compagnon'));
+  }
+  const nbDiceRoll = nbDiceMJ + assistBonus;
+  const dés = Array.from({length:nbDiceRoll},()=>Math.floor(Math.random()*20)+1);
   let succes = dés.filter(v=>v<=tn).length + dés.filter(v=>v===1).length;
   const crits = dés.filter(v=>v===1).length;
   const echec = succes<diff;
@@ -995,7 +1018,7 @@ function lancer2D20(){
 
   const nomLog=modeEnnemi?(panel._ennemNom||'Ennemi'):(joueurActif?(combattants[joueurActif]?.data?.nom||joueurActif):'?');
   const armeLog=modeEnnemi?'':(armeActive?' ('+armeActive+')':'');
-  addLog('🎲 '+nomLog+armeLog+' '+nbDiceMJ+'D20 TN'+tn+' D'+diff+': '+dés.join('/')+' = '+succes+'s → '+(echec?'ÉCHEC':dcTotal+'DC'));
+  addLog('🎲 '+nomLog+armeLog+' '+nbDiceRoll+'D20 TN'+tn+' D'+diff+': '+dés.join('/')+' = '+succes+'s → '+(echec?'ÉCHEC':dcTotal+'DC'));
   panel._modeEnnemi=false;
 
   // Réinitialiser sélecteur

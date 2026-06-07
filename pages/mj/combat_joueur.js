@@ -537,6 +537,7 @@ function renderMaCarte(){
 
   let html = '';
   if(isMoTour) html += '<div class="mon-tour-banner">▶ C\'EST TON TOUR !</div>';
+  if(combatState?.assistDie?.[joueurId]) html += '<div style="font-size:8px;color:var(--g);border-left:3px solid var(--g);padding:1px 0 1px 6px;margin-bottom:5px">🤝 +1 dé d\'assistance sur ton prochain jet</div>';
 
   html += '<div class="jc-top"><span class="jc-name">' + (d.nom||joueurId).toUpperCase() + '</span></div>';
   html += '<div class="jc-bar"><div style="width:'+pct+'%;height:100%;background:'+barColor+'"></div></div>';
@@ -800,7 +801,12 @@ async function jLancer2D20(){
     await _updateAPGroupe(-apCost);
   }
 
-  const dés = Array.from({length:nbDiceJ},()=>Math.floor(Math.random()*20)+1);
+  // Dé bonus d'assistance (action Assist d'un allié) → +1 dé, consommé après le jet
+  const assist = !!(combatState?.assistDie?.[joueurId]);
+  const nbDice = nbDiceJ + (assist ? 1 : 0);
+  if(assist) db.collection(COMBATS_COLL).doc(combatId).update({ ['assistDie.'+joueurId]: null }).catch(()=>{});
+
+  const dés = Array.from({length:nbDice},()=>Math.floor(Math.random()*20)+1);
   let succes = dés.filter(v=>v<=tn).length + dés.filter(v=>v===1).length;
   const crits = dés.filter(v=>v===1).length;
   const echec = succes<diff;
@@ -1129,14 +1135,19 @@ const ACTION_EXEC = {
   'Interact':    { cat:'mineure', noRoll:true, note:true, lbl:'✋ Interaction' },
 };
 
-function _roll2D20(tn, diff){
-  const dice=[Math.floor(Math.random()*20)+1, Math.floor(Math.random()*20)+1];
+function _roll2D20(tn, diff, extraDice){
+  const n = 2 + (extraDice||0);
+  const dice = Array.from({length:n},()=>Math.floor(Math.random()*20)+1);
   const succ=dice.filter(v=>v<=tn).length + dice.filter(v=>v===1).length;   // 1 = crit (2 succès)
   return { dice, succ, crit: dice.filter(v=>v===1).length, echec: succ<diff, extra: Math.max(0,succ-diff) };
 }
-// Allies ciblables : compagnons (combat doc) + soi-même
+// Allies ciblables : soi + autres joueurs + compagnons (ownOnly = seulement mes compagnons, pour Command NPC)
 function _allyTargets(ownOnly){
   const list = [{ id:'__self__', nom:(joueurData?.nom||joueurId)+' (moi)' }];
+  if(!ownOnly){
+    (combatState?.ordreInitiative||[]).filter(o => o.type==='joueur' && o.id!==joueurId)
+      .forEach(o => list.push({ id:o.id, nom:(tousJoueurs[o.id]?.nom||o.nom||o.id)+' (joueur)' }));
+  }
   (combatState?.allies||[]).filter(a => !ownOnly || a.owner===joueurId)
     .forEach(a => list.push({ id:a.id, nom:a.nom + (a.owner===joueurId?'':' ('+(a.ownerNom||'')+')') }));
   return list;
@@ -1214,7 +1225,10 @@ async function execActionRoll(type){
   const cfg = ACTION_EXEC[type]; if(!cfg) return;
   const skill = cfg.pickSkill ? (document.getElementById('ax-skill')?.value || 'speech') : cfg.skill;
   const tn = getTN(joueurData, skill).total;
-  const r = _roll2D20(tn, cfg.diff);
+  // Dé bonus d'assistance → +1 dé, consommé après le jet
+  const assist = !!(combatState?.assistDie?.[joueurId]);
+  if(assist) db.collection(COMBATS_COLL).doc(combatId).update({ ['assistDie.'+joueurId]: null }).catch(()=>{});
+  const r = _roll2D20(tn, cfg.diff, assist ? 1 : 0);
   const resEl = document.getElementById('ax-result');
   let effetTxt = '';
 
@@ -1262,14 +1276,20 @@ async function execActionSimple(type){
 
 function _allyNom(id){
   if(id==='__self__') return (joueurData?.nom||joueurId)+' (moi)';
+  if(tousJoueurs[id]) return tousJoueurs[id].nom||id;
   const a=(combatState?.allies||[]).find(x=>x.id===id); return a? a.nom : id;
 }
-// Soigne une cible (soi → fiche joueur ; compagnon → combat doc allies)
+// Soigne une cible (soi/autre joueur → fiche joueur ; compagnon → combat doc allies)
 async function _healTarget(id, amount){
   if(id==='__self__'){
     const hpMax=getHpMax(joueurData); const cur=joueurData?.hp||0; const nv=Math.min(hpMax, cur+amount);
     await db.collection('joueurs').doc(joueurId).update({ hp: nv });
     return '➕ '+(joueurData?.nom||'Moi')+' : '+cur+' → '+nv+' PV';
+  }
+  if(tousJoueurs[id]){
+    const pj=tousJoueurs[id]; const hpMax=getHpMax(pj); const cur=pj.hp||0; const nv=Math.min(hpMax, cur+amount);
+    await db.collection('joueurs').doc(id).update({ hp: nv });
+    return '➕ '+(pj.nom||id)+' : '+cur+' → '+nv+' PV';
   }
   const allies=(combatState?.allies||[]).map(a=>({...a}));
   const a=allies.find(x=>x.id===id); if(!a) return '➕ Soin appliqué';
