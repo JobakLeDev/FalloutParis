@@ -347,7 +347,7 @@ function toggleStackedDeck(){
   } else {
     tn = getTN(joueurData,currentArmeInfo.skKey).total+(currentArmeInfo.persoBonus?2:0);
   }
-  document.getElementById('j-tn-val').value = tn;
+  document.getElementById('j-tn-val').textContent = tn;
   const nomAff = currentArmeInfo.nom==='__unarmed__'?'Mains nues':currentArmeInfo.nom;
   document.getElementById('mes-des-context').innerHTML =
     `<b style="color:var(--tb)">${nomAff}</b> · ${currentArmeInfo.dmg} · TN <b style="color:var(--am)">${tn}</b>${useStackedDeck?' <span style="color:var(--am)">🍀 LCK</span>':''}`;
@@ -749,7 +749,7 @@ function refreshDesContext(){
   const hasAmmo = ammoType && ammoType !== '-';
   const ammoEntry = hasAmmo ? (joueurData.ammo||[]).find(a => a.cal === ammoType) : null;
   const qty = ammoEntry ? ammoEntry.qty : (hasAmmo ? 0 : null);
-  const tn = document.getElementById('j-tn-val')?.value || '?';
+  const tn = document.getElementById('j-tn-val')?.textContent || '?';
   const ammoHtml = qty !== null
     ? ' · <span style="color:'+(qty>0?'var(--am)':'var(--rd)')+'">🔫 '+qty+' '+ammoType+'</span>'
     : '';
@@ -765,7 +765,7 @@ function selArme(nom, tn, dmg, persoBonus=false){
   currentArmeInfo = {nom, skKey:lastSkKeyJ, persoBonus, dmg, eff: nom==='__unarmed__' ? '' : (WEAPONS_DB[nom]?.eff||''), ammoType};
   useStackedDeck = false;
   const btn=document.getElementById('j-stacked-deck-btn'); if(btn) btn.classList.remove('on');
-  const tnEl=document.getElementById('j-tn-val'); if(tnEl) tnEl.value = tn;
+  const tnEl=document.getElementById('j-tn-val'); if(tnEl) tnEl.textContent = tn;
   renderMaCarte();
   refreshDesContext();
   const disp=document.getElementById('j-nb-cd-disp'); if(disp) disp.textContent = nbDCActuel;
@@ -776,7 +776,7 @@ function selArme(nom, tn, dmg, persoBonus=false){
 async function jLancer2D20(){
   if(!canAttackNow() || twoD20Done === attacksDone) return;   // anti-spam : un seul toucher par attaque
   aimRerolled = false;
-  const tn = parseInt(document.getElementById('j-tn-val').value)||10;
+  const tn = parseInt(document.getElementById('j-tn-val').textContent)||10;
   const diff = 1;
 
   // Vérification et déduction des munitions (armes à distance uniquement)
