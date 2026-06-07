@@ -581,6 +581,28 @@ function ajouterEnnemisModal(){
   renderCombat();
 }
 
+// Localisation aléatoire (torse plus fréquent) — RAW simplifié
+function rollLocation(){
+  const locs = [
+    {label:'Tête', z:'Head'},
+    {label:'Torse', z:'Torso'}, {label:'Torse', z:'Torso'}, {label:'Torse', z:'Torso'},
+    {label:'Bras gauche', z:'Arm'}, {label:'Bras droit', z:'Arm'},
+    {label:'Jambe gauche', z:'Leg'}, {label:'Jambe droite', z:'Leg'},
+  ];
+  return locs[Math.floor(Math.random()*locs.length)];
+}
+// RD localisée d'un joueur (RD la plus élevée par type entre les pièces couvrant la zone) — sans perks
+function playerLocRD(d, loc){
+  let ph=0, en=0, rad=0;
+  const isHead = loc.z === 'Head';
+  (d.inventory||[]).forEach(it => {
+    if(!it.equipped) return;
+    const a = (window.DB?.armor||[]).find(x => x.n === it.name); if(!a) return;
+    const covers = a.z===loc.z || (a.z==='Body' && !isHead) || a.z==='All' || (a.t==='POWERARMOR' && d.powerArmor);
+    if(covers){ ph=Math.max(ph,a.ph||0); en=Math.max(en,a.en||0); rad=(a.rad===999||rad===999)?999:Math.max(rad,a.rad||0); }
+  });
+  return { phys:ph, en, rad };
+}
 function dmgEnnemi(id, val){
   const e = ennemis.find(e=>e.id===id); if(!e) return;
   const after = Math.max(0, e.pvCur - val);
@@ -727,7 +749,9 @@ function setAttaqueEnnemi(eid){
   panel._nbDC = nbDC;
   panel._modeEnnemi = true;
   panel._ennemNom = e.nom;
-  panel._atkMode = null;   // ennemi → joueur : pas d'auto-dégâts (RD localisée)
+  panel._atkMode = 'enemy';                       // ennemi → joueur : dégâts auto (RD localisée, zone aléatoire)
+  panel._dmgType = e.dmgType || 'physical';
+  panel._lastHit = true;
   const cibles = Object.values(combattants);
   let html = '<div class="ctx-nom" style="color:var(--rd)">' + e.nom.toUpperCase() + ' attaque</div>';
   html += '<div class="ctx-arme">ATQ : <b>' + e.atq + '</b> · RD : <b>' + e.rd + '</b></div>';
@@ -946,6 +970,23 @@ function lancerCD(){
     vals.map(v=>'<span style="color:'+(v.includes('⚡')?'var(--am)':v==='—'?'var(--td)':'var(--tb)')+';font-family:Oswald,sans-serif;font-size:16px">'+v+'</span>').join(' ')
     +' <span style="color:var(--td)">→</span> <b style="color:var(--am)">'+dmg+'dmg</b>'+(ef?' <span style="color:var(--am)">+'+ef+'⚡</span>':'');
   const panel = document.getElementById('dice-context');
+  // Attaque d'un ennemi → dégâts auto sur le joueur ciblé (zone aléatoire, − RD localisée)
+  if(panel && panel._atkMode === 'enemy'){
+    const sel = document.getElementById('cible-sel');
+    const pid = sel ? sel.value : '';
+    const c = pid ? combattants[pid] : null;
+    if(!c){ addLog('💥 '+(panel._ennemNom||'Ennemi')+' '+nb+'DC: '+dmg+'dmg — aucune cible sélectionnée'); return; }
+    if(panel._lastHit === false){ addLog('🗡 '+(panel._ennemNom||'Ennemi')+' rate '+(c.data.nom||pid)+' (pas de dégâts)'); panel._atkMode=null; return; }
+    const loc = rollLocation();
+    const rdObj = playerLocRD(c.data, loc);
+    const dt = panel._dmgType || 'physical';
+    const rd = (dt==='energy') ? rdObj.en : (dt==='radiation'||dt==='rad') ? rdObj.rad : rdObj.phys;
+    const net = rd===999 ? 0 : Math.max(0, dmg - rd);
+    addLog('🗡 '+(panel._ennemNom||'Ennemi')+' touche '+(c.data.nom||pid)+' ['+loc.label+'] : '+net+' ('+dmg+'dmg − RD '+(rd===999?'∞':rd)+(ef?' · +'+ef+'⚡':'')+')');
+    panel._atkMode = null;
+    dmgJoueur(pid, net);   // applique aux PV + sync Firebase
+    return;
+  }
   // Attaque d'un compagnon → dégâts auto sur l'ennemi ciblé (− RD)
   if(panel && panel._atkMode === 'ally'){
     const sel = document.getElementById('cible-sel');
