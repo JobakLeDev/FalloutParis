@@ -597,6 +597,25 @@ function tEquip(i){
       }
     });
   }
+  // Slots d'armes : 2 armes + 1 explosif
+  if(!it.equipped && it.type==='WEAPON'){
+    const dbw=DB.weapons.find(w=>w.n===it.name)||{};
+    const isE=x=>{ const d=DB.weapons.find(w=>w.n===x.name); return !!d && (d.t==='Explosive'||d.sk==='explosives'); };
+    const equippedW=char.inventory.filter(x=>x!==it && x.type==='WEAPON' && x.equipped);
+    if(dbw.t==='Explosive'||dbw.sk==='explosives'){
+      // Explosif : remplace celui déjà équipé, sans confirmation
+      equippedW.filter(isE).forEach(x=>x.equipped=false);
+    } else {
+      const armes=equippedW.filter(x=>!isE(x));
+      if(armes.length>=2){
+        const lines=armes.map((x,k)=>(k+1)+' — '+x.name).join('\n');
+        const choix=prompt('Les 2 slots d\'armes sont pleins.\nNuméro de l\'arme à remplacer :\n'+lines, '1');
+        if(choix===null) return;                    // annulé → ne rien équiper
+        const repl=armes[(parseInt(choix)||1)-1] || armes[0];
+        repl.equipped=false;
+      }
+    }
+  }
   it.equipped=!it.equipped;
   rAll();
 }
