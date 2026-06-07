@@ -1073,7 +1073,51 @@ function addLog(msg){
 }
 function clearLog(){ log=[]; document.getElementById('combat-log').innerHTML=''; }
 
-function finCombat(){
+// XP d'un ennemi (repli bestiaire si le champ a été perdu)
+function combatXpOf(e){
+  if(e && e.xp != null) return e.xp;
+  const base = (e?.nom||'').replace(/\s+\d+$/,'').replace(/\s*\(.*\)\s*$/,'').trim();
+  return window.ENNEMIS_DB?.[base]?.xp || 0;
+}
+// Attribue l'XP totale des ennemis vaincus à CHAQUE joueur du combat (RAW : non divisée) + journal MJ
+async function attribuerXPFinCombat(){
+  const defaits = ennemis.filter(e => (e.pvCur||0) <= 0);
+  const total = defaits.reduce((a,e) => a + combatXpOf(e), 0);
+  const ids = Object.keys(combattants);
+  if(total <= 0 || !ids.length) return;
+  let tdata = {};
+  try { const ts = await db.collection('temps').doc('data').get(); tdata = ts.exists ? ts.data() : {}; } catch(e){}
+  const journalEntries = [];
+  for(const id of ids){
+    const d = combattants[id]?.data; if(!d) continue;
+    let xp = (d.xp||0) + total, niv = d.niveau || 1;
+    while(niv < 20 && xp >= XP_TABLE[niv]) niv++;
+    try { await db.collection('joueurs').doc(id).update({ xp, niveau: niv, lastUpdate: Date.now() }); } catch(e){ console.error(e); }
+    addLog('★ ' + (d.nom||id) + ' +' + total + ' XP (combat) → niveau ' + niv);
+    const time = (typeof partyMinutesFor === 'function') ? partyMinutesFor(tdata, id) : 480;
+    journalEntries.push({ id:'j'+Date.now().toString(36)+Math.floor(Math.random()*99999), time, type:'info',
+      title:'Gain d\'XP (combat)', text:(d.nom||id)+' gagne '+total+' XP — '+defaits.length+' ennemi(s) vaincu(s)',
+      revealedFor:[] });   // visible MJ uniquement
+  }
+  // Un seul write journal (évite les courses read-modify-write)
+  if(journalEntries.length){
+    try {
+      const js = await db.collection('journal').doc('data').get();
+      const entries = (js.exists && Array.isArray(js.data().entries)) ? js.data().entries : [];
+      entries.push(...journalEntries);
+      await db.collection('journal').doc('data').set({ entries });
+    } catch(e){ console.warn('journal XP', e); }
+  }
+}
+async function finCombat(){
+  // Attribution automatique de l'XP (avec confirmation pour laisser le MJ ajuster avant de clore)
+  const defaits = ennemis.filter(e => (e.pvCur||0) <= 0);
+  const total = defaits.reduce((a,e) => a + combatXpOf(e), 0);
+  const nbJ = Object.keys(combattants).length;
+  if(total > 0 && nbJ > 0){
+    if(!confirm('Terminer le combat et attribuer ' + total + ' XP à chacun des ' + nbJ + ' joueur(s) ?')) return;
+    await attribuerXPFinCombat();
+  } else if(!confirm('Terminer le combat ?')) return;
   ordreInitiative = [];
   actionsState = {};
   tourActif = 0;
