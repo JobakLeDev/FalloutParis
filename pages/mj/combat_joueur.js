@@ -940,19 +940,22 @@ function renderActionsDeclarees(){
     if(attacksDone > 0){
       html += '<button onclick="finMonTour()" style="width:100%;margin-bottom:6px;background:var(--gk);border:1px solid var(--g);color:var(--g);font-family:monospace;font-size:9px;padding:5px;cursor:pointer;letter-spacing:1px">✓ TERMINER MON TOUR</button>';
     }
+    const minorUsed    = as.mineure?.used || [];
     const minorPending = as.mineure?.pending;
     const minorWaiting = minorPending?.status === 'waiting';
     const noMinorSlots = (s.mineure ?? 1) <= 0;   // grisé si plus d'action mineure dispo
+    const ONCE_PER_TURN = ['Aim'];                // actions non répétables dans le même tour
 
     html += '<div style="font-size:7px;color:var(--td);letter-spacing:1px;margin-bottom:3px;margin-top:2px">ACTIONS MINEURES <span style="color:var(--g)">' + (s.mineure ?? 1) + '</span></div>'
       + '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px">';
     MINOR_ACTIONS.forEach(a => {
       const isPendingThis = minorWaiting && minorPending.type === a.type;
       const moveBlocked   = a.mouvement && !!as.mouvement_used;
-      const disabled      = moveBlocked || noMinorSlots || (minorWaiting && !isPendingThis) || !!selectedActionDraft;
-      const col = isPendingThis ? 'var(--am)' : disabled ? '#1e2e1e' : 'var(--t)';
-      const bdr = isPendingThis ? 'var(--am)' : disabled ? '#1e2e1e' : 'var(--b2)';
-      const lbl = isPendingThis ? '⏳ ' + a.type : a.type;
+      const usedOnce      = ONCE_PER_TURN.includes(a.type) && minorUsed.includes(a.type);  // déjà visé ce tour
+      const disabled      = usedOnce || moveBlocked || noMinorSlots || (minorWaiting && !isPendingThis) || !!selectedActionDraft;
+      const col = isPendingThis ? 'var(--am)' : usedOnce ? 'var(--gd)' : disabled ? '#1e2e1e' : 'var(--t)';
+      const bdr = isPendingThis ? 'var(--am)' : usedOnce ? 'var(--gd)' : disabled ? '#1e2e1e' : 'var(--b2)';
+      const lbl = isPendingThis ? '⏳ ' + a.type : usedOnce ? '✓ ' + a.type : a.type;
       html += '<button onclick="prepareAction(\'mineure\',\'' + a.type + '\')"'
         + (disabled ? ' disabled' : '')
         + ' style="background:none;border:1px solid ' + bdr + ';color:' + col + ';font-family:monospace;font-size:7px;padding:2px 5px;cursor:' + (disabled?'default':'pointer') + ';letter-spacing:0"'
