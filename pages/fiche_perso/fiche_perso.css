@@ -20,9 +20,9 @@ html, body { height: 100%; overflow: hidden; }
   height: 100%;
   border: 1px solid var(--b2);
 }
-/* CARTE : cadre agrandi, ancré en haut, marge tout autour */
-#tc-carte{ height:auto; padding:0.5rem; }
-#tc-carte iframe{ height:82vh; margin:0; }
+/* CARTE : remplit la hauteur d'écran restante (pas de scroll) ; marges via le padding du corps */
+#tc-carte{ height:auto; padding:0; overflow:hidden; }
+#tc-carte iframe{ height:calc(100vh - 12rem); min-height:20rem; margin:0; }
 
 /* ============================================================
    MONTÉE DE NIVEAU
