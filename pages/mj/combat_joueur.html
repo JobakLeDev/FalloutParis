@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css">
   <link rel="stylesheet" href="combat.css?v=2">
-  <link rel="stylesheet" href="combat_joueur.css?v=4">
+  <link rel="stylesheet" href="combat_joueur.css?v=5">
 </head>
 <body>
 
@@ -35,10 +35,10 @@
   <!-- COMBAT ACTIF -->
   <div id="combat-actif" style="display:none">
 
-    <!-- GRILLE PRINCIPALE : fiche+coéq | ennemis | initiative -->
+    <!-- GRILLE PRINCIPALE : fiche | actions(+jets) | ressources | ennemis | initiative -->
     <div class="cj-grid">
 
-      <!-- COL GAUCHE : ma fiche + coéquipiers empilés -->
+      <!-- COL 1 : ma fiche + alliés -->
       <div class="col-gauche">
         <div class="pnl" id="ma-carte">
           <div class="pnl-title">Ma fiche</div>
@@ -50,7 +50,77 @@
         </div>
       </div>
 
-      <!-- COL MILIEU : ennemis -->
+      <!-- COL 2 : MES ACTIONS (en grand) + MES JETS dessous -->
+      <div class="col-actions">
+        <div class="pnl bottom-actions">
+          <div class="pnl-title">Mes actions</div>
+          <div id="j-actions"><span class="empty">—</span></div>
+          <div id="j-actions-decl" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid var(--b)"></div>
+        </div>
+
+        <!-- DÉS (masqué tant que l'attaque n'est pas validée) -->
+        <div class="pnl bottom-des" id="j-dice-panel" style="display:none;margin-top:8px">
+          <div class="pnl-title">Mes jets</div>
+          <div class="des-inner">
+            <div id="mes-des-context" class="des-ctx">Déclare une attaque pour viser</div>
+            <div id="j-dice-lock" style="display:none"></div>
+            <!-- Sélecteur de cible : visible quand Attack validée -->
+            <div id="j-cible-wrap" style="display:none;margin-bottom:5px"></div>
+            <div class="des-cols">
+              <div class="des-col">
+                <div class="des-row">
+                  <span class="tn-lbl">TN</span>
+                  <input type="number" class="tn-inp" id="j-tn-val" value="10" min="1" max="20">
+                  <button class="dice-btn" id="j-lance-btn" onclick="jLancer2D20()">2D20</button>
+                </div>
+                <div class="dice-result sm" id="j-dice-result">—</div>
+                <div id="j-miss-fortune" style="display:none;margin-top:3px"></div>
+                <div id="j-aim-reroll" style="display:none;margin-top:3px"></div>
+                <div id="j-convert-ap" style="display:none;margin-top:3px"></div>
+              </div>
+              <div class="des-col">
+                <div class="des-row">
+                  <span class="tn-lbl">DC</span>
+                  <span class="cd-inp" id="j-nb-cd-disp" title="Dés de combat de l'arme">2</span>
+                  <button class="cd-btn" onclick="jLancerCD()">CD</button>
+                </div>
+                <div class="dice-result sm" id="j-cd-result">—</div>
+                <div id="j-bonus-dmg" style="display:none;margin-top:3px"></div>
+              </div>
+            </div>
+            <div id="j-attack-result" style="display:none;margin-top:5px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COL 3 : RESSOURCES (AP groupe + Luck empilés) -->
+      <div class="col-ressources">
+        <div class="pnl bottom-ap">
+          <div class="pnl-title">AP Groupe</div>
+          <div class="j-ap-pool">
+            <div class="j-ap-dots" id="j-ap-dots"></div>
+            <span class="j-ap-val" id="j-ap-val">0</span><span style="font-size:7px;color:var(--td)">/6</span>
+          </div>
+          <div id="j-ap-spend-btns"></div>
+        </div>
+
+        <div class="pnl bottom-luck" style="margin-top:8px">
+          <div class="pnl-title">🍀 Luck</div>
+          <div class="j-luck-pool">
+            <div class="j-luck-dots" id="j-luck-dots"></div>
+            <span class="j-luck-val" id="j-luck-val">0</span><span style="font-size:7px;color:var(--td)">/<span id="j-luck-max">5</span></span>
+          </div>
+          <div style="margin-top:5px">
+            <button class="j-ap-spend-btn" id="j-lucky-timing-btn" onclick="luckyTimingJ()">⚡ Lucky Timing (−1)</button>
+            <div class="luck-draw-row" style="margin-top:3px">
+              <input type="text" id="j-luck-draw-inp" class="luck-draw-inp" placeholder="Détail favorable...">
+              <button class="j-ap-spend-btn" onclick="luckOfTheDrawJ()">🍀 Luck of the Draw (−1)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COL 4 : ennemis -->
       <div class="col-milieu">
         <div class="pnl" style="height:100%">
           <div class="pnl-title">Ennemis</div>
@@ -58,87 +128,11 @@
         </div>
       </div>
 
-      <!-- COL DROITE : initiative -->
+      <!-- COL 5 : initiative (bord droit) -->
       <div class="col-droite">
         <div class="pnl" style="height:100%">
           <div class="pnl-title">Initiative · R<span id="j-round">?</span></div>
           <div id="j-tracker"><span class="empty">En attente...</span></div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- BARRE DU BAS : actions + dés -->
-    <div class="cj-bottom">
-
-      <!-- ACTIONS -->
-      <div class="pnl bottom-actions" style="overflow-y:auto;max-height:220px">
-        <div class="pnl-title">Mes actions</div>
-        <div id="j-actions"><span class="empty">—</span></div>
-        <div id="j-actions-decl" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid var(--b)"></div>
-      </div>
-
-      <!-- AP GROUPE -->
-      <div class="pnl bottom-ap">
-        <div class="pnl-title">AP Groupe</div>
-        <div class="j-ap-pool">
-          <div class="j-ap-dots" id="j-ap-dots"></div>
-          <span class="j-ap-val" id="j-ap-val">0</span><span style="font-size:7px;color:var(--td)">/6</span>
-        </div>
-        <div id="j-ap-spend-btns"></div>
-      </div>
-
-      <!-- DÉS (masqué tant qu'aucune attaque n'est déclarée) -->
-      <div class="pnl bottom-des" id="j-dice-panel" style="display:none">
-        <div class="pnl-title">Mes jets</div>
-        <div class="des-inner">
-          <div id="mes-des-context" class="des-ctx">Déclare une attaque pour viser</div>
-          <!-- Verrou : visible tant qu'Attack n'est pas validée -->
-          <div id="j-dice-lock" style="display:flex;align-items:center;justify-content:center;padding:10px;border:1px dashed var(--b2);color:var(--td);font-size:8px;letter-spacing:1px;text-align:center;margin-bottom:5px">
-            ⏳ Attaque <b style="color:var(--am)">en attente de validation</b> du MJ
-          </div>
-          <!-- Sélecteur de cible : visible quand Attack validée -->
-          <div id="j-cible-wrap" style="display:none;margin-bottom:5px"></div>
-          <div class="des-cols">
-            <div class="des-col">
-              <div class="des-row">
-                <span class="tn-lbl">TN</span>
-                <input type="number" class="tn-inp" id="j-tn-val" value="10" min="1" max="20">
-                <button class="dice-btn" id="j-lance-btn" onclick="jLancer2D20()">2D20</button>
-              </div>
-              <div class="dice-result sm" id="j-dice-result">—</div>
-              <div id="j-miss-fortune" style="display:none;margin-top:3px"></div>
-              <div id="j-aim-reroll" style="display:none;margin-top:3px"></div>
-              <div id="j-convert-ap" style="display:none;margin-top:3px"></div>
-            </div>
-            <div class="des-col">
-              <div class="des-row">
-                <span class="tn-lbl">DC</span>
-                <span class="cd-inp" id="j-nb-cd-disp" title="Dés de combat de l'arme">2</span>
-                <button class="cd-btn" onclick="jLancerCD()">CD</button>
-              </div>
-              <div class="dice-result sm" id="j-cd-result">—</div>
-              <div id="j-bonus-dmg" style="display:none;margin-top:3px"></div>
-            </div>
-          </div>
-          <!-- Résultat narratif de l'attaque -->
-          <div id="j-attack-result" style="display:none;margin-top:5px"></div>
-        </div>
-      </div>
-
-      <!-- LUCK -->
-      <div class="pnl bottom-luck">
-        <div class="pnl-title">🍀 Luck</div>
-        <div class="j-luck-pool">
-          <div class="j-luck-dots" id="j-luck-dots"></div>
-          <span class="j-luck-val" id="j-luck-val">0</span><span style="font-size:7px;color:var(--td)">/<span id="j-luck-max">5</span></span>
-        </div>
-        <div style="margin-top:5px">
-          <button class="j-ap-spend-btn" id="j-lucky-timing-btn" onclick="luckyTimingJ()">⚡ Lucky Timing (−1)</button>
-          <div class="luck-draw-row" style="margin-top:3px">
-            <input type="text" id="j-luck-draw-inp" class="luck-draw-inp" placeholder="Détail favorable...">
-            <button class="j-ap-spend-btn" onclick="luckOfTheDrawJ()">🍀 Luck of the Draw (−1)</button>
-          </div>
         </div>
       </div>
 

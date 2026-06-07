@@ -8,27 +8,20 @@
 }
 .cj-grid {
   display: grid;
-  /* fiche | ennemis (plus petits) | espace flexible | INITIATIVE (tout à droite) */
-  grid-template-columns: 300px minmax(0,240px) 1fr 210px;
+  /* fiche | MES ACTIONS (en grand) | ressources (AP+Luck) | ennemis | INITIATIVE (bord droit) */
+  grid-template-columns: 290px minmax(0,1fr) 170px 240px 210px;
   gap: 10px;
   align-items: start;
 }
-.col-gauche  { display: flex; flex-direction: column; }
-.col-milieu  { }
-.col-droite  { grid-column: 4; }   /* forcée dans la dernière colonne (bord droit) */
+.col-gauche     { display: flex; flex-direction: column; }
+.col-actions    { display: flex; flex-direction: column; }
+.col-ressources { display: flex; flex-direction: column; }
+.col-milieu     { }
+.col-droite     { }
 
-/* ============================================================
-   BARRE DU BAS : actions + dés côte à côte
-   ============================================================ */
-.cj-bottom {
-  display: flex;
-  flex-direction: row;
-  gap: 10px;
-  margin-top: 10px;
-  align-items: stretch;
-}
-.bottom-actions { flex: 1 1 auto; }              /* s'étire pour combler l'espace */
-.bottom-des     { flex: 0 0 360px; max-width: 360px; }  /* largeur contrainte (plus de flex:1) */
+/* Panneaux de la colonne ACTIONS / RESSOURCES (anciennement barre du bas, désormais en grille) */
+.bottom-actions { }                              /* remplit la colonne (centre, en grand) */
+.bottom-des     { max-width: 480px; }            /* bloc de jets sous les actions, pas trop large */
 
 /* Actions — contenu horizontal */
 #j-actions       { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding-top: 2px; }
