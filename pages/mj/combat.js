@@ -446,14 +446,33 @@ function soignAllie(id, val){
   a.pvCur = Math.min(a.pvMax, a.pvCur + val);
   renderCombat(); syncCombatToFirebase();
 }
+// Ouvre le panneau d'attaque d'un compagnon (comme les ennemis) : cible parmi les ennemis + jet
 function attaqueAllie(id){
   const a = allies.find(x => x.id === id); if(!a) return;
+  const panel = document.getElementById('dice-context'); if(!panel) return;
   const nbDC = parseInt(a.atq) || 2;
-  const res = Array.from({length:nbDC}, () => FACES_CD[Math.floor(Math.random()*6)]);
-  const dmg = res.reduce((s,f) => s + (parseInt(f)||0), 0);
-  const eff = res.filter(f => f.includes('⚡')).length;
   const atk = (a.attacks && a.attacks[0]) || {};
-  addLog('🐾⚔ ' + a.nom + ' — ' + (atk.name||'attaque') + ' : ' + nbDC + ' DC → ' + dmg + ' dégâts' + (eff?' +'+eff+' effet':'') + ' (applique à un ennemi)');
+  const tn = atk.tn || a.tn || 10;
+  panel._nbDC = nbDC;
+  panel._modeEnnemi = true;            // attaque PNJ : log via _ennemNom, pas de dés bonus AP
+  panel._ennemNom = '🐾 ' + a.nom;
+  const vivants = ennemis.filter(e => (e.pvCur||0) > 0);
+  let html = '<div class="ctx-nom" style="color:var(--g)">🐾 ' + a.nom.toUpperCase() + ' attaque</div>';
+  html += '<div class="ctx-arme">' + (atk.name||'Attaque') + ' · ATQ <b>' + a.atq + ' DC</b>'
+        + (atk.eff && atk.eff!=='—' && atk.eff!=='–' ? ' · <span style="color:var(--am)">' + atk.eff + '</span>' : '') + '</div>';
+  html += '<div class="ctx-diff" style="margin-top:4px">Cible :';
+  html += '<select id="cible-sel" style="background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:monospace;font-size:9px;padding:2px 4px;outline:none;margin-left:6px">';
+  if(!vivants.length){
+    html += '<option value="">Aucun ennemi vivant</option>';
+  } else {
+    html += '<option value="">— Choisir —</option>';
+    vivants.forEach(e => { html += '<option value="' + e.id + '">' + e.nom.toUpperCase() + ' (RD ' + e.rd + ' · ' + e.pvCur + '/' + e.pvMax + ' PV)</option>'; });
+  }
+  html += '</select></div>';
+  html += '<div class="ctx-diff">Difficulté : <select id="diff-sel" onchange="majDC()" style="background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:monospace;font-size:9px;padding:2px 4px;outline:none"><option value="0">D0</option><option value="1" selected>D1</option><option value="2">D2</option><option value="3">D3</option></select></div>';
+  html += '<div id="dc-suggest" class="ctx-dc">DC : <b style="color:var(--g)" id="dc-nb">' + nbDC + '</b> (' + a.atq + ' DC)</div>';
+  const tnEl = document.getElementById('tn-val'); if(tnEl) tnEl.value = tn;
+  panel.innerHTML = html;
 }
 
 function renderTracker(){
