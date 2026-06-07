@@ -1192,13 +1192,13 @@ function renderDiceAccess(){
   const cibleEl = document.getElementById('j-cible-wrap');
   const panel   = document.getElementById('j-dice-panel');
 
-  // Le bloc d'attaque n'apparaît que si une attaque est déclarée / en cours :
-  //   pending Attack (en attente MJ) · attaque validée à résoudre · attaque déjà résolue ce tour (résultat affiché)
-  const attackPending = actionState?.majeure?.pending?.type === 'Attack';
-  const showPanel = !turnEnded && (attackPending || attackReady || attacksDone > 0);
+  // Le bloc d'attaque (lancer de dés) n'apparaît QU'UNE FOIS L'ATTAQUE VALIDÉE par le MJ
+  // (pas pendant l'attente de validation) puis reste tant que l'attaque se résout (reroll/conversion/dégâts bonus).
+  const showPanel = !turnEnded && (attackReady || attacksDone > 0);
   if(panel) panel.style.display = showPanel ? '' : 'none';
 
-  if(lockEl) lockEl.style.display = attackReady ? 'none' : 'flex';
+  // Plus de verrou « en attente » : le panneau ne s'affiche que lorsqu'on peut réellement lancer.
+  if(lockEl) lockEl.style.display = 'none';
 
   // Boutons de lancer : actifs seulement s'il reste une attaque à résoudre
   const lockDice = !attackReady;
