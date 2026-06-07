@@ -188,19 +188,26 @@ function rGeneralSkills(){
 
 function rGenWeap(){
   const el=document.getElementById('gen-weap');if(!el)return;
-  const weaps=char.inventory.filter(it=>it.type==='WEAPON'&&it.equipped);
-  if(!weaps.length){
-    el.innerHTML='<div style="font-size:9px;color:var(--td);padding:6px">Aucune arme équipée</div>';
-    return;
-  }
-  el.innerHTML='';
-  weaps.forEach(inv=>{
-    const db=DB.weapons.find(w=>w.n===inv.name)||{};
+  const equipped=char.inventory.filter(it=>it.type==='WEAPON'&&it.equipped);
+  const isExpl=it=>{ const db=DB.weapons.find(w=>w.n===it.name); return !!db && (db.t==='Explosive'||db.sk==='explosives'); };
+  const explosifs=equipped.filter(isExpl);
+  const armes=equipped.filter(it=>!isExpl(it));
+  // 2 slots d'armes + 1 slot d'explosif
+  const slots=[
+    {lbl:'ARME 1',  inv:armes[0]||null,     empty:'Aucune arme'},
+    {lbl:'ARME 2',  inv:armes[1]||null,     empty:'Aucune arme'},
+    {lbl:'EXPLOSIF',inv:explosifs[0]||null, empty:'Aucun explosif'},
+  ];
+  el.innerHTML=slots.map(s=>{
+    if(!s.inv){
+      return `<div class="gen-weap-card empty-slot"><div class="gwc-slot">${s.lbl}</div><div class="gwc-empty">${s.empty}</div></div>`;
+    }
+    const inv=s.inv, db=DB.weapons.find(w=>w.n===inv.name)||{};
     const tn=getWeaponTN(inv);
-    // Trouver les munitions correspondantes
     const ammoFound=db.a&&db.a!=='-'?char.ammo.find(a=>a.cal===db.a):null;
     const ammoQty=ammoFound?ammoFound.qty:null;
-    el.innerHTML+=`<div class="gen-weap-card eq">
+    return `<div class="gen-weap-card eq">
+      <div class="gwc-slot">${s.lbl}</div>
       <div class="gwc-row">
         <div>
           <div class="gwc-name">${inv.name}${inv.persoBonus?' <span style="color:var(--am);font-size:8px">★</span>':''}</div>
@@ -213,7 +220,7 @@ function rGenWeap(){
       </div>
       ${ammoQty!==null?`<div class="gwc-ammo"><span>${db.a}</span><span class="gwc-ammo-qty">${ammoQty}</span><span>cartouches</span></div>`:''}
     </div>`;
-  });
+  }).join('');
 }
 // Noms de TOUTES les pièces équipées couvrant une zone (tenue Body/All + armure spécifique).
 // Pièce spécifique à la zone affichée en premier (couche externe la plus pertinente).
