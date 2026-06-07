@@ -715,7 +715,7 @@ function renderEnnemisJoueur(){
     const pct = Math.round(e.pvCur/e.pvMax*100);
     const bc = pct<30?'var(--rd)':pct<60?'var(--am)':'var(--g)';
     return '<div class="ennemi-card'+(e.pvCur<=0?' dead':'')+'">'
-      +'<div class="jc-top"><span class="ennemi-name">'+e.nom+'</span><span class="jc-init">'+(e.initiative||'—')+'</span></div>'
+      +'<div class="jc-top"><span class="ennemi-name">'+e.nom+'</span></div>'
       +'<div class="jc-bar"><div style="width:'+pct+'%;height:100%;background:'+bc+'"></div></div>'
       +'<div class="jc-row">'
       +'<div class="jc-stat"><span class="jc-sl">PV</span><span class="jc-sv'+(pct<30?' danger':'')+'">'+e.pvCur+'/'+e.pvMax+'</span></div>'
