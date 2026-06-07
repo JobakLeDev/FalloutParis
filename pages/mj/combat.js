@@ -870,15 +870,22 @@ function convertExcessToAPMJ(){
 }
 
 function bonusDmgMJ(n){
-  if(apPool<n){ addLog('⚠ AP groupe insuffisants'); return; }
-  chAPPool(-n);
+  const panel = document.getElementById('dice-context');
+  const mjDriven = panel && (panel._atkMode === 'ally' || panel._atkMode === 'enemy');
+  if(mjDriven){
+    if(mjApPool<n){ addLog('⚠ AP MJ insuffisants'); return; }
+    chMJAP(-n);
+  } else {
+    if(apPool<n){ addLog('⚠ AP groupe insuffisants'); return; }
+    chAPPool(-n);
+  }
   const vals=Array.from({length:n},()=>FACES_CD[Math.floor(Math.random()*6)]);
   const dmg=vals.reduce((a,v)=>a+(parseInt(v)||0),0);
   const ef=vals.filter(v=>v.includes('⚡')).length;
   const extra=vals.map(v=>'<span style="color:'+(v.includes('⚡')?'var(--am)':v==='—'?'var(--td)':'var(--tb)')+';font-size:14px;font-family:Oswald,sans-serif">'+v+'</span>').join(' ');
   const cd=document.getElementById('cd-result');
   if(cd) cd.innerHTML+=' <span style="color:var(--am)">+['+extra+'] ='+dmg+'dmg'+(ef?' +'+ef+'⚡':'')+'</span>';
-  addLog('⚡ +'+n+'DC bonus (-'+n+' AP groupe): '+dmg+'dmg'+(ef?' +'+ef+'⚡':''));
+  addLog('⚡ +'+n+'DC bonus (-'+n+' AP '+(mjDriven?'MJ':'groupe')+'): '+dmg+'dmg'+(ef?' +'+ef+'⚡':''));
   const el=document.getElementById('bonus-dmg-mj'); if(el) el.style.display='none';
 }
 
@@ -935,11 +942,17 @@ function lancer2D20(){
   const basedc = panel._nbDC||2;
   const modeEnnemi = panel._modeEnnemi;
 
-  // Dépenser AP groupe pour dés bonus
+  // Dépenser des AP pour les dés bonus — attaque MJ (compagnon/ennemi) → pool MJ ; attaque joueur → pool groupe
+  const mjDriven = panel._atkMode === 'ally' || panel._atkMode === 'enemy';
   const apCost = [0,0,0,1,3,6][nbDiceMJ]||0;
   if(apCost>0){
-    if(apPool<apCost){ addLog('⚠ AP groupe insuffisants (besoin '+apCost+')'); return; }
-    chAPPool(-apCost);
+    if(mjDriven){
+      if(mjApPool<apCost){ addLog('⚠ AP MJ insuffisants (besoin '+apCost+')'); return; }
+      chMJAP(-apCost);
+    } else {
+      if(apPool<apCost){ addLog('⚠ AP groupe insuffisants (besoin '+apCost+')'); return; }
+      chAPPool(-apCost);
+    }
   }
 
   const dés = Array.from({length:nbDiceMJ},()=>Math.floor(Math.random()*20)+1);
@@ -983,9 +996,13 @@ function lancer2D20(){
   const bdEl=document.getElementById('bonus-dmg-mj');
   if(bdEl){
     const isMeleeThrow=['cac_weapon','barehand','throwing'].includes(lastSkKeyMJ);
-    if(!echec && isMeleeThrow && apPool>0 && !modeEnnemi){
+    // Attaque compagnon → pool MJ ; attaque joueur → pool groupe (pas pour les ennemis)
+    const allyAtk = panel._atkMode === 'ally';
+    const poolAvail = allyAtk ? mjApPool : apPool;
+    if(!echec && isMeleeThrow && poolAvail>0 && !modeEnnemi){
+      const lbl = allyAtk ? 'AP MJ' : 'AP';
       let btns='<span style="font-size:7px;color:var(--td)">Dégâts bonus: </span>';
-      for(let n=1;n<=Math.min(3,apPool);n++) btns+='<button class="ap-dmg-btn" onclick="bonusDmgMJ('+n+')">+'+n+'D (−'+n+'AP)</button>';
+      for(let n=1;n<=Math.min(3,poolAvail);n++) btns+='<button class="ap-dmg-btn" onclick="bonusDmgMJ('+n+')">+'+n+'D (−'+n+' '+lbl+')</button>';
       bdEl.style.display='block'; bdEl.innerHTML=btns;
     } else { bdEl.style.display='none'; }
   }
