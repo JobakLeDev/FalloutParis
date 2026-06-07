@@ -20,6 +20,7 @@ let actionsState = {};
 // ---- AP POOLS ----
 let apPool = 0;     // Pool groupe partagé (max 6)
 let mjApPool = 0;   // Pool MJ (masqué des joueurs)
+let defenseBonus = {};  // {joueurId: n} — bonus de Défense (action Defend), jusqu'au prochain tour du joueur
 let nbDiceMJ = 2;   // Nombre de d20 sélectionnés
 let lastExcessMJ = 0;
 let lastSkKeyMJ = '';
@@ -29,6 +30,7 @@ let lastLuckDrawTs = 0;
 let lastAttackResultTs = 0;
 let lastTurnDoneTs = {};        // {joueurId: ts} — dernier "Terminer mon tour" traité (avance auto sans validation MJ)
 let _turnDoneSeeded = false;    // au 1er snapshot, on enregistre les turnDone existants sans avancer
+let lastActionResultTs = 0;     // dernier résultat d'action à effet (Defend/Rally/First Aid…) journalisé
 
 // WEAPONS_DB défini dans mj_shared.js
 
@@ -141,6 +143,17 @@ function deverrouiller(){
         }
       }
     }
+    // Résultat d'une action à effet (Defend / Rally / First Aid / Test / Assist / Command NPC / Pass…)
+    if(data.actionResult && data.actionResult.ts > lastActionResultTs){
+      lastActionResultTs = data.actionResult.ts;
+      const a = data.actionResult;
+      addLog('🎯 '+(a.nom||a.joueur)+' — '+a.action+(a.detail?' : '+a.detail:''));
+      // Les soins/AP/défense sont déjà écrits dans le doc par le joueur → resync l'affichage local
+      if(data.apPool !== undefined) apPool = data.apPool;
+      if(data.defenseBonus) defenseBonus = data.defenseBonus;
+      if(Array.isArray(data.allies)) allies = data.allies.map(x=>({...x}));
+      renderCombat(); renderAPPool();
+    }
   });
 
   // Auto-sélectionner les joueurs transmis depuis mj.html
@@ -200,6 +213,7 @@ async function restaurerEtatCombat(){
     numRound        = d.numRound       || 0;
     apPool          = d.apPool         || 0;
     mjApPool        = d.mjApPool       || 0;
+    defenseBonus    = d.defenseBonus   || {};
     ennemis         = (d.ennemis       || []).map(e => ({...e}));
     allies          = (d.allies        || []).map(a => ({...a}));
     // Reconstruire combattants depuis l'ordre d'initiative
@@ -351,6 +365,11 @@ function finDeTour(){
     joueurActif = next.id;
     armeActive = null;
     updateDicePanel();
+    // Le bonus de Défense (action Defend) expire au début du tour du joueur
+    if(defenseBonus[next.id]){
+      delete defenseBonus[next.id];
+      if(db && currentCombatId) db.collection(COMBATS_COLL).doc(currentCombatId).update({ ['defenseBonus.'+next.id]: 0 }).catch(()=>{});
+    }
   }
 
   renderCombat();
@@ -708,7 +727,7 @@ function renderJoueursCombat(){
 
     el.innerHTML += `<div class="jc-card${isActif?' actif':''}${isTourActif?' tour-actif':''}" onclick="setActif('${id}')">
       <div class="jc-top">
-        <span class="jc-name">${isTourActif?'▶ ':''}${(d.nom||id).toUpperCase()}</span>
+        <span class="jc-name">${isTourActif?'▶ ':''}${(d.nom||id).toUpperCase()}${defenseBonus[id]>0?` <span style="color:var(--g);font-size:9px" title="Bonus de Défense (Defend)">🛡+${defenseBonus[id]}</span>`:''}</span>
         <span class="jc-init">${initiative!==null?initiative:'—'}</span>
       </div>
       <div class="jc-bar"><div style="width:${pct}%;height:100%;background:${barColor}"></div></div>

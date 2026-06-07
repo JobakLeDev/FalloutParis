@@ -67,6 +67,7 @@ function attacksValidated(){ return (actionState?.majeure?.used || []).filter(t 
 // Une attaque validée reste-t-elle à résoudre (jet) ?
 function canAttackNow(){ return attacksValidated() > attacksDone; }
 let turnEnded = false;       // a cliqué « Terminer mon tour »
+let actionsExecuted = {};    // {type: nb} — actions à effet déjà exécutées ce tour
 
 // --- Ciblage par ID d'ennemi (les noms peuvent être en double : 3× Radroach…) ---
 function cibleNom(id){ const e = (combatState?.ennemis||[]).find(x => String(x.id) === String(id)); return e ? e.nom : ''; }
@@ -252,6 +253,7 @@ function renderCombatJoueur(){
   if(tk !== _turnKey){
     _turnKey = tk; myAim = null; turnEnded = false; attacksDone = 0; twoD20Done = -1;
     currentArmeInfo = null; armeSelectionnee = null; lastRollDice = [];
+    actionsExecuted = {};   // actions à effet déjà exécutées ce tour
     const dc = document.getElementById('mes-des-context'); if(dc) dc.textContent = 'Déclare une attaque pour viser';
     ['j-dice-result','j-cd-result'].forEach(id => { const e=document.getElementById(id); if(e) e.innerHTML='—'; });
     ['j-attack-result','j-miss-fortune','j-aim-reroll','j-convert-ap','j-bonus-dmg'].forEach(id => { const e=document.getElementById(id); if(e){ e.innerHTML=''; e.style.display='none'; } });
@@ -262,6 +264,7 @@ function renderCombatJoueur(){
   renderActionsJoueur();
   renderActionsDeclarees();
   renderDiceAccess();
+  renderActionExec();
   refreshDesContext();
   renderAPPoolJoueur();
   renderLuckJoueur();
@@ -1109,6 +1112,170 @@ async function submitActionDeclaree(){
 function cancelActionDeclaree(){
   selectedActionDraft = null;
   renderActionsDeclarees();
+}
+
+// ============================================================
+// EXÉCUTION DES ACTIONS À EFFET (après validation MJ)
+// ============================================================
+const ACTION_EXEC = {
+  'Defend':      { cat:'majeure', skill:'athletics', diff:1, lbl:'🛡 Défendre (Athlétisme)' },
+  'First Aid':   { cat:'majeure', skill:'medicine',  diff:1, lbl:'➕ Premiers soins (Médecine)', ally:true },
+  'Rally':       { cat:'majeure', skill:'survival',  diff:0, lbl:'📣 Ralliement (Survie)' },
+  'Test':        { cat:'majeure', pickSkill:true,    diff:1, lbl:'🎲 Test libre' },
+  'Assist':      { cat:'majeure', noRoll:true, ally:true, lbl:'🤝 Assister un allié' },
+  'Command NPC': { cat:'majeure', noRoll:true, ally:true, ownOnly:true, lbl:'🐕 Commander un PNJ' },
+  'Pass':        { cat:'majeure', noRoll:true, lbl:'⏸ Passer' },
+  'Ready':       { cat:'majeure', noRoll:true, note:true, lbl:'⏳ Action préparée' },
+  'Interact':    { cat:'mineure', noRoll:true, note:true, lbl:'✋ Interaction' },
+};
+
+function _roll2D20(tn, diff){
+  const dice=[Math.floor(Math.random()*20)+1, Math.floor(Math.random()*20)+1];
+  const succ=dice.filter(v=>v<=tn).length + dice.filter(v=>v===1).length;   // 1 = crit (2 succès)
+  return { dice, succ, crit: dice.filter(v=>v===1).length, echec: succ<diff, extra: Math.max(0,succ-diff) };
+}
+// Allies ciblables : compagnons (combat doc) + soi-même
+function _allyTargets(ownOnly){
+  const list = [{ id:'__self__', nom:(joueurData?.nom||joueurId)+' (moi)' }];
+  (combatState?.allies||[]).filter(a => !ownOnly || a.owner===joueurId)
+    .forEach(a => list.push({ id:a.id, nom:a.nom + (a.owner===joueurId?'':' ('+(a.ownerNom||'')+')') }));
+  return list;
+}
+
+function renderActionExec(){
+  const panel = document.getElementById('j-action-exec'); if(!panel) return;
+  const as = actionState;
+  const isMoTour = combatState?.ordreInitiative?.[combatState.tourActif]?.id === joueurId;
+  if(!isMoTour || turnEnded || !as){ panel.style.display='none'; return; }
+  // Première action à effet validée, non encore exécutée
+  let found=null;
+  for(const type in ACTION_EXEC){
+    const cfg=ACTION_EXEC[type];
+    const used=(as[cfg.cat]?.used||[]).filter(t=>t===type).length;
+    if(used > (actionsExecuted[type]||0)){ found={type,cfg}; break; }
+  }
+  if(!found){ panel.style.display='none'; return; }
+  panel.style.display='';
+  document.getElementById('j-action-exec-title').textContent = found.cfg.lbl;
+  const body = document.getElementById('j-action-exec-body');
+  const inp = 'background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:monospace;font-size:8px;padding:3px 5px;outline:none';
+  const btn = 'background:var(--gk);border:1px solid var(--g);color:var(--g);font-family:monospace;font-size:9px;padding:5px 14px;cursor:pointer;letter-spacing:1px';
+  const t=found.type, cfg=found.cfg;
+  let h='';
+
+  if(cfg.skill || cfg.pickSkill){
+    // jet de compétence
+    let skSel='';
+    if(cfg.pickSkill){
+      skSel = '<select id="ax-skill" style="'+inp+';margin-bottom:5px;width:100%">'
+        + ((typeof SKILLS_DEF!=='undefined'?SKILLS_DEF:[])).map(s=>'<option value="'+s.key+'">'+s.name+' ('+s.attr+')</option>').join('')
+        + '</select>';
+    }
+    const tnNow = cfg.skill ? getTN(joueurData, cfg.skill).total : null;
+    let allySel='';
+    if(cfg.ally){
+      allySel = '<div style="font-size:7px;color:var(--td);margin-bottom:2px">Cible</div><select id="ax-ally" style="'+inp+';margin-bottom:5px;width:100%">'
+        + _allyTargets(cfg.ownOnly).map(a=>'<option value="'+a.id+'">'+a.nom+'</option>').join('') + '</select>';
+    }
+    let opt2='';
+    if(t==='Defend'){
+      opt2 = '<label style="font-size:7px;color:var(--td);display:flex;align-items:center;gap:4px;margin-bottom:5px"><input type="checkbox" id="ax-def2"> +2 Défense au lieu de +1 (−1 AP groupe)</label>';
+    }
+    h = allySel + skSel + opt2
+      + '<div style="display:flex;align-items:center;gap:8px">'
+      + (cfg.skill ? '<span style="font-size:8px;color:var(--td)">TN <b style="color:var(--tb);font-size:13px;font-family:Oswald,sans-serif">'+tnNow+'</b>'+(cfg.diff?' · D'+cfg.diff:' · D0')+'</span>' : '<span style="font-size:8px;color:var(--td)">D'+cfg.diff+'</span>')
+      + '<button style="'+btn+'" onclick="execActionRoll(\''+t+'\')">Lancer 2D20</button></div>'
+      + '<div id="ax-result" style="margin-top:6px;font-size:9px"></div>';
+  } else {
+    // action sans jet
+    let allySel='';
+    if(cfg.ally){
+      allySel = '<div style="font-size:7px;color:var(--td);margin-bottom:2px">Cible</div><select id="ax-ally" style="'+inp+';margin-bottom:5px;width:100%">'
+        + _allyTargets(cfg.ownOnly).map(a=>'<option value="'+a.id+'">'+a.nom+'</option>').join('') + '</select>';
+    }
+    let noteInp = cfg.note ? '<input type="text" id="ax-note" placeholder="Précision (optionnel)…" style="'+inp+';width:100%;margin-bottom:5px">' : '';
+    h = allySel + noteInp + '<button style="'+btn+'" onclick="execActionSimple(\''+t+'\')">✓ Confirmer</button>';
+  }
+  body.innerHTML = h;
+}
+
+// Marque l'action comme exécutée et journalise au MJ
+function _finishExec(type, detail){
+  actionsExecuted[type] = (actionsExecuted[type]||0) + 1;
+  if(db && combatId){
+    db.collection(COMBATS_COLL).doc(combatId).update({
+      actionResult: { joueur: joueurId, nom: (joueurData?.nom||joueurId), action: type, detail, ts: Date.now() }
+    }).catch(()=>{});
+  }
+  renderActionExec();
+}
+
+async function execActionRoll(type){
+  const cfg = ACTION_EXEC[type]; if(!cfg) return;
+  const skill = cfg.pickSkill ? (document.getElementById('ax-skill')?.value || 'speech') : cfg.skill;
+  const tn = getTN(joueurData, skill).total;
+  const r = _roll2D20(tn, cfg.diff);
+  const resEl = document.getElementById('ax-result');
+  let effetTxt = '';
+
+  if(!r.echec){
+    if(type==='Defend'){
+      const use2 = document.getElementById('ax-def2')?.checked;
+      let bonus = 1;
+      if(use2){
+        if((combatState?.apPool||0) >= 1){ await db.collection(COMBATS_COLL).doc(combatId).update({ apPool:(combatState.apPool||0)-1 }); bonus = 2; }
+      }
+      await db.collection(COMBATS_COLL).doc(combatId).update({ ['defenseBonus.'+joueurId]: bonus });
+      effetTxt = '🛡 +'+bonus+' Défense jusqu\'à ton prochain tour';
+    } else if(type==='Rally'){
+      const gain = Math.min(1 + r.extra, 6 - (combatState?.apPool||0));
+      if(gain>0){ await db.collection(COMBATS_COLL).doc(combatId).update({ apPool:(combatState.apPool||0)+gain }); }
+      effetTxt = '📣 +'+Math.max(0,gain)+' AP groupe';
+    } else if(type==='First Aid'){
+      const allyId = document.getElementById('ax-ally')?.value;
+      const heal = 2 + r.extra;
+      effetTxt = await _healTarget(allyId, heal);
+    } else if(type==='Test'){
+      effetTxt = '✓ Test réussi (le MJ adjuge l\'effet)';
+    }
+  } else {
+    effetTxt = '✗ Échec';
+  }
+  const diceStr = r.dice.map(d=>'<span style="color:'+(d<=tn?'var(--g)':'var(--rd)')+';font-family:Oswald,sans-serif;font-size:14px">'+d+'</span>').join(' / ');
+  if(resEl) resEl.innerHTML = diceStr + ' → <b style="color:'+(r.echec?'var(--rd)':'var(--g)')+'">'+r.succ+' succès</b>'+(r.crit?' +'+r.crit+'★':'')+'<div style="margin-top:3px;color:var(--tb)">'+effetTxt+'</div>';
+  _finishExec(type, r.succ+'s '+(r.echec?'(échec)':'')+' — '+effetTxt.replace(/<[^>]+>/g,''));
+}
+
+async function execActionSimple(type){
+  const cfg = ACTION_EXEC[type]; if(!cfg) return;
+  let detail = '';
+  if(cfg.ally){ const id=document.getElementById('ax-ally')?.value; detail = 'cible: '+_allyNom(id); }
+  const note = document.getElementById('ax-note')?.value?.trim();
+  if(note) detail += (detail?' · ':'')+note;
+  if(type==='Assist' && cfg.ally){
+    const id=document.getElementById('ax-ally')?.value;
+    if(id && id!=='__self__'){ await db.collection(COMBATS_COLL).doc(combatId).update({ ['assistDie.'+id]: { from:(joueurData?.nom||joueurId), ts:Date.now() } }).catch(()=>{}); }
+  }
+  if(type==='Pass'){ detail = 'passe son tour'; }
+  _finishExec(type, detail || cfg.lbl);
+}
+
+function _allyNom(id){
+  if(id==='__self__') return (joueurData?.nom||joueurId)+' (moi)';
+  const a=(combatState?.allies||[]).find(x=>x.id===id); return a? a.nom : id;
+}
+// Soigne une cible (soi → fiche joueur ; compagnon → combat doc allies)
+async function _healTarget(id, amount){
+  if(id==='__self__'){
+    const hpMax=getHpMax(joueurData); const cur=joueurData?.hp||0; const nv=Math.min(hpMax, cur+amount);
+    await db.collection('joueurs').doc(joueurId).update({ hp: nv });
+    return '➕ '+(joueurData?.nom||'Moi')+' : '+cur+' → '+nv+' PV';
+  }
+  const allies=(combatState?.allies||[]).map(a=>({...a}));
+  const a=allies.find(x=>x.id===id); if(!a) return '➕ Soin appliqué';
+  const before=a.hpCur||0; a.hpCur=Math.min(a.hpMax||before, before+amount);
+  await db.collection(COMBATS_COLL).doc(combatId).update({ allies });
+  return '➕ '+a.nom+' : '+before+' → '+a.hpCur+' PV';
 }
 
 // Draw Item : équipe (ou range) l'arme/armure d'inventaire i → écrit la fiche (sync Firebase). Renvoie un libellé d'action.
