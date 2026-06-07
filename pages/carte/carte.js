@@ -1754,8 +1754,9 @@ function _inRange(otherId){
 // Boutons d'interaction de proximité (groupe / numéros / don / balise GPS)
 function _interactBtns(id){
   const shared = (mapData.beacons?.[viewerId] || []).includes(id);
+  const inGroup = !!groupOf(id);
   return '<div class="tok-actions">'
-    + `<button onclick="propGroup('${id}')">👥 Proposer de grouper</button>`
+    + `<button onclick="propGroup('${id}')">👥 ${inGroup ? 'Proposer de rejoindre le groupe' : 'Proposer de grouper'}</button>`
     + `<button onclick="propNumbers('${id}')">📟 Échanger les numéros</button>`
     + `<button onclick="openGive('${id}')">🎁 Donner des objets</button>`
     + (shared ? '<button disabled style="opacity:.6;cursor:default">📡 Balise GPS partagée ✓</button>'
@@ -1776,6 +1777,11 @@ function _sendProposal(to, type, extra){
   if (map) map.closePopup();
 }
 function propGroup(to){
+  const g = groupOf(to);
+  if(g){   // la cible est déjà dans un groupe → proposer de le rejoindre (pas de saisie de nom)
+    _sendProposal(to, 'group', { groupName: g.name || 'Groupe', joinTarget: true });
+    return;
+  }
   const def = joueurs[viewerId]?.nom ? ('Groupe de ' + joueurs[viewerId].nom) : 'Groupe';
   const name = prompt('Nom du groupe à proposer :', def);
   if(name === null) return;   // annulé
@@ -1841,7 +1847,9 @@ function watchEchanges(){
 function showProp(p){
   _activeProp = p;
   let body = '';
-  if(p.type === 'group')   body = `<b>${_exEsc(p.fromNom)}</b> te propose de rejoindre le groupe <b>« ${_exEsc(p.groupName || 'Groupe')} »</b> (vous partagerez le même temps de jeu).`;
+  if(p.type === 'group')   body = p.joinTarget
+    ? `<b>${_exEsc(p.fromNom)}</b> souhaite <b>rejoindre ton groupe « ${_exEsc(p.groupName || 'Groupe')} »</b> (vous partagerez le même temps de jeu).`
+    : `<b>${_exEsc(p.fromNom)}</b> te propose de rejoindre le groupe <b>« ${_exEsc(p.groupName || 'Groupe')} »</b> (vous partagerez le même temps de jeu).`;
   if(p.type === 'numbers') body = `<b>${_exEsc(p.fromNom)}</b> veut <b>échanger vos numéros</b> (vous pourrez vous envoyer des messages).`;
   if(p.type === 'beacon')  body = `<b>${_exEsc(p.fromNom)}</b> veut <b>échanger vos balises GPS</b> (vous vous verrez en permanence sur la carte, même à distance).`;
   if(p.type === 'give'){
@@ -1895,11 +1903,15 @@ async function _applyGroup(p){
   const data = snap.exists ? snap.data() : {};
   let parties = Array.isArray(data.parties) ? data.parties : [];
   const detach = id => parties.forEach(x => x.players = (x.players||[]).filter(y => y !== id));
-  const proposerGroup = parties.find(x => (x.players||[]).includes(p.from) && x.solo === false);
-  if(proposerGroup){
+  const proposerGroup = parties.find(x => !x.solo && (x.players||[]).includes(p.from));
+  const targetGroup   = parties.find(x => !x.solo && (x.players||[]).includes(p.to));
+  if(proposerGroup){            // le proposant a déjà un groupe → la cible le rejoint
     detach(p.to);
     proposerGroup.players.push(p.to);
-  } else {
+  } else if(targetGroup){       // la cible a un groupe → le proposant le rejoint
+    detach(p.from);
+    targetGroup.players.push(p.from);
+  } else {                      // ni l'un ni l'autre → nouveau groupe
     const solo = parties.find(x => (x.players||[]).includes(p.from));
     const mins = (solo && solo.minutes != null) ? solo.minutes : (typeof TEMPS_DEFAUT !== 'undefined' ? TEMPS_DEFAUT : 480);
     detach(p.from); detach(p.to);
