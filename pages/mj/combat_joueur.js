@@ -1023,8 +1023,8 @@ function renderActionsDeclarees(){
     });
     html += '</div>';
 
-    // Terminer mon tour — sous les actions (le MJ avance automatiquement)
-    html += '<button onclick="finMonTour()" style="width:100%;margin-top:10px;background:var(--gk);border:1px solid var(--g);color:var(--g);font-family:monospace;font-size:10px;padding:7px;cursor:pointer;letter-spacing:1px">✓ TERMINER MON TOUR</button>';
+    // Terminer mon tour — sous les actions, centré (le MJ avance automatiquement)
+    html += '<div style="text-align:center;margin-top:12px"><button onclick="finMonTour()" style="background:var(--gk);border:1px solid var(--g);color:var(--g);font-family:monospace;font-size:10px;padding:7px 22px;cursor:pointer;letter-spacing:1px">✓ TERMINER MON TOUR</button></div>';
   }
 
   el.innerHTML = html;
@@ -1189,9 +1189,10 @@ function renderDiceAccess(){
   const cibleEl = document.getElementById('j-cible-wrap');
   const panel   = document.getElementById('j-dice-panel');
 
-  // Le bloc d'attaque (lancer de dés) n'apparaît QU'UNE FOIS L'ATTAQUE VALIDÉE par le MJ
-  // (pas pendant l'attente de validation) puis reste tant que l'attaque se résout (reroll/conversion/dégâts bonus).
-  const showPanel = !turnEnded && (attackReady || attacksDone > 0);
+  // Le bloc d'attaque (lancer de dés) n'apparaît QU'UNE FOIS L'ATTAQUE VALIDÉE par le MJ,
+  // pendant MON tour uniquement, puis reste tant que l'attaque se résout (reroll/conversion/dégâts bonus).
+  const isMoTour = combatState?.ordreInitiative?.[combatState.tourActif]?.id === joueurId;
+  const showPanel = isMoTour && !turnEnded && (attackReady || attacksDone > 0);
   if(panel) panel.style.display = showPanel ? '' : 'none';
 
   // Plus de verrou « en attente » : le panneau ne s'affiche que lorsqu'on peut réellement lancer.

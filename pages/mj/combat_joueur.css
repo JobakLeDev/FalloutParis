@@ -21,7 +21,7 @@
 
 /* Panneaux de la colonne ACTIONS / RESSOURCES (anciennement barre du bas, désormais en grille) */
 .bottom-actions { }                              /* remplit la colonne (centre, en grand) */
-.bottom-des     { max-width: 480px; }            /* bloc de jets sous les actions, pas trop large */
+.bottom-des     { width: 100%; }                 /* aussi large que le bloc actions */
 
 /* Actions — contenu horizontal */
 #j-actions       { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding-top: 2px; }
