@@ -1191,6 +1191,13 @@ function renderDiceAccess(){
   const attackReady = canAttackNow();          // attaque validée par le MJ, pas encore résolue
   const lockEl  = document.getElementById('j-dice-lock');
   const cibleEl = document.getElementById('j-cible-wrap');
+  const panel   = document.getElementById('j-dice-panel');
+
+  // Le bloc d'attaque n'apparaît que si une attaque est déclarée / en cours :
+  //   pending Attack (en attente MJ) · attaque validée à résoudre · attaque déjà résolue ce tour (résultat affiché)
+  const attackPending = actionState?.majeure?.pending?.type === 'Attack';
+  const showPanel = !turnEnded && (attackPending || attackReady || attacksDone > 0);
+  if(panel) panel.style.display = showPanel ? '' : 'none';
 
   if(lockEl) lockEl.style.display = attackReady ? 'none' : 'flex';
 

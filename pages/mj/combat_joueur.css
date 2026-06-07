@@ -26,8 +26,8 @@
   margin-top: 10px;
   align-items: stretch;
 }
-.bottom-actions { flex: 0 0 auto; }
-.bottom-des     { flex: 1; }
+.bottom-actions { flex: 1 1 auto; }              /* s'étire pour combler l'espace */
+.bottom-des     { flex: 0 0 360px; max-width: 360px; }  /* largeur contrainte (plus de flex:1) */
 
 /* Actions — contenu horizontal */
 #j-actions       { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding-top: 2px; }
@@ -45,10 +45,13 @@
 /* ============================================================
    BANNIÈRE MON TOUR
    ============================================================ */
+/* Indicateur de statut (PAS un bouton) : pas de cadre plein, accent à gauche, texte qui pulse */
 .mon-tour-banner {
-  background: var(--gk); border: 1px solid var(--g); color: var(--g);
-  font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 3px;
-  text-align: center; padding: 4px; margin-bottom: 7px;
+  background: transparent; border: none; border-left: 3px solid var(--g);
+  color: var(--g); font-family: 'Oswald', sans-serif; font-size: 13px;
+  letter-spacing: 4px; text-transform: uppercase; text-align: left;
+  padding: 1px 0 1px 8px; margin-bottom: 7px; cursor: default;
+  text-shadow: 0 0 8px rgba(93,190,93,.5);
   animation: pulse 1.5s infinite;
 }
 @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.6;} }
