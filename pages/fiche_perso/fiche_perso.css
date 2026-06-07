@@ -292,3 +292,11 @@ html, body { height: 100%; overflow: hidden; }
 .gwc-slot{ font-size:0.55rem; letter-spacing:2px; color:var(--td); text-transform:uppercase; margin-bottom:0.2rem; }
 .gen-weap-card.empty-slot{ opacity:.7; }
 .gwc-empty{ font-size:0.72rem; color:var(--td); font-style:italic; padding:0.15rem 0; }
+
+/* Modale de remplacement d'arme (slots pleins) */
+#wslot-list{ display:flex; flex-direction:column; gap:0.4rem; }
+.wslot-btn{ display:flex; justify-content:space-between; align-items:center; width:100%; text-align:left;
+  background:#060d06; border:1px solid var(--b2); color:var(--t); font-family:'Share Tech Mono',monospace;
+  font-size:0.78rem; padding:0.5rem 0.6rem; cursor:pointer; }
+.wslot-btn:hover{ border-color:var(--g); background:var(--gk); color:var(--tb); }
+.wslot-btn .wslot-stat{ color:var(--am); font-size:0.66rem; }

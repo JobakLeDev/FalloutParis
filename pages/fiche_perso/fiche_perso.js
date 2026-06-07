@@ -608,11 +608,8 @@ function tEquip(i){
     } else {
       const armes=equippedW.filter(x=>!isE(x));
       if(armes.length>=2){
-        const lines=armes.map((x,k)=>(k+1)+' — '+x.name).join('\n');
-        const choix=prompt('Les 2 slots d\'armes sont pleins.\nNuméro de l\'arme à remplacer :\n'+lines, '1');
-        if(choix===null) return;                    // annulé → ne rien équiper
-        const repl=armes[(parseInt(choix)||1)-1] || armes[0];
-        repl.equipped=false;
+        openWeaponSwap(i, armes);   // slots pleins → on clique l'arme à remplacer dans la modale
+        return;                     // ne pas équiper tout de suite
       }
     }
   }
@@ -620,6 +617,27 @@ function tEquip(i){
   rAll();
 }
 function chQty(i,n){char.inventory[i].qty=Math.max(0,char.inventory[i].qty+n);rAll();}
+
+// Remplacement d'arme (slots pleins) : on clique l'arme à remplacer
+let _wslotNew=-1;
+function openWeaponSwap(newI, armes){
+  _wslotNew=newI;
+  const nv=document.getElementById('wslot-new'); if(nv) nv.textContent=char.inventory[newI]?.name||'';
+  const list=document.getElementById('wslot-list');
+  if(list) list.innerHTML=armes.map(a=>{
+    const idx=char.inventory.indexOf(a); const db=DB.weapons.find(w=>w.n===a.name)||{};
+    return `<button class="wslot-btn" onclick="weaponSwapPick(${idx})"><b>${a.name}</b><span class="wslot-stat">${db.dmg||''}${db.t?' · '+db.t:''}</span></button>`;
+  }).join('');
+  document.getElementById('mo-wslot')?.classList.add('on');
+}
+function weaponSwapPick(replI){
+  if(_wslotNew<0) return;
+  if(char.inventory[replI]) char.inventory[replI].equipped=false;
+  if(char.inventory[_wslotNew]) char.inventory[_wslotNew].equipped=true;
+  _wslotNew=-1;
+  closeMo('mo-wslot');
+  rAll();
+}
 function rmItem(i){char.inventory.splice(i,1);rAll();}
 
 function addItemFromSel(name){
