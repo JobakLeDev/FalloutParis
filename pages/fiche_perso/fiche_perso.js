@@ -186,8 +186,20 @@ function rGeneralSkills(){
 }
 
 
+function toggleWeapCollapse(){
+  const p=document.getElementById('pnl-gen-weap'); if(!p)return;
+  p.classList.toggle('collapsed');
+  const col=p.classList.contains('collapsed');
+  const c=document.getElementById('weap-chev'); if(c) c.textContent=col?'▸':'▾';
+  try{localStorage.setItem('fp_weapCollapsed', col?'1':'0');}catch(e){}
+}
 function rGenWeap(){
   const el=document.getElementById('gen-weap');if(!el)return;
+  // restaure l'état réduit
+  try{
+    const p=document.getElementById('pnl-gen-weap');
+    if(p && localStorage.getItem('fp_weapCollapsed')==='1'){ p.classList.add('collapsed'); const c=document.getElementById('weap-chev'); if(c)c.textContent='▸'; }
+  }catch(e){}
   const equipped=char.inventory.filter(it=>it.type==='WEAPON'&&it.equipped);
   const isExpl=it=>{ const db=DB.weapons.find(w=>w.n===it.name); return !!db && (db.t==='Explosive'||db.sk==='explosives'); };
   const explosifs=equipped.filter(isExpl);

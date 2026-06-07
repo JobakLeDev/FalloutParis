@@ -203,6 +203,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .pnl-toggle:hover{color:var(--tb);}
 .rencontre-pnl.collapsed > :not(.pnl-title){display:none !important;}
 .actions-pnl.collapsed > :not(.pnl-title){display:none !important;}
+/* Réduit : ne garder que la ligne de titre (pas de bloc vide étiré par flex:1) */
+.rencontre-pnl.collapsed,
+.actions-pnl.collapsed{flex:0 0 auto !important;}
+.rencontre-pnl.collapsed > .pnl-title,
+.actions-pnl.collapsed > .pnl-title{margin-bottom:0;}
 
 /* Réduction des groupes */
 .party-toggle{background:none;border:none;color:var(--g);cursor:pointer;font-size:11px;padding:0 4px;flex:none;}

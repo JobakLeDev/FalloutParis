@@ -288,6 +288,11 @@ html, body { height: 100%; overflow: hidden; }
 /* GÉNÉRAL : rangée SPECIAL | Armure | Armes+Statuts — empile sur écran étroit */
 @media(max-width:900px){ .gen-row{ grid-template-columns:1fr !important; } }
 
+/* Réduction du bloc "Armes équipées" (GÉNÉRAL) */
+.weap-toggle{ cursor:pointer; user-select:none; }
+.weap-toggle #weap-chev{ font-size:0.7em; color:var(--td); }
+#pnl-gen-weap.collapsed #gen-weap{ display:none; }
+
 /* Slots d'armes équipées (GÉNÉRAL) : 2 armes + 1 explosif */
 .gwc-slot{ font-size:0.55rem; letter-spacing:2px; color:var(--td); text-transform:uppercase; margin-bottom:0.2rem; }
 .gen-weap-card.empty-slot{ opacity:.7; }
