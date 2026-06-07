@@ -931,6 +931,34 @@ function renderActionsDeclarees(){
           body += '<div style="font-size:7px;color:var(--rd);margin-bottom:4px">Aucun ennemi vivant à cibler</div>';
         }
       }
+      // Draw Item : accès à l'inventaire (armes) → équiper / ranger
+      if(selectedActionDraft.type === 'Draw Item'){
+        const inv = joueurData?.inventory || [];
+        const weaps = inv.map((it,idx)=>({it,idx})).filter(o => o.it.type === 'WEAPON');
+        if(weaps.length){
+          const savedDraw = document.getElementById('j-act-draw')?.value || '';
+          body += '<select id="j-act-draw" style="width:100%;margin-bottom:4px;' + inputStyle + '">'
+            + '<option value="">— choisir une arme à sortir/ranger —</option>'
+            + weaps.map(o => '<option value="'+o.idx+'"'+(String(o.idx)===savedDraw?' selected':'')+'>'+(o.it.equipped?'▣ ':'□ ')+o.it.name+(o.it.equipped?' (équipée → ranger)':' (équiper)')+'</option>').join('')
+            + '</select>';
+        } else {
+          body += '<div style="font-size:7px;color:var(--td);margin-bottom:4px">Aucune arme dans l\'inventaire</div>';
+        }
+      }
+      // Take Chem : liste des chems disponibles → consommer
+      if(selectedActionDraft.type === 'Take Chem'){
+        const inv = joueurData?.inventory || [];
+        const chems = inv.map((it,idx)=>({it,idx})).filter(o => o.it.type === 'DRUGS' && (o.it.qty==null || o.it.qty>0));
+        if(chems.length){
+          const savedChem = document.getElementById('j-act-chem')?.value || '';
+          body += '<select id="j-act-chem" style="width:100%;margin-bottom:4px;' + inputStyle + '">'
+            + '<option value="">— choisir un chem —</option>'
+            + chems.map(o => '<option value="'+o.idx+'"'+(String(o.idx)===savedChem?' selected':'')+'>'+o.it.name+' ×'+(o.it.qty??1)+'</option>').join('')
+            + '</select>';
+        } else {
+          body += '<div style="font-size:7px;color:var(--rd);margin-bottom:4px">Aucun chem disponible dans l\'inventaire</div>';
+        }
+      }
     }
     body += '<input type="text" id="j-action-details" placeholder="Precisions optionnelles (note...)" style="width:100%;margin-bottom:4px;' + inputStyle + '">';
 
@@ -1038,9 +1066,21 @@ async function submitActionDeclaree(){
     }
   }
 
+  // Draw Item : équiper / ranger l'arme choisie (écrit la fiche), Take Chem : consommer le chem
+  let actLabel = '';
+  if(type === 'Draw Item'){
+    const di = document.getElementById('j-act-draw')?.value;
+    if(di !== '' && di != null) actLabel = await drawEquipItem(parseInt(di));
+  }
+  if(type === 'Take Chem'){
+    const ci = document.getElementById('j-act-chem')?.value;
+    if(ci !== '' && ci != null) actLabel = await consumeChem(parseInt(ci));
+  }
+
   let details = '';
   if(cible) details = '🎯 ' + cible + (zone ? ' — ' + zone : '');
   if(w)     details += (details ? ' · ' : '') + w.label;
+  if(actLabel) details += (details ? ' · ' : '') + actLabel;
   if(free)  details += (details ? ' · ' : '') + free;
   // Mémoriser la visée (arme + cible + zone) pour réutilisation lors de l'attaque
   if((type === 'Attack' || type === 'Aim') && cible){ myAim = { cible, zone, w }; }
@@ -1059,6 +1099,41 @@ async function submitActionDeclaree(){
 function cancelActionDeclaree(){
   selectedActionDraft = null;
   renderActionsDeclarees();
+}
+
+// Draw Item : équipe (ou range) l'arme d'inventaire i → écrit la fiche (sync Firebase). Renvoie un libellé d'action.
+async function drawEquipItem(i){
+  const inv = joueurData?.inventory; if(!inv || !inv[i]) return '';
+  const it = inv[i];
+  const isE = x => { const d = (window.DB?.weapons||[]).find(w=>w.n===x.name); return !!d && (d.t==='Explosive'||d.sk==='explosives'); };
+  let label;
+  if(it.equipped){
+    it.equipped = false;
+    label = '📥 Range ' + it.name;
+  } else {
+    // Slots : 2 armes + 1 explosif (auto-remplace la plus ancienne si plein, pas de modale en combat)
+    const equippedW = inv.filter(x => x !== it && x.type === 'WEAPON' && x.equipped);
+    if(isE(it)){
+      equippedW.filter(isE).forEach(x => x.equipped = false);
+    } else {
+      const armes = equippedW.filter(x => !isE(x));
+      while(armes.length >= 2){ armes[0].equipped = false; armes.shift(); }
+    }
+    it.equipped = true;
+    label = '🔫 Équipe ' + it.name;
+  }
+  try { await db.collection('joueurs').doc(joueurId).update({ inventory: inv }); } catch(e){ console.error(e); }
+  return label;
+}
+
+// Take Chem : décrémente la quantité du chem d'inventaire i → écrit la fiche. Renvoie un libellé d'action.
+async function consumeChem(i){
+  const inv = joueurData?.inventory; if(!inv || !inv[i]) return '';
+  const it = inv[i];
+  const name = it.name;
+  it.qty = Math.max(0, (it.qty ?? 1) - 1);
+  try { await db.collection('joueurs').doc(joueurId).update({ inventory: inv }); } catch(e){ console.error(e); }
+  return '💊 Prend ' + name;
 }
 
 // Le joueur signale la fin de son tour (après avoir attaqué) → verrouille ses actions
