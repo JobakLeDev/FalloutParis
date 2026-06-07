@@ -67,6 +67,18 @@ function attacksValidated(){ return (actionState?.majeure?.used || []).filter(t 
 // Une attaque validée reste-t-elle à résoudre (jet) ?
 function canAttackNow(){ return attacksValidated() > attacksDone; }
 let turnEnded = false;       // a cliqué « Terminer mon tour »
+
+// --- Ciblage par ID d'ennemi (les noms peuvent être en double : 3× Radroach…) ---
+function cibleNom(id){ const e = (combatState?.ennemis||[]).find(x => String(x.id) === String(id)); return e ? e.nom : ''; }
+function enemyOptions(list, selectedId){
+  const counts = {}; list.forEach(e => counts[e.nom] = (counts[e.nom]||0) + 1);
+  const seen = {};
+  return list.map(e => {
+    seen[e.nom] = (seen[e.nom]||0) + 1;
+    const suf = counts[e.nom] > 1 ? ' #' + seen[e.nom] : '';
+    return '<option value="' + e.id + '"' + (String(e.id) === String(selectedId) ? ' selected' : '') + '>' + e.nom + suf + ' (' + e.pvCur + '/' + e.pvMax + ' PV)</option>';
+  }).join('');
+}
 let _turnKey = '';           // clé round:tourActif pour réinitialiser au changement de tour
 let _declWeaps = [];         // armes proposées dans la déclaration d'attaque (index → params)
 // Armes d'attaque du joueur (équipées) + mains nues, avec TN/DC calculés
@@ -901,7 +913,7 @@ function renderActionsDeclarees(){
     if(reuseAim){
       // Visée déjà effectuée (Aim) → on ne re-choisit ni arme, ni cible, ni zone
       body += '<div style="font-size:8px;color:var(--tb);margin-bottom:4px;padding:4px 6px;border:1px solid var(--gd);background:#0a140a">'
-        + '🎯 Visée : <b>' + myAim.w.label + '</b> → <b style="color:var(--rd)">' + myAim.cible + '</b>'
+        + '🎯 Visée : <b>' + myAim.w.label + '</b> → <b style="color:var(--rd)">' + cibleNom(myAim.cible) + '</b>'
         + (myAim.zone ? ' <span style="color:var(--am)">[' + myAim.zone + ']</span>' : '')
         + '</div>';
     } else {
@@ -918,7 +930,7 @@ function renderActionsDeclarees(){
           const showZone = (selectedActionDraft.type === 'Aim');
           body += '<div style="display:flex;gap:4px;margin-bottom:4px">'
             + '<select id="j-act-cible" style="flex:' + (showZone?'2':'1') + ';' + inputStyle + '">'
-            + ennemisV.map(e => '<option value="' + e.nom + '"' + (e.nom===savedCible?' selected':'') + '>' + e.nom + ' (' + e.pvCur + ' PV)</option>').join('')
+            + enemyOptions(ennemisV, savedCible)
             + '</select>'
             + (showZone
                 ? '<select id="j-act-zone" style="flex:1;' + inputStyle + '">'
@@ -1076,7 +1088,7 @@ async function submitActionDeclaree(){
   }
 
   let details = '';
-  if(cible) details = '🎯 ' + cible + (zone ? ' — ' + zone : '');
+  if(cible) details = '🎯 ' + cibleNom(cible) + (zone ? ' — ' + zone : '');
   if(w)     details += (details ? ' · ' : '') + w.label;
   if(actLabel) details += (details ? ' · ' : '') + actLabel;
   if(free)  details += (details ? ' · ' : '') + free;
@@ -1219,11 +1231,11 @@ function renderDiceAccess(){
     cibleAttaque = '';
     return;
   }
-  // Déjà visé (Attack/Aim) → on ne redemande pas la cible
-  if(myAim && myAim.cible && ennemis.some(e => e.nom === myAim.cible)){
+  // Déjà visé (Attack/Aim) → on ne redemande pas la cible (vérif par ID ; l'ennemi visé doit être encore vivant)
+  if(myAim && myAim.cible && ennemis.some(e => String(e.id) === String(myAim.cible))){
     cibleAttaque = myAim.cible;
     cibleEl.innerHTML = '<div style="font-size:7px;color:var(--td)">🎯 Cible visée : '
-      + '<b style="color:var(--rd)">' + myAim.cible + '</b>'
+      + '<b style="color:var(--rd)">' + cibleNom(myAim.cible) + '</b>'
       + (myAim.zone ? ' <span style="color:var(--am)">— ' + myAim.zone + '</span>' : '')
       + '</div>';
     return;
@@ -1232,7 +1244,7 @@ function renderDiceAccess(){
   cibleEl.innerHTML = '<div style="display:flex;align-items:center;gap:5px">'
     + '<span style="font-size:7px;color:var(--td)">Cible :</span>'
     + '<select id="j-cible-sel" style="flex:1;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:monospace;font-size:7px;padding:2px 4px;outline:none">'
-    + ennemis.map(e => '<option value="'+e.nom+'"'+(e.nom===prevVal?' selected':'')+'>'+e.nom+' ('+e.pvCur+'/'+e.pvMax+' PV)</option>').join('')
+    + enemyOptions(ennemis, prevVal)
     + '</select></div>';
   const sel = document.getElementById('j-cible-sel');
   if(sel){
@@ -1272,7 +1284,8 @@ function jLancerCD(){
 
   // Résultat narratif
   const nom = joueurData?.nom || joueurId;
-  const cible = cibleAttaque ? ' à <b style="color:var(--rd)">'+cibleAttaque+'</b>' : '';
+  const cibleNomTxt = cibleNom(cibleAttaque);
+  const cible = cibleNomTxt ? ' à <b style="color:var(--rd)">'+cibleNomTxt+'</b>' : '';
   const zoneTxt = ' <span style="color:'+(zoneAimee?'var(--am)':'var(--td)')+'">['+zone+']</span>';
   const arEl = document.getElementById('j-attack-result');
   if(arEl){
@@ -1293,7 +1306,7 @@ function jLancerCD(){
   // Envoyer au MJ pour son log
   if(db && combatId){
     db.collection(COMBATS_COLL).doc(combatId).update({
-      attackResult: { joueur: joueurId, nom, cible: cibleAttaque, zone, zoneAimee,
+      attackResult: { joueur: joueurId, nom, cible: cibleNomTxt, cibleId: cibleAttaque, zone, zoneAimee,
         dmg: dmgTotal, ef,
         effetNom: effetInfo?.nom||'', effetNote: effetInfo?.note||'', rad: effetInfo?.rad||0,
         ts: Date.now() }

@@ -126,9 +126,10 @@ function deverrouiller(){
         if(r.effetNote) msg += ' ['+r.effetNom+' : '+r.effetNote+']';
         if(r.rad>0) msg += ' +'+r.rad+' RAD';
         addLog('⚔ ' + msg);
-        // Appliquer les dégâts automatiquement à l'ennemi ciblé
-        if(r.cible && r.dmg > 0){
-          const cible = ennemis.find(e => e.nom === r.cible);
+        // Appliquer les dégâts automatiquement à l'ennemi ciblé (par ID — les noms peuvent être en double)
+        if(r.dmg > 0){
+          const cible = (r.cibleId != null && ennemis.find(e => String(e.id) === String(r.cibleId)))
+                     || ennemis.find(e => e.nom === r.cible && e.pvCur > 0);   // fallback (ancien format / par nom)
           if(cible && cible.pvCur > 0){
             const avant = cible.pvCur;
             cible.pvCur = Math.max(0, cible.pvCur - r.dmg);
@@ -158,7 +159,7 @@ function deverrouiller(){
   if(stored){
     try{
       const data = JSON.parse(stored);
-      data.forEach(e => ennemis.push(e));
+      data.forEach((e,i) => { if(e.id == null) e.id = Date.now()+'_'+i; ennemis.push(e); });
       sessionStorage.removeItem('combat_ennemis');
       addLog('⚔ ' + ennemis.length + ' ennemi(s) importés depuis la page MJ');
     }catch(e){}
