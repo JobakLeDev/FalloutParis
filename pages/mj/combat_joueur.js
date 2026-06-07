@@ -902,7 +902,7 @@ function renderActionsDeclarees(){
       // Visée déjà effectuée (Aim) → on ne re-choisit ni arme, ni cible, ni zone
       body += '<div style="font-size:8px;color:var(--tb);margin-bottom:4px;padding:4px 6px;border:1px solid var(--gd);background:#0a140a">'
         + '🎯 Visée : <b>' + myAim.w.label + '</b> → <b style="color:var(--rd)">' + myAim.cible + '</b>'
-        + (myAim.zone ? ' <span style="color:var(--am)">[' + myAim.zone + ']</span>' : ' <span style="color:var(--td)">(zone au hasard)</span>')
+        + (myAim.zone ? ' <span style="color:var(--am)">[' + myAim.zone + ']</span>' : '')
         + '</div>';
     } else {
       if(selectedActionDraft.type === 'Attack' || selectedActionDraft.type === 'Aim'){
@@ -926,7 +926,7 @@ function renderActionsDeclarees(){
                   + '</select>'
                 : '')
             + '</div>'
-            + (showZone ? '' : '<div style="font-size:7px;color:var(--td);margin-bottom:4px">Zone touchée tirée au hasard (vise d\'abord pour cibler une zone)</div>');
+            + (showZone ? '' : '<div style="font-size:7px;color:var(--td);margin-bottom:4px">Vise pour cibler une zone précise</div>');
         } else {
           body += '<div style="font-size:7px;color:var(--rd);margin-bottom:4px">Aucun ennemi vivant à cibler</div>';
         }
@@ -1224,7 +1224,7 @@ function renderDiceAccess(){
     cibleAttaque = myAim.cible;
     cibleEl.innerHTML = '<div style="font-size:7px;color:var(--td)">🎯 Cible visée : '
       + '<b style="color:var(--rd)">' + myAim.cible + '</b>'
-      + (myAim.zone ? ' <span style="color:var(--am)">— ' + myAim.zone + '</span>' : ' <span style="color:var(--td)">(zone au hasard)</span>')
+      + (myAim.zone ? ' <span style="color:var(--am)">— ' + myAim.zone + '</span>' : '')
       + '</div>';
     return;
   }
@@ -1273,7 +1273,7 @@ function jLancerCD(){
   // Résultat narratif
   const nom = joueurData?.nom || joueurId;
   const cible = cibleAttaque ? ' à <b style="color:var(--rd)">'+cibleAttaque+'</b>' : '';
-  const zoneTxt = ' <span style="color:'+(zoneAimee?'var(--am)':'var(--td)')+'">['+zone+(zoneAimee?'':' au hasard')+']</span>';
+  const zoneTxt = ' <span style="color:'+(zoneAimee?'var(--am)':'var(--td)')+'">['+zone+']</span>';
   const arEl = document.getElementById('j-attack-result');
   if(arEl){
     arEl.style.display = 'block';
