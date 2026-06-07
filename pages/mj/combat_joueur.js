@@ -1361,8 +1361,29 @@ async function consumeChem(i){
   const it = inv[i];
   const name = it.name;
   it.qty = Math.max(0, (it.qty ?? 1) - 1);
-  try { await db.collection('joueurs').doc(joueurId).update({ inventory: inv }); } catch(e){ console.error(e); }
-  return '💊 Prend ' + name;
+  const upd = { inventory: inv };
+  let effetTxt = '';
+  // Effet du chem appliqué automatiquement : soin de PV (Stimpak…) + réduction de RAD (RadAway…)
+  const def = (window.DB?.drugs||[]).find(d => d.n === name)
+           || (window.DB?.food||[]).find(d => d.n === name)
+           || (window.DB?.drinks||[]).find(d => d.n === name) || {};
+  if(def.hp){
+    const hpMax = getHpMax(joueurData);
+    const cur = joueurData.hp || 0;
+    const nv = Math.min(hpMax, cur + def.hp);
+    upd.hp = nv; joueurData.hp = nv;
+    if(nv>cur) effetTxt += ' (+'+(nv-cur)+' PV)';
+  }
+  const radM = (def.eff||'').match(/Soigne\s+(\d+)\s+rad/i);
+  if(radM){
+    const dec = parseInt(radM[1])||0;
+    const curRad = joueurData.rad || 0;
+    const nv = Math.max(0, curRad - dec);
+    upd.rad = nv; joueurData.rad = nv;
+    if(nv<curRad) effetTxt += ' (−'+(curRad-nv)+' RAD)';
+  }
+  try { await db.collection('joueurs').doc(joueurId).update(upd); } catch(e){ console.error(e); }
+  return '💊 Prend ' + name + effetTxt;
 }
 
 // Le joueur signale la fin de son tour (après avoir attaqué) → verrouille ses actions
