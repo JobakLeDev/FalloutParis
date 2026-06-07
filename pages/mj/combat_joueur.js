@@ -980,8 +980,6 @@ function renderActionsDeclarees(){
   if(isMoTour && turnEnded){
     html += '<div style="padding:6px;border:1px solid var(--gd);background:#0a140a;font-size:8px;color:var(--gd);text-align:center">✓ Tour terminé</div>';
   } else if(isMoTour){
-    // Disponible pendant tout mon tour : termine le tour directement (le MJ avance automatiquement)
-    html += '<button onclick="finMonTour()" style="width:100%;margin-bottom:6px;background:var(--gk);border:1px solid var(--g);color:var(--g);font-family:monospace;font-size:9px;padding:5px;cursor:pointer;letter-spacing:1px">✓ TERMINER MON TOUR</button>';
     const minorUsed    = as.mineure?.used || [];
     const minorPending = as.mineure?.pending;
     const minorWaiting = minorPending?.status === 'waiting';
@@ -1024,6 +1022,9 @@ function renderActionsDeclarees(){
         + ' title="' + a.desc + '">' + lbl + '</button>';
     });
     html += '</div>';
+
+    // Terminer mon tour — sous les actions (le MJ avance automatiquement)
+    html += '<button onclick="finMonTour()" style="width:100%;margin-top:10px;background:var(--gk);border:1px solid var(--g);color:var(--g);font-family:monospace;font-size:10px;padding:7px;cursor:pointer;letter-spacing:1px">✓ TERMINER MON TOUR</button>';
   }
 
   el.innerHTML = html;
