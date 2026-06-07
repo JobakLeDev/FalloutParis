@@ -944,18 +944,20 @@ function renderActionsDeclarees(){
     const minorPending = as.mineure?.pending;
     const minorWaiting = minorPending?.status === 'waiting';
     const noMinorSlots = (s.mineure ?? 1) <= 0;   // grisé si plus d'action mineure dispo
-    const ONCE_PER_TURN = ['Aim'];                // actions non répétables dans le même tour
+    // Visée non consommée : on a visé plus de fois qu'on a attaqué → pas de nouvelle visée tant qu'on n'a pas attaqué
+    const aimsUsed   = minorUsed.filter(t => t === 'Aim').length + ((minorWaiting && minorPending.type === 'Aim') ? 1 : 0);
+    const aimPending = aimsUsed > attacksDone;
 
     html += '<div style="font-size:7px;color:var(--td);letter-spacing:1px;margin-bottom:3px;margin-top:2px">ACTIONS MINEURES <span style="color:var(--g)">' + (s.mineure ?? 1) + '</span></div>'
       + '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px">';
     MINOR_ACTIONS.forEach(a => {
       const isPendingThis = minorWaiting && minorPending.type === a.type;
       const moveBlocked   = a.mouvement && !!as.mouvement_used;
-      const usedOnce      = ONCE_PER_TURN.includes(a.type) && minorUsed.includes(a.type);  // déjà visé ce tour
-      const disabled      = usedOnce || moveBlocked || noMinorSlots || (minorWaiting && !isPendingThis) || !!selectedActionDraft;
-      const col = isPendingThis ? 'var(--am)' : usedOnce ? 'var(--gd)' : disabled ? '#1e2e1e' : 'var(--t)';
-      const bdr = isPendingThis ? 'var(--am)' : usedOnce ? 'var(--gd)' : disabled ? '#1e2e1e' : 'var(--b2)';
-      const lbl = isPendingThis ? '⏳ ' + a.type : usedOnce ? '✓ ' + a.type : a.type;
+      const aimLock       = a.type === 'Aim' && aimPending && !isPendingThis;   // déjà visé, pas encore attaqué
+      const disabled      = aimLock || moveBlocked || noMinorSlots || (minorWaiting && !isPendingThis) || !!selectedActionDraft;
+      const col = isPendingThis ? 'var(--am)' : aimLock ? 'var(--gd)' : disabled ? '#1e2e1e' : 'var(--t)';
+      const bdr = isPendingThis ? 'var(--am)' : aimLock ? 'var(--gd)' : disabled ? '#1e2e1e' : 'var(--b2)';
+      const lbl = isPendingThis ? '⏳ ' + a.type : aimLock ? '✓ ' + a.type : a.type;
       html += '<button onclick="prepareAction(\'mineure\',\'' + a.type + '\')"'
         + (disabled ? ' disabled' : '')
         + ' style="background:none;border:1px solid ' + bdr + ';color:' + col + ';font-family:monospace;font-size:7px;padding:2px 5px;cursor:' + (disabled?'default':'pointer') + ';letter-spacing:0"'
