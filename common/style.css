@@ -138,11 +138,11 @@ html::after{
 .gen-weap-card{background:#080f08;border:1px solid var(--b);padding:0.5rem 0.667rem;margin-bottom:0.417rem;}
 .gen-weap-card.eq{border-color:var(--gd);}
 .gwc-row{display:flex;justify-content:space-between;align-items:center;}
-.gwc-name{font-size:0.917rem;color:var(--tb);}
-.gwc-dmg{font-family:'Oswald',sans-serif;font-size:1.333rem;color:var(--am);}
-.gwc-stats{font-size:0.667rem;color:var(--td);margin-top:0.167rem;}
-.gwc-ammo{display:flex;align-items:center;gap:0.5rem;margin-top:0.333rem;font-size:0.75rem;color:var(--td);}
-.gwc-ammo-qty{font-family:'Oswald',sans-serif;font-size:1.167rem;color:var(--tb);}
+.gwc-name{font-size:0.8rem;color:var(--tb);}
+.gwc-dmg{font-family:'Oswald',sans-serif;font-size:1.15rem;color:var(--am);}
+.gwc-stats{font-size:0.6rem;color:var(--td);margin-top:0.167rem;}
+.gwc-ammo{display:flex;align-items:center;gap:0.5rem;margin-top:0.333rem;font-size:0.68rem;color:var(--td);}
+.gwc-ammo-qty{font-family:'Oswald',sans-serif;font-size:1.05rem;color:var(--tb);}
 
 /* BARS */
 .bw{margin-bottom:0.583rem;}
