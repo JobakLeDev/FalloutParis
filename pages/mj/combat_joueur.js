@@ -931,18 +931,20 @@ function renderActionsDeclarees(){
           body += '<div style="font-size:7px;color:var(--rd);margin-bottom:4px">Aucun ennemi vivant à cibler</div>';
         }
       }
-      // Draw Item : accès à l'inventaire (armes) → équiper / ranger
+      // Draw Item : accès à l'inventaire (armes + armures) → équiper / ranger
       if(selectedActionDraft.type === 'Draw Item'){
         const inv = joueurData?.inventory || [];
-        const weaps = inv.map((it,idx)=>({it,idx})).filter(o => o.it.type === 'WEAPON');
-        if(weaps.length){
+        const EQUIPABLE = ['WEAPON','ARMOR','POWERARMOR','CLOTHING','OUTFIT'];
+        const items = inv.map((it,idx)=>({it,idx})).filter(o => EQUIPABLE.includes(o.it.type));
+        if(items.length){
           const savedDraw = document.getElementById('j-act-draw')?.value || '';
+          const kind = t => t==='WEAPON' ? '🔫' : '🛡';
           body += '<select id="j-act-draw" style="width:100%;margin-bottom:4px;' + inputStyle + '">'
-            + '<option value="">— choisir une arme à sortir/ranger —</option>'
-            + weaps.map(o => '<option value="'+o.idx+'"'+(String(o.idx)===savedDraw?' selected':'')+'>'+(o.it.equipped?'▣ ':'□ ')+o.it.name+(o.it.equipped?' (équipée → ranger)':' (équiper)')+'</option>').join('')
+            + '<option value="">— choisir un objet à sortir/ranger —</option>'
+            + items.map(o => '<option value="'+o.idx+'"'+(String(o.idx)===savedDraw?' selected':'')+'>'+(o.it.equipped?'▣ ':'□ ')+kind(o.it.type)+' '+o.it.name+(o.it.equipped?' (équipé → ranger)':' (équiper)')+'</option>').join('')
             + '</select>';
         } else {
-          body += '<div style="font-size:7px;color:var(--td);margin-bottom:4px">Aucune arme dans l\'inventaire</div>';
+          body += '<div style="font-size:7px;color:var(--td);margin-bottom:4px">Aucun objet équipable dans l\'inventaire</div>';
         }
       }
       // Take Chem : liste des chems disponibles → consommer
@@ -1101,16 +1103,17 @@ function cancelActionDeclaree(){
   renderActionsDeclarees();
 }
 
-// Draw Item : équipe (ou range) l'arme d'inventaire i → écrit la fiche (sync Firebase). Renvoie un libellé d'action.
+// Draw Item : équipe (ou range) l'arme/armure d'inventaire i → écrit la fiche (sync Firebase). Renvoie un libellé d'action.
 async function drawEquipItem(i){
   const inv = joueurData?.inventory; if(!inv || !inv[i]) return '';
   const it = inv[i];
+  const APP = ['ARMOR','POWERARMOR','CLOTHING','OUTFIT'];
   const isE = x => { const d = (window.DB?.weapons||[]).find(w=>w.n===x.name); return !!d && (d.t==='Explosive'||d.sk==='explosives'); };
   let label;
   if(it.equipped){
     it.equipped = false;
     label = '📥 Range ' + it.name;
-  } else {
+  } else if(it.type === 'WEAPON'){
     // Slots : 2 armes + 1 explosif (auto-remplace la plus ancienne si plein, pas de modale en combat)
     const equippedW = inv.filter(x => x !== it && x.type === 'WEAPON' && x.equipped);
     if(isE(it)){
@@ -1121,6 +1124,30 @@ async function drawEquipItem(i){
     }
     it.equipped = true;
     label = '🔫 Équipe ' + it.name;
+  } else if(APP.includes(it.type)){
+    // Superposition d'armure (RAW p.123) — même logique que la fiche (tEquip)
+    const zone = it.zone || (window.DB?.armor||[]).find(a=>a.n===it.name)?.z || null;
+    const isHead = zone === 'Head';
+    inv.forEach(other => {
+      if(other === it || !other.equipped || !APP.includes(other.type)) return;
+      const oZone = other.zone || (window.DB?.armor||[]).find(a=>a.n===other.name)?.z || null;
+      const oHead = oZone === 'Head';
+      const oBase = ['CLOTHING','OUTFIT'].includes(other.type);
+      if(it.type === 'OUTFIT'){
+        if(oBase) other.equipped = false;            // une seule base
+        else if(!oHead) other.equipped = false;      // tenue → retire l'armure de corps
+      } else if(it.type === 'CLOTHING'){
+        if(oBase) other.equipped = false;            // une seule base ; l'armure reste superposée
+      } else {                                       // ARMOR / POWERARMOR
+        if(other.type === 'OUTFIT' && !isHead) other.equipped = false;  // pas d'armure sur une tenue
+        else if(zone && oZone === zone) other.equipped = false;         // 1 pièce / emplacement
+      }
+    });
+    it.equipped = true;
+    label = '🛡 Équipe ' + it.name;
+  } else {
+    it.equipped = true;
+    label = '📤 Sort ' + it.name;
   }
   try { await db.collection('joueurs').doc(joueurId).update({ inventory: inv }); } catch(e){ console.error(e); }
   return label;
