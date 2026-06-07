@@ -730,7 +730,9 @@ function renderMetroTokens(){
         ${canUp ? `<button onclick="remonterSurface('${id}')">🏙 Remonter (${st.nom})</button>` : '<small>Pas de station à proximité</small>'}
       </div>`);
     } else {
-      m.bindPopup('<b>' + nom + '</b>');
+      // Vue joueur : interactions de proximité (les jetons affichés ici sont déjà à portée)
+      const exBtns = (viewerId && id !== viewerId) ? _interactBtns(id) : '';
+      m.bindPopup('<b>' + nom + '</b>' + exBtns);
     }
   });
 }
@@ -1020,17 +1022,12 @@ function renderTokens() {
       const canDown = st && st.dist < METRO_DESCEND_M;
       mjBtns = `<div class="zpop-mj"><button onclick="startMoveFromToken('${id}')">➤ Déplacer</button>${canDown ? `<button onclick="descendreMetro('${id}')">🚇 Descendre (${st.nom})</button>` : ''}</div>`;
     }
-    // Vue joueur : sur le jeton d'un AUTRE joueur (forcément à portée ici), actions d'interaction
+    // Vue joueur : actions d'interaction UNIQUEMENT si réellement à portée (pas seulement visible via balise GPS)
     let exBtns = '';
     if (!isMJ && viewerId && id !== viewerId) {
-      const shared = (mapData.beacons?.[viewerId] || []).includes(id);
-      exBtns = `<div class="tok-actions">
-        <button onclick="propGroup('${id}')">👥 Proposer de grouper</button>
-        <button onclick="propNumbers('${id}')">📟 Échanger les numéros</button>
-        <button onclick="openGive('${id}')">🎁 Donner des objets</button>
-        ${shared ? '<button disabled style="opacity:.6;cursor:default">📡 Balise GPS partagée ✓</button>'
-                 : `<button onclick="propBeacon('${id}')">📡 Échanger les balises GPS</button>`}
-      </div>`;
+      const inRange = my && L.latLng(my.lat, my.lng).distanceTo(L.latLng(pos.lat, pos.lng)) <= VISION_RADIUS_M;
+      exBtns = inRange ? _interactBtns(id)
+                       : '<div class="tok-actions"><span style="font-size:7px;color:var(--td)">Hors de portée pour interagir</span></div>';
     }
     m.bindPopup('<b>' + nom + '</b>' + mjBtns + exBtns);
     if (isMJ && editMode) m.on('dragend', () => {
@@ -1577,9 +1574,23 @@ function carteToast(msg){
   clearTimeout(carteToast._t); carteToast._t = setTimeout(()=>el.classList.remove('on'), 3200);
 }
 function _inRange(otherId){
-  const my = mapData.tokens?.[viewerId], ot = mapData.tokens?.[otherId];
+  // Sous terre (les deux) → on compare les positions métro ; sinon les positions de surface
+  const bothUnder = mapData.underground?.[viewerId] && mapData.underground?.[otherId];
+  const src = bothUnder ? mapData.metroTokens : mapData.tokens;
+  const my = src?.[viewerId], ot = src?.[otherId];
   if(!my || !ot) return false;
   return L.latLng(my.lat, my.lng).distanceTo(L.latLng(ot.lat, ot.lng)) <= VISION_RADIUS_M;
+}
+// Boutons d'interaction de proximité (groupe / numéros / don / balise GPS)
+function _interactBtns(id){
+  const shared = (mapData.beacons?.[viewerId] || []).includes(id);
+  return '<div class="tok-actions">'
+    + `<button onclick="propGroup('${id}')">👥 Proposer de grouper</button>`
+    + `<button onclick="propNumbers('${id}')">📟 Échanger les numéros</button>`
+    + `<button onclick="openGive('${id}')">🎁 Donner des objets</button>`
+    + (shared ? '<button disabled style="opacity:.6;cursor:default">📡 Balise GPS partagée ✓</button>'
+              : `<button onclick="propBeacon('${id}')">📡 Échanger les balises GPS</button>`)
+    + '</div>';
 }
 function _sendProposal(to, type, extra){
   if(!fdb || !viewerId) return;
