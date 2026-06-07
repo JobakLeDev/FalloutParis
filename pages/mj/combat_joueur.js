@@ -992,19 +992,17 @@ function renderActionsDeclarees(){
     const aimsUsed   = minorUsed.filter(t => t === 'Aim').length + ((minorWaiting && minorPending.type === 'Aim') ? 1 : 0);
     const aimPending = aimsUsed > attacksDone;
 
-    html += '<div style="font-size:7px;color:var(--td);letter-spacing:1px;margin-bottom:3px;margin-top:2px">ACTIONS MINEURES <span style="color:var(--g)">' + (s.mineure ?? 1) + '</span></div>'
-      + '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px">';
+    html += '<div class="act-cat-lbl">ACTIONS MINEURES <span style="color:var(--g)">' + (s.mineure ?? 1) + '</span></div>'
+      + '<div class="j-act-btns">';
     MINOR_ACTIONS.forEach(a => {
       const isPendingThis = minorWaiting && minorPending.type === a.type;
       const moveBlocked   = a.mouvement && !!as.mouvement_used;
       const aimLock       = a.type === 'Aim' && aimPending && !isPendingThis;   // déjà visé, pas encore attaqué
       const disabled      = aimLock || moveBlocked || noMinorSlots || anyWaiting || !!selectedActionDraft;
-      const col = isPendingThis ? 'var(--am)' : aimLock ? 'var(--gd)' : disabled ? '#1e2e1e' : 'var(--t)';
-      const bdr = isPendingThis ? 'var(--am)' : aimLock ? 'var(--gd)' : disabled ? '#1e2e1e' : 'var(--b2)';
       const lbl = isPendingThis ? '⏳ ' + a.type : aimLock ? '✓ ' + a.type : a.type;
-      html += '<button onclick="prepareAction(\'mineure\',\'' + a.type + '\')"'
+      const cls = 'j-act-btn' + (isPendingThis ? ' pending' : '') + (aimLock ? ' lock' : '');
+      html += '<button onclick="prepareAction(\'mineure\',\'' + a.type + '\')" class="' + cls + '"'
         + (disabled ? ' disabled' : '')
-        + ' style="background:none;border:1px solid ' + bdr + ';color:' + col + ';font-family:monospace;font-size:7px;padding:2px 5px;cursor:' + (disabled?'default':'pointer') + ';letter-spacing:0"'
         + ' title="' + a.desc + '">' + lbl + '</button>';
     });
     html += '</div>';
@@ -1013,18 +1011,16 @@ function renderActionsDeclarees(){
     const majorWaiting = majorPending?.status === 'waiting';
     const noMajorSlots = (s.majeure ?? 1) <= 0;   // grisé si plus d'action majeure dispo
 
-    html += '<div style="font-size:7px;color:var(--td);letter-spacing:1px;margin-bottom:3px">ACTIONS MAJEURES <span style="color:var(--g)">' + (s.majeure ?? 1) + '</span></div>'
-      + '<div style="display:flex;flex-wrap:wrap;gap:3px">';
+    html += '<div class="act-cat-lbl">ACTIONS MAJEURES <span style="color:var(--g)">' + (s.majeure ?? 1) + '</span></div>'
+      + '<div class="j-act-btns">';
     MAJOR_ACTIONS.forEach(a => {
       const isPendingThis = majorWaiting && majorPending.type === a.type;
       const moveBlocked   = a.mouvement && !!as.mouvement_used;
       const disabled      = moveBlocked || noMajorSlots || anyWaiting || !!selectedActionDraft;
-      const col = isPendingThis ? 'var(--am)' : disabled ? '#1e2e1e' : 'var(--t)';
-      const bdr = isPendingThis ? 'var(--am)' : disabled ? '#1e2e1e' : 'var(--b2)';
       const lbl = isPendingThis ? '⏳ ' + a.type : a.type;
-      html += '<button onclick="prepareAction(\'majeure\',\'' + a.type + '\')"'
+      const cls = 'j-act-btn maj' + (isPendingThis ? ' pending' : '');
+      html += '<button onclick="prepareAction(\'majeure\',\'' + a.type + '\')" class="' + cls + '"'
         + (disabled ? ' disabled' : '')
-        + ' style="background:none;border:1px solid ' + bdr + ';color:' + col + ';font-family:monospace;font-size:7px;padding:2px 5px;cursor:' + (disabled?'default':'pointer') + ';letter-spacing:0"'
         + ' title="' + a.desc + '">' + lbl + '</button>';
     });
     html += '</div>';

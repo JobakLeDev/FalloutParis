@@ -3,18 +3,19 @@
    gauche | milieu (ennemis) | droite (initiative)
    ============================================================ */
 #combat-actif {
-  max-width: 1400px;
-  margin: 0 auto;
+  max-width: none;            /* pleine largeur : l'initiative touche le bord droit de l'écran */
+  margin: 0;
 }
 .cj-grid {
   display: grid;
-  grid-template-columns: 300px minmax(0,300px) 230px 1fr;  /* ennemis ~300px (reduit) + espace residuel */
+  /* fiche | ennemis (plus petits) | espace flexible | INITIATIVE (tout à droite) */
+  grid-template-columns: 300px minmax(0,240px) 1fr 210px;
   gap: 10px;
   align-items: start;
 }
 .col-gauche  { display: flex; flex-direction: column; }
 .col-milieu  { }
-.col-droite  { }
+.col-droite  { grid-column: 4; }   /* forcée dans la dernière colonne (bord droit) */
 
 /* ============================================================
    BARRE DU BAS : actions + dés côte à côte
@@ -33,6 +34,26 @@
 #j-actions       { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding-top: 2px; }
 .act-h-group     { display: flex; align-items: center; gap: 4px; }
 .act-sep         { width: 1px; height: 22px; background: var(--b); }
+
+/* Boutons d'action déclarables — plus gros et visibles */
+.act-cat-lbl     { font-size: 9px; color: var(--td); letter-spacing: 2px; margin: 4px 0 5px; }
+.j-act-btns      { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.j-act-btn {
+  background: #0a140a; border: 1px solid var(--b2); color: var(--t);
+  font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: .5px;
+  padding: 7px 12px; cursor: pointer; transition: all .1s;
+}
+.j-act-btn:hover:not(:disabled)     { border-color: var(--g);  color: var(--tb); background: var(--gk); }
+.j-act-btn.maj:hover:not(:disabled) { border-color: var(--am); color: var(--am); }
+.j-act-btn:disabled { border-color: #1e2e1e; color: #2a3a2a; background: none; cursor: default; }
+.j-act-btn.lock     { border-color: var(--gd); color: var(--gd); background: none; }
+.j-act-btn.pending  { border-color: var(--am); color: var(--am); background: #1a1200; }
+
+/* Cartes ennemis — légèrement plus petites */
+.ennemi-card      { padding: 3px 5px !important; margin-bottom: 4px; }
+.ennemi-name      { font-size: 10px; }
+#j-ennemis .jc-sv { font-size: 10px; }
+#j-ennemis .jc-bar { height: 3px; }
 
 /* Layout interne des dés */
 .des-inner { display: flex; align-items: center; gap: 12px; }
