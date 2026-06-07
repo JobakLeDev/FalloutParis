@@ -1132,17 +1132,13 @@ async function validerAction(jId, cat){
   const upd = {};
   upd['actionsDeclarees.' + jId + '.' + cat + '.used'] = [...(data[cat].used || []), p.type];
   upd['actionsDeclarees.' + jId + '.' + cat + '.pending'] = null;
+  // Décrément ATOMIQUE du compteur (−1 sur la valeur serveur) — n'écrase pas une action bonus achetée par le joueur
+  upd['actionsState.' + jId + '.' + cat] = firebase.firestore.FieldValue.increment(-1);
   if(isMovement) upd['actionsDeclarees.' + jId + '.mouvement_used'] = true;
   try {
     await db.collection(COMBATS_COLL).doc(currentCombatId).update(upd);
-    // Décrémenter le compteur de dot dans actionsState
-    const s = actionsState[jId];
-    if(s){
-      if(cat === 'mineure') s.mineure = Math.max(0, s.mineure - 1);
-      if(cat === 'majeure') s.majeure = Math.max(0, s.majeure - 1);
-      syncCombatToFirebase();
-      renderTracker();
-    }
+    if(actionsState[jId]) actionsState[jId][cat] = Math.max(0, (actionsState[jId][cat]||1) - 1);   // miroir local pour le tracker
+    renderTracker();
     addLog('✓ ' + nom + ' : ' + p.type + ' (' + cat + ') validée');
   } catch(e){ console.error(e); }
 }
