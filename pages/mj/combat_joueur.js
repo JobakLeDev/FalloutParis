@@ -881,6 +881,7 @@ function renderActionsDeclarees(){
   const as = actionState || {mineure:{used:[],pending:null}, majeure:{used:[],pending:null}, mouvement_used:false};
 
   let html = '';
+  let draftHtml = '';   // box de paramètres de l'action en cours (insérée près de sa catégorie)
 
   // Bandeaux actions refusées (toujours visibles)
   ['mineure','majeure'].forEach(cat => {
@@ -985,7 +986,7 @@ function renderActionsDeclarees(){
     }
     body += '<input type="text" id="j-action-details" placeholder="Precisions optionnelles (note...)" style="width:100%;margin-bottom:4px;' + inputStyle + '">';
 
-    html += '<div style="margin-bottom:6px;padding:5px;border:1px solid var(--am);background:#1a1200;font-size:8px">'
+    draftHtml = '<div style="margin:6px 0;padding:5px;border:1px solid var(--am);background:#1a1200;font-size:8px">'
       + '<div style="color:var(--am);margin-bottom:2px">' + selectedActionDraft.type
       + ' <span style="color:var(--td);font-size:7px">(' + selectedActionDraft.category + ')</span></div>'
       + '<div style="color:var(--td);font-size:7px;margin-bottom:5px">' + selectedActionDraft.desc + '</div>'
@@ -1012,6 +1013,9 @@ function renderActionsDeclarees(){
     const aimsUsed   = minorUsed.filter(t => t === 'Aim').length + ((minorWaiting && minorPending.type === 'Aim') ? 1 : 0);
     const aimPending = aimsUsed > attacksDone;
 
+    // Box de paramètres d'une action MINEURE : au-dessus des mineures
+    if(selectedActionDraft && selectedActionDraft.category === 'mineure') html += draftHtml;
+
     html += '<div class="act-cat-lbl">ACTIONS MINEURES <span style="color:var(--g)">' + (s.mineure ?? 1) + '</span></div>'
       + '<div class="j-act-btns">';
     MINOR_ACTIONS.forEach(a => {
@@ -1029,6 +1033,9 @@ function renderActionsDeclarees(){
 
     const majorPending = as.majeure?.pending;
     const noMajorSlots = (s.majeure ?? 1) <= 0;   // grisé si plus d'action majeure dispo
+
+    // Box de paramètres d'une action MAJEURE : entre Mineures et Majeures
+    if(selectedActionDraft && selectedActionDraft.category === 'majeure') html += draftHtml;
 
     html += '<div class="act-cat-lbl">ACTIONS MAJEURES <span style="color:var(--g)">' + (s.majeure ?? 1) + '</span></div>'
       + '<div class="j-act-btns">';
