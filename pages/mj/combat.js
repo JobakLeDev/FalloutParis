@@ -456,6 +456,8 @@ function attaqueAllie(id){
   panel._nbDC = nbDC;
   panel._modeEnnemi = true;            // attaque PNJ : log via _ennemNom, pas de dés bonus AP
   panel._ennemNom = '🐾 ' + a.nom;
+  panel._atkMode = 'ally';             // dégâts auto sur l'ennemi ciblé après le CD
+  panel._lastHit = true;
   const vivants = ennemis.filter(e => (e.pvCur||0) > 0);
   let html = '<div class="ctx-nom" style="color:var(--g)">🐾 ' + a.nom.toUpperCase() + ' attaque</div>';
   html += '<div class="ctx-arme">' + (atk.name||'Attaque') + ' · ATQ <b>' + a.atq + ' DC</b>'
@@ -725,6 +727,7 @@ function setAttaqueEnnemi(eid){
   panel._nbDC = nbDC;
   panel._modeEnnemi = true;
   panel._ennemNom = e.nom;
+  panel._atkMode = null;   // ennemi → joueur : pas d'auto-dégâts (RD localisée)
   const cibles = Object.values(combattants);
   let html = '<div class="ctx-nom" style="color:var(--rd)">' + e.nom.toUpperCase() + ' attaque</div>';
   html += '<div class="ctx-arme">ATQ : <b>' + e.atq + '</b> · RD : <b>' + e.rd + '</b></div>';
@@ -827,6 +830,7 @@ function bonusDmgMJ(n){
 
 function updateDicePanel(){
   const panel = document.getElementById('dice-context');
+  if(panel) panel._atkMode = null;   // attaque joueur : pas d'auto-dégâts ici
   if(!joueurActif){ panel.innerHTML='<div class="empty">Sélectionne un joueur puis une arme</div>'; return; }
   const d = combattants[joueurActif]?.data; if(!d) return;
   let html = `<div class="ctx-nom">${(d.nom||joueurActif).toUpperCase()}</div>`;
@@ -900,6 +904,7 @@ function lancer2D20(){
   if(echec) r+=' <span style="color:var(--rd)">— ÉCHEC</span>';
   else { r+=' → <b style="color:var(--am)">'+dcTotal+'DC</b>'; if(succesBonus>0) r+=' <span style="color:var(--td)">(+'+succesBonus+')</span>'; }
   document.getElementById('dice-result').innerHTML = r;
+  panel._lastHit = !echec;   // mémorise le toucher pour l'application auto des dégâts (CD)
 
   const nomLog=modeEnnemi?(panel._ennemNom||'Ennemi'):(joueurActif?(combattants[joueurActif]?.data?.nom||joueurActif):'?');
   const armeLog=modeEnnemi?'':(armeActive?' ('+armeActive+')':'');
@@ -940,6 +945,23 @@ function lancerCD(){
   document.getElementById('cd-result').innerHTML =
     vals.map(v=>'<span style="color:'+(v.includes('⚡')?'var(--am)':v==='—'?'var(--td)':'var(--tb)')+';font-family:Oswald,sans-serif;font-size:16px">'+v+'</span>').join(' ')
     +' <span style="color:var(--td)">→</span> <b style="color:var(--am)">'+dmg+'dmg</b>'+(ef?' <span style="color:var(--am)">+'+ef+'⚡</span>':'');
+  const panel = document.getElementById('dice-context');
+  // Attaque d'un compagnon → dégâts auto sur l'ennemi ciblé (− RD)
+  if(panel && panel._atkMode === 'ally'){
+    const sel = document.getElementById('cible-sel');
+    const eid = sel ? sel.value : '';
+    const e = eid ? ennemis.find(x => x.id == eid) : null;
+    if(!e){ addLog('🐾💥 '+(panel._ennemNom||'Compagnon')+' '+nb+'DC: '+dmg+'dmg — aucune cible sélectionnée'); return; }
+    if(panel._lastHit === false){ addLog('🐾 '+(panel._ennemNom||'Compagnon')+' rate '+e.nom+' (pas de dégâts)'); panel._atkMode=null; return; }
+    const rd = parseInt(e.rd)||0;
+    const net = Math.max(0, dmg - rd);
+    const avant = e.pvCur;
+    e.pvCur = Math.max(0, e.pvCur - net);
+    addLog('🐾💥 '+(panel._ennemNom||'Compagnon')+' inflige '+net+' à '+e.nom+' ('+dmg+'dmg − RD '+rd+(ef?' · +'+ef+'⚡':'')+') · '+avant+'→'+e.pvCur+' PV'+(e.pvCur<=0?' 💀 éliminé !':''));
+    panel._atkMode = null;   // évite une 2e application sur re-clic
+    renderCombat(); renderTracker(); syncCombatToFirebase();
+    return;
+  }
   const nom = joueurActif?(combattants[joueurActif]?.data?.nom||joueurActif):'?';
   addLog('💥 '+nom+' '+nb+'DC: '+dmg+'dmg'+(ef?' +'+ef+'⚡':''));
 }

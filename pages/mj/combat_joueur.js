@@ -60,7 +60,8 @@ let lastAttackResultTs = 0;   // dédup notification résultat attaque
 let actionState = null;       // extrait de combatState.actionsDeclarees[joueurId]
 let selectedActionDraft = null; // {category, type, desc} — action en cours de saisie
 let myAim = null;            // {cible, zone} — visée déclarée ce tour (Attack/Aim) ; zone '' = non visée
-let hasAttacked = false;     // a déjà lancé les dés de combat ce tour
+let hasAttacked = false;     // a déjà lancé les dés de combat ce tour (verrou anti-spam)
+let j2D20Rolled = false;     // a déjà lancé son 2D20 d'attaque (empêche de relancer le toucher)
 let turnEnded = false;       // a cliqué « Terminer mon tour »
 let _turnKey = '';           // clé round:tourActif pour réinitialiser au changement de tour
 let _declWeaps = [];         // armes proposées dans la déclaration d'attaque (index → params)
@@ -228,7 +229,7 @@ function renderCombatJoueur(){
   // Réinitialiser visée / attaque / fin de tour quand le tour change
   const tk = (combatState.numRound||0) + ':' + (combatState.tourActif||0);
   if(tk !== _turnKey){
-    _turnKey = tk; myAim = null; hasAttacked = false; turnEnded = false;
+    _turnKey = tk; myAim = null; hasAttacked = false; turnEnded = false; j2D20Rolled = false;
     currentArmeInfo = null; armeSelectionnee = null;
     const dc = document.getElementById('mes-des-context'); if(dc) dc.textContent = 'Déclare une attaque pour viser';
   }
@@ -746,6 +747,7 @@ function selArme(nom, tn, dmg, persoBonus=false){
 }
 
 async function jLancer2D20(){
+  if(hasAttacked || j2D20Rolled) return;   // anti-spam : un seul jet de toucher par attaque
   aimRerolled = false;
   const tn = parseInt(document.getElementById('j-tn-val').value)||10;
   const diff = 1;
@@ -787,6 +789,7 @@ async function jLancer2D20(){
   if(echec) r+=' <span style="color:var(--rd)">ÉCHEC</span>';
   else r+='→<b style="color:var(--am)">'+dcTotal+'DC</b>';
   document.getElementById('j-dice-result').innerHTML = r;
+  j2D20Rolled = true; renderDiceAccess();   // verrouille le bouton 2D20 (un seul toucher)
 
   // Stocker pour Miss Fortune + reset Stacked Deck
   lastRollDice = dés.map(v=>({val:v, rerolled:false}));
@@ -1033,7 +1036,8 @@ function renderDiceAccess(){
 
   // Activer/désactiver les boutons de lancer (verrouillés tant que l'attaque n'est pas validée, ou après avoir attaqué)
   const lockDice = !attackValidated || hasAttacked;
-  ['j-lance-btn','j-d20-2','j-d20-3','j-d20-4','j-d20-5','j-stacked-deck-btn'].forEach(id => {
+  const lance = document.getElementById('j-lance-btn'); if(lance) lance.disabled = lockDice || j2D20Rolled;  // 2D20 : un seul toucher
+  ['j-d20-2','j-d20-3','j-d20-4','j-d20-5','j-stacked-deck-btn'].forEach(id => {
     const b = document.getElementById(id); if(b) b.disabled = lockDice;
   });
   const cdBtn = document.querySelector('.cd-btn');
@@ -1078,6 +1082,9 @@ function renderDiceAccess(){
 }
 
 function jLancerCD(){
+  if(hasAttacked) return;          // anti-spam : un seul lancer de dégâts par attaque
+  hasAttacked = true;
+  renderDiceAccess();              // verrouille immédiatement les boutons d'attaque
   const nb = nbDCActuel || 2;
   const vals = Array.from({length:nb},()=>FACES_CD[Math.floor(Math.random()*6)]);
   const dmgRaw = vals.reduce((a,v)=>a+(parseInt(v)||0),0);
@@ -1133,8 +1140,6 @@ function jLancerCD(){
     }).catch(()=>{});
   }
 
-  // L'attaque est faite : verrouiller les attaques et proposer « Terminer mon tour »
-  hasAttacked = true;
-  renderDiceAccess();
+  // L'attaque est faite : proposer « Terminer mon tour » (verrou déjà posé en tête)
   renderActionsDeclarees();
 }
