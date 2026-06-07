@@ -1028,9 +1028,11 @@ async function submitActionDeclaree(){
   if(type === 'Attack' && w) selArme(w.nom, w.tn, w.dmg, w.persoBonus);
   const upd = {};
   upd['actionsDeclarees.' + joueurId + '.' + category + '.pending'] = { type, details, requestedAt: Date.now(), status: 'waiting' };
+  // Fermer le bloc d'édition AVANT l'écriture (Firestore re-render en local immédiatement)
+  selectedActionDraft = null;
+  renderActionsDeclarees();
   try {
     await db.collection(COMBATS_COLL).doc(combatId).update(upd);
-    selectedActionDraft = null;
   } catch(e){ console.error(e); }
 }
 
