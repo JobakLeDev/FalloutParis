@@ -77,6 +77,7 @@ let zoneFormCtx = null;                            // {polygon} (création) ou {
 let currentTab = 'paris';
 let centeredOnPlayer = false;                      // vue déjà centrée sur le jeton du joueur
 let _autoTabDone = false;                           // bascule auto vers le métro (1er chargement si sous terre) déjà faite
+let parties = [];                                   // groupes (temps/data) : [{id,name,players[],solo}] — fusion des jetons
 let moveMode = false, movingToken = null;          // déplacement de jeton (depuis son popup)
 let pingMode = false, pingLayer = null;            // ping joueurs
 
@@ -273,6 +274,12 @@ function buildMap() {
     fdb.collection('carte').doc('lieux').onSnapshot(s => {
       lieux = (s.exists ? s.data().lieux : null) || [];
       if (currentTab === 'lieux') renderLieux();
+    });
+    // Groupes (temps/data) → fusion des jetons des membres en une seule icône de groupe
+    fdb.collection('temps').doc('data').onSnapshot(s => {
+      const d = s.exists ? s.data() : {};
+      parties = Array.isArray(d.parties) ? d.parties : [];
+      renderAll();
     });
     // Échanges entre joueurs (proximité) — uniquement en vue joueur
     if (!isMJ && viewerId) watchEchanges();
@@ -716,8 +723,24 @@ function renderMetroTokens(){
   if (!metroTokenLayer) return;
   metroTokenLayer.clearLayers();
   const my = (!isMJ && viewerId) ? mapData.metroTokens?.[viewerId] : null;
+  const groups = activeGroups();
+  const grouped = new Set(); groups.forEach(p => (p.players||[]).forEach(id => grouped.add(id)));
+
+  // Icône de groupe (métro) à la position moyenne des membres sous terre
+  groups.forEach(party => {
+    const gp = groupPos(party, mapData.metroTokens, true);
+    if (!gp) return;
+    const iAmMember = viewerId && (party.players||[]).includes(viewerId);
+    if (!isMJ && viewerId && !iAmMember){
+      if (!my) return;
+      if (L.latLng(my.lat,my.lng).distanceTo(L.latLng(gp.lat,gp.lng)) > VISION_RADIUS_M) return;
+    }
+    renderGroupMarker(party, gp, iAmMember, metroTokenLayer, mapData.metroTokens, true, my);
+  });
+
   Object.entries(mapData.metroTokens || {}).forEach(([id, pos]) => {
     if (!pos || !mapData.underground?.[id]) return;
+    if (grouped.has(id)) return;                       // membre d'un groupe → icône de groupe
     if (!isMJ && viewerId && id !== viewerId){
       if (!my) return;
       if (L.latLng(my.lat, my.lng).distanceTo(L.latLng(pos.lat, pos.lng)) > VISION_RADIUS_M) return;
@@ -813,10 +836,14 @@ function startMetroMove(id){
 function endMetroMove(){ metroMoveMode = false; movingMetroToken = null; setHint(''); renderMetroTokens(); }
 function onMetroClick(e){
   if (!metroMoveMode || !movingMetroToken) return;
-  const id = movingMetroToken.id, from = movingMetroToken.from, to = e.latlng;
-  mapData.metroTokens[id] = { lat: to.lat, lng: to.lng };
-  recordMetroFog(id, from.lat, from.lng);
-  recordMetroFog(id, to.lat, to.lng);
+  const to = e.latlng;
+  const ids = movingMetroToken.ids || [movingMetroToken.id];
+  ids.forEach(id => {
+    const from = mapData.metroTokens[id] || movingMetroToken.from;
+    mapData.metroTokens[id] = { lat: to.lat, lng: to.lng };
+    recordMetroFog(id, from.lat, from.lng);
+    recordMetroFog(id, to.lat, to.lng);
+  });
   saveData();
   endMetroMove();
 }
@@ -999,11 +1026,45 @@ function renderPOIs() {
   });
 }
 
+// Groupes actifs (non solo, >= 2 joueurs) — leurs jetons fusionnent en une seule icône
+function activeGroups(){ return (parties||[]).filter(p => !p.solo && (p.players||[]).length >= 2); }
+function groupOf(id){ return activeGroups().find(p => (p.players||[]).includes(id)) || null; }
+// Position moyenne des membres d'un groupe sur une couche donnée (src=tokens surface ou metroTokens)
+function groupPos(party, src, undergroundWanted){
+  const pts = (party.players||[])
+    .filter(pid => !!mapData.underground?.[pid] === undergroundWanted)
+    .map(pid => src?.[pid]).filter(Boolean);
+  if (!pts.length) return null;
+  const lat = pts.reduce((a,p)=>a+p.lat,0)/pts.length;
+  const lng = pts.reduce((a,p)=>a+p.lng,0)/pts.length;
+  return { lat, lng, count: pts.length };
+}
+
 function renderTokens() {
   tokenLayer.clearLayers();
   const my = (!isMJ && viewerId) ? mapData.tokens?.[viewerId] : null;
+  const groups = activeGroups();
+  const grouped = new Set(); groups.forEach(p => (p.players||[]).forEach(id => grouped.add(id)));
+
+  // 1) Icône de groupe (surface) à la position moyenne des membres en surface
+  groups.forEach(party => {
+    const gp = groupPos(party, mapData.tokens, false);
+    if (!gp) return;                                   // aucun membre du groupe en surface
+    const iAmMember = viewerId && (party.players||[]).includes(viewerId);
+    if (!isMJ && viewerId && !iAmMember){
+      // visible si un membre est à portée OU balise partagée avec un membre
+      const beaconShared = (party.players||[]).some(pid => (mapData.beacons?.[viewerId]||[]).includes(pid));
+      if (!beaconShared){
+        if (!my) return;
+        if (L.latLng(my.lat,my.lng).distanceTo(L.latLng(gp.lat,gp.lng)) > VISION_RADIUS_M) return;
+      }
+    }
+    renderGroupMarker(party, gp, iAmMember, tokenLayer, mapData.tokens, false, my);
+  });
+
   Object.entries(mapData.tokens || {}).forEach(([id, pos]) => {
     if (!pos) return;
+    if (grouped.has(id)) return;                       // membre d'un groupe → représenté par l'icône de groupe
     if (mapData.underground?.[id]) return;            // sous terre → visible sur la carte métro, pas en surface
     // Vue joueur : alliés visibles dans VISION_RADIUS_M m, OU en permanence si balise GPS partagée
     if (!isMJ && viewerId && id !== viewerId) {
@@ -1043,6 +1104,96 @@ function renderTokens() {
       saveData();
     });
   });
+}
+
+// Icône unique pour un groupe de joueurs (surface ou métro). Cache les jetons individuels des membres.
+function renderGroupMarker(party, gp, iAmMember, layer, src, underground, my){
+  const nom = party.name || 'Groupe';
+  const me = iAmMember;
+  const m = L.marker([gp.lat, gp.lng], {
+    draggable: isMJ && editMode && !underground,
+    icon: L.divIcon({ className: 'token-pin group' + (me ? ' me' : ''),
+      html: `<span class="token-dot">👥</span><span class="token-label">${nom} (${gp.count})${me ? ' (toi)' : ''}</span>`,
+      iconSize: [18, 18], iconAnchor: [9, 9] }),
+  }).addTo(layer);
+
+  let mjBtns = '';
+  if (isMJ){
+    const st = nearestStation(gp.lat, gp.lng);
+    if (!underground){
+      const canDown = st && st.dist < METRO_DESCEND_M;
+      mjBtns = `<div class="zpop-mj"><button onclick="startGroupMove('${party.id}')">➤ Déplacer le groupe</button>${canDown ? `<button onclick="descendreGroupe('${party.id}')">🚇 Descendre (${st.nom})</button>` : ''}</div>`;
+    } else {
+      const canUp = st && st.dist < METRO_DESCEND_M;
+      mjBtns = `<div class="zpop-mj"><button onclick="startGroupMetroMove('${party.id}')">➤ Déplacer le groupe</button>${canUp ? `<button onclick="remonterGroupe('${party.id}')">🏙 Remonter (${st.nom})</button>` : '<small>Pas de station à proximité</small>'}</div>`;
+    }
+  }
+  const memberNames = (party.players||[]).map(pid => joueurs[pid]?.nom || pid).join(', ');
+  let exBtns = '';
+  if (!isMJ && viewerId && !iAmMember){
+    const inRange = my && L.latLng(my.lat, my.lng).distanceTo(L.latLng(gp.lat, gp.lng)) <= VISION_RADIUS_M;
+    exBtns = inRange
+      ? (party.players||[]).map(pid => `<div style="font-size:7px;color:var(--td);margin-top:4px">${joueurs[pid]?.nom || pid}</div>` + _interactBtns(pid)).join('')
+      : '<div class="tok-actions"><span style="font-size:7px;color:var(--td)">Hors de portée pour interagir</span></div>';
+  }
+  m.bindPopup(`<b>👥 ${nom}</b><div style="font-size:8px;color:var(--td);margin:2px 0">${memberNames}</div>${mjBtns}${exBtns}`);
+
+  if (isMJ && editMode && !underground) m.on('dragend', () => {
+    const ll = m.getLatLng();
+    (party.players||[]).filter(pid => !mapData.underground?.[pid] && mapData.tokens?.[pid]).forEach(pid => {
+      mapData.tokens[pid] = { lat: ll.lat, lng: ll.lng };
+      recordFog(pid, ll.lat, ll.lng);
+    });
+    saveData();
+  });
+}
+
+// Déplacement de groupe (surface) : clic destination → tous les membres en surface s'y rendent
+function startGroupMove(partyId){
+  const party = (parties||[]).find(p => p.id === partyId); if (!party) return;
+  const ids = (party.players||[]).filter(pid => !mapData.underground?.[pid] && mapData.tokens?.[pid]);
+  if (!ids.length) return;
+  map.closePopup();
+  pingMode = false; document.getElementById('btn-ping')?.classList.remove('on');
+  addingPOI = false; if(typeof updatePoiPicker==='function')updatePoiPicker(); cancelDrawZone();
+  moveMode = true; movingToken = { groupId: partyId, ids, from: { ...mapData.tokens[ids[0]] } };
+  setLayersClickable(false);
+  setHint('Clique la destination pour le groupe « ' + (party.name||'') + ' ».');
+  renderTokens();
+}
+// Déplacement de groupe (métro)
+function startGroupMetroMove(partyId){
+  const party = (parties||[]).find(p => p.id === partyId); if (!party) return;
+  const ids = (party.players||[]).filter(pid => mapData.underground?.[pid] && mapData.metroTokens?.[pid]);
+  if (!ids.length) return;
+  metroMap.closePopup();
+  metroMoveMode = true; movingMetroToken = { groupId: partyId, ids, from: { ...mapData.metroTokens[ids[0]] } };
+  setHint('Clique la destination dans le métro pour le groupe « ' + (party.name||'') + ' ».');
+  renderMetroTokens();
+}
+// Transport surface→métro de tout un groupe (membres proches d'une station)
+function descendreGroupe(partyId){
+  const party = (parties||[]).find(p => p.id === partyId); if (!party) return;
+  mapData.underground = mapData.underground || {}; mapData.metroTokens = mapData.metroTokens || {};
+  (party.players||[]).forEach(pid => {
+    const t = mapData.tokens?.[pid]; if (!t) return;
+    const st = nearestStation(t.lat, t.lng); if (!st || st.dist > METRO_DESCEND_M) return;
+    mapData.underground[pid] = true;
+    mapData.metroTokens[pid] = { lat: st.lat, lng: st.lng };
+    recordMetroFog(pid, st.lat, st.lng);
+  });
+  saveData(); if (map) map.closePopup();
+}
+function remonterGroupe(partyId){
+  const party = (parties||[]).find(p => p.id === partyId); if (!party) return;
+  mapData.underground = mapData.underground || {};
+  (party.players||[]).forEach(pid => {
+    const t = mapData.metroTokens?.[pid]; if (!t) return;
+    const st = nearestStation(t.lat, t.lng);
+    mapData.underground[pid] = false;
+    if (st){ mapData.tokens[pid] = { lat: st.lat, lng: st.lng }; recordFog(pid, st.lat, st.lng); }
+  });
+  saveData(); if (metroMap) metroMap.closePopup();
 }
 
 // ---- BROUILLARD (L.imageOverlay sur l'étendue de Paris, dans le pane fog) ----
@@ -1352,6 +1503,19 @@ function renderPing() {
 }
 function handleMoveClick(latlng) {
   if (!movingToken) { endMoveMode(); return; }
+  if (movingToken.ids) {                              // déplacement de groupe : tous les membres vers la destination
+    let dist = 0;
+    movingToken.ids.forEach(id => {
+      const from = mapData.tokens[id] || movingToken.from;
+      dist = Math.max(dist, L.latLng(from.lat, from.lng).distanceTo(latlng));
+      mapData.tokens[id] = { lat: latlng.lat, lng: latlng.lng };
+      recordFog(id, from.lat, from.lng); recordFog(id, latlng.lat, latlng.lng);
+    });
+    saveData();
+    showMoveResult(movingToken.ids[0], dist, zonesAlongPath(movingToken.from, latlng));
+    endMoveMode();
+    return;
+  }
   executeMove(movingToken.id, movingToken.from, latlng);
   endMoveMode();
 }

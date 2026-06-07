@@ -170,6 +170,10 @@ img.land-icon-img{
 .token-pin.me .token-dot{background:#5dbe5d;border-color:#fff;box-shadow:0 0 10px rgba(93,190,93,.9);}
 /* Jeton sélectionné pour déplacement (MJ) */
 .token-pin.sel .token-dot{border-color:var(--am);box-shadow:0 0 12px rgba(232,168,32,1);}
+/* Jeton de groupe (fusion de plusieurs joueurs) */
+.token-pin.group .token-dot{background:#7a5a1a;border-color:var(--am);box-shadow:0 0 10px rgba(232,168,32,.85);font-size:10px;}
+.token-pin.group.me .token-dot{background:#3a7a3a;border-color:#fff;box-shadow:0 0 10px rgba(93,190,93,.9);}
+.token-pin.group .token-label{color:#ffe0a0;}
 /* Ping joueurs (signal lumineux temporaire) */
 .ping-pin span{position:absolute;left:0;top:0;transform:translate(-50%,-50%);border-radius:50%;}
 .ping-dot{width:10px;height:10px;background:var(--am);box-shadow:0 0 10px var(--am);}
