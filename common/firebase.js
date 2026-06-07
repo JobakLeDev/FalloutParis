@@ -499,25 +499,10 @@ function initCombatListener() {
     }
     _combatUnsub = db.collection('combat').doc(combatId).onSnapshot(snap => {
       const data = snap.exists ? snap.data() : null;
-      let banner = document.getElementById('combat-banner');
+      const banner = document.getElementById('combat-banner');
+      if(!banner) return;
 
-      if(!data || !data.actif) {
-        if(banner) banner.style.display = 'none';
-        return;
-      }
-
-      if(!banner) {
-        banner = document.createElement('div');
-        banner.id = 'combat-banner';
-        banner.style.cssText = [
-          'position:fixed;top:0;left:0;right:0;z-index:500',
-          'background:#1a0505;border-bottom:2px solid #e04040',
-          'display:flex;align-items:center;justify-content:space-between',
-          'padding:6px 16px;font-family:"Share Tech Mono",monospace',
-        ].join(';');
-        document.body.appendChild(banner);
-        document.body.style.paddingTop = '40px';
-      }
+      if(!data || !data.actif) { banner.style.display = 'none'; return; }
 
       const ordre = data.ordreInitiative || [];
       const tourActif = data.tourActif || 0;
@@ -529,7 +514,7 @@ function initCombatListener() {
 
       banner.style.display = 'flex';
       banner.style.background = isMonTour ? '#0a1a0a' : '#1a0505';
-      banner.style.borderBottomColor = isMonTour ? '#5dbe5d' : '#e04040';
+      banner.style.borderColor = isMonTour ? '#5dbe5d' : '#e04040';
       banner.innerHTML =
         '<span style="color:#e04040;font-size:9px;letter-spacing:2px">⚔ COMBAT · Round ' + (data.numRound||1) + '</span>' +
         '<span style="color:' + tourColor + ';font-size:10px;letter-spacing:2px;font-weight:bold">' + tourText + '</span>' +
