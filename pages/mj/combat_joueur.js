@@ -63,6 +63,18 @@ let myAim = null;            // {cible, zone} — visée déclarée ce tour (Att
 let hasAttacked = false;     // a déjà lancé les dés de combat ce tour
 let turnEnded = false;       // a cliqué « Terminer mon tour »
 let _turnKey = '';           // clé round:tourActif pour réinitialiser au changement de tour
+let _declWeaps = [];         // armes proposées dans la déclaration d'attaque (index → params)
+// Armes d'attaque du joueur (équipées) + mains nues, avec TN/DC calculés
+function attackWeapons(){
+  const d = joueurData; if(!d) return [];
+  const list = (d.inventory||[]).filter(it => it.equipped && it.type==='WEAPON').map(inv => {
+    const db2 = WEAPONS_DB[inv.name] || {};
+    const tn  = db2.sk ? getTN(d, db2.sk).total + (inv.persoBonus?2:0) : 0;
+    return { nom: inv.name, label: inv.name + (inv.persoBonus?' ★':''), tn, dmg: db2.dmg||'2D', persoBonus: !!inv.persoBonus };
+  });
+  list.push({ nom:'__unarmed__', label:'👊 Mains nues', tn: getTN(d,'barehand').total, dmg:'2D', persoBonus:false });
+  return list;
+}
 const ZONES_RND = ['Tête','Torse','Torse','Bras G.','Bras D.','Jambe G.','Jambe D.'];  // tirage zone au hasard (torse plus fréquent)
 function randomZone(){ return ZONES_RND[Math.floor(Math.random()*ZONES_RND.length)]; }
 
@@ -215,7 +227,11 @@ function renderCombatJoueur(){
   if(!combatState) return;
   // Réinitialiser visée / attaque / fin de tour quand le tour change
   const tk = (combatState.numRound||0) + ':' + (combatState.tourActif||0);
-  if(tk !== _turnKey){ _turnKey = tk; myAim = null; hasAttacked = false; turnEnded = false; }
+  if(tk !== _turnKey){
+    _turnKey = tk; myAim = null; hasAttacked = false; turnEnded = false;
+    currentArmeInfo = null; armeSelectionnee = null;
+    const dc = document.getElementById('mes-des-context'); if(dc) dc.textContent = 'Déclare une attaque pour viser';
+  }
   document.getElementById('j-round').textContent = combatState.numRound||1;
   document.getElementById('hdr-round').textContent = 'Round ' + (combatState.numRound||1);
   renderMaCarte();
@@ -359,7 +375,7 @@ function aimRelancerDe(idx){
   const echec = succes < 1;
   const succesBonus = Math.max(0, succes-1);
   const dcTotal = echec ? 0 : nbDCActuel + succesBonus;
-  if(!echec) document.getElementById('j-nb-cd').value = dcTotal;
+  if(!echec) { nbDCActuel = dcTotal; const _d=document.getElementById('j-nb-cd-disp'); if(_d) _d.textContent = dcTotal; }
 
   const col = succes===0?'var(--rd)':succes>1?'var(--g)':'var(--am)';
   let r = lastRollDice.map((d, i) => {
@@ -411,7 +427,7 @@ async function missFortuneJ(diceIdx){
   const crits = vals.filter(v=>v===1).length;
   const echec = succes<1;
   const dcTotal = echec?0:nbDCActuel+Math.max(0,succes-1);
-  if(!echec) document.getElementById('j-nb-cd').value=dcTotal;
+  if(!echec) { nbDCActuel = dcTotal; const _d=document.getElementById('j-nb-cd-disp'); if(_d) _d.textContent = dcTotal; }
   const col = succes===0?'var(--rd)':succes>1?'var(--g)':'var(--am)';
   let r = lastRollDice.map(d=>{
     const c=d.val<=tn?'var(--g)':'var(--rd)';
@@ -508,7 +524,7 @@ function renderMaCarte(){
     const db2 = WEAPONS_DB[inv.name]||{};
     const tn = db2.sk ? getTN(d, db2.sk).total + (inv.persoBonus?2:0) : 0;
     const sel = armeSelectionnee===inv.name;
-    html += '<div class="jc-arme clickable'+(sel?' selected-arme':'')+'" onclick="selArme(\''+inv.name+'\','+tn+',\''+(db2.dmg||'2D')+'\','+!!inv.persoBonus+')">';
+    html += '<div class="jc-arme'+(sel?' selected-arme':'')+'">';
     html += '<span class="jc-arme-name">'+inv.name+(inv.persoBonus?' ★':'')+'</span>';
     { const at = db2.a && db2.a!=='-' ? db2.a : null;
       const ae = at ? (d.ammo||[]).find(a=>a.cal===at) : null;
@@ -518,7 +534,7 @@ function renderMaCarte(){
     html += '</div>';
   });
   const tnUnarmed = getTN(d,'barehand').total;
-  html += '<div class="jc-arme clickable'+(armeSelectionnee==='__unarmed__'?' selected-arme':'')+'" onclick="selArme(\'__unarmed__\','+tnUnarmed+',\'2D\')">';
+  html += '<div class="jc-arme'+(armeSelectionnee==='__unarmed__'?' selected-arme':'')+'">';
   html += '<span class="jc-arme-name" style="color:var(--td)">👊 Mains nues</span>';
   html += '<span class="jc-arme-stat">2D · TN <b>'+tnUnarmed+'</b></span>';
   html += '</div>';
@@ -532,31 +548,24 @@ function renderActionsJoueur(){
   const el = document.getElementById('j-actions'); if(!el||!combatState) return;
   const s = combatState.actionsState?.[joueurId] || {mineure:1, majeure:1, pa:0};
 
-  const minDots = [0,1].map(i =>
-    '<span class="act-dot-j'+(i < s.mineure ? ' on' : '')+'" onclick="depenseActionJoueur(\'min\')" title="Dépenser action mineure"></span>'
-  ).join('');
-  const majDots = [0,1].map(i =>
-    '<span class="act-dot-j maj'+(i < s.majeure ? ' on' : '')+'" onclick="depenseActionJoueur(\'maj\')" title="Dépenser action majeure"></span>'
-  ).join('');
+  // Ronds purement indicatifs (pas de dépense manuelle ici)
+  const minDots = [0,1].map(i => '<span class="act-dot-j'+(i < s.mineure ? ' on' : '')+'"></span>').join('');
+  const majDots = [0,1].map(i => '<span class="act-dot-j maj'+(i < s.majeure ? ' on' : '')+'"></span>').join('');
 
   el.innerHTML =
     '<div class="act-h-group">' +
       '<span class="act-section-lbl">MIN</span>' +
       '<div class="act-dots">' + minDots + '</div>' +
-      '<button class="act-bonus-btn" onclick="actionBonusJoueur(\'min\')" title="-1 PA">+Min</button>' +
     '</div>' +
     '<div class="act-sep"></div>' +
     '<div class="act-h-group">' +
       '<span class="act-section-lbl">MAJ</span>' +
       '<div class="act-dots">' + majDots + '</div>' +
-      '<button class="act-bonus-btn" onclick="actionBonusJoueur(\'maj\')" title="-2 PA">+Maj</button>' +
     '</div>' +
     '<div class="act-sep"></div>' +
     '<div class="act-h-group">' +
       '<span class="act-section-lbl">PA</span>' +
-      '<button class="pa-btn-j" onclick="chPAJoueur(-1)">−</button>' +
-      '<span class="pa-val-j">' + s.pa + '</span>' +
-      '<button class="pa-btn-j" onclick="chPAJoueur(1)">+</button>' +
+      '<span class="pa-val-j">' + (s.pa||0) + '</span>' +
     '</div>';
 }
 
@@ -728,10 +737,10 @@ function selArme(nom, tn, dmg, persoBonus=false){
   currentArmeInfo = {nom, skKey:lastSkKeyJ, persoBonus, dmg, eff: nom==='__unarmed__' ? '' : (WEAPONS_DB[nom]?.eff||''), ammoType};
   useStackedDeck = false;
   const btn=document.getElementById('j-stacked-deck-btn'); if(btn) btn.classList.remove('on');
-  document.getElementById('j-tn-val').value = tn;
+  const tnEl=document.getElementById('j-tn-val'); if(tnEl) tnEl.value = tn;
   renderMaCarte();
   refreshDesContext();
-  document.getElementById('j-nb-cd').value = nbDCActuel;
+  const disp=document.getElementById('j-nb-cd-disp'); if(disp) disp.textContent = nbDCActuel;
   lastRollDice=[];
   const mf=document.getElementById('j-miss-fortune'); if(mf) mf.style.display='none';
 }
@@ -769,7 +778,7 @@ async function jLancer2D20(){
   const echec = succes<diff;
   const succesBonus = Math.max(0,succes-diff);
   const dcTotal = echec?0:nbDCActuel+succesBonus;
-  if(!echec) document.getElementById('j-nb-cd').value = dcTotal;
+  if(!echec) { nbDCActuel = dcTotal; const _d=document.getElementById('j-nb-cd-disp'); if(_d) _d.textContent = dcTotal; }
 
   const col=succes===0?'var(--rd)':succes>1?'var(--g)':'var(--am)';
   let r=dés.map(d=>'<span style="color:'+(d<=tn?'var(--g)':'var(--rd)')+';font-size:16px;font-family:Oswald,sans-serif">'+d+'</span>').join('/');
@@ -860,6 +869,13 @@ function renderActionsDeclarees(){
     const inputStyle = 'box-sizing:border-box;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:monospace;font-size:8px;padding:3px 5px;outline:none';
 
     let body = '';
+    if(selectedActionDraft.type === 'Attack'){
+      _declWeaps = attackWeapons();
+      const savedW = document.getElementById('j-act-arme')?.value || '0';
+      body += '<select id="j-act-arme" style="width:100%;margin-bottom:4px;' + inputStyle + '">'
+        + _declWeaps.map((w,i) => '<option value="'+i+'"'+(String(i)===savedW?' selected':'')+'>'+w.label+' · '+w.dmg+' · TN '+w.tn+'</option>').join('')
+        + '</select>';
+    }
     if(isAtk){
       if(ennemisV.length){
         body += '<div style="display:flex;gap:4px;margin-bottom:4px">'
@@ -968,6 +984,12 @@ async function submitActionDeclaree(){
   if(free)  details += (details ? ' · ' : '') + free;
   // Mémoriser la visée (cible + zone) pour réutilisation lors du jet d'attaque
   if((type === 'Attack' || type === 'Aim') && cible){ myAim = { cible, zone }; }
+  // Attaque : appliquer l'arme choisie (sélectionnée ici, plus dans « Mes jets »)
+  if(type === 'Attack'){
+    const wi = parseInt(document.getElementById('j-act-arme')?.value || '0') || 0;
+    const w = _declWeaps[wi];
+    if(w) selArme(w.nom, w.tn, w.dmg, w.persoBonus);
+  }
   const upd = {};
   upd['actionsDeclarees.' + joueurId + '.' + category + '.pending'] = { type, details, requestedAt: Date.now(), status: 'waiting' };
   try {
@@ -1056,7 +1078,7 @@ function renderDiceAccess(){
 }
 
 function jLancerCD(){
-  const nb = parseInt(document.getElementById('j-nb-cd').value)||2;
+  const nb = nbDCActuel || 2;
   const vals = Array.from({length:nb},()=>FACES_CD[Math.floor(Math.random()*6)]);
   const dmgRaw = vals.reduce((a,v)=>a+(parseInt(v)||0),0);
   const ef = vals.filter(v=>v.includes('⚡')).length;
