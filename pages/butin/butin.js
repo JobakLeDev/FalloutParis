@@ -70,9 +70,27 @@ async function prendre(i){
   await fdb.collection('butin').doc('data').set(bData);
 }
 
+// Le joueur réclame la totalité des caps du pool
+async function prendreCaps(){
+  if (!viewerId || !(bData.caps>0)) return;
+  const ref = fdb.collection('joueurs').doc(viewerId);
+  let snap;
+  try { snap = await ref.get(); } catch(e){ alert('Erreur Firebase'); return; }
+  if (!snap.exists) { alert('Fiche joueur introuvable.'); return; }
+  const d = snap.data();
+  const gain = bData.caps||0;
+  await ref.update({ caps: (d.caps||0) + gain, lastUpdate: Date.now() });
+  bData.caps = 0;
+  await fdb.collection('butin').doc('data').set(bData);
+}
+
 function render(){
   const caps = document.getElementById('b-caps');
-  if (caps) caps.innerHTML = `💰 <b>${bData.caps||0}</b> caps`;
+  if (caps){
+    const access = viewerId && (bData.players||[]).includes(viewerId);
+    caps.innerHTML = `💰 <b>${bData.caps||0}</b> caps`
+      + ((access && bData.caps>0) ? ' <button class="b-take" onclick="prendreCaps()">Prendre</button>' : '');
+  }
   const el = document.getElementById('butin-list'); if (!el) return;
   // Gate d'accès : un joueur ne voit le pool que s'il est autorisé (players)
   if (viewerId && !(bData.players||[]).includes(viewerId)){ el.innerHTML = '<div class="b-empty">Aucun butin accessible pour l\'instant.</div>'; return; }

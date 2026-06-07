@@ -1796,18 +1796,26 @@ function openGive(to){
   if(!_inRange(to)){ carteToast('Trop loin — rapprochez-vous.'); return; }
   _giveTo = to;
   const myInv = joueurs[viewerId]?.inventory || [];
+  const myAmmo = (joueurs[viewerId]?.ammo || []).filter(a => (a.qty||0) > 0);
   const giveable = myInv.filter(it => !it.equipped && (it.qty||1) > 0);
   document.getElementById('give-sub').textContent = 'À donner à ' + (joueurs[to]?.nom || to) + ' :';
   const list = document.getElementById('give-list');
-  if(!giveable.length){
-    list.innerHTML = '<div class="ex-empty">Aucun objet transférable (les objets équipés ne peuvent pas être donnés).</div>';
-  } else {
-    list.innerHTML = giveable.map(it => {
+  let h = '';
+  if(giveable.length){
+    h += giveable.map(it => {
       const i = myInv.indexOf(it);
       return `<div class="ex-row"><span class="ex-name">${_exEsc(it.name)}</span><span class="ex-have">x${it.qty||1}</span>`
         + `<input type="number" min="0" max="${it.qty||1}" value="0" data-inv="${i}" data-max="${it.qty||1}"></div>`;
     }).join('');
   }
+  if(myAmmo.length){
+    h += '<div class="ex-empty" style="text-align:left;opacity:.7;margin:4px 0 2px">Munitions</div>';
+    h += myAmmo.map(a =>
+      `<div class="ex-row"><span class="ex-name">▪ ${_exEsc(a.cal)}</span><span class="ex-have">x${a.qty||0}</span>`
+      + `<input type="number" min="0" max="${a.qty||0}" value="0" data-ammo="${_exEsc(a.cal)}" data-max="${a.qty||0}"></div>`
+    ).join('');
+  }
+  list.innerHTML = h || '<div class="ex-empty">Aucun objet transférable (les objets équipés ne peuvent pas être donnés).</div>';
   if (map) map.closePopup();
   document.getElementById('give-mo').classList.add('on');
 }
@@ -1819,7 +1827,13 @@ function confirmGive(){
   document.querySelectorAll('#give-list input').forEach(inp => {
     const max = parseInt(inp.dataset.max)||0;
     let n = Math.max(0, Math.min(parseInt(inp.value)||0, max));
-    if(n>0){ const it = myInv[parseInt(inp.dataset.inv)]; if(it) items.push({ name: it.name, type: it.type, w: it.w||0, n }); }
+    if(n<=0) return;
+    if(inp.dataset.ammo != null){            // munitions
+      items.push({ ammo: true, cal: inp.dataset.ammo, n });
+    } else {
+      const it = myInv[parseInt(inp.dataset.inv)];
+      if(it) items.push({ name: it.name, type: it.type, w: it.w||0, n });
+    }
   });
   if(!items.length){ carteToast('Sélectionne au moins 1 objet.'); return; }
   const to = _giveTo;
@@ -1853,7 +1867,7 @@ function showProp(p){
   if(p.type === 'numbers') body = `<b>${_exEsc(p.fromNom)}</b> veut <b>échanger vos numéros</b> (vous pourrez vous envoyer des messages).`;
   if(p.type === 'beacon')  body = `<b>${_exEsc(p.fromNom)}</b> veut <b>échanger vos balises GPS</b> (vous vous verrez en permanence sur la carte, même à distance).`;
   if(p.type === 'give'){
-    const lst = (p.items||[]).map(it => `${it.n}× ${_exEsc(it.name)}`).join(', ');
+    const lst = (p.items||[]).map(it => `${it.n}× ${_exEsc(it.ammo ? ('▪ '+it.cal) : it.name)}`).join(', ');
     body = `<b>${_exEsc(p.fromNom)}</b> veut te <b>donner</b> : ${lst || '—'}.`;
   }
   document.getElementById('prop-title').textContent =
@@ -1933,9 +1947,22 @@ async function _applyGive(p){
   const fromRef = fdb.collection('joueurs').doc(p.from);
   const toRef   = fdb.collection('joueurs').doc(p.to);
   const [fs, ts] = await Promise.all([fromRef.get(), toRef.get()]);
-  const fromInv = (fs.exists && Array.isArray(fs.data().inventory)) ? fs.data().inventory : [];
-  const toInv   = (ts.exists && Array.isArray(ts.data().inventory)) ? ts.data().inventory : [];
+  const fromInv  = (fs.exists && Array.isArray(fs.data().inventory)) ? fs.data().inventory : [];
+  const toInv    = (ts.exists && Array.isArray(ts.data().inventory)) ? ts.data().inventory : [];
+  const fromAmmo = (fs.exists && Array.isArray(fs.data().ammo)) ? fs.data().ammo : [];
+  const toAmmo   = (ts.exists && Array.isArray(ts.data().ammo)) ? ts.data().ammo : [];
   (p.items||[]).forEach(gi => {
+    if(gi.ammo){            // munitions
+      const src = fromAmmo.find(a => a.cal === gi.cal);
+      if(!src) return;
+      const give = Math.min(gi.n, src.qty || 0);
+      if(give<=0) return;
+      src.qty = (src.qty || 0) - give;
+      const dst = toAmmo.find(a => a.cal === gi.cal);
+      if(dst) dst.qty = (dst.qty || 0) + give;
+      else toAmmo.push({ cal: gi.cal, qty: give });
+      return;
+    }
     const src = fromInv.find(it => it.name === gi.name && it.type === gi.type);
     if(!src) return;
     const give = Math.min(gi.n, src.qty || 1);
@@ -1945,7 +1972,11 @@ async function _applyGive(p){
     else toInv.push({ name: gi.name, type: gi.type, w: gi.w || 0, qty: give });
   });
   const cleanFrom = fromInv.filter(it => (it.qty || 0) > 0);
-  await Promise.all([ fromRef.set({ inventory: cleanFrom }, { merge:true }), toRef.set({ inventory: toInv }, { merge:true }) ]);
+  const cleanFromAmmo = fromAmmo.filter(a => (a.qty || 0) > 0);
+  await Promise.all([
+    fromRef.set({ inventory: cleanFrom, ammo: cleanFromAmmo }, { merge:true }),
+    toRef.set({ inventory: toInv, ammo: toAmmo }, { merge:true })
+  ]);
 }
 function _logMJ(p){
   let txt = '';
