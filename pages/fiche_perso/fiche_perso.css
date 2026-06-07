@@ -108,9 +108,14 @@ html, body { height: 100%; overflow: hidden; }
    ============================================================ */
 .cmp-card{ background:#060d06; border:1px solid var(--b); padding:0.5rem 0.6rem; margin-bottom:0.5rem; }
 .cmp-card:last-child{ margin-bottom:0; }
-.cmp-head{ display:flex; justify-content:space-between; align-items:baseline; gap:0.5rem; margin-bottom:0.35rem; }
+.cmp-head{ display:flex; align-items:center; gap:0.4rem; margin-bottom:0.35rem; }
 .cmp-nom{ font-family:'Oswald',sans-serif; font-size:0.95rem; color:var(--tb); letter-spacing:.5px; }
-.cmp-meta{ font-size:0.62rem; color:var(--td); }
+.cmp-meta{ font-size:0.62rem; color:var(--td); flex:none; }
+.cmp-toggle{ background:none; border:0; color:var(--g); cursor:pointer; font-size:0.8rem; line-height:1; padding:0 2px; flex:none; }
+.cmp-toggle:hover{ color:var(--tb); }
+.cmp-hpmini{ font-family:'Oswald',sans-serif; font-size:0.85rem; margin-left:auto; }
+.cmp-card.collapsed > :not(.cmp-head){ display:none !important; }
+.cmp-card.collapsed .cmp-head{ margin-bottom:0; }
 .cmp-hpbar{ height:6px; background:#0c150c; border:1px solid var(--b); overflow:hidden; }
 .cmp-hpfill{ height:100%; background:linear-gradient(90deg,var(--gd),var(--g)); transition:width .2s; }
 .cmp-hprow{ display:flex; align-items:center; gap:0.4rem; font-size:0.66rem; color:var(--td); margin:0.25rem 0 0.4rem; }

@@ -655,6 +655,14 @@ function openLoot(){
 // COMPAGNONS — PNJ alliés (créés par le MJ, schéma enemies.json)
 // ============================================================
 const COMP_ATTR_LBL = { body:'COR', mind:'ESP', melee:'MÊL', guns:'ARM', other:'AUT' };
+// Compagnons réduits (une ligne : nom + PV) — mémorisé en localStorage
+const _compCollapsed = new Set((()=>{ try{ return JSON.parse(localStorage.getItem('fp_compCollapsed')||'[]'); }catch(e){ return []; } })());
+function toggleCompCollapse(cid){
+  cid = String(cid);
+  if(_compCollapsed.has(cid)) _compCollapsed.delete(cid); else _compCollapsed.add(cid);
+  try{ localStorage.setItem('fp_compCollapsed', JSON.stringify([..._compCollapsed])); }catch(e){}
+  rCompanions();
+}
 function chCompHP(i,n){
   const c=char.companions?.[i]; if(!c) return;
   c.hpCur=Math.max(0,Math.min(c.hpMax||0,(c.hpCur ?? (c.hpMax||0))+n));
@@ -676,8 +684,15 @@ function rCompanions(){
     const atks=(c.attacks||[]).map(a=>`<div class="cmp-atk">⚔ <b>${a.name}</b> — ${(a.attr||'').toUpperCase()}${a.skill?'+'+a.skill:''} · TN ${a.tn} · <span style="color:var(--am)">${a.dmg} DC</span> ${a.dmgType||''}${a.eff?' · '+a.eff:''}</div>`).join('');
     const abil=(c.abilities||[]).map(a=>`<div class="cmp-abil"><b>${a.name}</b>${a.desc?' — '+a.desc:''}</div>`).join('');
     const init=(c.initiative==null||c.initiative==='')?'comme toi':c.initiative;
-    return `<div class="cmp-card">
-      <div class="cmp-head"><span class="cmp-nom">${c.nom||'Compagnon'}</span><span class="cmp-meta">${c.type||''}${c.level?' · Niv. '+c.level:''}</span></div>
+    const cid=String(c.id ?? i);
+    const col=_compCollapsed.has(cid);
+    return `<div class="cmp-card${col?' collapsed':''}">
+      <div class="cmp-head">
+        <button class="cmp-toggle" onclick="toggleCompCollapse('${cid}')" title="${col?'Déplier':'Réduire'}">${col?'▸':'▾'}</button>
+        <span class="cmp-nom">${c.nom||'Compagnon'}</span>
+        <span class="cmp-hpmini" style="color:${pct<30?'var(--rd)':pct<60?'var(--am)':'var(--g)'}">${cur}/${max} PV</span>
+        <span class="cmp-meta">${c.type||''}${c.level?' · Niv. '+c.level:''}</span>
+      </div>
       <div class="cmp-hpbar"><div class="cmp-hpfill" style="width:${pct}%"></div></div>
       <div class="cmp-hprow">PV
         <button onclick="chCompHP(${i},-1)">−</button>
