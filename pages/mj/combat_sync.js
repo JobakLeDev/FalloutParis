@@ -22,15 +22,9 @@ async function syncCombatToFirebase(){
         eid: x.eid || null,
       })),
       actionsState,
-      ennemis: ennemis.map(e => ({
-        id: e.id, nom: e.nom, pvCur: e.pvCur, pvMax: e.pvMax,
-        atq: e.atq, rd: e.rd, initiative: e.initiative
-      })),
-      allies: (typeof allies !== 'undefined' ? allies : []).map(a => ({
-        id: a.id, nom: a.nom, owner: a.owner, ownerNom: a.ownerNom,
-        pvCur: a.pvCur, pvMax: a.pvMax, atq: a.atq, rd: a.rd, defense: a.defense,
-        body: a.body, mind: a.mind, attacks: a.attacks, abilities: a.abilities
-      })),
+      // Conserver TOUS les champs des ennemis (xp, dmgType, eff, dr, level, category…) — sinon ils sont perdus à chaque sync
+      ennemis: ennemis.map(e => ({ ...e })),
+      allies: (typeof allies !== 'undefined' ? allies : []).map(a => ({ ...a })),
       apPool:   typeof apPool   !== 'undefined' ? apPool   : 0,
       mjApPool: typeof mjApPool !== 'undefined' ? mjApPool : 0,
       lastUpdate: Date.now(),

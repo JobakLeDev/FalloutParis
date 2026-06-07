@@ -179,9 +179,14 @@ function renderCombatTermine(data){
     sousLabel = 'Le combat s\'est achevé.';
   }
 
-  // XP
+  // XP (repli : si l'ennemi n'a pas d'xp stockée, on la retrouve dans le bestiaire par son nom)
+  const xpOf = e => {
+    if(e.xp != null) return e.xp;
+    const base = (e.nom||'').replace(/\s+\d+$/,'').replace(/\s*\(.*\)\s*$/,'').trim();
+    return window.ENNEMIS_DB?.[base]?.xp || 0;
+  };
   const defaits  = ennemis.filter(e => (e.pvCur||0) <= 0);
-  const xpTotal  = defaits.reduce((a, e) => a + (e.xp||0), 0);
+  const xpTotal  = defaits.reduce((a, e) => a + xpOf(e), 0);
 
   // Fiche joueur
   const hpMax  = joueurData ? ((joueurData.special?.L||5) + (joueurData.special?.E||5) + Math.max(0,(joueurData.niveau||1)-1)) : '?';
@@ -210,7 +215,7 @@ function renderCombatTermine(data){
     defaits.forEach(e => {
       html += '<div style="display:flex;justify-content:space-between;font-size:8px;padding:3px 0;border-bottom:1px solid var(--b)">'
         + '<span style="color:var(--t)">'+e.nom+'</span>'
-        + '<span style="color:var(--am)">+'+e.xp+' XP</span></div>';
+        + '<span style="color:var(--am)">+'+xpOf(e)+' XP</span></div>';
     });
     html += '</div>';
   }
