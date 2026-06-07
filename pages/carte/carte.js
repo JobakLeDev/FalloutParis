@@ -76,6 +76,7 @@ let openItem = null, reopening = false;            // popup ouvert (pour le réo
 let zoneFormCtx = null;                            // {polygon} (création) ou {zone} (édition)
 let currentTab = 'paris';
 let centeredOnPlayer = false;                      // vue déjà centrée sur le jeton du joueur
+let _autoTabDone = false;                           // bascule auto vers le métro (1er chargement si sous terre) déjà faite
 let moveMode = false, movingToken = null;          // déplacement de jeton (depuis son popup)
 let pingMode = false, pingLayer = null;            // ping joueurs
 
@@ -263,6 +264,11 @@ function buildMap() {
       mapData = { pois: d.pois || [], zones: normZones(d.zones), tokens: d.tokens || {}, fog: d.fog || {}, geoReveal: d.geoReveal || {}, geoVisited: d.geoVisited || {}, ping: d.ping || null, metroTokens: d.metroTokens || {}, metroFog: d.metroFog || {}, underground: d.underground || {}, beacons: d.beacons || {} };
       renderAll();
       tryCenterPlayer();   // au 1er chargement : centrer sur le jeton du joueur
+      // Si le joueur est sous terre au 1er chargement → ouvrir directement le métro centré sur lui
+      if (!_autoTabDone && viewerId && !isMJ) {
+        _autoTabDone = true;
+        if (mapData.underground?.[viewerId]) switchMapTab('metro');
+      }
     });
     fdb.collection('carte').doc('lieux').onSnapshot(s => {
       lieux = (s.exists ? s.data().lieux : null) || [];
