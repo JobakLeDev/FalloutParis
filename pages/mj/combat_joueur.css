@@ -39,7 +39,7 @@
 .j-act-btn:hover:not(:disabled)     { border-color: var(--g);  color: var(--tb); background: var(--gk); }
 .j-act-btn.maj:hover:not(:disabled) { border-color: var(--am); color: var(--am); }
 .j-act-btn:disabled { border-color: #1e2e1e; color: #2a3a2a; background: none; cursor: default; }
-.j-act-btn.lock     { border-color: var(--gd); color: var(--gd); background: none; }
+.j-act-btn.aimed    { border-color: var(--gd); color: var(--gd); background: none; }
 .j-act-btn.pending  { border-color: var(--am); color: var(--am); background: #1a1200; }
 
 /* Cartes ennemis — légèrement plus petites */

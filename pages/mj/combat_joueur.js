@@ -999,7 +999,7 @@ function renderActionsDeclarees(){
       const aimLock       = a.type === 'Aim' && aimPending && !isPendingThis;   // déjà visé, pas encore attaqué
       const disabled      = aimLock || moveBlocked || noMinorSlots || minorWaiting || !!selectedActionDraft;
       const lbl = isPendingThis ? '⏳ ' + a.type : aimLock ? '✓ ' + a.type : a.type;
-      const cls = 'j-act-btn' + (isPendingThis ? ' pending' : '') + (aimLock ? ' lock' : '');
+      const cls = 'j-act-btn' + (isPendingThis ? ' pending' : '') + (aimLock ? ' aimed' : '');
       html += '<button onclick="prepareAction(\'mineure\',\'' + a.type + '\')" class="' + cls + '"'
         + (disabled ? ' disabled' : '')
         + ' title="' + a.desc + '">' + lbl + '</button>';
