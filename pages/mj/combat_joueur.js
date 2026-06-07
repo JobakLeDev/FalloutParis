@@ -867,6 +867,18 @@ function renderActionsDeclarees(){
     }
   });
 
+  // Demandes envoyées (en attente de validation) : résumé non éditable
+  ['mineure','majeure'].forEach(cat => {
+    const p = as[cat]?.pending;
+    if(p?.status === 'waiting'){
+      html += '<div style="margin-bottom:6px;padding:5px;border:1px solid var(--am);background:#1a1200;font-size:8px">'
+        + '<div style="color:var(--am);margin-bottom:3px;letter-spacing:1px">⏳ ' + p.type
+        + ' <span style="color:var(--td);font-size:7px">(' + cat + ')</span> — EN ATTENTE DE VALIDATION</div>'
+        + (p.details ? '<div style="color:var(--tb);font-size:8px;line-height:1.4">' + p.details + '</div>' : '')
+        + '</div>';
+    }
+  });
+
   // Panneau de confirmation (action sélectionnée, pas encore envoyée)
   if(selectedActionDraft){
     const isAtk = (selectedActionDraft.type === 'Attack' || selectedActionDraft.type === 'Aim');
