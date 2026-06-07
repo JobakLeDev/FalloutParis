@@ -59,6 +59,12 @@ const AIM_ZONES = ['', 'Tête', 'Torse', 'Bras G.', 'Bras D.', 'Jambe G.', 'Jamb
 let lastAttackResultTs = 0;   // dédup notification résultat attaque
 let actionState = null;       // extrait de combatState.actionsDeclarees[joueurId]
 let selectedActionDraft = null; // {category, type, desc} — action en cours de saisie
+let myAim = null;            // {cible, zone} — visée déclarée ce tour (Attack/Aim) ; zone '' = non visée
+let hasAttacked = false;     // a déjà lancé les dés de combat ce tour
+let turnEnded = false;       // a cliqué « Terminer mon tour »
+let _turnKey = '';           // clé round:tourActif pour réinitialiser au changement de tour
+const ZONES_RND = ['Tête','Torse','Torse','Bras G.','Bras D.','Jambe G.','Jambe D.'];  // tirage zone au hasard (torse plus fréquent)
+function randomZone(){ return ZONES_RND[Math.floor(Math.random()*ZONES_RND.length)]; }
 
 function initJoueur(){
   const params = new URLSearchParams(window.location.search);
@@ -207,6 +213,9 @@ function renderCombatTermine(data){
 
 function renderCombatJoueur(){
   if(!combatState) return;
+  // Réinitialiser visée / attaque / fin de tour quand le tour change
+  const tk = (combatState.numRound||0) + ':' + (combatState.tourActif||0);
+  if(tk !== _turnKey){ _turnKey = tk; myAim = null; hasAttacked = false; turnEnded = false; }
   document.getElementById('j-round').textContent = combatState.numRound||1;
   document.getElementById('hdr-round').textContent = 'Round ' + (combatState.numRound||1);
   renderMaCarte();
@@ -879,7 +888,12 @@ function renderActionsDeclarees(){
   }
 
   // Boutons d'actions (uniquement pendant mon tour)
-  if(isMoTour){
+  if(isMoTour && turnEnded){
+    html += '<div style="padding:6px;border:1px solid var(--gd);background:#0a140a;font-size:8px;color:var(--gd);text-align:center">✓ Tour terminé — en attente du MJ</div>';
+  } else if(isMoTour){
+    if(hasAttacked){
+      html += '<button onclick="finMonTour()" style="width:100%;margin-bottom:6px;background:var(--gk);border:1px solid var(--g);color:var(--g);font-family:monospace;font-size:9px;padding:5px;cursor:pointer;letter-spacing:1px">✓ TERMINER MON TOUR</button>';
+    }
     const minorUsed    = as.mineure?.used || [];
     const minorPending = as.mineure?.pending;
     const minorWaiting = minorPending?.status === 'waiting';
@@ -891,7 +905,7 @@ function renderActionsDeclarees(){
       const isUsed        = minorUsed.includes(a.type);
       const isPendingThis = minorWaiting && minorPending.type === a.type;
       const moveBlocked   = a.mouvement && !!as.mouvement_used;
-      const disabled      = isUsed || moveBlocked || noMinorSlots || (minorWaiting && !isPendingThis) || !!selectedActionDraft;
+      const disabled      = isUsed || moveBlocked || noMinorSlots || (minorWaiting && !isPendingThis) || !!selectedActionDraft || (hasAttacked && a.type==='Aim');
       const col = isPendingThis ? 'var(--am)' : isUsed ? 'var(--gd)' : disabled ? '#1e2e1e' : 'var(--t)';
       const bdr = isPendingThis ? 'var(--am)' : isUsed ? 'var(--gd)' : disabled ? '#1e2e1e' : 'var(--b2)';
       const lbl = isPendingThis ? '⏳ ' + a.type : isUsed ? '✓ ' + a.type : a.type;
@@ -913,7 +927,7 @@ function renderActionsDeclarees(){
       const isUsed        = majorUsed.includes(a.type);
       const isPendingThis = majorWaiting && majorPending.type === a.type;
       const moveBlocked   = a.mouvement && !!as.mouvement_used;
-      const disabled      = isUsed || moveBlocked || noMajorSlots || (majorWaiting && !isPendingThis) || !!selectedActionDraft;
+      const disabled      = isUsed || moveBlocked || noMajorSlots || (majorWaiting && !isPendingThis) || !!selectedActionDraft || (hasAttacked && a.type==='Attack');
       const col = isPendingThis ? 'var(--am)' : isUsed ? 'var(--gd)' : disabled ? '#1e2e1e' : 'var(--t)';
       const bdr = isPendingThis ? 'var(--am)' : isUsed ? 'var(--gd)' : disabled ? '#1e2e1e' : 'var(--b2)';
       const lbl = isPendingThis ? '⏳ ' + a.type : isUsed ? '✓ ' + a.type : a.type;
@@ -952,6 +966,8 @@ async function submitActionDeclaree(){
   let details = '';
   if(cible) details = '🎯 ' + cible + (zone ? ' — ' + zone : '');
   if(free)  details += (details ? ' · ' : '') + free;
+  // Mémoriser la visée (cible + zone) pour réutilisation lors du jet d'attaque
+  if((type === 'Attack' || type === 'Aim') && cible){ myAim = { cible, zone }; }
   const upd = {};
   upd['actionsDeclarees.' + joueurId + '.' + category + '.pending'] = { type, details, requestedAt: Date.now(), status: 'waiting' };
   try {
@@ -963,6 +979,16 @@ async function submitActionDeclaree(){
 function cancelActionDeclaree(){
   selectedActionDraft = null;
   renderActionsDeclarees();
+}
+
+// Le joueur signale la fin de son tour (après avoir attaqué) → verrouille ses actions
+async function finMonTour(){
+  turnEnded = true;
+  renderActionsDeclarees();
+  renderDiceAccess();
+  if(db && combatId){
+    try { await db.collection(COMBATS_COLL).doc(combatId).update({ ['actionsDeclarees.' + joueurId + '.turnDone']: Date.now() }); } catch(e){}
+  }
 }
 
 async function dismissRefused(category){
@@ -983,12 +1009,13 @@ function renderDiceAccess(){
 
   if(lockEl) lockEl.style.display = attackValidated ? 'none' : 'flex';
 
-  // Activer/désactiver les boutons de lancer
+  // Activer/désactiver les boutons de lancer (verrouillés tant que l'attaque n'est pas validée, ou après avoir attaqué)
+  const lockDice = !attackValidated || hasAttacked;
   ['j-lance-btn','j-d20-2','j-d20-3','j-d20-4','j-d20-5','j-stacked-deck-btn'].forEach(id => {
-    const b = document.getElementById(id); if(b) b.disabled = !attackValidated;
+    const b = document.getElementById(id); if(b) b.disabled = lockDice;
   });
   const cdBtn = document.querySelector('.cd-btn');
-  if(cdBtn) cdBtn.disabled = !attackValidated;
+  if(cdBtn) cdBtn.disabled = lockDice;
 
   // Réinitialiser le résultat si Attack plus dans used
   if(!attackValidated){
@@ -1001,12 +1028,21 @@ function renderDiceAccess(){
   if(!cibleEl) return;
   cibleEl.style.display = 'block';
   const ennemis = (combatState?.ennemis || []).filter(e => e.pvCur > 0);
-  const prevVal = document.getElementById('j-cible-sel')?.value || '';
   if(!ennemis.length){
     cibleEl.innerHTML = '<span style="font-size:7px;color:var(--td)">Aucun ennemi vivant</span>';
     cibleAttaque = '';
     return;
   }
+  // Déjà visé (Attack/Aim) → on ne redemande pas la cible
+  if(myAim && myAim.cible && ennemis.some(e => e.nom === myAim.cible)){
+    cibleAttaque = myAim.cible;
+    cibleEl.innerHTML = '<div style="font-size:7px;color:var(--td)">🎯 Cible visée : '
+      + '<b style="color:var(--rd)">' + myAim.cible + '</b>'
+      + (myAim.zone ? ' <span style="color:var(--am)">— ' + myAim.zone + '</span>' : ' <span style="color:var(--td)">(zone au hasard)</span>')
+      + '</div>';
+    return;
+  }
+  const prevVal = document.getElementById('j-cible-sel')?.value || '';
   cibleEl.innerHTML = '<div style="display:flex;align-items:center;gap:5px">'
     + '<span style="font-size:7px;color:var(--td)">Cible :</span>'
     + '<select id="j-cible-sel" style="flex:1;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:monospace;font-size:7px;padding:2px 4px;outline:none">'
@@ -1024,6 +1060,9 @@ function jLancerCD(){
   const vals = Array.from({length:nb},()=>FACES_CD[Math.floor(Math.random()*6)]);
   const dmgRaw = vals.reduce((a,v)=>a+(parseInt(v)||0),0);
   const ef = vals.filter(v=>v.includes('⚡')).length;
+  // Zone touchée : visée si déclarée, sinon tirée au hasard (l'attaque a réussi puisqu'on lance les dégâts)
+  const zone = (myAim && myAim.zone) ? myAim.zone : randomZone();
+  const zoneAimee = !!(myAim && myAim.zone);
 
   // Résultat brut des dés
   document.getElementById('j-cd-result').innerHTML =
@@ -1045,12 +1084,13 @@ function jLancerCD(){
   // Résultat narratif
   const nom = joueurData?.nom || joueurId;
   const cible = cibleAttaque ? ' à <b style="color:var(--rd)">'+cibleAttaque+'</b>' : '';
+  const zoneTxt = ' <span style="color:'+(zoneAimee?'var(--am)':'var(--td)')+'">['+zone+(zoneAimee?'':' au hasard')+']</span>';
   const arEl = document.getElementById('j-attack-result');
   if(arEl){
     arEl.style.display = 'block';
     let html = '<div style="font-size:9px;color:var(--tb);padding:4px 6px;border:1px solid var(--g);background:#060d06;margin-top:2px">'
       + '⚔ <b>'+nom+'</b> inflige <b style="color:var(--am)">'+dmgTotal+' dmg</b>'+(ef?' <span style="color:var(--am)">'+ef+'⚡</span>':'')
-      + cible+'</div>';
+      + cible+zoneTxt+'</div>';
     if(effetInfo){
       html += '<div style="font-size:8px;padding:3px 6px;border:1px solid var(--am);border-top:none;background:#1a1200">'
         +'<span style="color:var(--am)">⚡ '+effetInfo.nom+' : </span>'
@@ -1064,10 +1104,15 @@ function jLancerCD(){
   // Envoyer au MJ pour son log
   if(db && combatId){
     db.collection(COMBATS_COLL).doc(combatId).update({
-      attackResult: { joueur: joueurId, nom, cible: cibleAttaque,
+      attackResult: { joueur: joueurId, nom, cible: cibleAttaque, zone, zoneAimee,
         dmg: dmgTotal, ef,
         effetNom: effetInfo?.nom||'', effetNote: effetInfo?.note||'', rad: effetInfo?.rad||0,
         ts: Date.now() }
     }).catch(()=>{});
   }
+
+  // L'attaque est faite : verrouiller les attaques et proposer « Terminer mon tour »
+  hasAttacked = true;
+  renderDiceAccess();
+  renderActionsDeclarees();
 }

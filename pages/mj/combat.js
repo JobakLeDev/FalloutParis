@@ -104,7 +104,7 @@ function deverrouiller(){
     if(data.attackResult && data.attackResult.ts > lastAttackResultTs){
       lastAttackResultTs = data.attackResult.ts;
       const r = data.attackResult;
-      { let msg = (r.nom||r.joueur)+' inflige '+r.dmg+'dmg'+(r.ef?' +'+r.ef+'⚡':'')+(r.cible?' à '+r.cible:'');
+      { let msg = (r.nom||r.joueur)+' inflige '+r.dmg+'dmg'+(r.ef?' +'+r.ef+'⚡':'')+(r.cible?' à '+r.cible:'')+(r.zone?' ['+r.zone+(r.zoneAimee?' visé':' au hasard')+']':'');
         if(r.effetNote) msg += ' ['+r.effetNom+' : '+r.effetNote+']';
         if(r.rad>0) msg += ' +'+r.rad+' RAD';
         addLog('⚔ ' + msg);
