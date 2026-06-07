@@ -914,13 +914,19 @@ function renderActionsDeclarees(){
       }
       if(isAtk){
         if(ennemisV.length){
+          // La zone ne se choisit qu'en VISANT (Aim). Une attaque non visée → zone tirée au hasard.
+          const showZone = (selectedActionDraft.type === 'Aim');
           body += '<div style="display:flex;gap:4px;margin-bottom:4px">'
-            + '<select id="j-act-cible" style="flex:2;' + inputStyle + '">'
+            + '<select id="j-act-cible" style="flex:' + (showZone?'2':'1') + ';' + inputStyle + '">'
             + ennemisV.map(e => '<option value="' + e.nom + '"' + (e.nom===savedCible?' selected':'') + '>' + e.nom + ' (' + e.pvCur + ' PV)</option>').join('')
             + '</select>'
-            + '<select id="j-act-zone" style="flex:1;' + inputStyle + '">'
-            + AIM_ZONES.map(z => '<option value="' + z + '"' + (z===savedZone?' selected':'') + '>' + (z || '— zone —') + '</option>').join('')
-            + '</select></div>';
+            + (showZone
+                ? '<select id="j-act-zone" style="flex:1;' + inputStyle + '">'
+                  + AIM_ZONES.map(z => '<option value="' + z + '"' + (z===savedZone?' selected':'') + '>' + (z || '— zone —') + '</option>').join('')
+                  + '</select>'
+                : '')
+            + '</div>'
+            + (showZone ? '' : '<div style="font-size:7px;color:var(--td);margin-bottom:4px">Zone touchée tirée au hasard (vise d\'abord pour cibler une zone)</div>');
         } else {
           body += '<div style="font-size:7px;color:var(--rd);margin-bottom:4px">Aucun ennemi vivant à cibler</div>';
         }
