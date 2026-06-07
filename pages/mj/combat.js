@@ -27,6 +27,8 @@ let lastInfoRequestTs = 0;
 let lastLuckyTimingTs = 0;
 let lastLuckDrawTs = 0;
 let lastAttackResultTs = 0;
+let lastTurnDoneTs = {};        // {joueurId: ts} — dernier "Terminer mon tour" traité (avance auto sans validation MJ)
+let _turnDoneSeeded = false;    // au 1er snapshot, on enregistre les turnDone existants sans avancer
 
 // WEAPONS_DB défini dans mj_shared.js
 
@@ -99,6 +101,22 @@ function deverrouiller(){
     if(data.actionsDeclarees){
       actionsJoueurs = data.actionsDeclarees;
       renderActionsMJ();
+      // 1er snapshot : mémoriser les turnDone existants sans déclencher d'avance
+      if(!_turnDoneSeeded){
+        Object.entries(data.actionsDeclarees).forEach(([id,a]) => { if(a?.turnDone) lastTurnDoneTs[id] = a.turnDone; });
+        _turnDoneSeeded = true;
+      } else {
+        // Le joueur ACTIF a cliqué « Terminer mon tour » → avancer automatiquement (sans validation MJ)
+        const cur = ordreInitiative[tourActif];
+        if(cur && cur.type === 'joueur'){
+          const td = data.actionsDeclarees?.[cur.id]?.turnDone;
+          if(td && td > (lastTurnDoneTs[cur.id] || 0)){
+            lastTurnDoneTs[cur.id] = td;
+            addLog('✔ ' + cur.nom + ' a terminé son tour');
+            finDeTour();
+          }
+        }
+      }
     }
     // Résultat d'attaque envoyé par un joueur
     if(data.attackResult && data.attackResult.ts > lastAttackResultTs){
