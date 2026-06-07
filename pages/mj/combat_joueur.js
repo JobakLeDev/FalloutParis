@@ -234,8 +234,10 @@ function renderCombatJoueur(){
   const tk = (combatState.numRound||0) + ':' + (combatState.tourActif||0);
   if(tk !== _turnKey){
     _turnKey = tk; myAim = null; turnEnded = false; attacksDone = 0; twoD20Done = -1;
-    currentArmeInfo = null; armeSelectionnee = null;
+    currentArmeInfo = null; armeSelectionnee = null; lastRollDice = [];
     const dc = document.getElementById('mes-des-context'); if(dc) dc.textContent = 'Déclare une attaque pour viser';
+    ['j-dice-result','j-cd-result'].forEach(id => { const e=document.getElementById(id); if(e) e.innerHTML='—'; });
+    ['j-attack-result','j-miss-fortune','j-aim-reroll','j-convert-ap','j-bonus-dmg'].forEach(id => { const e=document.getElementById(id); if(e){ e.innerHTML=''; e.style.display='none'; } });
   }
   document.getElementById('j-round').textContent = combatState.numRound||1;
   document.getElementById('hdr-round').textContent = 'Round ' + (combatState.numRound||1);
@@ -944,6 +946,8 @@ function renderActionsDeclarees(){
     const minorPending = as.mineure?.pending;
     const minorWaiting = minorPending?.status === 'waiting';
     const noMinorSlots = (s.mineure ?? 1) <= 0;   // grisé si plus d'action mineure dispo
+    // Une action en attente de validation (mineure OU majeure) verrouille TOUS les boutons
+    const anyWaiting = minorWaiting || (as.majeure?.pending?.status === 'waiting');
     // Visée non consommée : on a visé plus de fois qu'on a attaqué → pas de nouvelle visée tant qu'on n'a pas attaqué
     const aimsUsed   = minorUsed.filter(t => t === 'Aim').length + ((minorWaiting && minorPending.type === 'Aim') ? 1 : 0);
     const aimPending = aimsUsed > attacksDone;
@@ -954,7 +958,7 @@ function renderActionsDeclarees(){
       const isPendingThis = minorWaiting && minorPending.type === a.type;
       const moveBlocked   = a.mouvement && !!as.mouvement_used;
       const aimLock       = a.type === 'Aim' && aimPending && !isPendingThis;   // déjà visé, pas encore attaqué
-      const disabled      = aimLock || moveBlocked || noMinorSlots || (minorWaiting && !isPendingThis) || !!selectedActionDraft;
+      const disabled      = aimLock || moveBlocked || noMinorSlots || anyWaiting || !!selectedActionDraft;
       const col = isPendingThis ? 'var(--am)' : aimLock ? 'var(--gd)' : disabled ? '#1e2e1e' : 'var(--t)';
       const bdr = isPendingThis ? 'var(--am)' : aimLock ? 'var(--gd)' : disabled ? '#1e2e1e' : 'var(--b2)';
       const lbl = isPendingThis ? '⏳ ' + a.type : aimLock ? '✓ ' + a.type : a.type;
@@ -974,7 +978,7 @@ function renderActionsDeclarees(){
     MAJOR_ACTIONS.forEach(a => {
       const isPendingThis = majorWaiting && majorPending.type === a.type;
       const moveBlocked   = a.mouvement && !!as.mouvement_used;
-      const disabled      = moveBlocked || noMajorSlots || (majorWaiting && !isPendingThis) || !!selectedActionDraft;
+      const disabled      = moveBlocked || noMajorSlots || anyWaiting || !!selectedActionDraft;
       const col = isPendingThis ? 'var(--am)' : disabled ? '#1e2e1e' : 'var(--t)';
       const bdr = isPendingThis ? 'var(--am)' : disabled ? '#1e2e1e' : 'var(--b2)';
       const lbl = isPendingThis ? '⏳ ' + a.type : a.type;
@@ -1049,6 +1053,10 @@ function cancelActionDeclaree(){
 // Le joueur signale la fin de son tour (après avoir attaqué) → verrouille ses actions
 async function finMonTour(){
   turnEnded = true;
+  // Réinitialiser l'affichage de la box d'attaque (pas d'historique des derniers jets)
+  ['j-dice-result','j-cd-result'].forEach(id => { const e=document.getElementById(id); if(e) e.innerHTML='—'; });
+  ['j-attack-result','j-miss-fortune','j-aim-reroll','j-convert-ap','j-bonus-dmg'].forEach(id => { const e=document.getElementById(id); if(e){ e.innerHTML=''; e.style.display='none'; } });
+  lastRollDice = [];
   renderActionsDeclarees();
   renderDiceAccess();
   if(db && combatId){
