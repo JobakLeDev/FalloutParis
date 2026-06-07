@@ -983,9 +983,10 @@ function renderActionsDeclarees(){
     const minorUsed    = as.mineure?.used || [];
     const minorPending = as.mineure?.pending;
     const minorWaiting = minorPending?.status === 'waiting';
+    const majorWaiting = as.majeure?.pending?.status === 'waiting';
     const noMinorSlots = (s.mineure ?? 1) <= 0;   // grisé si plus d'action mineure dispo
-    // Une action en attente de validation (mineure OU majeure) verrouille TOUS les boutons
-    const anyWaiting = minorWaiting || (as.majeure?.pending?.status === 'waiting');
+    // Verrou PAR CATÉGORIE : une mineure en attente ne bloque pas les majeures (et inversement)
+    // → on peut déclarer une Attaque juste après avoir visé.
     // Visée non consommée : on a visé plus de fois qu'on a attaqué → pas de nouvelle visée tant qu'on n'a pas attaqué
     const aimsUsed   = minorUsed.filter(t => t === 'Aim').length + ((minorWaiting && minorPending.type === 'Aim') ? 1 : 0);
     const aimPending = aimsUsed > attacksDone;
@@ -996,7 +997,7 @@ function renderActionsDeclarees(){
       const isPendingThis = minorWaiting && minorPending.type === a.type;
       const moveBlocked   = a.mouvement && !!as.mouvement_used;
       const aimLock       = a.type === 'Aim' && aimPending && !isPendingThis;   // déjà visé, pas encore attaqué
-      const disabled      = aimLock || moveBlocked || noMinorSlots || anyWaiting || !!selectedActionDraft;
+      const disabled      = aimLock || moveBlocked || noMinorSlots || minorWaiting || !!selectedActionDraft;
       const lbl = isPendingThis ? '⏳ ' + a.type : aimLock ? '✓ ' + a.type : a.type;
       const cls = 'j-act-btn' + (isPendingThis ? ' pending' : '') + (aimLock ? ' lock' : '');
       html += '<button onclick="prepareAction(\'mineure\',\'' + a.type + '\')" class="' + cls + '"'
@@ -1006,7 +1007,6 @@ function renderActionsDeclarees(){
     html += '</div>';
 
     const majorPending = as.majeure?.pending;
-    const majorWaiting = majorPending?.status === 'waiting';
     const noMajorSlots = (s.majeure ?? 1) <= 0;   // grisé si plus d'action majeure dispo
 
     html += '<div class="act-cat-lbl">ACTIONS MAJEURES <span style="color:var(--g)">' + (s.majeure ?? 1) + '</span></div>'
@@ -1014,7 +1014,7 @@ function renderActionsDeclarees(){
     MAJOR_ACTIONS.forEach(a => {
       const isPendingThis = majorWaiting && majorPending.type === a.type;
       const moveBlocked   = a.mouvement && !!as.mouvement_used;
-      const disabled      = moveBlocked || noMajorSlots || anyWaiting || !!selectedActionDraft;
+      const disabled      = moveBlocked || noMajorSlots || majorWaiting || !!selectedActionDraft;
       const lbl = isPendingThis ? '⏳ ' + a.type : a.type;
       const cls = 'j-act-btn maj' + (isPendingThis ? ' pending' : '');
       html += '<button onclick="prepareAction(\'majeure\',\'' + a.type + '\')" class="' + cls + '"'
