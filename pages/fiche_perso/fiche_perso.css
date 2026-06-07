@@ -21,8 +21,8 @@ html, body { height: 100%; overflow: hidden; }
   border: 1px solid var(--b2);
 }
 /* CARTE : remplit la hauteur d'écran restante (pas de scroll) ; marges via le padding du corps */
-#tc-carte{ height:auto; padding:0; overflow:hidden; }
-#tc-carte iframe{ height:calc(100vh - 12rem); min-height:20rem; margin:0; }
+#tc-carte{ height:auto; padding:0; overflow:hidden; text-align:center; }
+#tc-carte iframe{ height:calc(100vh - 18rem); min-height:18rem; width:96%; margin:0 auto; }
 
 /* ============================================================
    MONTÉE DE NIVEAU
