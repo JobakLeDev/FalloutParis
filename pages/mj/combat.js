@@ -591,7 +591,18 @@ function rollLocation(){
   ];
   return locs[Math.floor(Math.random()*locs.length)];
 }
-// RD localisée d'un joueur (RD la plus élevée par type entre les pièces couvrant la zone) — sans perks
+// RD apportée par les perks (réplique de fiche_perso rdP)
+function playerPerkRD(d, type){
+  const p = d.perks || {}, s = d.special || {};
+  const hpMx = (typeof getHpMax==='function') ? getHpMax(d) : ((s.L||5)+(s.E||5)+Math.max(0,(d.niveau||1)-1));
+  const nerd = (p['Nerd Rage!']||0) > 0 && (d.hp||0) < hpMx*0.4;
+  if(type==='phys'){ let r=(p['Toughness']||0); if((p['Barbarian']||0)>0 && !d.powerArmor){ const S=s.S||5; r += S>=11?3:S>=9?2:S>=7?1:0; } if(nerd) r+=(p['Nerd Rage!']||0); return r; }
+  if(type==='en'){ let r=(p['Refractor']||0); if(nerd) r+=(p['Nerd Rage!']||0); return r; }
+  if(type==='rad')  return p['Rad Resistance']||0;
+  if(type==='poison') return (p['Snake Eater']||0)*2;
+  return 0;
+}
+// RD localisée d'un joueur : armure (la plus élevée par type sur la zone) + perks
 function playerLocRD(d, loc){
   let ph=0, en=0, rad=0;
   const isHead = loc.z === 'Head';
@@ -601,6 +612,7 @@ function playerLocRD(d, loc){
     const covers = a.z===loc.z || (a.z==='Body' && !isHead) || a.z==='All' || (a.t==='POWERARMOR' && d.powerArmor);
     if(covers){ ph=Math.max(ph,a.ph||0); en=Math.max(en,a.en||0); rad=(a.rad===999||rad===999)?999:Math.max(rad,a.rad||0); }
   });
+  ph += playerPerkRD(d,'phys'); en += playerPerkRD(d,'en'); if(rad!==999) rad += playerPerkRD(d,'rad');
   return { phys:ph, en, rad };
 }
 function dmgEnnemi(id, val){

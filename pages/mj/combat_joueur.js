@@ -871,28 +871,39 @@ function renderActionsDeclarees(){
     const savedZone  = document.getElementById('j-act-zone')?.value || '';
     const inputStyle = 'box-sizing:border-box;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:monospace;font-size:8px;padding:3px 5px;outline:none';
 
+    const aimUsed  = (as.mineure?.used || []).includes('Aim');
+    const reuseAim = (selectedActionDraft.type === 'Attack' && aimUsed && myAim && myAim.w);
+
     let body = '';
-    if(selectedActionDraft.type === 'Attack'){
-      _declWeaps = attackWeapons();
-      const savedW = document.getElementById('j-act-arme')?.value || '0';
-      body += '<select id="j-act-arme" style="width:100%;margin-bottom:4px;' + inputStyle + '">'
-        + _declWeaps.map((w,i) => '<option value="'+i+'"'+(String(i)===savedW?' selected':'')+'>'+w.label+' · '+w.dmg+' · TN '+w.tn+'</option>').join('')
-        + '</select>';
-    }
-    if(isAtk){
-      if(ennemisV.length){
-        body += '<div style="display:flex;gap:4px;margin-bottom:4px">'
-          + '<select id="j-act-cible" style="flex:2;' + inputStyle + '">'
-          + ennemisV.map(e => '<option value="' + e.nom + '"' + (e.nom===savedCible?' selected':'') + '>' + e.nom + ' (' + e.pvCur + ' PV)</option>').join('')
-          + '</select>'
-          + '<select id="j-act-zone" style="flex:1;' + inputStyle + '">'
-          + AIM_ZONES.map(z => '<option value="' + z + '"' + (z===savedZone?' selected':'') + '>' + (z || '— zone —') + '</option>').join('')
-          + '</select></div>';
-      } else {
-        body += '<div style="font-size:7px;color:var(--rd);margin-bottom:4px">Aucun ennemi vivant à cibler</div>';
+    if(reuseAim){
+      // Visée déjà effectuée (Aim) → on ne re-choisit ni arme, ni cible, ni zone
+      body += '<div style="font-size:8px;color:var(--tb);margin-bottom:4px;padding:4px 6px;border:1px solid var(--gd);background:#0a140a">'
+        + '🎯 Visée : <b>' + myAim.w.label + '</b> → <b style="color:var(--rd)">' + myAim.cible + '</b>'
+        + (myAim.zone ? ' <span style="color:var(--am)">[' + myAim.zone + ']</span>' : ' <span style="color:var(--td)">(zone au hasard)</span>')
+        + '</div>';
+    } else {
+      if(selectedActionDraft.type === 'Attack' || selectedActionDraft.type === 'Aim'){
+        _declWeaps = attackWeapons();
+        const savedW = document.getElementById('j-act-arme')?.value || '0';
+        body += '<select id="j-act-arme" style="width:100%;margin-bottom:4px;' + inputStyle + '">'
+          + _declWeaps.map((w,i) => '<option value="'+i+'"'+(String(i)===savedW?' selected':'')+'>'+w.label+' · '+w.dmg+' · TN '+w.tn+'</option>').join('')
+          + '</select>';
+      }
+      if(isAtk){
+        if(ennemisV.length){
+          body += '<div style="display:flex;gap:4px;margin-bottom:4px">'
+            + '<select id="j-act-cible" style="flex:2;' + inputStyle + '">'
+            + ennemisV.map(e => '<option value="' + e.nom + '"' + (e.nom===savedCible?' selected':'') + '>' + e.nom + ' (' + e.pvCur + ' PV)</option>').join('')
+            + '</select>'
+            + '<select id="j-act-zone" style="flex:1;' + inputStyle + '">'
+            + AIM_ZONES.map(z => '<option value="' + z + '"' + (z===savedZone?' selected':'') + '>' + (z || '— zone —') + '</option>').join('')
+            + '</select></div>';
+        } else {
+          body += '<div style="font-size:7px;color:var(--rd);margin-bottom:4px">Aucun ennemi vivant à cibler</div>';
+        }
       }
     }
-    body += '<input type="text" id="j-action-details" placeholder="Precisions optionnelles (arme, note...)" style="width:100%;margin-bottom:4px;' + inputStyle + '">';
+    body += '<input type="text" id="j-action-details" placeholder="Precisions optionnelles (note...)" style="width:100%;margin-bottom:4px;' + inputStyle + '">';
 
     html += '<div style="margin-bottom:6px;padding:5px;border:1px solid var(--am);background:#1a1200;font-size:8px">'
       + '<div style="color:var(--am);margin-bottom:2px">' + selectedActionDraft.type
@@ -980,19 +991,29 @@ async function submitActionDeclaree(){
   if(!selectedActionDraft || !db) return;
   const { category, type } = selectedActionDraft;
   const free  = document.getElementById('j-action-details')?.value?.trim() || '';
-  const cible = document.getElementById('j-act-cible')?.value || '';
-  const zone  = document.getElementById('j-act-zone')?.value || '';
+  const aimUsed  = (actionState?.mineure?.used || []).includes('Aim');
+  const reuseAim = (type === 'Attack' && aimUsed && myAim && myAim.w);
+
+  let cible, zone, w;
+  if(reuseAim){
+    cible = myAim.cible; zone = myAim.zone || ''; w = myAim.w;
+  } else {
+    cible = document.getElementById('j-act-cible')?.value || '';
+    zone  = document.getElementById('j-act-zone')?.value || '';
+    if(type === 'Attack' || type === 'Aim'){
+      const wi = parseInt(document.getElementById('j-act-arme')?.value || '0') || 0;
+      w = _declWeaps[wi];
+    }
+  }
+
   let details = '';
   if(cible) details = '🎯 ' + cible + (zone ? ' — ' + zone : '');
+  if(w)     details += (details ? ' · ' : '') + w.label;
   if(free)  details += (details ? ' · ' : '') + free;
-  // Mémoriser la visée (cible + zone) pour réutilisation lors du jet d'attaque
-  if((type === 'Attack' || type === 'Aim') && cible){ myAim = { cible, zone }; }
-  // Attaque : appliquer l'arme choisie (sélectionnée ici, plus dans « Mes jets »)
-  if(type === 'Attack'){
-    const wi = parseInt(document.getElementById('j-act-arme')?.value || '0') || 0;
-    const w = _declWeaps[wi];
-    if(w) selArme(w.nom, w.tn, w.dmg, w.persoBonus);
-  }
+  // Mémoriser la visée (arme + cible + zone) pour réutilisation lors de l'attaque
+  if((type === 'Attack' || type === 'Aim') && cible){ myAim = { cible, zone, w }; }
+  // Attaque : appliquer l'arme choisie (sélectionnée à la déclaration ou héritée de l'Aim)
+  if(type === 'Attack' && w) selArme(w.nom, w.tn, w.dmg, w.persoBonus);
   const upd = {};
   upd['actionsDeclarees.' + joueurId + '.' + category + '.pending'] = { type, details, requestedAt: Date.now(), status: 'waiting' };
   try {
