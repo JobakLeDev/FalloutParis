@@ -276,3 +276,6 @@ html, body { height: 100%; overflow: hidden; }
 .hr-track .mq{ display:inline-block; white-space:nowrap; }
 .hr-track.scrolling .mq{ animation:hrMarquee var(--mq-dur,8s) linear infinite alternate; }
 @keyframes hrMarquee{ from{ transform:translateX(0); } to{ transform:translateX(var(--mq-shift,0)); } }
+
+/* GÉNÉRAL : rangée SPECIAL | Armure | Armes+Statuts — empile sur écran étroit */
+@media(max-width:900px){ .gen-row{ grid-template-columns:1fr !important; } }
