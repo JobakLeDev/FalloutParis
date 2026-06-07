@@ -211,7 +211,7 @@ function rGenWeap(){
       <div class="gwc-row">
         <div>
           <div class="gwc-name">${inv.name}${inv.persoBonus?' <span style="color:var(--am);font-size:8px">★</span>':''}</div>
-          <div class="gwc-stats">${db.t||''} · TN <b style="color:var(--tb)">${tn}</b> · FR ${db.fr??'—'} · ${db.rng||'—'}</div>
+          <div class="gwc-stats">${db.t||''} · TN <b style="color:var(--tb)">${tn}</b></div>
         </div>
         <div style="text-align:right">
           <div class="gwc-dmg">${db.dmg||'?'}</div>
