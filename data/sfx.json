@@ -8,6 +8,8 @@
     "map":         "map_sfx.mp3",
     "messagerie":  "messagerie_sfx.mp3",
     "shopAlert":   "shop_alert_sfx.mp3",
-    "combatAlert": "combat_alert_sfx.mp3"
+    "combatAlert": "combat_alert_sfx.mp3",
+    "xpUp":        "xp_up_sfx.mp3",
+    "lvlUp":       "lvl_up_sfx.mp3"
   }
 }

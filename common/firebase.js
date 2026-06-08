@@ -24,10 +24,18 @@ function setStatus(msg, color) {
 }
 
 // ---- Appliquer les données Firebase sur char ----
+let _prevXp = null, _prevNiveau = null;   // pour jouer le son de gain XP/niveau
 function appliquerDonnees(data) {
   if (!data) return;
   if (data.nom       !== undefined) char.name      = data.nom;
   if (data.origine   !== undefined) char.origine   = data.origine;
+  // SFX : XP gagnée / niveau gagné (pas au 1er chargement) — le niveau prime sur l'XP
+  if (typeof fpSfx === 'function'){
+    if (_prevNiveau != null && data.niveau != null && data.niveau > _prevNiveau) fpSfx('lvlUp');
+    else if (_prevXp != null && data.xp != null && data.xp > _prevXp) fpSfx('xpUp');
+  }
+  if (data.niveau !== undefined) _prevNiveau = data.niveau;
+  if (data.xp     !== undefined) _prevXp     = data.xp;
   if (data.niveau    !== undefined) char.niveau    = data.niveau;
   if (data.xp        !== undefined) char.xp        = data.xp;
   // allocatedLevel : niveau jusqu'auquel rang+perk ont été répartis.
