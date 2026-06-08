@@ -6,28 +6,50 @@
       "name": "Radio République",
       "desc": "La voix de la République",
       "folder": "audio/radio/republique",
-      "tracks": []
+      "tracks": [
+        "Charles Trenet - Douce France.mp3",
+        "Edith Piaf - Sous le ciel de paris.mp3",
+        "Maurice Chevalier - Paris Sera Toujours Paris.mp3",
+        "Mouloudji  -  Le temps des cerises.mp3",
+        "Mouloudji - Le Conscrit (Boris Vian - Allons z'enfants !).mp3"
+      ]
     },
     {
       "id": "nnfp",
       "name": "Radio NNFP",
       "desc": "Émissions du NNFP",
       "folder": "audio/radio/nnfp",
-      "tracks": []
+      "tracks": [
+        "Boris Vian- Le déserteur.mp3",
+        "Juliette Greco, Si tu t'imagines.mp3",
+        "Juliette Gréco - Il ny a plus daprès.mp3",
+        "Juliette Gréco - Les feuilles mortes.mp3",
+        "Mouloudji  -  Le temps des cerises.mp3",
+        "Mouloudji - Le piano de la plage.mp3",
+        "Yves Montand-La Bicyclette.mp3"
+      ]
     },
     {
       "id": "zazous",
       "name": "Radio Zazous",
       "desc": "Swing et chansons des Zazous",
       "folder": "audio/radio/zazous",
-      "tracks": []
+      "tracks": [
+        "Andrex  - Y'a des zazous.mp3",
+        "Boris Vian - La java des bombes atomiques.mp3",
+        "Boris Vian - fais moi mal johnny.mp3",
+        "Chet Baker - Almost blue.mp3",
+        "Mouloudji - Le piano de la plage.mp3"
+      ]
     },
     {
       "id": "ambiance",
       "name": "Ambiance",
       "desc": "Nappes et ambiances",
       "folder": "audio/radio/ambiance",
-      "tracks": []
+      "tracks": [
+        "Jean Ferrat - C'est beau la vie.mp3"
+      ]
     }
   ]
 }
