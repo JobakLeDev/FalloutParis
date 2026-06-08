@@ -1028,9 +1028,6 @@ function renderActionsDeclarees(){
     const aimsUsed   = minorUsed.filter(t => t === 'Aim').length + ((minorWaiting && minorPending.type === 'Aim') ? 1 : 0);
     const aimPending = aimsUsed > attacksDone;
 
-    // Box de paramètres d'une action MINEURE : au-dessus des mineures
-    if(selectedActionDraft && selectedActionDraft.category === 'mineure') html += draftHtml;
-
     html += '<div class="act-cat-lbl">ACTIONS MINEURES <span style="color:var(--g)">' + (s.mineure ?? 1) + '</span></div>'
       + '<div class="j-act-btns">';
     MINOR_ACTIONS.forEach(a => {
@@ -1049,9 +1046,6 @@ function renderActionsDeclarees(){
     const majorPending = as.majeure?.pending;
     const noMajorSlots = (s.majeure ?? 1) <= 0;   // grisé si plus d'action majeure dispo
 
-    // Box de paramètres d'une action MAJEURE : entre Mineures et Majeures
-    if(selectedActionDraft && selectedActionDraft.category === 'majeure') html += draftHtml;
-
     html += '<div class="act-cat-lbl">ACTIONS MAJEURES <span style="color:var(--g)">' + (s.majeure ?? 1) + '</span></div>'
       + '<div class="j-act-btns">';
     MAJOR_ACTIONS.forEach(a => {
@@ -1069,6 +1063,9 @@ function renderActionsDeclarees(){
     // Terminer mon tour — sous les actions, centré (le MJ avance automatiquement)
     html += '<div style="text-align:center;margin-top:12px"><button onclick="finMonTour()" style="background:var(--gk);border:1px solid var(--g);color:var(--g);font-family:monospace;font-size:10px;padding:7px 22px;cursor:pointer;letter-spacing:1px">✓ TERMINER MON TOUR</button></div>';
   }
+
+  // Box de paramètres en POPUP superposé au bloc (ne décale plus les boutons)
+  if(draftHtml) html += '<div class="act-draft-pop">' + draftHtml + '</div>';
 
   el.innerHTML = html;
   el.style.display = html ? 'block' : 'none';

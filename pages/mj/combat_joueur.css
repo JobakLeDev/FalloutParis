@@ -169,3 +169,13 @@
 .mf-die-btn { background: #060d06; border: 1px solid var(--b2); color: var(--td); font-family: 'Share Tech Mono', monospace; font-size: 8px; padding: 1px 5px; cursor: pointer; margin-right: 3px; }
 .mf-die-btn:hover { border-color: var(--am); color: var(--am); }
 .mf-die-btn.rerolled { opacity: 0.4; cursor: default; }
+
+/* Box de paramètres d'action en POPUP superposé (ne décale plus les boutons) */
+.bottom-actions{ position:relative; }
+#j-actions-decl{ position:static; }
+.act-draft-pop{
+  position:absolute; left:6px; right:6px; top:50%; transform:translateY(-50%);
+  z-index:60; background:var(--p2); border:1px solid var(--am);
+  box-shadow:0 0 0 9999px rgba(0,0,0,.45), 0 4px 18px rgba(0,0,0,.6);
+  padding:8px; max-height:92%; overflow:auto;
+}
