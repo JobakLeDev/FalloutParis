@@ -63,6 +63,7 @@ let selectedActionDraft = null; // {category, type, desc} — action en cours de
 let myAim = null;            // {cible, zone} — visée déclarée ce tour (Attack/Aim) ; zone '' = non visée
 let attacksDone = 0;         // nb d'attaques (CD) résolues ce tour
 let twoD20Done = -1;         // index d'attaque pour lequel le 2D20 a déjà été lancé (anti-relance)
+let lastAttackMissed = false;// le dernier 2D20 d'attaque est un échec → pas de jet de dégâts
 // Nb d'attaques validées par le MJ (chaque action majeure Attack consommée)
 function attacksValidated(){ return (actionState?.majeure?.used || []).filter(t => t === 'Attack').length; }
 // Une attaque validée reste-t-elle à résoudre (jet) ?
@@ -258,7 +259,7 @@ function renderCombatJoueur(){
   // Réinitialiser visée / attaque / fin de tour quand le tour change
   const tk = (combatState.numRound||0) + ':' + (combatState.tourActif||0);
   if(tk !== _turnKey){
-    _turnKey = tk; myAim = null; turnEnded = false; attacksDone = 0; twoD20Done = -1;
+    _turnKey = tk; myAim = null; turnEnded = false; attacksDone = 0; twoD20Done = -1; lastAttackMissed = false;
     currentArmeInfo = null; armeSelectionnee = null; lastRollDice = [];
     actionsExecuted = {};   // actions à effet déjà exécutées ce tour
     const dc = document.getElementById('mes-des-context'); if(dc) dc.textContent = 'Déclare une attaque pour viser';
@@ -836,7 +837,20 @@ async function jLancer2D20(){
   if(echec) r+=' <span style="color:var(--rd)">ÉCHEC</span>';
   else r+='→<b style="color:var(--am)">'+dcTotal+'DC</b>';
   document.getElementById('j-dice-result').innerHTML = r;
-  twoD20Done = attacksDone; renderDiceAccess();   // verrouille le 2D20 pour cette attaque
+  twoD20Done = attacksDone;
+  lastAttackMissed = echec;
+  if(echec){
+    // Échec total → attaque ratée : aucune possibilité de dégâts, l'attaque est résolue
+    attacksDone++;
+    if(db && combatId){
+      db.collection(COMBATS_COLL).doc(combatId).update({
+        attackResult: { joueur: joueurId, nom: (joueurData?.nom||joueurId), cible: cibleNom(cibleAttaque), cibleId: cibleAttaque, miss: true, dmg: 0, ts: Date.now() }
+      }).catch(()=>{});
+    }
+    const arEl = document.getElementById('j-attack-result');
+    if(arEl){ arEl.style.display='block'; arEl.innerHTML = '<div style="font-size:9px;color:var(--rd);padding:4px 6px;border:1px solid var(--rd);background:var(--rdk)">✗ Attaque ratée — aucun dégât</div>'; }
+  }
+  renderDiceAccess();   // verrouille le 2D20 (et le CD si l'attaque est résolue/ratée)
 
   // Stocker pour Miss Fortune + reset Stacked Deck
   lastRollDice = dés.map(v=>({val:v, rerolled:false}));
@@ -1481,6 +1495,7 @@ function renderDiceAccess(){
 }
 
 function jLancerCD(){
+  if(lastAttackMissed) return;     // attaque ratée (2D20 échec) → pas de dégâts
   if(!canAttackNow()) return;      // anti-spam : pas d'attaque en attente de résolution
   attacksDone++;                   // l'attaque est résolue (réactive les dés s'il reste une attaque validée)
   renderDiceAccess();              // verrouille immédiatement si plus d'attaque dispo
