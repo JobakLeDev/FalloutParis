@@ -7,7 +7,7 @@
   <title>Fallout Paris — MJ</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css">
-  <link rel="stylesheet" href="mj.css?v=3">
+  <link rel="stylesheet" href="mj.css?v=4">
 </head>
 <body>
 
@@ -66,33 +66,61 @@
       </div>
       <div class="actions-grid">
 
-        <div class="action-group">
-          <div class="action-group-title">⚔ Combat</div>
-          <div class="action-row">
-            <input type="number" class="action-input" id="val-dmg" value="1" min="1">
-            <button class="action-btn dmg" onclick="appliquer('dmg')">Infliger dégâts</button>
+        <!-- COLONNE GAUCHE ÉTROITE : Combat / Radiation / XP / Luck -->
+        <div class="action-col mj-acts-left">
+          <div class="action-group">
+            <div class="action-group-title">⚔ Combat</div>
+            <div class="action-row">
+              <input type="number" class="action-input" id="val-dmg" value="1" min="1">
+              <button class="action-btn dmg" onclick="appliquer('dmg')">Infliger dégâts</button>
+            </div>
+            <div class="action-row">
+              <input type="number" class="action-input" id="val-heal" value="1" min="1">
+              <button class="action-btn heal" onclick="appliquer('heal')">Soigner</button>
+            </div>
+            <div class="action-row">
+              <button class="action-btn heal full" onclick="appliquer('fullheal')">✚ Soin complet</button>
+            </div>
           </div>
-          <div class="action-row">
-            <input type="number" class="action-input" id="val-heal" value="1" min="1">
-            <button class="action-btn heal" onclick="appliquer('heal')">Soigner</button>
-          </div>
-          <div class="action-row">
-            <button class="action-btn heal full" onclick="appliquer('fullheal')">✚ Soin complet</button>
-          </div>
-        </div>
 
-        <div class="action-group">
-          <div class="action-group-title">☢ Radiation</div>
-          <div class="action-row">
-            <input type="number" class="action-input" id="val-rad" value="1" min="1">
-            <button class="action-btn dmg" onclick="appliquer('rad')">Irradier</button>
+          <div class="action-group">
+            <div class="action-group-title">☢ Radiation</div>
+            <div class="action-row">
+              <input type="number" class="action-input" id="val-rad" value="1" min="1">
+              <button class="action-btn dmg" onclick="appliquer('rad')">Irradier</button>
+            </div>
+            <div class="action-row">
+              <input type="number" class="action-input" id="val-derad" value="4" min="1">
+              <button class="action-btn heal" onclick="appliquer('derad')">Soigner rad</button>
+            </div>
+            <div class="action-row">
+              <button class="action-btn full" onclick="appliquer('derad-full')">Retirer toute rad</button>
+            </div>
           </div>
-          <div class="action-row">
-            <input type="number" class="action-input" id="val-derad" value="4" min="1">
-            <button class="action-btn heal" onclick="appliquer('derad')">Soigner rad</button>
+
+          <div class="action-group">
+            <div class="action-group-title">★ Expérience</div>
+            <div class="action-row">
+              <input type="number" class="action-input" id="val-xp" value="100" min="1">
+              <button class="action-btn xp" onclick="appliquer('xp')">Donner XP</button>
+            </div>
+            <div class="action-row">
+              <button class="action-btn xp full" onclick="appliquer('xp-500')">+500 XP</button>
+            </div>
+            <div class="action-row">
+              <button class="action-btn xp full" onclick="appliquer('xp-1000')">+1000 XP</button>
+            </div>
           </div>
-          <div class="action-row">
-            <button class="action-btn full" onclick="appliquer('derad-full')">Retirer toute rad</button>
+
+          <div class="action-group">
+            <div class="action-group-title">🍀 Luck</div>
+            <div class="action-row">
+              <button class="action-btn full" onclick="appliquer('luck-init')">Init Luck (= LCK)</button>
+            </div>
+            <div class="action-row">
+              <input type="number" class="action-input" id="val-luck-rec" value="1" min="1" max="10">
+              <button class="action-btn heal" onclick="appliquer('luck-recover')">Récupérer Luck</button>
+            </div>
           </div>
         </div>
 
@@ -128,20 +156,6 @@
         </div>
 
         <div class="action-group">
-          <div class="action-group-title">★ Expérience</div>
-          <div class="action-row">
-            <input type="number" class="action-input" id="val-xp" value="100" min="1">
-            <button class="action-btn xp" onclick="appliquer('xp')">Donner XP</button>
-          </div>
-          <div class="action-row">
-            <button class="action-btn xp full" onclick="appliquer('xp-500')">+500 XP</button>
-          </div>
-          <div class="action-row">
-            <button class="action-btn xp full" onclick="appliquer('xp-1000')">+1000 XP</button>
-          </div>
-        </div>
-
-        <div class="action-group">
           <div class="action-group-title">⛺ Repos</div>
           <div class="action-row">
             <button class="action-btn heal full" onclick="appliquer('repos-court')">Repos court (+END PV)</button>
@@ -154,17 +168,6 @@
           </div>
           <div class="action-row">
             <button class="action-btn full" onclick="appliquer('reset-wounds')">Effacer blessures</button>
-          </div>
-        </div>
-
-        <div class="action-group">
-          <div class="action-group-title">🍀 Luck</div>
-          <div class="action-row">
-            <button class="action-btn full" onclick="appliquer('luck-init')">Init Luck (= LCK)</button>
-          </div>
-          <div class="action-row">
-            <input type="number" class="action-input" id="val-luck-rec" value="1" min="1" max="10">
-            <button class="action-btn heal" onclick="appliquer('luck-recover')">Récupérer Luck</button>
           </div>
         </div>
 

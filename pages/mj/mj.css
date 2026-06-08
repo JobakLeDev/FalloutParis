@@ -268,3 +268,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 body { zoom: 1.5; }
 html, body { overflow-x: hidden !important; overflow-y: auto !important; height: auto !important; }
 #app { max-width: 1400px; margin: 0 auto; }
+
+/* Colonne gauche étroite des actions rapides (Combat / Radiation / XP / Luck) */
+.actions-grid > .action-col.mj-acts-left{ flex:0 0 180px !important; min-width:180px !important; }
