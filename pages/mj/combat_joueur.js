@@ -473,7 +473,27 @@ async function missFortuneJ(diceIdx){
   if(echec) r+=` <span style="color:var(--rd)">ÉCHEC</span>`;
   else r+=`→<b style="color:var(--am)">${dcTotal}DC</b>`;
   document.getElementById('j-dice-result').innerHTML=r;
+  // Met à jour l'état de ratage : si la relance fait réussir, on débloque le jet de dégâts
+  lastAttackMissed = echec;
+  const arEl = document.getElementById('j-attack-result');
+  if(!echec && arEl){ arEl.style.display='none'; arEl.innerHTML=''; }
   renderMissFortune();
+  renderDiceAccess();
+}
+// Confirmer le ratage (échec définitif) : résout l'attaque sans dégâts
+function resolveMissJ(){
+  if(!lastAttackMissed) return;
+  attacksDone++;
+  lastAttackMissed = false;
+  if(db && combatId){
+    db.collection(COMBATS_COLL).doc(combatId).update({
+      attackResult: { joueur: joueurId, nom: (joueurData?.nom||joueurId), cible: cibleNom(cibleAttaque), cibleId: cibleAttaque, miss: true, dmg: 0, ts: Date.now() }
+    }).catch(()=>{});
+  }
+  const mf=document.getElementById('j-miss-fortune'); if(mf){ mf.style.display='none'; mf.innerHTML=''; }
+  const arEl=document.getElementById('j-attack-result');
+  if(arEl){ arEl.style.display='block'; arEl.innerHTML='<div style="font-size:9px;color:var(--rd);padding:4px 6px;border:1px solid var(--rd);background:var(--rdk)">✗ Attaque ratée — aucun dégât</div>'; }
+  renderDiceAccess();
 }
 
 // ---- LUCKY TIMING ----
@@ -840,17 +860,14 @@ async function jLancer2D20(){
   twoD20Done = attacksDone;
   lastAttackMissed = echec;
   if(echec){
-    // Échec total → attaque ratée : aucune possibilité de dégâts, l'attaque est résolue
-    attacksDone++;
-    if(db && combatId){
-      db.collection(COMBATS_COLL).doc(combatId).update({
-        attackResult: { joueur: joueurId, nom: (joueurData?.nom||joueurId), cible: cibleNom(cibleAttaque), cibleId: cibleAttaque, miss: true, dmg: 0, ts: Date.now() }
-      }).catch(()=>{});
-    }
+    // Échec : pas de dégâts pour l'instant. Le joueur peut relancer un dé (Miss Fortune) ou confirmer le ratage.
     const arEl = document.getElementById('j-attack-result');
-    if(arEl){ arEl.style.display='block'; arEl.innerHTML = '<div style="font-size:9px;color:var(--rd);padding:4px 6px;border:1px solid var(--rd);background:var(--rdk)">✗ Attaque ratée — aucun dégât</div>'; }
+    if(arEl){ arEl.style.display='block'; arEl.innerHTML =
+      '<div style="font-size:9px;color:var(--rd);padding:4px 6px;border:1px solid var(--rd);background:var(--rdk)">'
+      + '✗ Échec — relance un dé (Miss Fortune) ou '
+      + '<button onclick="resolveMissJ()" style="background:none;border:1px solid var(--rd);color:var(--rd);font-family:monospace;font-size:8px;padding:1px 6px;cursor:pointer;margin-left:4px">Confirmer le ratage</button></div>'; }
   }
-  renderDiceAccess();   // verrouille le 2D20 (et le CD si l'attaque est résolue/ratée)
+  renderDiceAccess();   // verrouille le 2D20 (et le CD tant que l'attaque est ratée)
 
   // Stocker pour Miss Fortune + reset Stacked Deck
   lastRollDice = dés.map(v=>({val:v, rerolled:false}));
