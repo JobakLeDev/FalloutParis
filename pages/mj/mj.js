@@ -185,7 +185,9 @@ function mjRadioPickTrack(){
   _mjRadio.idx = parseInt(sel.value) || 0;
   if(_mjRadio.playing) mjRadioPlayIdx(); else renderMjRadio();
 }
-function mjRadioSelect(){ const s = _mjStation(); _mjRadio.station = s; _mjRadio.idx = 0; _populateTrackSel(); if(_mjRadio.playing) mjRadioPlayIdx(); else renderMjRadio(); }
+// Changer de station = juste sélectionner (ne coupe PAS la musique en cours) ;
+// la diffusion change quand le MJ choisit une chanson ou clique « Diffuser ».
+function mjRadioSelect(){ const s = _mjStation(); _mjRadio.station = s; _mjRadio.idx = 0; _populateTrackSel(); renderMjRadio(); }
 function mjRadioToggle(){
   if(!_mjRadio.station) _mjRadio.station = _mjStation();
   if(_mjRadio.playing){
