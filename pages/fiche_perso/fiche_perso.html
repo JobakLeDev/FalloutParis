@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fallout Paris — Fiche Personnage</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../../common/style.css?v=58">
-  <link rel="stylesheet" href="fiche_perso.css?v=58">
+  <link rel="stylesheet" href="../../common/style.css?v=59">
+  <link rel="stylesheet" href="fiche_perso.css?v=59">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
@@ -27,6 +27,7 @@
       <div class="hdr-radio" id="hdr-radio" style="display:none">
         <button class="hr-btn" id="rad-mute" onclick="radioMute()" title="Couper / Reprendre">🔊</button>
         <input type="range" id="rad-vol" class="hr-vol" min="0" max="100" value="70" oninput="radioVol(this.value)" title="Volume">
+        <span class="hr-name" id="rad-name"></span>
         <span class="hr-track" id="rad-bc-track"></span>
       </div>
     </div>
@@ -378,9 +379,9 @@
   </div>
 </div>
 
-  <script src="../../common/shared.js?v=58"></script>
-  <script src="../../common/db.js?v=58"></script>
-  <script src="fiche_perso.js?v=58"></script>
-  <script src="../../common/firebase.js?v=58"></script>
+  <script src="../../common/shared.js?v=59"></script>
+  <script src="../../common/db.js?v=59"></script>
+  <script src="fiche_perso.js?v=59"></script>
+  <script src="../../common/firebase.js?v=59"></script>
 </body>
 </html>

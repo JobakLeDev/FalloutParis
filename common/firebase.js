@@ -222,8 +222,12 @@ function applyRadio(){
   } else {
     if(_radioMuted) _radioAudio.pause(); else if(_radioAudio.paused) _radioAudio.play().catch(()=>{});
   }
+  // Nom de la radio : FIXE
+  const nameEl = document.getElementById('rad-name');
+  if(nameEl) nameEl.textContent = (d.name || d.station || 'Radio');
+  // Titre / artiste : DÉFILE
   if(lbl){
-    const text = (d.name || d.station || 'Radio') + (d.trackLabel ? ' — ' + d.trackLabel : '');
+    const text = d.trackLabel || '';
     lbl.innerHTML = '<span class="mq">' + esc(text) + '</span>';
     requestAnimationFrame(() => {
       const mq = lbl.querySelector('.mq'); if(!mq) return;
