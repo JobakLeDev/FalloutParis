@@ -915,8 +915,10 @@ function initSfx(){
       if(oc.indexOf("'carte'")   >= 0) return fpSfx('map');
       return fpSfx('onglet');
     }
+    // Ouverture de la messagerie → son dédié
+    if(t.closest('#msg-icon')) return fpSfx('messagerie');
     // Tout autre élément cliquable (boutons, sous-onglets, alertes…) → 'bouton'
-    if(t.closest('button,.btn,.sel-btn,.gen-btn,.hbtn,.jbtn,.iqbtn,.idel-btn,.mf-die-btn,.hr-btn,.md,.inv-tab,.ieq-btn,.wslot-btn,#msg-icon,#loot-alert,#shop-alert,#prop-alert,#lvlup-alert'))
+    if(t.closest('button,.btn,.sel-btn,.gen-btn,.hbtn,.jbtn,.iqbtn,.idel-btn,.mf-die-btn,.hr-btn,.md,.inv-tab,.ieq-btn,.wslot-btn,#loot-alert,#shop-alert,#prop-alert,#lvlup-alert'))
       return fpSfx('bouton');
   }, true);
 }

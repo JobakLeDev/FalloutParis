@@ -234,11 +234,14 @@ function radioMute(){
 function radioVol(v){ _radioVol = parseInt(v)||0; if(_radioAudio) _radioAudio.volume = _radioVol/100; try{ localStorage.setItem('fp_radioVol', _radioVol); }catch(e){} }
 
 // Bandeau « marchand disponible » → ouvre la modale boutique itinérante ('mj')
+let _shopAlertShown = false;
 function renderShopAlert(d){
   const al = document.getElementById('shop-alert'); if(!al) return;
   const sh = d && d.shops && d.shops['mj'];
   const open = !!(sh && Array.isArray(sh.openFor) && sh.openFor.includes(JOUEUR_ID) && (sh.items||[]).length);
   al.style.display = open ? 'flex' : 'none';
+  if(open && !_shopAlertShown && typeof fpSfx === 'function') fpSfx('shopAlert');   // son à l'apparition
+  _shopAlertShown = open;
   if(!open){ const mo = document.getElementById('mo-shop'); if(mo) mo.classList.remove('on'); }
 }
 
@@ -485,6 +488,7 @@ window.DB_READY.then(() => {
 });
 
 // ---- Listener combat temps réel ----
+let _combatBannerShown = false;
 function initCombatListener() {
   let _combatUnsub = null;
   let _lastCombatId = undefined;
@@ -503,7 +507,7 @@ function initCombatListener() {
       const banner = document.getElementById('combat-banner');
       if(!banner) return;
 
-      if(!data || !data.actif) { banner.style.display = 'none'; return; }
+      if(!data || !data.actif) { banner.style.display = 'none'; _combatBannerShown = false; return; }
 
       const ordre = data.ordreInitiative || [];
       const tourActif = data.tourActif || 0;
@@ -512,6 +516,8 @@ function initCombatListener() {
       const nomActif = currentCombatant?.nom || '?';
       const tourText = isMonTour ? "C'EST TON TOUR !" : 'Tour de ' + nomActif;
 
+      if(!_combatBannerShown && typeof fpSfx === 'function') fpSfx('combatAlert');   // son à l'apparition du bandeau
+      _combatBannerShown = true;
       banner.style.display = 'flex';
       banner.onclick = () => { window.location.href = '../mj/combat_joueur.html?id=' + JOUEUR_ID + '&combat=' + combatId; };
       banner.innerHTML = '<span class="loot-ico">⚔</span>'

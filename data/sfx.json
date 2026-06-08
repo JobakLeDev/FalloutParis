@@ -2,9 +2,12 @@
   "folder": "audio/sfx",
   "volume": 0.5,
   "sounds": {
-    "onglet":  "onglets_sfx.mp3",
-    "bouton":  "bouton_sfx.mp3",
-    "general": "general_sfx.mp3",
-    "map":     "map_sfx.mp3"
+    "onglet":      "onglets_sfx.mp3",
+    "bouton":      "bouton_sfx.mp3",
+    "general":     "general_sfx.mp3",
+    "map":         "map_sfx.mp3",
+    "messagerie":  "messagerie_sfx.mp3",
+    "shopAlert":   "shop_alert_sfx.mp3",
+    "combatAlert": "combat_alert_sfx.mp3"
   }
 }
