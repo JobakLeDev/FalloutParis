@@ -49,4 +49,17 @@
   audio.addEventListener('play', upd); audio.addEventListener('pause', upd);
   const mount = () => { if(!document.getElementById('theme-toggle')) document.body.appendChild(btn); upd(); };
   if(document.body) mount(); else document.addEventListener('DOMContentLoaded', mount);
+
+  // Fondu de sortie (avant une redirection) : baisse le volume puis met en pause
+  window.fpThemeFadeOut = function(ms){
+    ms = ms || 700;
+    if(audio.paused) return;
+    const v0 = audio.volume, steps = 20, dt = Math.max(10, ms/steps);
+    let i = 0;
+    const iv = setInterval(() => {
+      i++;
+      audio.volume = Math.max(0, v0 * (1 - i/steps));
+      if(i >= steps){ clearInterval(iv); audio.pause(); audio.volume = v0; }
+    }, dt);
+  };
 })();

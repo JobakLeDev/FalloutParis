@@ -41,9 +41,11 @@ async function connexion() {
     showMsg('Accès autorisé. Chargement...', 'ok');
     // La fiche jouera le son de connexion à son chargement (drapeau) — pas ici, sinon la redirection le coupe
     try { sessionStorage.removeItem('fp_themePos'); sessionStorage.setItem('fp_playLoad','1'); } catch(e){}
+    // Fondu de sortie de la musique d'accueil avant de basculer sur la fiche
+    if(typeof window.fpThemeFadeOut === 'function') window.fpThemeFadeOut(750);
     setTimeout(() => {
       window.location.href = `/FalloutParis/pages/fiche_perso/fiche_perso.html?id=${id}`;
-    }, 800);
+    }, 850);
 
   } catch(e) {
     showLoading(false);
