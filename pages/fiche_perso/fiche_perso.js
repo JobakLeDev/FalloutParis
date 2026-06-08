@@ -916,7 +916,7 @@ function initSfx(){
       return fpSfx('onglet');
     }
     // Tout autre élément cliquable (boutons, sous-onglets, alertes…) → 'bouton'
-    if(t.closest('button,.btn,.sel-btn,.gen-btn,.hbtn,.jbtn,.iqbtn,.idel-btn,.mf-die-btn,.hr-btn,.md,.inv-tab,.ieq-btn,.wslot-btn,#loot-alert,#shop-alert,#prop-alert,#lvlup-alert'))
+    if(t.closest('button,.btn,.sel-btn,.gen-btn,.hbtn,.jbtn,.iqbtn,.idel-btn,.mf-die-btn,.hr-btn,.md,.inv-tab,.ieq-btn,.wslot-btn,#msg-icon,#loot-alert,#shop-alert,#prop-alert,#lvlup-alert'))
       return fpSfx('bouton');
   }, true);
 }
