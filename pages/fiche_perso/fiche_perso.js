@@ -895,9 +895,23 @@ function fpSfx(name){
 }
 function _sfxUpdateBtn(){ const b=document.getElementById('sfx-toggle'); if(b){ b.innerHTML = _sfx.muted ? _SFX_OFF : _SFX_ON; b.classList.toggle('off', _sfx.muted); } }
 function toggleSfx(){ _sfx.muted = !_sfx.muted; try{ localStorage.setItem('fp_sfxMuted', _sfx.muted?'1':'0'); }catch(e){} _sfxUpdateBtn(); if(!_sfx.muted) fpSfx('click'); }
+// Son de connexion : déclenché par l'accueil (drapeau sessionStorage), joué à l'arrivée sur la fiche
+function playLoadSfx(){
+  try{
+    if(sessionStorage.getItem('fp_playLoad') !== '1') return;
+    sessionStorage.removeItem('fp_playLoad');
+    if(localStorage.getItem('fp_sfxMuted') === '1') return;
+    const a = new Audio('../../audio/sfx/load_joueur_sfx.mp3'); a.volume = 0.6;
+    a.play().catch(()=>{                       // autoplay bloqué → joue au 1er geste
+      const g = () => { a.play().catch(()=>{}); document.removeEventListener('pointerdown',g); document.removeEventListener('keydown',g); };
+      document.addEventListener('pointerdown',g); document.addEventListener('keydown',g);
+    });
+  }catch(e){}
+}
 function initSfx(){
   const btn = document.createElement('button'); btn.id='sfx-toggle'; btn.title='Sons interface'; btn.onclick=toggleSfx;
   document.body.appendChild(btn); _sfxUpdateBtn();
+  playLoadSfx();
   fetch('../../data/sfx.json?ts=' + Date.now()).then(r=>r.json()).then(d=>{
     _sfx.folder = d.folder || 'audio/sfx';
     _sfx.vol = (d.volume != null) ? d.volume : 0.5;

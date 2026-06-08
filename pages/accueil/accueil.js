@@ -39,9 +39,8 @@ async function connexion() {
 
     // Pas de code défini → on laisse passer (rétrocompatibilité)
     showMsg('Accès autorisé. Chargement...', 'ok');
-    // Son de connexion (joué pendant le court délai avant redirection)
-    try { sessionStorage.removeItem('fp_themePos'); } catch(e){}   // la musique d'accueil ne reprendra pas sur la fiche
-    try { const a = new Audio('../../audio/sfx/load_joueur_sfx.mp3'); a.volume = 0.6; a.play().catch(()=>{}); } catch(e){}
+    // La fiche jouera le son de connexion à son chargement (drapeau) — pas ici, sinon la redirection le coupe
+    try { sessionStorage.removeItem('fp_themePos'); sessionStorage.setItem('fp_playLoad','1'); } catch(e){}
     setTimeout(() => {
       window.location.href = `/FalloutParis/pages/fiche_perso/fiche_perso.html?id=${id}`;
     }, 800);
