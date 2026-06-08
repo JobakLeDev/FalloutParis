@@ -231,3 +231,11 @@ img.land-icon-img{
 .poi-pick{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:#060d06;border:1px solid var(--b2);cursor:pointer;font-size:15px;line-height:1;padding:0;transition:all .1s;}
 .poi-pick:hover{border-color:var(--g);background:var(--gk);}
 .poi-pick.on{border-color:var(--am);background:#2a2410;box-shadow:0 0 6px rgba(232,168,32,.5);}
+
+/* La PAGE carte est zoomée (common/zoom.css), mais PAS l'objet carte lui-même :
+   on contre-zoome la map Leaflet (1/1.5) pour qu'elle reste à l'échelle normale. */
+body:not(.embed) #map,
+body:not(.embed) #map-metro,
+body:not(.embed) #map-lieux{ zoom: 0.6667; }
+/* Page carte : on garde le zoom de l'UI mais pas le cap de largeur (la map prend toute la place) */
+body:not(.embed){ max-width:none !important; }
