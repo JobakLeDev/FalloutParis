@@ -58,42 +58,4 @@ function showMsg(txt, type){
 function showLoading(show){
   document.getElementById('loading').style.display = show ? 'block' : 'none';
 }
-
-// ============================================================
-// THÈME PRINCIPAL — musique d'ambiance de l'écran d'accueil
-// (boucle ; repli si l'autoplay est bloqué → démarre au 1er clic/touche)
-// ============================================================
-(function(){
-  const THEME_VOL = 0.4;
-  const muted = localStorage.getItem('fp_themeMuted') === '1';
-  const audio = new Audio('../../audio/main_theme.mp3');
-  audio.loop = true; audio.volume = THEME_VOL; audio.preload = 'auto';
-
-  function tryPlay(){ if(!audio.paused) return; audio.play().catch(()=>{}); }
-  function startOnGesture(){
-    tryPlay();
-    ['pointerdown','keydown','touchstart'].forEach(ev => window.removeEventListener(ev, startOnGesture));
-  }
-  if(!muted){
-    tryPlay();   // tente l'autoplay
-    // repli : si bloqué par le navigateur, démarre à la 1re interaction
-    ['pointerdown','keydown','touchstart'].forEach(ev => window.addEventListener(ev, startOnGesture, { once:false }));
-  }
-
-  // Bouton flottant couper / reprendre (bas-gauche)
-  const SPK_ON  = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 9v6h4l5 4V5L8 9H4z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M15.5 9a4 4 0 0 1 0 6"/></svg>';
-  const SPK_OFF = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 9v6h4l5 4V5L8 9H4z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M16 9.5l5 5M21 9.5l-5 5"/></svg>';
-  const btn = document.createElement('button');
-  btn.id = 'theme-toggle';
-  btn.title = 'Musique d\'accueil';
-  btn.style.cssText = 'position:fixed;left:12px;bottom:12px;width:34px;height:34px;background:var(--p2,#162016);border:1px solid var(--b2,#3a5c3a);color:var(--g,#5dbe5d);cursor:pointer;z-index:50;display:flex;align-items:center;justify-content:center;padding:6px;border-radius:3px;';
-  function upd(){ btn.innerHTML = audio.paused ? SPK_OFF : SPK_ON; }
-  btn.onclick = () => {
-    if(audio.paused){ audio.play().catch(()=>{}); localStorage.setItem('fp_themeMuted','0'); }
-    else { audio.pause(); localStorage.setItem('fp_themeMuted','1'); }
-    upd();
-  };
-  audio.addEventListener('play', upd); audio.addEventListener('pause', upd);
-  document.addEventListener('DOMContentLoaded', () => { document.body.appendChild(btn); upd(); });
-  if(document.body){ document.body.appendChild(btn); upd(); }
-})();
+// (Musique d'ambiance : gérée par common/theme.js, partagée et persistante entre pages.)
