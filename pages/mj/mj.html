@@ -7,7 +7,7 @@
   <title>Fallout Paris — MJ</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css">
-  <link rel="stylesheet" href="mj.css?v=6">
+  <link rel="stylesheet" href="mj.css?v=7">
 </head>
 <body>
 
@@ -41,22 +41,6 @@
       <a class="hbtn" href="../../index.html">← Accueil</a>
     </div>
   </div>
-
-  <!-- COLONNE GAUCHE -->
-  <div class="col-left">
-
-    <!-- SÉLECTION -->
-    <div class="sel-bar">
-      <span class="sel-lbl">SÉLECTION :</span>
-      <button class="sel-btn" onclick="selTous()">Tous</button>
-      <button class="sel-btn" onclick="selAucun()">Aucun</button>
-      <span class="sel-count">Sélectionnés : <span id="sel-count">0</span></span>
-    </div>
-
-    <!-- JOUEURS -->
-    <div class="joueurs-grid" id="joueurs-grid">
-      <div style="font-size:9px;color:var(--td);padding:20px">Chargement...</div>
-    </div>
 
     <!-- ACTIONS -->
     <div class="actions-pnl" id="actions-pnl">
@@ -184,6 +168,22 @@
 
       </div>
     </div>
+  <!-- COLONNE GAUCHE -->
+  <div class="col-left">
+
+    <!-- SÉLECTION -->
+    <div class="sel-bar">
+      <span class="sel-lbl">SÉLECTION :</span>
+      <button class="sel-btn" onclick="selTous()">Tous</button>
+      <button class="sel-btn" onclick="selAucun()">Aucun</button>
+      <span class="sel-count">Sélectionnés : <span id="sel-count">0</span></span>
+    </div>
+
+    <!-- JOUEURS -->
+    <div class="joueurs-grid" id="joueurs-grid">
+      <div style="font-size:9px;color:var(--td);padding:20px">Chargement...</div>
+    </div>
+
 
     <!-- 2 colonnes : (Rencontres → Combats actifs) · (Butin → Boutique) -->
     <div class="lower-row">
