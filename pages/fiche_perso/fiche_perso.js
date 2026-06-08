@@ -907,12 +907,12 @@ function initSfx(){
   document.addEventListener('click', e => {
     const t = e.target; if(!t || !t.closest) return;
     if(t.closest('#sfx-toggle')) return;
-    // Onglets principaux : CARTE et INVENTAIRE ont un son dédié ; les autres → 'onglet'
+    // Onglets principaux : GÉNÉRAL et CARTE ont un son dédié ; les autres → 'onglet'
     const tab = t.closest('.tab');
     if(tab){
       const oc = tab.getAttribute('onclick') || '';
-      if(oc.indexOf("'carte'") >= 0)      return fpSfx('map');
-      if(oc.indexOf("'inventaire'") >= 0) return fpSfx('inventaire');
+      if(oc.indexOf("'general'") >= 0) return fpSfx('general');
+      if(oc.indexOf("'carte'")   >= 0) return fpSfx('map');
       return fpSfx('onglet');
     }
     // Tout autre élément cliquable (boutons, sous-onglets, alertes…) → 'bouton'
