@@ -345,7 +345,8 @@ function renderFicheGroup(d){
   if(!p){ el.style.display = 'none'; el.innerHTML = ''; return; }
   const others = (p.players || []).filter(id => id !== JOUEUR_ID).map(id => esc(_allJoueurs[id]?.nom || id));
   el.style.display = '';
-  el.innerHTML = `👥 <b>${esc(p.name || 'Groupe')}</b> — ` + (others.length ? others.join(', ') : 'toi seul pour l\'instant');
+  el.innerHTML = `👥 <b>${esc(p.name || 'Groupe')}</b> — ` + (others.length ? others.join(', ') : 'toi seul pour l\'instant')
+    + ` <button onclick="openEchange()" style="margin-left:8px;background:none;border:1px solid var(--b2);color:var(--g);font-family:'Share Tech Mono',monospace;font-size:9px;padding:2px 7px;cursor:pointer;letter-spacing:1px" title="Pool d'échange du groupe">🔄 Échange</button>`;
 }
 
 // ============================================================

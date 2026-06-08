@@ -707,6 +707,17 @@ function openLoot(){
   document.getElementById('mo-loot').classList.add('on');
 }
 
+// Échange de groupe : pool partagé entre membres du groupe
+function openEchange(){
+  const f=document.getElementById('echange-frame');
+  const id=new URLSearchParams(location.search).get('id')||'';
+  if(f && !f.src) f.src='../echange/echange.html?id='+encodeURIComponent(id)+'&embed=1';
+  else if(f && f.contentWindow) f.contentWindow.postMessage('echange-refresh','*');
+  document.getElementById('mo-echange').classList.add('on');
+}
+// La page d'échange demande la fermeture (créateur a fermé / membre a quitté)
+window.addEventListener('message', e=>{ if(e.data==='echange-close') closeMo('mo-echange'); });
+
 // ============================================================
 // COMPAGNONS — PNJ alliés (créés par le MJ, schéma enemies.json)
 // ============================================================
