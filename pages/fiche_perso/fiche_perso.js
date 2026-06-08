@@ -907,10 +907,17 @@ function initSfx(){
   document.addEventListener('click', e => {
     const t = e.target; if(!t || !t.closest) return;
     if(t.closest('#sfx-toggle')) return;
-    if(t.closest('#loot-alert,#shop-alert,#prop-alert,#lvlup-alert')) return fpSfx('open');
-    if(t.closest('.tab,.inv-tab')) return fpSfx('tab');
-    if(t.closest('.ieq-btn')) return fpSfx('equip');
-    if(t.closest('button,.btn,.sel-btn,.gen-btn,.hbtn,.jbtn,.iqbtn,.idel-btn,.mf-die-btn,.hr-btn,.md')) return fpSfx('click');
+    // Onglets principaux : CARTE et INVENTAIRE ont un son dédié ; les autres → 'onglet'
+    const tab = t.closest('.tab');
+    if(tab){
+      const oc = tab.getAttribute('onclick') || '';
+      if(oc.indexOf("'carte'") >= 0)      return fpSfx('map');
+      if(oc.indexOf("'inventaire'") >= 0) return fpSfx('inventaire');
+      return fpSfx('onglet');
+    }
+    // Tout autre élément cliquable (boutons, sous-onglets, alertes…) → 'bouton'
+    if(t.closest('button,.btn,.sel-btn,.gen-btn,.hbtn,.jbtn,.iqbtn,.idel-btn,.mf-die-btn,.hr-btn,.md,.inv-tab,.ieq-btn,.wslot-btn,#loot-alert,#shop-alert,#prop-alert,#lvlup-alert'))
+      return fpSfx('bouton');
   }, true);
 }
 initSfx();
