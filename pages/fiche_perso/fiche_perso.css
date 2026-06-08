@@ -297,7 +297,7 @@ html, body { height: 100%; overflow: hidden; }
 
 /* Réduction du bloc "Armes équipées" (GÉNÉRAL) */
 .weap-toggle{ cursor:pointer; user-select:none; }
-.weap-toggle #weap-chev{ font-size:0.7em; color:var(--td); }
+.weap-toggle #weap-chev{ font-size:1.3em; color:var(--g); vertical-align:middle; margin-left:2px; }
 #pnl-gen-weap.collapsed #gen-weap{ display:none; }
 
 /* Slots d'armes équipées (GÉNÉRAL) : 2 armes + 1 explosif */

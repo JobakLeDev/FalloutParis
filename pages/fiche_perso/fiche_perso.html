@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fallout Paris — Fiche Personnage</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../../common/style.css?v=70">
-  <link rel="stylesheet" href="fiche_perso.css?v=70">
+  <link rel="stylesheet" href="../../common/style.css?v=71">
+  <link rel="stylesheet" href="fiche_perso.css?v=71">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
@@ -116,15 +116,15 @@
           </div>
         </div>
 
-        <!-- Armes équipées + Survie -->
+        <!-- Survie (haut) + Armes équipées (bas) -->
         <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
-          <div id="pnl-gen-weap">
-            <div class="mp-sub weap-toggle" onclick="toggleWeapCollapse()">Armes équipées <span id="weap-chev">▾</span></div>
-            <div id="gen-weap"></div>
-          </div>
           <div id="pnl-survie">
             <div class="mp-sub">Survie</div>
             <div id="survie-content"></div>
+          </div>
+          <div id="pnl-gen-weap">
+            <div class="mp-sub weap-toggle" onclick="toggleWeapCollapse()">Armes équipées <span id="weap-chev">▾</span></div>
+            <div id="gen-weap"></div>
           </div>
         </div>
 
@@ -382,10 +382,10 @@
   </div>
 </div>
 
-  <script src="../../common/shared.js?v=70"></script>
-  <script src="../../common/db.js?v=70"></script>
-  <script src="../../common/survie.js?v=70"></script>
-  <script src="fiche_perso.js?v=70"></script>
-  <script src="../../common/firebase.js?v=70"></script>
+  <script src="../../common/shared.js?v=71"></script>
+  <script src="../../common/db.js?v=71"></script>
+  <script src="../../common/survie.js?v=71"></script>
+  <script src="fiche_perso.js?v=71"></script>
+  <script src="../../common/firebase.js?v=71"></script>
 </body>
 </html>
