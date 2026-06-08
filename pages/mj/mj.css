@@ -37,7 +37,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .sel-count span{color:var(--am);font-family:'Oswald',sans-serif;font-size:14px;}
 
 /* JOUEURS GRID */
-.joueurs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;}
+.joueurs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;}
 .joueur-card{background:var(--p2);border:2px solid var(--b);padding:10px;cursor:pointer;transition:all 0.15s;position:relative;user-select:none;}
 .joueur-card:hover{border-color:var(--b2);}
 .joueur-card.selected{border-color:var(--g);background:#0d1f0d;}
