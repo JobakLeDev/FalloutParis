@@ -312,3 +312,11 @@ html, body { height: 100%; overflow: hidden; }
   font-size:0.78rem; padding:0.5rem 0.6rem; cursor:pointer; }
 .wslot-btn:hover{ border-color:var(--g); background:var(--gk); color:var(--tb); }
 .wslot-btn .wslot-stat{ color:var(--am); font-size:0.66rem; }
+
+/* ============================================================
+   AGRANDISSEMENT GLOBAL (écran 27") — texte/interface ×2.
+   On réactive le défilement de la page (le zoom fait déborder
+   le contenu prévu pour un seul écran).
+   ============================================================ */
+body { zoom: 2; }
+html, body { overflow: auto !important; height: auto !important; }
