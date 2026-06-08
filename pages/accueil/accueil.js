@@ -39,13 +39,22 @@ async function connexion() {
 
     // Pas de code défini → on laisse passer (rétrocompatibilité)
     showMsg('Accès autorisé. Chargement...', 'ok');
-    // La fiche jouera le son de connexion à son chargement (drapeau) — pas ici, sinon la redirection le coupe
-    try { sessionStorage.removeItem('fp_themePos'); sessionStorage.setItem('fp_playLoad','1'); } catch(e){}
-    // Fondu de sortie de la musique d'accueil avant de basculer sur la fiche
-    if(typeof window.fpThemeFadeOut === 'function') window.fpThemeFadeOut(750);
-    setTimeout(() => {
-      window.location.href = `/FalloutParis/pages/fiche_perso/fiche_perso.html?id=${id}`;
-    }, 850);
+    try { sessionStorage.removeItem('fp_themePos'); } catch(e){}   // la musique d'accueil ne reprendra pas sur la fiche
+    // Fondu de sortie de la musique d'accueil
+    if(typeof window.fpThemeFadeOut === 'function') window.fpThemeFadeOut(600);
+    // Son de connexion joué ICI (le clic = geste utilisateur → autoplay autorisé) ;
+    // on redirige quand le son est terminé pour ne pas le couper (plafond de sécurité).
+    let navigated = false;
+    const go = () => { if(navigated) return; navigated = true; window.location.href = `/FalloutParis/pages/fiche_perso/fiche_perso.html?id=${id}`; };
+    let played = false;
+    try {
+      const a = new Audio('../../audio/sfx/load_joueur_sfx.mp3'); a.volume = 0.6;
+      a.addEventListener('ended', go);
+      a.play().then(() => { played = true; }).catch(() => {});
+    } catch(e){}
+    // Plafond : si le son ne démarre pas / n'a pas d'event 'ended', on part quand même
+    setTimeout(() => { if(!played) go(); }, 900);
+    setTimeout(go, 4000);
 
   } catch(e) {
     showLoading(false);

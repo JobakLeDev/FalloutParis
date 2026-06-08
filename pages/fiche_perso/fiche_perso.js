@@ -911,7 +911,7 @@ function playLoadSfx(){
 function initSfx(){
   const btn = document.createElement('button'); btn.id='sfx-toggle'; btn.title='Sons interface'; btn.onclick=toggleSfx;
   document.body.appendChild(btn); _sfxUpdateBtn();
-  playLoadSfx();
+  playLoadSfx();   // repli : si le son de connexion n'a pas pu jouer sur l'accueil (drapeau)
   fetch('../../data/sfx.json?ts=' + Date.now()).then(r=>r.json()).then(d=>{
     _sfx.folder = d.folder || 'audio/sfx';
     _sfx.vol = (d.volume != null) ? d.volume : 0.5;
