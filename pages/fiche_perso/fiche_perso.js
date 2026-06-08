@@ -792,12 +792,7 @@ function rCompanions(){
         <span class="cmp-meta">${c.type||''}${c.level?' · Niv. '+c.level:''}</span>
       </div>
       <div class="cmp-hpbar"><div class="cmp-hpfill" style="width:${pct}%"></div></div>
-      <div class="cmp-hprow">PV
-        <button onclick="chCompHP(${i},-1)">−</button>
-        <b>${cur}/${max}</b>
-        <button onclick="chCompHP(${i},1)">+</button>
-        <button onclick="compMaxHP(${i})" title="PV max" style="margin-left:auto">↺</button>
-      </div>
+      <div class="cmp-hprow">PV <b>${cur}/${max}</b></div>
       <div class="cmp-stats">${attrs}<span class="cmp-at">DÉF <b>${c.defense??1}</b></span><span class="cmp-at">INIT <b>${init}</b></span></div>
       <div class="cmp-dr">RD : ${drTxt}</div>
       ${atks?`<div class="cmp-sec">${atks}</div>`:''}
