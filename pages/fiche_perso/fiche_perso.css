@@ -319,4 +319,5 @@ html, body { height: 100%; overflow: hidden; }
    le contenu prévu pour un seul écran).
    ============================================================ */
 body { zoom: 1.5; }
-html, body { overflow: auto !important; height: auto !important; }
+html, body { overflow-x: hidden !important; overflow-y: auto !important; height: auto !important; }
+.pip { max-width: 1400px; margin: 0 auto; }
