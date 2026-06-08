@@ -1,0 +1,11 @@
+/* ============================================================
+   Agrandissement global commun : zoom 150% + page recentrée (max 1400px).
+   Scopé :not(.embed) → ne s'applique PAS aux pages affichées en iframe
+   dans la fiche (déjà mises à l'échelle par le zoom du parent) pour
+   éviter un double zoom.
+   À inclure APRÈS le CSS de la page :
+     <link rel="stylesheet" href="../../common/zoom.css?v=1">
+   ============================================================ */
+html{ overflow-x: hidden; background: var(--bg, #0c150c); }
+body{ overflow-x: hidden; }
+body:not(.embed){ zoom: 1.5; max-width: 1400px; margin: 0 auto; }
