@@ -320,4 +320,4 @@ html, body { height: 100%; overflow: hidden; }
    ============================================================ */
 body { zoom: 1.5; }
 html, body { overflow-x: hidden !important; overflow-y: auto !important; height: auto !important; }
-.pip { max-width: 1400px; margin: 0 auto; }
+.pip { max-width: 1400px; margin: 0 auto; height: auto; }
