@@ -338,6 +338,10 @@
         <span class="ctrl-lbl">Station</span>
         <select class="ctrl-sel" id="mj-radio-sel" onchange="mjRadioSelect()"></select>
       </div>
+      <div class="ctrl-row">
+        <span class="ctrl-lbl">Chanson</span>
+        <select class="ctrl-sel" id="mj-radio-track" onchange="mjRadioPickTrack()"></select>
+      </div>
       <div id="mj-radio-now" style="font-size:9px;color:var(--td);margin:5px 0">Aucune diffusion.</div>
       <div style="display:flex;gap:6px">
         <button class="gen-btn" onclick="mjRadioPrev()" style="flex:none">⏮</button>
@@ -398,6 +402,6 @@
   <script src="../../common/db.js"></script>
   <script src="mj_shared.js"></script>
   <script src="zones.js"></script>
-  <script src="mj.js?v=2"></script>
+  <script src="mj.js?v=3"></script>
 </body>
 </html>

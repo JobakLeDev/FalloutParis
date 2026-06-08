@@ -169,7 +169,23 @@ function mjRadioPlayIdx(){
   renderMjRadio();
   logAction('Radio : « '+(s.name||s.id)+' » diffusée');
 }
-function mjRadioSelect(){ const s = _mjStation(); _mjRadio.station = s; _mjRadio.idx = 0; if(_mjRadio.playing) mjRadioPlayIdx(); else renderMjRadio(); }
+function _radioEsc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function _radioTrackLabel(t){ return String(t).replace(/^.*\//,'').replace(/\.(mp3|ogg|m4a|wav)$/i,''); }
+// Peuple le sélecteur de chanson avec les pistes de la station courante (sélection = piste courante)
+function _populateTrackSel(){
+  const sel = document.getElementById('mj-radio-track'); if(!sel) return;
+  const tracks = (_mjRadio.station && _mjRadio.station.tracks) || [];
+  if(!tracks.length){ sel.innerHTML = '<option value="">— aucune piste —</option>'; return; }
+  const cur = _mjRadio.idx % tracks.length;
+  sel.innerHTML = tracks.map((t,i) => `<option value="${i}"${i===cur?' selected':''}>${_radioEsc(_radioTrackLabel(t))}</option>`).join('');
+}
+// Sélection d'une chanson précise → diffuse si en cours, sinon prépare
+function mjRadioPickTrack(){
+  const sel = document.getElementById('mj-radio-track'); if(!sel || sel.value === '') return;
+  _mjRadio.idx = parseInt(sel.value) || 0;
+  if(_mjRadio.playing) mjRadioPlayIdx(); else renderMjRadio();
+}
+function mjRadioSelect(){ const s = _mjStation(); _mjRadio.station = s; _mjRadio.idx = 0; _populateTrackSel(); if(_mjRadio.playing) mjRadioPlayIdx(); else renderMjRadio(); }
 function mjRadioToggle(){
   if(!_mjRadio.station) _mjRadio.station = _mjStation();
   if(_mjRadio.playing){
@@ -200,6 +216,7 @@ function renderMjRadio(){
   if(!s){ el.textContent = 'Aucune station.'; return; }
   const t = (s.tracks||[])[_mjRadio.idx % ((s.tracks||[]).length||1)] || '—';
   el.textContent = (_mjRadio.playing ? '📡 ' : '⏸ ') + (s.name||s.id) + ' — ' + String(t).replace(/^.*\//,'');
+  _populateTrackSel();   // garde le sélecteur de chanson synchronisé avec la piste courante
 }
 
 // ============================================================
