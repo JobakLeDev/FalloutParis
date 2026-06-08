@@ -271,3 +271,18 @@ html, body { overflow-x: hidden !important; overflow-y: auto !important; height:
 
 /* Colonne gauche étroite des actions rapides (Combat / Radiation / XP / Luck) */
 .actions-grid > .action-col.mj-acts-left{ flex:0 0 180px !important; min-width:180px !important; }
+
+/* ============================================================
+   ACTIONS RAPIDES EN BANDEAU LATÉRAL GAUCHE (à côté des joueurs)
+   .col-left devient une grille : [actions 220px | reste 1fr]
+   (sans changer l'ordre du HTML — placement par grid)
+   ============================================================ */
+.col-left{ display:grid; grid-template-columns:220px minmax(0,1fr); grid-auto-rows:min-content; gap:12px; align-items:start; }
+.col-left > #actions-pnl{ grid-column:1; grid-row:1 / span 3; align-self:start; }
+.col-left > .sel-bar    { grid-column:2; grid-row:1; }
+.col-left > .joueurs-grid{ grid-column:2; grid-row:2; }
+.col-left > .lower-row  { grid-column:2; grid-row:3; }
+/* Le panneau Actions s'empile verticalement dans le bandeau étroit */
+#actions-pnl .actions-grid{ flex-direction:column; flex-wrap:nowrap; }
+#actions-pnl .actions-grid > *{ flex:0 0 auto !important; width:100%; min-width:0 !important; }
+.actions-grid > .action-col.mj-acts-left{ flex:0 0 auto !important; min-width:0 !important; width:100%; }
