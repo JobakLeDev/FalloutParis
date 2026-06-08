@@ -297,7 +297,7 @@ function rLocsGen(){
     const names=armorNamesFor(k);
     el.innerHTML=`<div class="loc-card-cross${char.wounds[k]?' hurt':''}${center?' center-loc':''}">
       <span class="lcc-name">${loc.l}</span>
-      <span class="lcc-arm">${names.length?names.join(' + '):'—'}</span>
+      <span class="lcc-arm">${names.length?names.join('<br>'):'—'}</span>
       <div class="lcc-rds">
         <span class="lcc-rd">Ph:<b class="${rd.phys>0?'nz':''}">${rd.phys}</b></span>
         <span class="lcc-rd">En:<b class="${rd.en>0?'nz':''}">${rd.en}</b></span>
