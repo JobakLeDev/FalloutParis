@@ -681,6 +681,17 @@ function selAucun(){ selected.clear(); renderJoueurs(); }
 // ============================================================
 async function appliquer(action){
   if(!selected.size){ showMsg('Aucun joueur sélectionné !', true); return; }
+  // Repos : fait avancer l'horloge des groupes des joueurs sélectionnés (durée selon le type)
+  const REPOS_MIN = { 'repos-court': 60, 'repos-long': 480, 'bien-repos': 480 };
+  if(REPOS_MIN[action]){
+    const delta = REPOS_MIN[action];
+    const vues = new Set();
+    [...selected].forEach(id => {
+      const p = (tempsData.parties||[]).find(x => (x.players||[]).includes(id));
+      if(p && !vues.has(p.id)){ vues.add(p.id); p.minutes = (p.minutes||0) + delta; }
+    });
+    if(vues.size){ saveTemps(); logAction(`⏱ Repos : +${Math.round(delta/60)}h (${vues.size} groupe(s))`); }
+  }
   const promises = [...selected].map(async id => {
     const d = joueurs[id]; if(!d) return;
     const hpMax = getHpMax(d);
