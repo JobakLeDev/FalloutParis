@@ -449,6 +449,24 @@ function togglePanel(id){
 }
 function initPanelCollapse(){ PANEL_IDS.forEach(applyPanelState); }
 window.addEventListener('DOMContentLoaded', initPanelCollapse);
+
+// Repli individuel de chaque bloc d'action (bandeau gauche) — clic sur le titre, état mémorisé
+function initActGroupCollapse(){
+  const pnl = document.getElementById('actions-pnl'); if(!pnl) return;
+  let saved = {}; try{ saved = JSON.parse(localStorage.getItem('fp_actGroups')||'{}'); }catch(e){}
+  pnl.querySelectorAll('.action-group').forEach(g => {
+    const t = g.querySelector('.action-group-title'); if(!t) return;
+    if(saved[t.textContent.trim()]) g.classList.add('collapsed');
+  });
+  pnl.addEventListener('click', e => {
+    const t = e.target.closest('.action-group-title'); if(!t || !pnl.contains(t)) return;
+    const g = t.closest('.action-group'); if(!g) return;
+    g.classList.toggle('collapsed');
+    saved[t.textContent.trim()] = g.classList.contains('collapsed');
+    try{ localStorage.setItem('fp_actGroups', JSON.stringify(saved)); }catch(e){}
+  });
+}
+window.addEventListener('DOMContentLoaded', initActGroupCollapse);
 function uidParty(){ return 'p' + Date.now().toString(36) + Math.floor(Math.random()*99); }
 function saveTemps(){ if(db) db.collection('temps').doc('data').set(tempsData).catch(e=>console.error('saveTemps',e)); }
 function findParty(id){ return (tempsData.parties||[]).find(p => p.id === id); }

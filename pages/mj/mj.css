@@ -284,3 +284,10 @@ html, body { overflow-x: hidden !important; overflow-y: auto !important; height:
 #actions-pnl .actions-grid{ flex-direction:column; flex-wrap:nowrap; }
 #actions-pnl .actions-grid > *{ flex:0 0 auto !important; width:100%; min-width:0 !important; }
 .actions-grid > .action-col.mj-acts-left{ flex:0 0 auto !important; min-width:0 !important; width:100%; }
+
+/* Repli individuel de chaque bloc d'action (bandeau gauche) */
+#actions-pnl .action-group-title{ cursor:pointer; user-select:none; display:flex; justify-content:space-between; align-items:center; gap:6px; }
+#actions-pnl .action-group-title::after{ content:'▾'; color:var(--g); font-size:1.3em; line-height:1; }
+#actions-pnl .action-group.collapsed .action-group-title::after{ content:'▸'; }
+#actions-pnl .action-group.collapsed .action-group-title{ margin-bottom:0; }
+#actions-pnl .action-group.collapsed > :not(.action-group-title){ display:none; }
