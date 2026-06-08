@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fallout Paris — Fiche Personnage</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../../common/style.css?v=59">
-  <link rel="stylesheet" href="fiche_perso.css?v=59">
+  <link rel="stylesheet" href="../../common/style.css?v=60">
+  <link rel="stylesheet" href="fiche_perso.css?v=60">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
@@ -125,6 +125,10 @@
       <div class="pnl">
         <div class="ptitle">Statuts actifs</div>
         <div id="statuts" style="font-size:8px;color:var(--td);line-height:1.8">—</div>
+      </div>
+      <div class="pnl" id="pnl-survie">
+        <div class="ptitle">Survie</div>
+        <div id="survie-content"></div>
       </div>
     </div>
 
@@ -379,9 +383,10 @@
   </div>
 </div>
 
-  <script src="../../common/shared.js?v=59"></script>
-  <script src="../../common/db.js?v=59"></script>
-  <script src="fiche_perso.js?v=59"></script>
-  <script src="../../common/firebase.js?v=59"></script>
+  <script src="../../common/shared.js?v=60"></script>
+  <script src="../../common/db.js?v=60"></script>
+  <script src="../../common/survie.js?v=60"></script>
+  <script src="fiche_perso.js?v=60"></script>
+  <script src="../../common/firebase.js?v=60"></script>
 </body>
 </html>

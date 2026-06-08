@@ -59,6 +59,7 @@ function appliquerDonnees(data) {
   if (data.wounds       !== undefined) char.wounds       = data.wounds;
   if (data.luck_points  !== undefined) char.luck_points  = data.luck_points;
   if (data.caps         !== undefined) char.caps         = data.caps;
+  if (data.survie       !== undefined) char.survie        = data.survie || {};
   if (data.companions   !== undefined) char.companions   = data.companions;
 }
 
@@ -97,6 +98,7 @@ function saveToFirebase() {
         luck_points:  char.luck_points,
         caps:         char.caps,
         companions:   char.companions,
+        survie:       char.survie,
         lastUpdate:   Date.now(),
       }, { merge: true });
       setStatus('✓ Synchronisé', '#5dbe5d');
@@ -349,8 +351,10 @@ let _tempsData = null;
 function renderFicheClock(d){
   _tempsData = d;
   const el = document.getElementById('fiche-clock');
-  if(el && typeof partyMinutesFor === 'function') el.textContent = fmtDateTime(partyMinutesFor(d, JOUEUR_ID));
+  if(typeof partyMinutesFor === 'function') window._fpCampaignMin = partyMinutesFor(d, JOUEUR_ID);
+  if(el && window._fpCampaignMin != null) el.textContent = fmtDateTime(window._fpCampaignMin);
   renderFicheGroup(d);
+  if(typeof rSurvie === 'function') rSurvie();   // recalcule faim/soif/sommeil à chaque avance d'horloge
 }
 // Affiche le groupe (party) du joueur + ses coéquipiers
 function renderFicheGroup(d){

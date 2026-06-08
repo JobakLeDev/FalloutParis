@@ -16,6 +16,7 @@ const char = {
   luck_points:0,
   caps:0,          // capsules (argent)
   companions:[],   // PNJ alliés (schéma enemies.json) — créés par le MJ
+  survie:{},       // {eat,drink,sleep,adj} en minutes de campagne (faim/soif/sommeil)
 };
 
 // ============================================================
@@ -149,14 +150,66 @@ function utiliserItem(i){
   if(db.rad&&typeof db.rad==='number'&&db.rad<0) char.rad=Math.max(0,char.rad+db.rad);
   if(it.name==='RadAway') char.rad=Math.max(0,char.rad-4);
   if(it.name==='RadAway Diluted') char.rad=Math.max(0,char.rad-2);
+  // Survie : manger/boire remet le compteur à zéro (Rassasié / Désaltéré)
+  if(window._fpCampaignMin!=null){ char.survie=char.survie||{};
+    if(it.type==='FOOD') char.survie.eat=window._fpCampaignMin;
+    else if(it.type==='DRINK') char.survie.drink=window._fpCampaignMin;
+  }
   it.qty--;
   if(it.qty<=0)char.inventory.splice(i,1);
   rAll();
 }
 
 
-function rAll(){rSpecial();rCaps();rGenWeap();rHP();rMeta();rStatus();rWeapEq();rAmmo();rPerkRD();rLocs();rLocsGen();rInventory();rSkills();rPerks();rPerkEff();rCharge();rLevelUp();rCompanions();}
+function rAll(){rSpecial();rCaps();rGenWeap();rHP();rMeta();rStatus();rWeapEq();rAmmo();rPerkRD();rLocs();rLocsGen();rInventory();rSkills();rPerks();rPerkEff();rCharge();rLevelUp();rCompanions();rSurvie();}
 function rCaps(){const el=document.getElementById('caps-val');if(el)el.textContent=(char.caps||0).toLocaleString('fr-FR');}
+
+// ---- SURVIE : faim / soif / sommeil + Fatigue (lié à l'horloge) ----
+function _survBar(idx,max,danger){
+  let segs='';
+  for(let i=0;i<max;i++){ const on=i<idx; const col=danger?'var(--rd)':(idx>=max-1?'var(--rd)':idx>=max-2?'var(--am)':'var(--g)');
+    segs+=`<span style="flex:1;height:5px;background:${on?col:'#0e160e'};border:1px solid var(--b)"></span>`; }
+  return `<div style="display:flex;gap:2px;margin:2px 0">${segs}</div>`;
+}
+function rSurvie(){
+  const el=document.getElementById('survie-content'); if(!el||typeof SURVIE==='undefined') return;
+  const now=window._fpCampaignMin;
+  // Initialisation (perso vierge) : on démarre rassasié/désaltéré/reposé
+  char.survie=char.survie||{};
+  if(now!=null){ ['eat','drink','sleep'].forEach(k=>{ if(char.survie[k]==null) char.survie[k]=now; }); }
+  const s=SURVIE.compute(char.survie, now!=null?now:0);
+  const row=(ico,lbl,o,max)=>`<div style="margin-bottom:4px">
+      <div style="display:flex;justify-content:space-between;font-size:8px"><span>${ico} ${lbl}</span><span style="color:${o.danger?'var(--rd)':'var(--td)'}">${o.label}</span></div>
+      ${_survBar(o.idx,max,o.danger)}</div>`;
+  let h=row('🍖','Faim',s.faim,s.maxIdx.faim)+row('🥤','Soif',s.soif,s.maxIdx.soif)+row('😴','Sommeil',s.sommeil,s.maxIdx.sommeil);
+  h+=`<div style="border-top:1px solid var(--b);margin-top:3px;padding-top:3px;font-size:8px">`
+   + `Fatigue : <b style="color:${s.fatigue>0?'var(--rd)':'var(--g)'};font-family:Oswald,sans-serif;font-size:12px">${s.fatigue}</b>`
+   + (s.fatigue>0?` <span style="color:var(--td)">(−${s.apMalus} AP gagnés · −${s.hpLoss} PV/scène)</span>`:'')
+   + `</div>`;
+  h+=`<div style="display:flex;gap:3px;margin-top:5px">
+      <button class="btn f1" style="font-size:8px;padding:3px" onclick="survieManger()">🍖 Manger</button>
+      <button class="btn f1" style="font-size:8px;padding:3px" onclick="survieBoire()">🥤 Boire</button>
+      <button class="btn f1" style="font-size:8px;padding:3px" onclick="survieDormir()">😴 Dormir</button>
+    </div>`;
+  el.innerHTML=h;
+}
+// Actions : consomme le 1er aliment/boisson dispo ; Dormir remet le sommeil à zéro
+function survieManger(){
+  const i=char.inventory.findIndex(it=>it.type==='FOOD'&&(it.qty||0)>0);
+  if(i<0){ alert('Aucune nourriture dans l\'inventaire.'); return; }
+  utiliserItem(i);
+}
+function survieBoire(){
+  const i=char.inventory.findIndex(it=>it.type==='DRINK'&&(it.qty||0)>0);
+  if(i<0){ alert('Aucune boisson dans l\'inventaire.'); return; }
+  utiliserItem(i);
+}
+function survieDormir(){
+  if(window._fpCampaignMin==null){ alert('Horloge non disponible.'); return; }
+  if(!confirm('Dormir (récupère le sommeil) ? Pense à faire avancer le temps avec le MJ.')) return;
+  char.survie=char.survie||{}; char.survie.sleep=window._fpCampaignMin;
+  rAll();
+}
 
 function rSpecial(){
   const ORDER=['S','P','E','C','I','A','L'];
