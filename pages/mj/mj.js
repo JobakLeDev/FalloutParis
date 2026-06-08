@@ -698,7 +698,18 @@ async function appliquer(action){
       upd.xp=xp; upd.niveau=niv;
     }
     else if(action==='repos-court') { upd.hp=Math.min(hpMax,(d.hp||0)+(d.special?.E||5)); upd.rad=Math.max(0,(d.rad||0)-2); }
-    else if(action==='repos-long')  { upd.hp=hpMax; upd.rad=Math.max(0,Math.floor((d.rad||0)/2)); }
+    else if(action==='repos-long')  {
+      const now = (typeof partyMinutesFor==='function') ? partyMinutesFor(tempsData, id) : (d.survie?.sleep||0);
+      upd.survie = { ...(d.survie||{}), sleep: now, wellRested: false };   // dort → Reposé (annule bien-reposé)
+      upd.hp = getHpMax({ ...d, survie: upd.survie });
+      upd.rad = Math.max(0, Math.floor((d.rad||0)/2));
+    }
+    else if(action==='bien-repos')  {
+      const now = (typeof partyMinutesFor==='function') ? partyMinutesFor(tempsData, id) : (d.survie?.sleep||0);
+      upd.survie = { ...(d.survie||{}), sleep: now, eat: (d.survie?.eat ?? now), drink: (d.survie?.drink ?? now), wellRested: true };
+      upd.hp = getHpMax({ ...d, survie: upd.survie });   // PV max + 2 (bien reposé)
+      upd.rad = Math.max(0, Math.floor((d.rad||0)/2));
+    }
     else if(action==='reset-wounds') upd.wounds={head:false,torso:false,armL:false,armR:false,legL:false,legR:false};
     else if(action==='luck-init')    upd.luck_points = d.special?.L||5;
     else if(action==='luck-recover') upd.luck_points = Math.min(d.special?.L||5, (d.luck_points||0) + parseInt(document.getElementById('val-luck-rec').value||1));
@@ -708,7 +719,7 @@ async function appliquer(action){
     await db.collection('joueurs').doc(id).update(upd);
   });
   await Promise.all(promises);
-  const lbls={dmg:'Dégâts',heal:'Soins',fullheal:'Soin complet',rad:'Radiation',derad:'Rad soignée','derad-full':'Rad retirée',xp:'XP','xp-500':'+500 XP','xp-1000':'+1000 XP','repos-court':'Repos court','repos-long':'Repos long','reset-wounds':'Blessures effacées','luck-init':'Luck initialisé','luck-recover':'Luck récupéré','caps-give':'Caps donnés','caps-remove':'Caps retirés'};
+  const lbls={dmg:'Dégâts',heal:'Soins',fullheal:'Soin complet',rad:'Radiation',derad:'Rad soignée','derad-full':'Rad retirée',xp:'XP','xp-500':'+500 XP','xp-1000':'+1000 XP','repos-court':'Repos court','repos-long':'Repos long','bien-repos':'Bien reposé','reset-wounds':'Blessures effacées','luck-init':'Luck initialisé','luck-recover':'Luck récupéré','caps-give':'Caps donnés','caps-remove':'Caps retirés'};
   showMsg(`✓ ${lbls[action]||action} — ${selected.size} joueur(s)`);
   const names = [...selected].map(id => joueurs[id]?.nom || id).join(', ');
   const valMap = { dmg:'val-dmg', heal:'val-heal', rad:'val-rad', derad:'val-derad', xp:'val-xp', 'luck-recover':'val-luck-rec', 'caps-give':'val-caps', 'caps-remove':'val-caps' };

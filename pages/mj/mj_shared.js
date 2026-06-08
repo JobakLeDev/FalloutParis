@@ -19,7 +19,8 @@ const FACES_CD = ['1','2','—','—','1⚡','1⚡'];
 
 function getHpMax(d) {
   if (!d || !d.special) return 10;
-  return (d.special?.L||5) + (d.special?.E||5) + Math.max(0,(d.niveau||1)-1) + (d.perks?.['Life Giver']||0) * (d.special?.E||5);
+  return (d.special?.L||5) + (d.special?.E||5) + Math.max(0,(d.niveau||1)-1) + (d.perks?.['Life Giver']||0) * (d.special?.E||5)
+    + (d.survie?.wellRested ? 2 : 0);   // bien reposé : +2 PV max jusqu'au prochain sommeil
 }
 
 function rollDice(expr) {

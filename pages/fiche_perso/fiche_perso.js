@@ -29,7 +29,7 @@ const SP = () => char.special;
 // CALCULS — Fonctions de calcul dérivées des stats
 // ============================================================
 
-function hpMax(){return SP().L+SP().E+Math.max(0,char.niveau-1)+(char.perks['Life Giver']||0)*SP().E;}
+function hpMax(){return SP().L+SP().E+Math.max(0,char.niveau-1)+(char.perks['Life Giver']||0)*SP().E+(char.survie?.wellRested?2:0);}
 function forEff(){return (char.perks['Adrenalin Rush']>0&&char.hp<hpMax())?10:SP().S;}
 function chargeMax(){const f=forEff(),b=(150+f*10)/2.2046;return Math.round((b*(char.powerArmor?1.5:1)+(char.powerArmor?200:0))*10)/10;}
 function chargeActuelle(){let t=0;char.inventory.forEach(it=>t+=(it.qty||1)*(it.w||0));char.ammo.forEach(a=>t+=a.qty*0.02);return Math.round(t*100)/100;}
@@ -186,29 +186,7 @@ function rSurvie(){
    + `Fatigue : <b style="color:${s.fatigue>0?'var(--rd)':'var(--g)'};font-family:Oswald,sans-serif;font-size:12px">${s.fatigue}</b>`
    + (s.fatigue>0?` <span style="color:var(--td)">(−${s.apMalus} AP gagnés · −${s.hpLoss} PV/scène)</span>`:'')
    + `</div>`;
-  h+=`<div style="display:flex;gap:3px;margin-top:5px">
-      <button class="btn f1" style="font-size:8px;padding:3px" onclick="survieManger()">🍖 Manger</button>
-      <button class="btn f1" style="font-size:8px;padding:3px" onclick="survieBoire()">🥤 Boire</button>
-      <button class="btn f1" style="font-size:8px;padding:3px" onclick="survieDormir()">😴 Dormir</button>
-    </div>`;
   el.innerHTML=h;
-}
-// Actions : consomme le 1er aliment/boisson dispo ; Dormir remet le sommeil à zéro
-function survieManger(){
-  const i=char.inventory.findIndex(it=>it.type==='FOOD'&&(it.qty||0)>0);
-  if(i<0){ alert('Aucune nourriture dans l\'inventaire.'); return; }
-  utiliserItem(i);
-}
-function survieBoire(){
-  const i=char.inventory.findIndex(it=>it.type==='DRINK'&&(it.qty||0)>0);
-  if(i<0){ alert('Aucune boisson dans l\'inventaire.'); return; }
-  utiliserItem(i);
-}
-function survieDormir(){
-  if(window._fpCampaignMin==null){ alert('Horloge non disponible.'); return; }
-  if(!confirm('Dormir (récupère le sommeil) ? Pense à faire avancer le temps avec le MJ.')) return;
-  char.survie=char.survie||{}; char.survie.sleep=window._fpCampaignMin;
-  rAll();
 }
 
 function rSpecial(){
