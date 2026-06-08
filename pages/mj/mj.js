@@ -152,12 +152,14 @@ function mjRadioLoad(){
   }).catch(e => console.warn('radio.json', e));
 }
 function _mjStation(){ const id = document.getElementById('mj-radio-sel')?.value; return _mjRadio.stations.find(s => s.id === id) || _mjRadio.stations[0] || null; }
-function _mjRadioSrc(track){ if(/^https?:/i.test(track)) return track; return '../../' + _mjRadio.folder + '/' + track.split('/').map(encodeURIComponent).join('/'); }
+// Dossier propre à la station (sinon dossier global)
+function _stationFolder(s){ return (s && s.folder) || _mjRadio.folder; }
+function _mjRadioSrc(track){ if(/^https?:/i.test(track)) return track; return '../../' + _stationFolder(_mjRadio.station) + '/' + track.split('/').map(encodeURIComponent).join('/'); }
 function mjRadioBroadcast(startedAt){
   const s = _mjRadio.station; if(!s || !(s.tracks||[]).length) return;
   const track = s.tracks[_mjRadio.idx % s.tracks.length];
   const label = String(track).replace(/^.*\//,'').replace(/\.(mp3|ogg|m4a|wav)$/i,'').replace(/[-_]/g,' ');
-  db.collection('radio').doc('current').set({ playing:true, station:s.id, name:s.name||s.id, folder:_mjRadio.folder, track, trackLabel:label, startedAt: startedAt||Date.now(), ts:Date.now() }).catch(e=>console.error('radio',e));
+  db.collection('radio').doc('current').set({ playing:true, station:s.id, name:s.name||s.id, folder:_stationFolder(s), track, trackLabel:label, startedAt: startedAt||Date.now(), ts:Date.now() }).catch(e=>console.error('radio',e));
 }
 function mjRadioPlayIdx(){
   const s = _mjRadio.station; if(!s || !(s.tracks||[]).length){ showMsg('Station vide', true); return; }
