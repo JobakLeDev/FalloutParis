@@ -159,6 +159,7 @@ function mjRadioBroadcast(startedAt){
   const s = _mjRadio.station; if(!s || !(s.tracks||[]).length) return;
   const track = s.tracks[_mjRadio.idx % s.tracks.length];
   const label = String(track).replace(/^.*\//,'').replace(/\.(mp3|ogg|m4a|wav)$/i,'').replace(/[-_]/g,' ');
+  _mjRadio.now = { name: s.name || s.id, label };   // ce qui est RÉELLEMENT diffusé (≠ sélection)
   db.collection('radio').doc('current').set({ playing:true, station:s.id, name:s.name||s.id, folder:_stationFolder(s), track, trackLabel:label, startedAt: startedAt||Date.now(), ts:Date.now() }).catch(e=>console.error('radio',e));
 }
 function mjRadioPlayIdx(){
@@ -207,18 +208,20 @@ function mjRadioPrev(){ const s = _mjRadio.station || _mjStation(); _mjRadio.sta
 function mjRadioStop(){
   if(_mjRadio.audio){ _mjRadio.audio.pause(); _mjRadio.audio.removeAttribute('src'); }
   _mjRadio.playing = false;
+  _mjRadio.now = null;   // plus aucune diffusion
   db.collection('radio').doc('current').set({ playing:false, track:null, ts:Date.now() });
   renderMjRadio(); logAction('Radio coupée');
 }
 function mjRadioVol(v){ if(_mjRadio.audio) _mjRadio.audio.volume = (parseInt(v)||0)/100; try{ localStorage.setItem('fp_mjRadioVol', v); }catch(e){} }
 function renderMjRadio(){
   const b = document.getElementById('mj-radio-play'); if(b) b.textContent = _mjRadio.playing ? '⏸ Pause' : '▶ Diffuser';
-  const el = document.getElementById('mj-radio-now'); if(!el) return;
-  const s = _mjRadio.station;
-  if(!s){ el.textContent = 'Aucune station.'; return; }
-  const t = (s.tracks||[])[_mjRadio.idx % ((s.tracks||[]).length||1)] || '—';
-  el.textContent = (_mjRadio.playing ? '📡 ' : '⏸ ') + (s.name||s.id) + ' — ' + String(t).replace(/^.*\//,'');
-  _populateTrackSel();   // garde le sélecteur de chanson synchronisé avec la piste courante
+  const el = document.getElementById('mj-radio-now');
+  if(el){
+    // Affiche ce qui DIFFUSE réellement (pas la station sélectionnée)
+    if(_mjRadio.now) el.textContent = (_mjRadio.playing ? '📡 ' : '⏸ ') + _mjRadio.now.name + ' — ' + _mjRadio.now.label;
+    else el.textContent = 'Aucune diffusion.';
+  }
+  _populateTrackSel();   // sélecteur de chanson = station sélectionnée (peut différer de la diffusion)
 }
 
 // ============================================================
