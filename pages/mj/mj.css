@@ -260,3 +260,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .alog-who.mj{color:var(--am);}
 .alog-who.pj{color:var(--g);}
 .alog-text{color:var(--t);word-break:break-word;}
+
+/* ============================================================
+   AGRANDISSEMENT GLOBAL (écran 27") — zoom 150% + page recentrée
+   (même réglage que la fiche joueur).
+   ============================================================ */
+body { zoom: 1.5; }
+html, body { overflow-x: hidden !important; overflow-y: auto !important; height: auto !important; }
+#app { max-width: 1400px; margin: 0 auto; }
