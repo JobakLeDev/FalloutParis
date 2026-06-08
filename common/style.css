@@ -126,7 +126,8 @@ html::after{
 
 .loc-card-cross{background:rgba(8,15,8,0.85);border:1px solid var(--b);padding:0.25rem 0.417rem;min-width:7.083rem;backdrop-filter:blur(1px);}
 .loc-card-cross.hurt{border-color:var(--rd);background:var(--rdk);}
-.loc-card-cross.center-loc{min-width:10rem;text-align:center;}
+.loc-card-cross.center-loc{min-width:8.3rem;text-align:center;}
+.loc-card-cross.center-loc .lcc-rds{justify-content:center;}
 .lcc-name{font-size:0.583rem;color:var(--td);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:0.083rem;}
 .lcc-arm{font-size:0.583rem;color:var(--gd);display:block;margin-bottom:0.167rem;min-height:0.833rem;}
 .lcc-rds{display:flex;gap:0.5rem;}
