@@ -48,6 +48,7 @@ let armeSelectionnee = null;
 let nbDCActuel = 2;
 let nbDiceJ = 2;
 let lastExcessJ = 0;
+let _campaignMinJ = null;   // minutes de campagne du joueur (pour la Fatigue de survie)
 let lastSkKeyJ = '';
 let useStackedDeck = false;
 let currentArmeInfo = null;  // {nom, skKey, persoBonus, dmg}
@@ -114,6 +115,12 @@ function initJoueur(){
     document.getElementById('lien-fiche').href = '../fiche_perso/fiche_perso.html?id=' + joueurId;
     renderMaCarte();
     renderLuckJoueur();
+  });
+
+  // Horloge de campagne (pour calculer la Fatigue de survie)
+  db.collection('temps').doc('data').onSnapshot(s => {
+    const d = s.exists ? s.data() : {};
+    if(typeof partyMinutesFor === 'function') _campaignMinJ = partyMinutesFor(d, joueurId);
   });
 
   // Tous les joueurs (pour les coéquipiers)
@@ -506,11 +513,19 @@ function setNbDiceJ(n){
 async function convertExcessToAPJ(){
   if(lastExcessJ<=0) return;
   const pool = combatState?.apPool||0;
-  const toAdd = Math.min(lastExcessJ, 6-pool);
-  if(toAdd<=0) return;
-  await _updateAPGroupe(toAdd);
+  // Fatigue (survie) : les AP gagnés sont réduits de 'fatigue' (RAW p.190)
+  const fat = survieFatigueJ();
+  const gain = Math.max(0, lastExcessJ - fat);
+  const toAdd = Math.min(gain, 6-pool);
   lastExcessJ=0;
   const el=document.getElementById('j-convert-ap'); if(el) el.style.display='none';
+  if(toAdd<=0) return;
+  await _updateAPGroupe(toAdd);
+}
+// Fatigue actuelle du joueur (depuis sa survie + l'horloge de campagne)
+function survieFatigueJ(){
+  if(typeof SURVIE === 'undefined' || _campaignMinJ == null || !joueurData) return 0;
+  return SURVIE.compute(joueurData.survie, _campaignMinJ).fatigue;
 }
 
 async function bonusDmgJ(n){

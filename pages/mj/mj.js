@@ -805,6 +805,7 @@ async function lancerCombat(){
   if(btn){ btn.textContent = '⏳ Création...'; btn.disabled = true; }
   try {
     await createCombatSession(ennemisData, joueurIds, zone);
+    await applyFatigueDebutCombat(joueurIds);
     logAction(`Combat lancé — ${zone||'?'} (${ennemisData.length} ennemi(s))`);
     window.location.href = 'combat.html';
   } catch(e){
@@ -813,6 +814,21 @@ async function lancerCombat(){
   }
 }
 
+// Survie : à l'ouverture d'un combat (= début de scène), chaque joueur perd 1 PV / 2 Fatigue (RAW p.190)
+async function applyFatigueDebutCombat(joueurIds){
+  if(typeof SURVIE === 'undefined' || typeof partyMinutesFor !== 'function') return;
+  for(const id of (joueurIds||[])){
+    const d = joueurs[id]; if(!d) continue;
+    const now = partyMinutesFor(tempsData, id);
+    const s = SURVIE.compute(d.survie, now);
+    if(s.hpLoss > 0){
+      const nv = Math.max(0, (d.hp||0) - s.hpLoss);
+      try { await db.collection('joueurs').doc(id).update({ hp: nv }); } catch(e){}
+      d.hp = nv;
+      logAction(`${d.nom||id} : −${s.hpLoss} PV (Fatigue ${s.fatigue} en début de combat)`);
+    }
+  }
+}
 function donnerXPCombat(xp){
   document.getElementById('val-xp').value = xp;
   appliquer('xp');
