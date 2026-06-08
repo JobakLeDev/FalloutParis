@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fallout Paris — Fiche Personnage</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../../common/style.css?v=61">
-  <link rel="stylesheet" href="fiche_perso.css?v=61">
+  <link rel="stylesheet" href="../../common/style.css?v=62">
+  <link rel="stylesheet" href="fiche_perso.css?v=62">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
@@ -88,8 +88,8 @@
 <!-- GÉNÉRAL -->
 <div class="tc on" id="tc-general">
 
-  <!-- LIGNE UNIQUE : SPECIAL | ARMURE en croix | ARMES + STATUTS -->
-  <div class="gen-row" style="display:grid;grid-template-columns:160px minmax(0,1fr) 200px;gap:9px;align-items:start">
+  <!-- LIGNE UNIQUE : SPECIAL | MON PERSONNAGE (armure + armes + survie) -->
+  <div class="gen-row" style="display:grid;grid-template-columns:160px minmax(0,1fr);gap:9px;align-items:start">
 
     <!-- SPECIAL compact étroit -->
     <div class="pnl" style="padding:7px 8px">
@@ -98,33 +98,36 @@
       <div class="caps-box"><span class="caps-ic">◉</span><span class="caps-lbl">CAPS</span><span id="caps-val" class="caps-val">0</span></div>
     </div>
 
-    <!-- ARMURE en croix -->
+    <!-- MON PERSONNAGE : armure (Vault Boy) + armes équipées + survie -->
     <div class="pnl">
-      <div class="ptitle">Armure</div>
-      <div class="body-cross-wrap">
-        <!-- Vault Boy en fond -->
-        <img src="../../img/VaultBoy.png" class="vaultboy-bg" alt="">
-        <!-- Cases d'armure positionnées sur l'image -->
-        <div class="body-cross">
-          <div id="loc-head"   style="position:absolute;top:2%;left:50%;transform:translateX(-50%)"></div>
-          <div id="loc-torso"  style="position:absolute;top:40%;left:50%;transform:translateX(-50%)"></div>
-          <div id="loc-armR"   style="position:absolute;top:30%;left:28%"></div>
-          <div id="loc-armL"   style="position:absolute;top:30%;right:28%"></div>
-          <div id="loc-legR"   style="position:absolute;top:68%;left:30%"></div>
-          <div id="loc-legL"   style="position:absolute;top:68%;right:30%"></div>
-        </div>
-      </div>
-    </div>
+      <div class="ptitle">Mon personnage</div>
+      <div class="mp-grid" style="display:grid;grid-template-columns:210px minmax(0,1fr);gap:12px;align-items:start">
 
-    <!-- COLONNE DROITE : armes équipées + statuts -->
-    <div style="display:flex;flex-direction:column;gap:9px;min-width:0">
-      <div class="pnl" id="pnl-gen-weap">
-        <div class="ptitle weap-toggle" onclick="toggleWeapCollapse()">Armes équipées <span id="weap-chev">▾</span></div>
-        <div id="gen-weap"></div>
-      </div>
-      <div class="pnl" id="pnl-survie">
-        <div class="ptitle">Survie</div>
-        <div id="survie-content"></div>
+        <!-- Armure en croix -->
+        <div class="body-cross-wrap" style="width:210px;height:21rem;flex:none">
+          <img src="../../img/VaultBoy.png" class="vaultboy-bg" style="height:20rem" alt="">
+          <div class="body-cross">
+            <div id="loc-head"   style="position:absolute;top:2%;left:50%;transform:translateX(-50%)"></div>
+            <div id="loc-torso"  style="position:absolute;top:40%;left:50%;transform:translateX(-50%)"></div>
+            <div id="loc-armR"   style="position:absolute;top:30%;left:28%"></div>
+            <div id="loc-armL"   style="position:absolute;top:30%;right:28%"></div>
+            <div id="loc-legR"   style="position:absolute;top:68%;left:30%"></div>
+            <div id="loc-legL"   style="position:absolute;top:68%;right:30%"></div>
+          </div>
+        </div>
+
+        <!-- Armes équipées + Survie -->
+        <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+          <div id="pnl-gen-weap">
+            <div class="mp-sub weap-toggle" onclick="toggleWeapCollapse()">Armes équipées <span id="weap-chev">▾</span></div>
+            <div id="gen-weap"></div>
+          </div>
+          <div id="pnl-survie">
+            <div class="mp-sub">Survie</div>
+            <div id="survie-content"></div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -379,10 +382,10 @@
   </div>
 </div>
 
-  <script src="../../common/shared.js?v=61"></script>
-  <script src="../../common/db.js?v=61"></script>
-  <script src="../../common/survie.js?v=61"></script>
-  <script src="fiche_perso.js?v=61"></script>
-  <script src="../../common/firebase.js?v=61"></script>
+  <script src="../../common/shared.js?v=62"></script>
+  <script src="../../common/db.js?v=62"></script>
+  <script src="../../common/survie.js?v=62"></script>
+  <script src="fiche_perso.js?v=62"></script>
+  <script src="../../common/firebase.js?v=62"></script>
 </body>
 </html>
