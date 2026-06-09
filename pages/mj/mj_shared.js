@@ -98,6 +98,36 @@ const EDGE_TYPES = [
   { id:'door',   label:'Porte',   icon:'╫' },
   { id:'window', label:'Fenêtre', icon:'┆' },
 ];
+// Arête entre deux cases adjacentes → clé d'arête ; mur/fenêtre bloquent le passage, porte non
+function gridEdgeBetween(x1, y1, x2, y2){
+  if(x2 > x1) return 'V,' + x2 + ',' + y1;
+  if(x2 < x1) return 'V,' + x1 + ',' + y1;
+  if(y2 > y1) return 'H,' + x1 + ',' + y2;
+  return 'H,' + x1 + ',' + y1;
+}
+function gridEdgeBlocks(grid, x1, y1, x2, y2){
+  const t = (grid.edges || {})[gridEdgeBetween(x1, y1, x2, y2)];
+  return t === 'wall' || t === 'window';
+}
+// Cases atteignables (parcours orthogonal, coût 1/case) sans traverser mur/fenêtre ni bloc/jeton
+function reachableCells(grid, start, range){
+  const res = {}, seen = {}; const q = [{ x:start.x, y:start.y, d:0 }];
+  seen[start.x+','+start.y] = 0;
+  while(q.length){
+    const c = q.shift();
+    for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+      const nx = c.x+dx, ny = c.y+dy;
+      if(nx<0||ny<0||nx>=grid.w||ny>=grid.h) continue;
+      if(seen[nx+','+ny] != null) continue;
+      if(gridEdgeBlocks(grid, c.x, c.y, nx, ny)) continue;   // mur/fenêtre entre les deux cases
+      const nd = c.d + 1; if(nd > range) continue;
+      const blocked = blockSolid(gridTerrainAt(grid, nx, ny)) || Object.values(grid.pos||{}).some(p => p.x===nx && p.y===ny);
+      seen[nx+','+ny] = nd;
+      if(!blocked){ res[nx+','+ny] = nd; q.push({ x:nx, y:ny, d:nd }); }   // on ne traverse pas une case bloquée
+    }
+  }
+  return res;
+}
 // grid.edges = { "V,x,y":type (arête verticale à gauche de la case x,y) , "H,x,y":type (arête horizontale en haut de x,y) }
 // Rendu des lignes existantes (HTML d'overlay), cs = taille de case en px
 function gridEdgesHtml(grid, cs){
