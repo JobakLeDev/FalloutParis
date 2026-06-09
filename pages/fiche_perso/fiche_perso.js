@@ -263,7 +263,7 @@ function rGenWeap(){
       <div class="gwc-slot">${s.lbl}</div>
       <div class="gwc-row">
         <div>
-          <div class="gwc-name">${inv.name}${inv.persoBonus?' <span style="color:var(--am);font-size:8px">★</span>':''}</div>
+          <div class="gwc-name">${db._prefix?`<span style="color:var(--am)">${db._prefix}</span> `:''}${inv.name}${inv.persoBonus?' <span style="color:var(--am);font-size:8px">★</span>':''}${(inv.mods&&Object.values(inv.mods).filter(Boolean).length)?' <span title="Arme modifiée" style="color:var(--am);font-size:8px">🔧</span>':''}</div>
           <div class="gwc-stats">${db.t||''} · TN <b style="color:var(--tb)">${tn}</b></div>
         </div>
         <div style="text-align:right">
@@ -469,7 +469,7 @@ function rInvWeap(){
     const tn=getWeaponTN(it);
     el.innerHTML+=`<div class="irow weap-cols${it.equipped?' equipped-row':''}">
       <span class="itag ARMOR" style="border-color:var(--am);color:var(--am)">${db.t||'WEAPON'}</span>
-      <span class="iname${it.equipped?' eq':''}" title="${it.name}">${it.name}${db.a&&db.a!=='-'?` <span class="iname-cal">${db.a}</span>`:''}</span>
+      <span class="iname${it.equipped?' eq':''}" title="${db._prefix?db._prefix+' ':''}${it.name}">${(it.mods&&Object.values(it.mods).filter(Boolean).length)?'🔧 ':''}${it.name}${db.a&&db.a!=='-'?` <span class="iname-cal">${db.a}</span>`:''}</span>
       <span style="font-family:'Oswald',sans-serif;color:var(--am);font-size:13px">${db.dmg||'?'}</span>
       <span class="ieff" title="${db.eff||''}">${db.eff||'—'}</span>
       <span style="font-size:9px;color:var(--td)">${db.fr??'—'}</span>
@@ -487,13 +487,16 @@ function rInvArmor(){
   el.innerHTML='';
   char.inventory.filter(it=>['ARMOR','POWERARMOR','CLOTHING','OUTFIT'].includes(it.type)).forEach((it)=>{
     const i=char.inventory.indexOf(it);
-    const db=[...DB.armor].find(a=>a.n===it.name)||{};
+    const base=[...DB.armor].find(a=>a.n===it.name)||{};
+    const db=fpApplyArmorMods(base, it.mods);   // RD modifiée par les mods
+    const nMods=(it.mods&&Object.values(it.mods).filter(Boolean).length)||0;
+    const rdMod=db.bonus&&(db.bonus.phys||db.bonus.energy||db.bonus.rad);
     el.innerHTML+=`<div class="irow armor-cols${it.equipped?' equipped-row':''}">
       <span class="itag ${it.type}">${it.type}</span>
-      <span class="iname${it.equipped?' eq':''}" title="${it.name}">${it.name}</span>
+      <span class="iname${it.equipped?' eq':''}" title="${it.name}">${nMods?'🔧 ':''}${it.name}</span>
       <span class="iqval">${it.qty}</span>
       <span class="ipw">${((it.qty||1)*(it.w||0)).toFixed(2)}kg</span>
-      <span style="font-size:8px;color:var(--td)">${db.z||'—'} Ph:${db.ph||0} En:${db.en||0}${db.rad?' Rad:'+db.rad:''}</span>
+      <span style="font-size:8px;color:${rdMod?'var(--am)':'var(--td)'}">${base.z||'—'} Ph:${db.ph||0} En:${db.en||0}${db.rad?' Rad:'+db.rad:''}</span>
       <button class="ieq-btn ${it.equipped?'on':'off'}" onclick="tEquip(${i})">${it.equipped?'● ÉQUIPÉ':'○ Équiper'}</button>
       <button class="idel-btn" onclick="jetItem(${i})" title="Jeter">🗑</button>
     </div>`;
