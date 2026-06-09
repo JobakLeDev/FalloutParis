@@ -106,6 +106,8 @@
       <select id="zf-var"></select>
       <label>Niveau de menace</label>
       <select id="zf-threat"></select>
+      <label>☢ Radiation (rads gagnés en entrant, 0 = aucune)</label>
+      <input id="zf-rad" type="number" min="0" value="0">
       <div class="zform-btns">
         <button class="zf-ok" onclick="submitZoneForm()">✓ Enregistrer</button>
         <button class="zf-cancel" onclick="closeZoneForm()">✗ Annuler</button>
@@ -146,7 +148,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="../../common/shared.js"></script>
   <script src="../../common/db.js"></script>
-  <script src="carte.js?v=8"></script>
+  <script src="carte.js?v=9"></script>
   <script src="../../common/responsive.js?v=1"></script>
 </body>
 </html>

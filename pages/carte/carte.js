@@ -1375,6 +1375,7 @@ function zonePopup(z) {
   if (fac) tags.push(`<span style="color:${fac.color}">${fac.label}</span>`);
   if (z.variation) tags.push(VARIATION_LABELS[z.variation] || z.variation);
   if (z.threat && z.threat !== 'normal') tags.push('Menace ' + (THREAT_LABELS[z.threat] || z.threat));
+  if (z.radLevel > 0) tags.push(`<span style="color:#5dff5d">☢ ${z.radLevel} rad</span>`);
   let h = `<div class="zpop"><div class="zpop-title">${z.name || base.label || z.baseZone || 'Zone'}</div>`;
   if (tags.length) h += `<div class="zpop-pool">${tags.join(' · ')}</div>`;
   // Lien vers le générateur de rencontres : MJ uniquement (les joueurs ne déclenchent pas de rencontre)
@@ -1519,6 +1520,7 @@ function handleMoveClick(latlng) {
       dist = Math.max(dist, L.latLng(from.lat, from.lng).distanceTo(latlng));
       mapData.tokens[id] = { lat: latlng.lat, lng: latlng.lng };
       recordFog(id, from.lat, from.lng); recordFog(id, latlng.lat, latlng.lng);
+      applyZoneRads(id, latlng.lat, latlng.lng);   // irradiation auto (chaque membre)
     });
     saveData();
     showMoveResult(movingToken.ids[0], dist, zonesAlongPath(movingToken.from, latlng));
@@ -1536,6 +1538,7 @@ function executeMove(id, from, to) {
   recordFog(id, from.lat, from.lng);
   recordFog(id, to.lat, to.lng);
   saveData();
+  applyZoneRads(id, to.lat, to.lng);   // irradiation auto selon la zone d'arrivée
   showMoveResult(id, dist, zones);
 }
 // Zones traversées le long du trajet (échantillonnage) → [{name, genUrl}]
@@ -1633,6 +1636,7 @@ function openZoneForm(ctx) {
   document.getElementById('zf-occ').value = z?.occupation || 'neutral';
   document.getElementById('zf-var').value = z?.variation || '';
   document.getElementById('zf-threat').value = z?.threat || 'normal';
+  document.getElementById('zf-rad').value = z?.radLevel || 0;
   document.getElementById('zone-form').style.display = 'flex';
 }
 function closeZoneForm() { document.getElementById('zone-form').style.display = 'none'; zoneFormCtx = null; }
@@ -1645,6 +1649,7 @@ function submitZoneForm() {
     name: g('zf-name').trim() || window.ZONES_DB?.[base]?.label || base,
     baseZone: base, occupation: g('zf-occ') || 'neutral',
     variation: g('zf-var') || '', threat: g('zf-threat') || 'normal',
+    radLevel: Math.max(0, parseInt(g('zf-rad')) || 0),
   };
   if (zoneFormCtx.zone) Object.assign(zoneFormCtx.zone, data);
   else mapData.zones.push({ id: 'z' + Date.now(), polygon: zoneFormCtx.polygon, revealedFor: [], ...data });
@@ -1713,6 +1718,57 @@ function detectZone(lat, lng) {
       return { name: z.name || z.baseZone, genUrl: zoneGenLink(z) };
   }
   return null;
+}
+
+// ---- Radiation par zone (auto au déplacement) ----
+const GEO_RAD_DEFAULT = 3;   // rads par défaut pour une zone GeoJSON marquée "irradiée" (sans niveau)
+// Niveau de rad à un point (zones dessinées radLevel, sinon GeoJSON Statut "rad")
+function zoneRadAt(lat, lng) {
+  for (const z of (mapData.zones || [])) {
+    if ((z.radLevel || 0) > 0 && z.polygon && z.polygon.length >= 3 &&
+        pointInPoly(lng, lat, z.polygon.map(p => ({ x: p.lng, y: p.lat }))))
+      return z.radLevel;
+  }
+  if (geoZonesData) {
+    for (const f of geoZonesData.features) {
+      if (('' + (f.properties.Statut || '')).toLowerCase().includes('rad') && geoPointInFeature(lat, lng, f))
+        return parseInt(f.properties.RadLevel) || GEO_RAD_DEFAULT;
+    }
+  }
+  return 0;
+}
+// RD radiation d'un joueur : meilleure RD rad d'armure équipée (+ mods) + perks
+function radResist(d) {
+  let r = 0;
+  (d.inventory || []).forEach(it => {
+    if (!it.equipped) return;
+    const a = (window.DB?.armor || []).find(x => x.n === it.name);
+    if (a && typeof a.rad === 'number') {
+      const e = (typeof fpApplyArmorMods === 'function') ? fpApplyArmorMods(a, it.mods) : a;
+      r = Math.max(r, e.rad || 0);
+    }
+  });
+  const p = d.perks || {};
+  if (p['Rad Resistant']) r += p['Rad Resistant'];
+  return r;
+}
+function _hpMaxLite(d) {
+  const s = d.special || {};
+  return (s.L || 5) + (s.E || 5) + Math.max(0, (d.niveau || 1) - 1) + ((d.perks?.['Life Giver'] || 0) * (s.E || 5)) + (d.survie?.wellRested ? 2 : 0);
+}
+// Applique les rads de la zone d'arrivée (− RD radiation) sur le compteur du joueur
+async function applyZoneRads(id, lat, lng) {
+  const d = joueurs[id]; if (!d) return;
+  const lvl = zoneRadAt(lat, lng); if (lvl <= 0) return;
+  const resist = radResist(d);
+  const net = Math.max(0, lvl - resist);
+  if (net <= 0) return;
+  const cur = d.rad || 0;
+  const nv = Math.min(_hpMaxLite(d), cur + net);
+  if (nv === cur) return;
+  joueurs[id].rad = nv;
+  try { await fdb.collection('joueurs').doc(id).update({ rad: nv, lastUpdate: Date.now() }); } catch (e) { console.error('applyZoneRads', e); }
+  if (typeof fpLogAction === 'function') fpLogAction(fdb, 'MJ', `☢ ${d.nom || id} : +${net} rad (zone irradiée niv.${lvl}${resist ? `, RD rad ${resist}` : ''})`);
 }
 
 // Point dans une feature GeoJSON (Polygon / MultiPolygon, anneau extérieur)
