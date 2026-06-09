@@ -1,0 +1,50 @@
+{
+  "_doc": "Mods d'armes officiels (RAW Fallout 2D20, table Small Gun Mods p.100-101). Par emplacement. Effets structurés : dmgCD = +/- dés de combat ; setDmgCD = remplace le nb de dés ; fr = +/- cadence ; range = +/- pas de portée ; add/remove = qualités (effets) ajoutées/retirées ; ammo = change le calibre ; w = poids ; cost = caps ; perk = prérequis.",
+  "slots": ["receiver", "barrel", "muzzle", "sight", "grip", "stock"],
+  "slotLabels": { "receiver": "Récepteur", "barrel": "Canon", "muzzle": "Bouche", "sight": "Visée", "grip": "Poignée", "stock": "Crosse" },
+  "receiver": [
+    { "id": "hardened",   "name": "Hardened Receiver",   "prefix": "Hardened",   "dmgCD": 1, "w": 0, "cost": 20, "perk": "" },
+    { "id": "powerful",   "name": "Powerful Receiver",   "prefix": "Powerful",   "dmgCD": 2, "w": 1, "cost": 25, "perk": "Gun Nut 1" },
+    { "id": "advanced",   "name": "Advanced Receiver",   "prefix": "Advanced",   "dmgCD": 3, "fr": 1, "w": 2, "cost": 35, "perk": "Gun Nut 2" },
+    { "id": "calibrated", "name": "Calibrated Receiver", "prefix": "Calibrated", "add": ["Vicious"], "w": 0, "cost": 25, "perk": "" },
+    { "id": "automatic",  "name": "Automatic Receiver",  "prefix": "Auto",       "dmgCD": -1, "fr": 2, "add": ["Burst", "Inaccurate"], "w": 1, "cost": 30, "perk": "Gun Nut 1" },
+    { "id": "hairtrigger","name": "Hair Trigger",        "prefix": "Hair Trigger","fr": 1, "w": 0, "cost": 20, "perk": "Gun Nut 2" },
+    { "id": "rec38",  "name": ".38 Receiver",  "prefix": ".38",  "setDmgCD": 4, "ammo": ".38",  "w": 3, "cost": 20, "perk": "Gun Nut 4" },
+    { "id": "rec308", "name": ".308 Receiver", "prefix": ".308", "setDmgCD": 7, "ammo": ".308", "w": 4, "cost": 40, "perk": "Gun Nut 4" },
+    { "id": "rec45",  "name": ".45 Receiver",  "prefix": ".45",  "setDmgCD": 4, "fr": 1, "ammo": ".45", "w": 2, "cost": 19, "perk": "Gun Nut 2" },
+    { "id": "rec50",  "name": ".50 Receiver",  "prefix": ".50",  "setDmgCD": 8, "add": ["Vicious"], "ammo": ".50", "w": 4, "cost": 75, "perk": "Gun Nut 4" },
+    { "id": "autopiston", "name": "Automatic Piston", "prefix": "Automatic", "fr": 2, "range": -1, "w": 2, "cost": 0, "perk": "" }
+  ],
+  "barrel": [
+    { "id": "snubnose", "name": "Snubnose Barrel", "prefix": "Snub-nosed", "add": ["Inaccurate"], "w": -1, "cost": 0, "perk": "" },
+    { "id": "bull",     "name": "Bull Barrel",     "prefix": "Bull Barrel", "add": ["Reliable"], "w": 0, "cost": 10, "perk": "Gun Nut 3" },
+    { "id": "long",     "name": "Long Barrel",     "prefix": "Long", "range": 1, "w": 1, "cost": 20, "perk": "Gun Nut 1" },
+    { "id": "ported",   "name": "Ported Barrel",   "prefix": "Ported", "range": 1, "fr": 1, "w": 1, "cost": 35, "perk": "Gun Nut 4" },
+    { "id": "vented",   "name": "Vented Barrel",   "prefix": "Vented", "range": 1, "fr": 1, "add": ["Reliable"], "w": 1, "cost": 36, "perk": "Gun Nut 4" },
+    { "id": "sawedoff", "name": "Sawed-Off Barrel","prefix": "Sawed Off", "remove": ["Two-Handed"], "add": ["Close Quarters"], "w": -2, "cost": 3, "perk": "" },
+    { "id": "finned",   "name": "Finned Barrel",   "prefix": "Finned", "dmgCD": 1, "range": 1, "w": 2, "cost": 15, "perk": "Gun Nut 2" }
+  ],
+  "muzzle": [
+    { "id": "bayonet",    "name": "Bayonet",    "prefix": "Bayoneted",  "w": 2, "cost": 10, "perk": "", "special": "Arme de mêlée : inflige 4 DC Perforant 1 (physique)" },
+    { "id": "compensator","name": "Compensator","prefix": "Compensated","remove": ["Inaccurate"], "w": 1, "cost": 15, "perk": "Gun Nut 1" },
+    { "id": "muzzlebrake","name": "Muzzle Brake","prefix": "Muzzled",    "remove": ["Inaccurate"], "fr": 1, "w": 1, "cost": 30, "perk": "Gun Nut 1" },
+    { "id": "suppressor", "name": "Suppressor", "prefix": "Suppressed",  "add": ["Suppressed"], "w": 2, "cost": 45, "perk": "Gun Nut 2" }
+  ],
+  "sight": [
+    { "id": "reflex",     "name": "Reflex Sight",            "prefix": "Tactical",     "w": 0, "cost": 14, "perk": "", "special": "Peut relancer le dé de localisation" },
+    { "id": "shortscope", "name": "Short Scope",             "prefix": "Scoped",       "add": ["Accurate"], "w": 1, "cost": 11, "perk": "" },
+    { "id": "longscope",  "name": "Long Scope",              "prefix": "Scoped",       "add": ["Accurate"], "range": 1, "w": 1, "cost": 29, "perk": "Science! 2" },
+    { "id": "shortnv",    "name": "Short Night Vision Scope","prefix": "Night Vision", "add": ["Accurate", "Night Vision"], "w": 1, "cost": 38, "perk": "Science! 2" },
+    { "id": "longnv",     "name": "Long Night Vision Scope", "prefix": "Night Vision", "add": ["Accurate", "Night Vision"], "range": 1, "w": 1, "cost": 59, "perk": "Science! 3" },
+    { "id": "recon",      "name": "Recon Scope",             "prefix": "Recon",        "add": ["Accurate", "Recon"], "w": 1, "cost": 0, "perk": "" }
+  ],
+  "grip": [
+    { "id": "comfort",      "name": "Comfort Grip",        "prefix": "Comfort",       "remove": ["Inaccurate"], "w": 0, "cost": 6, "perk": "" },
+    { "id": "sharpshooter", "name": "Sharpshooter's Grip", "prefix": "Sharpshooter's","remove": ["Inaccurate"], "add": ["Piercing 1"], "w": 0, "cost": 10, "perk": "Gun Nut 1" }
+  ],
+  "stock": [
+    { "id": "fullstock",   "name": "Full Stock",               "prefix": "Stocked",      "add": ["Two-Handed"], "remove": ["Inaccurate"], "w": 1, "cost": 10, "perk": "" },
+    { "id": "marksman",    "name": "Marksman's Stock",         "prefix": "Marksman's",   "add": ["Two-Handed", "Accurate"], "remove": ["Inaccurate"], "w": 2, "cost": 20, "perk": "Gun Nut 2" },
+    { "id": "recoilcomp",  "name": "Recoil Compensating Stock","prefix": "Compensated",  "add": ["Two-Handed"], "remove": ["Inaccurate"], "fr": 1, "w": 2, "cost": 0, "perk": "Gun Nut 3" }
+  ]
+}

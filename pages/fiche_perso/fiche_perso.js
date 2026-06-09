@@ -62,9 +62,10 @@ function getLocRD(zone){
       || (db.z==='Body'&&zone!=='head')
       || db.z==='All';
     if(coversZone){
-      aPh=Math.max(aPh,db.ph||0);
-      aEn=Math.max(aEn,db.en||0);
-      aRad=(db.rad===999||aRad===999)?999:Math.max(aRad,db.rad||0);
+      const e = (typeof fpApplyArmorMods==='function') ? fpApplyArmorMods(db, it.mods) : db;  // mods d'armure
+      aPh=Math.max(aPh,e.ph||0);
+      aEn=Math.max(aEn,e.en||0);
+      aRad=(db.rad===999||aRad===999)?999:Math.max(aRad,e.rad||0);
     }
   });
   return{phys:aPh+rdP('phys'), en:aEn+rdP('en'), rad:aRad===999?999:aRad+rdP('rad')};
@@ -254,7 +255,7 @@ function rGenWeap(){
     if(!s.inv){
       return `<div class="gen-weap-card empty-slot"><div class="gwc-slot">${s.lbl}</div><div class="gwc-empty">${s.empty}</div></div>`;
     }
-    const inv=s.inv, db=DB.weapons.find(w=>w.n===inv.name)||{};
+    const inv=s.inv, db=fpApplyWeaponMods(DB.weapons.find(w=>w.n===inv.name)||{}, inv.mods);
     const tn=getWeaponTN(inv);
     const ammoFound=db.a&&db.a!=='-'?char.ammo.find(a=>a.cal===db.a):null;
     const ammoQty=ammoFound?ammoFound.qty:null;
@@ -371,7 +372,7 @@ function rWeapEq(){
   if(!weaps.length){el.innerHTML='<div style="font-size:9px;color:var(--td);padding:8px">Aucune arme équipée — aller dans Inventaire > Armes</div>';return;}
   el.innerHTML='';
   weaps.forEach(inv=>{
-    const db=DB.weapons.find(w=>w.n===inv.name)||{};
+    const db=fpApplyWeaponMods(DB.weapons.find(w=>w.n===inv.name)||{}, inv.mods);
     const tn=getWeaponTN(inv);
     el.innerHTML+=`<div class="wcard eq">
       <div class="wt">
@@ -464,7 +465,7 @@ function rInvWeap(){
   el.innerHTML='';
   char.inventory.filter(it=>it.type==='WEAPON').forEach((it)=>{
     const i=char.inventory.indexOf(it);
-    const db=DB.weapons.find(w=>w.n===it.name)||{};
+    const db=fpApplyWeaponMods(DB.weapons.find(w=>w.n===it.name)||{}, it.mods);
     const tn=getWeaponTN(it);
     el.innerHTML+=`<div class="irow weap-cols${it.equipped?' equipped-row':''}">
       <span class="itag ARMOR" style="border-color:var(--am);color:var(--am)">${db.t||'WEAPON'}</span>

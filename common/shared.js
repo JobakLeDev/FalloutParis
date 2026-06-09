@@ -22,6 +22,64 @@ function fpLogAction(dbInst, who, text){
   } catch(e){ console.warn('fpLogAction', e); }
 }
 
+// ============================================================
+// MODS D'ARMES / D'ARMURES (window.WEAPON_MODS / ARMOR_MODS chargés par db.js)
+// item.mods = { receiver:'hardened', barrel:'long', ... } (ids de mods par emplacement)
+// ============================================================
+// Stats d'arme effectives (base + mods) → {n,t,a,dmg,eff,fr,rng,w,sk,_rangeStep,_prefix}
+function fpApplyWeaponMods(base, mods){
+  const W = window.WEAPON_MODS || {};
+  const out = Object.assign({}, base);
+  if(!base || !mods) return out;
+  let cd = parseInt(base.dmg) || 0;
+  const frIsNum = !isNaN(parseInt(base.fr));
+  let fr = parseInt(base.fr) || 0;
+  let eff = (base.eff && base.eff!=='–' && base.eff!=='—') ? base.eff.split(/,\s*/).map(s=>s.trim()).filter(Boolean) : [];
+  let ammo = base.a, weight = base.w || 0, rangeStep = 0; const prefixes = [];
+  (W.slots||[]).forEach(slot => {
+    const id = mods[slot]; if(!id) return;
+    const m = (W[slot]||[]).find(x=>x.id===id); if(!m) return;
+    if(m.setDmgCD!=null) cd = m.setDmgCD;
+    if(m.dmgCD) cd += m.dmgCD;
+    if(m.fr) fr += m.fr;
+    if(m.ammo) ammo = m.ammo;
+    if(m.w) weight += m.w;
+    if(m.range) rangeStep += m.range;
+    (m.add||[]).forEach(e => { if(!eff.some(x=>x.toLowerCase()===e.toLowerCase())) eff.push(e); });
+    (m.remove||[]).forEach(e => { eff = eff.filter(x => x.toLowerCase()!==e.toLowerCase()); });
+    if(m.prefix) prefixes.push(m.prefix);
+  });
+  out.dmg = Math.max(0,cd) + 'D';
+  out.fr = frIsNum ? fr : base.fr;
+  out.eff = eff.length ? eff.join(', ') : '–';
+  out.a = ammo;
+  out.w = Math.max(0, Math.round(weight*100)/100);
+  out._rangeStep = rangeStep;
+  out._prefix = prefixes.join(' ');
+  return out;
+}
+// Stats d'armure effectives (base + mods) → {ph,en,rad,w,bonus:{phys,energy,rad}}
+function fpApplyArmorMods(base, mods){
+  const A = window.ARMOR_MODS || {};
+  const bonus = { phys:0, energy:0, rad:0 };
+  let weight = (base && base.w) || 0;
+  if(base && mods){
+    (A.slots||[]).forEach(slot => {
+      const id = mods[slot]; if(!id) return;
+      const m = (A[slot]||[]).find(x=>x.id===id); if(!m) return;
+      if(m.rd){ bonus.phys += m.rd.phys||0; bonus.energy += m.rd.energy||0; bonus.rad += m.rd.rad||0; }
+      if(m.w) weight += m.w;
+    });
+  }
+  return {
+    ph: ((base&&base.ph)||0) + bonus.phys,
+    en: ((base&&base.en)||0) + bonus.energy,
+    rad: ((base&&base.rad)||0) + bonus.rad,
+    w: Math.max(0, Math.round(weight*100)/100),
+    bonus
+  };
+}
+
 const XP_TABLE = [0,100,300,600,1000,1500,2100,2800,3600,4500,5500,6600,7800,9100,10500,12000,13600,15300,17100,19000,21000];
 
 const SKILLS_DEF = [

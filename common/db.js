@@ -8,7 +8,7 @@ const _dataBase = (() => {
   return src.replace(/common\/db\.js.*$/, 'data/');
 })();
 
-const _DATA_VER = '6';   // bump quand un /data/*.json change (force le rechargement)
+const _DATA_VER = '7';   // bump quand un /data/*.json change (force le rechargement)
 function _fetch(file) {
   return fetch(_dataBase + file + '?v=' + _DATA_VER).then(r => {
     if (!r.ok) throw new Error('DB: impossible de charger ' + file + ' (' + r.status + ')');
@@ -33,7 +33,9 @@ window.DB_READY = Promise.all([
   _fetch('factions.json'),
   _fetch('npc_roles.json'),
   _fetch('loot_profiles.json'),
-]).then(([weapons, armor, items, enemies, perks, npc, ammo, ammoLoot, npcXp, zones, zoneVariations, zoneOccupation, zoneThreat, factions, npcRoles, lootProfiles]) => {
+  _fetch('weapon_mods.json'),
+  _fetch('armor_mods.json'),
+]).then(([weapons, armor, items, enemies, perks, npc, ammo, ammoLoot, npcXp, zones, zoneVariations, zoneOccupation, zoneThreat, factions, npcRoles, lootProfiles, weaponMods, armorMods]) => {
 
   window.DB = {
     weapons,
@@ -57,6 +59,8 @@ window.DB_READY = Promise.all([
   window.FACTIONS        = factions || {};
   window.NPC_ROLES       = npcRoles || {};
   window.LOOT_PROFILES   = lootProfiles || {};
+  window.WEAPON_MODS     = weaponMods || {};
+  window.ARMOR_MODS      = armorMods || {};
 
   // WEAPONS_DB : format objet keyed par nom (accès O(1) dans les pages combat)
   window.WEAPONS_DB = {};
@@ -72,5 +76,5 @@ window.DB_READY = Promise.all([
   window.DB = { weapons: [], armor: [], food: [], drinks: [], drugs: [], stuff: [], ammo: [] };
   window.PERKS_DEF = {}; window.ENNEMIS_DB = {}; window.WEAPONS_DB = {}; window.AMMO_LOOT = [];
   window.NPC_XP = {perLevel:[], above20:{normal:7,mighty:14,legendary:21}};
-  window.ZONES_DB = {}; window.ZONE_VARIATIONS = {}; window.ZONE_OCCUPATION = {}; window.ZONE_THREAT = {}; window.FACTIONS = {}; window.NPC_ROLES = {}; window.LOOT_PROFILES = {};
+  window.ZONES_DB = {}; window.ZONE_VARIATIONS = {}; window.ZONE_OCCUPATION = {}; window.ZONE_THREAT = {}; window.FACTIONS = {}; window.NPC_ROLES = {}; window.LOOT_PROFILES = {}; window.WEAPON_MODS = {}; window.ARMOR_MODS = {};
 });

@@ -82,6 +82,13 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .inv-qty{font-family:'Oswald',sans-serif;font-size:13px;color:var(--tb);min-width:20px;text-align:center;}
 .inv-btn{background:none;border:none;color:var(--td);cursor:pointer;font-size:10px;padding:1px 3px;}
 .inv-btn:hover{color:var(--t);}
+/* Éditeur de mods (armes/armures) */
+.mods-panel{background:#040a04;border:1px solid var(--b2);border-top:none;margin:-3px 0 5px;padding:6px 8px;}
+.mods-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+.mods-lbl{font-size:8px;color:var(--am);letter-spacing:1px;min-width:5.5rem;flex:none;}
+.mods-sel{flex:1;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:8px;padding:3px;outline:none;}
+.mods-sel:focus{border-color:var(--g);}
+.mods-prev{font-size:8px;color:var(--g);margin-top:4px;padding-top:4px;border-top:1px solid var(--b);letter-spacing:.5px;}
 .fo-sel{background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:9px;padding:5px;outline:none;flex:1;}
 .fo-sel:focus{border-color:var(--g);}
 

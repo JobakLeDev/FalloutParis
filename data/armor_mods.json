@@ -1,0 +1,17 @@
+{
+  "_doc": "Mods d'armure officiels (RAW Fallout 2D20). Lining = doublure universelle (p.129), bonus de RD énergie/radiation. Material = renforcement (bonus RD physique). rd = bonus de résistance ajouté {phys,energy,rad}. w = poids ; cost = caps ; perk = prérequis.",
+  "slots": ["material", "lining"],
+  "slotLabels": { "material": "Matériau / renfort", "lining": "Doublure" },
+  "lining": [
+    { "id": "insulated",  "name": "Insulated Lining",  "prefix": "Insulated",  "rd": { "energy": 1 },           "w": 0, "cost": 10, "perk": "" },
+    { "id": "treated",    "name": "Treated Lining",    "prefix": "Treated",    "rd": { "energy": 1, "rad": 1 }, "w": 1, "cost": 20, "perk": "" },
+    { "id": "resistant",  "name": "Resistant Lining",  "prefix": "Resistant",  "rd": { "energy": 2, "rad": 1 }, "w": 1, "cost": 30, "perk": "Armorer 2" },
+    { "id": "protective", "name": "Protective Lining", "prefix": "Protective", "rd": { "energy": 2, "rad": 2 }, "w": 1, "cost": 40, "perk": "Armorer 4" },
+    { "id": "shielded",   "name": "Shielded Lining",   "prefix": "Shielded",   "rd": { "energy": 3, "rad": 3 }, "w": 1, "cost": 50, "perk": "Armorer 4" }
+  ],
+  "material": [
+    { "id": "boiled",   "name": "Boiled / Treated",   "prefix": "Boiled",   "rd": { "phys": 1, "energy": 1 }, "w": 0, "cost": 5,  "perk": "" },
+    { "id": "studded",  "name": "Studded / Reinforced","prefix": "Studded", "rd": { "phys": 2 },              "w": 1, "cost": 15, "perk": "Armorer 1" },
+    { "id": "polymer",  "name": "Polymer / Heavy",    "prefix": "Heavy",    "rd": { "phys": 4, "energy": 4 }, "w": 2, "cost": 25, "perk": "Armorer 1" }
+  ]
+}

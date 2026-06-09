@@ -88,7 +88,7 @@ let _declWeaps = [];         // armes proposées dans la déclaration d'attaque 
 function attackWeapons(){
   const d = joueurData; if(!d) return [];
   const list = (d.inventory||[]).filter(it => it.equipped && it.type==='WEAPON').map(inv => {
-    const db2 = WEAPONS_DB[inv.name] || {};
+    const db2 = fpApplyWeaponMods(WEAPONS_DB[inv.name] || {}, inv.mods);   // mods d'arme
     const tn  = db2.sk ? getTN(d, db2.sk).total + (inv.persoBonus?2:0) : 0;
     return { nom: inv.name, label: inv.name + (inv.persoBonus?' ★':''), tn, dmg: db2.dmg||'2D', persoBonus: !!inv.persoBonus };
   });
@@ -585,7 +585,7 @@ function renderMaCarte(){
   // Armes
   html += '<div style="margin-top:6px">';
   weaps.forEach(inv => {
-    const db2 = WEAPONS_DB[inv.name]||{};
+    const db2 = fpApplyWeaponMods(WEAPONS_DB[inv.name]||{}, inv.mods);   // mods d'arme
     const tn = db2.sk ? getTN(d, db2.sk).total + (inv.persoBonus?2:0) : 0;
     const sel = armeSelectionnee===inv.name;
     html += '<div class="jc-arme'+(sel?' selected-arme':'')+'">';
@@ -796,9 +796,13 @@ function refreshDesContext(){
 function selArme(nom, tn, dmg, persoBonus=false){
   armeSelectionnee = nom;
   nbDCActuel = parseInt(dmg)||2;
-  lastSkKeyJ = nom==='__unarmed__' ? 'barehand' : (WEAPONS_DB[nom]?.sk||'');
-  const ammoType = nom==='__unarmed__' ? '' : (WEAPONS_DB[nom]?.a||'');
-  currentArmeInfo = {nom, skKey:lastSkKeyJ, persoBonus, dmg, eff: nom==='__unarmed__' ? '' : (WEAPONS_DB[nom]?.eff||''), ammoType};
+  // Mods de l'arme équipée (effet/munition modifiés par les mods)
+  const invItem = nom==='__unarmed__' ? null
+    : (joueurData?.inventory||[]).find(x=>x.name===nom && x.type==='WEAPON');
+  const wdb = nom==='__unarmed__' ? {} : fpApplyWeaponMods(WEAPONS_DB[nom]||{}, invItem?.mods);
+  lastSkKeyJ = nom==='__unarmed__' ? 'barehand' : (wdb.sk||'');
+  const ammoType = nom==='__unarmed__' ? '' : (wdb.a||'');
+  currentArmeInfo = {nom, skKey:lastSkKeyJ, persoBonus, dmg, eff: nom==='__unarmed__' ? '' : (wdb.eff||''), ammoType};
   useStackedDeck = false;
   const btn=document.getElementById('j-stacked-deck-btn'); if(btn) btn.classList.remove('on');
   const tnEl=document.getElementById('j-tn-val'); if(tnEl) tnEl.textContent = tn;

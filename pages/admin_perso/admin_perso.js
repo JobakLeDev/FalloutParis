@@ -173,18 +173,77 @@ function renderPerks(){
 function chPerk(n,v){editPerks[n]=Math.max(0,Math.min(PERKS_DEF[n]?.max||1,(editPerks[n]||0)+v));renderPerks();}
 
 // ---- INVENTAIRE ----
+let _modsOpen = -1;
+const _MODDABLE = { weapon:['WEAPON'], armor:['ARMOR','POWERARMOR','CLOTHING','OUTFIT'] };
+function _itemModKind(it){
+  if(it.type==='WEAPON') return 'weapon';
+  if(_MODDABLE.armor.includes(it.type)) return 'armor';
+  return null;
+}
 function renderInventory(){
   const g=document.getElementById('inv-grid');g.innerHTML='';
   editInventory.forEach((it,i)=>{
+    const kind=_itemModKind(it);
+    const nbMods = it.mods ? Object.values(it.mods).filter(Boolean).length : 0;
     g.innerHTML+=`<div class="inv-row">
-      <span class="inv-name">${it.name}</span>
+      <span class="inv-name">${it.name}${nbMods?` <span style="color:var(--am);font-size:7px">🔧${nbMods}</span>`:''}</span>
       <span style="font-size:7px;color:var(--td);min-width:50px">${it.type}</span>
+      ${kind?`<button class="inv-btn" title="Mods" onclick="toggleMods(${i})">🔧</button>`:''}
       <button class="inv-btn" onclick="chInvQty(${i},-1)">−</button>
       <span class="inv-qty">${it.qty}</span>
       <button class="inv-btn" onclick="chInvQty(${i},1)">+</button>
       <button class="inv-btn" style="color:var(--rd)" onclick="rmInvItem(${i})">✕</button>
     </div>`;
+    if(_modsOpen===i && kind) g.innerHTML+=renderModsPanel(i, kind);
   });
+}
+function toggleMods(i){ _modsOpen = (_modsOpen===i? -1 : i); renderInventory(); }
+function renderModsPanel(i, kind){
+  const it=editInventory[i];
+  const MODS = kind==='weapon' ? (window.WEAPON_MODS||{}) : (window.ARMOR_MODS||{});
+  const slots = MODS.slots||[]; const labels = MODS.slotLabels||{};
+  it.mods = it.mods || {};
+  let rows = slots.map(slot=>{
+    const list = MODS[slot]||[];
+    const cur = it.mods[slot]||'';
+    const opts = '<option value="">— aucun —</option>' + list.map(m=>{
+      const fx = _modSummary(m, kind);
+      return `<option value="${m.id}"${m.id===cur?' selected':''}>${m.name}${fx?' — '+fx:''}</option>`;
+    }).join('');
+    return `<div class="mods-row"><span class="mods-lbl">${labels[slot]||slot}</span>
+      <select class="mods-sel" onchange="setItemMod(${i},'${slot}',this.value)">${opts}</select></div>`;
+  }).join('');
+  // Aperçu des stats modifiées
+  let preview='';
+  if(kind==='weapon'){
+    const base=(window.DB?.weapons||[]).find(w=>w.n===it.name);
+    if(base){ const e=fpApplyWeaponMods(base, it.mods);
+      preview=`<div class="mods-prev">→ ${e.dmg} · ${e.eff} · cadence ${e.fr} · ${e.a&&e.a!=='-'?e.a:'—'}${e._rangeStep?` · portée ${e._rangeStep>0?'+':''}${e._rangeStep}`:''} · ${e.w}kg</div>`; }
+  } else {
+    const base=(window.DB?.armor||[]).find(a=>a.n===it.name);
+    if(base){ const e=fpApplyArmorMods(base, it.mods);
+      preview=`<div class="mods-prev">→ Ph ${e.ph} / Én ${e.en} / Rad ${e.rad} · ${e.w}kg</div>`; }
+  }
+  return `<div class="mods-panel">${rows}${preview}</div>`;
+}
+function _modSummary(m, kind){
+  const p=[];
+  if(m.setDmgCD!=null) p.push('='+m.setDmgCD+'DC');
+  if(m.dmgCD) p.push((m.dmgCD>0?'+':'')+m.dmgCD+'DC');
+  if(m.fr) p.push((m.fr>0?'+':'')+m.fr+' cad.');
+  if(m.range) p.push('portée '+(m.range>0?'+':'')+m.range);
+  if(m.ammo) p.push(m.ammo);
+  (m.add||[]).forEach(e=>p.push('+'+e));
+  (m.remove||[]).forEach(e=>p.push('−'+e));
+  if(m.rd){ if(m.rd.phys)p.push('+'+m.rd.phys+' Ph'); if(m.rd.energy)p.push('+'+m.rd.energy+' Én'); if(m.rd.rad)p.push('+'+m.rd.rad+' Rad'); }
+  if(m.perk) p.push('('+m.perk+')');
+  return p.join(', ');
+}
+function setItemMod(i, slot, val){
+  const it=editInventory[i]; it.mods=it.mods||{};
+  if(val) it.mods[slot]=val; else delete it.mods[slot];
+  if(!Object.keys(it.mods).length) delete it.mods;
+  renderInventory();
 }
 function chInvQty(i,n){editInventory[i].qty=Math.max(0,editInventory[i].qty+n);renderInventory();}
 function rmInvItem(i){editInventory.splice(i,1);renderInventory();}
