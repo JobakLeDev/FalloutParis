@@ -20,4 +20,7 @@ body.embed .bhdr{display:none;}
 .b-nom b{color:var(--am);font-family:'Oswald',sans-serif;}
 .b-take{background:var(--gk);border:1px solid var(--g);color:var(--tb);font-family:'Share Tech Mono',monospace;font-size:9px;padding:6px 14px;cursor:pointer;letter-spacing:1px;flex:none;}
 .b-take:hover{background:var(--g);color:#0c150c;}
+.b-tout-row{display:flex;justify-content:flex-end;margin-bottom:6px;}
+.b-tout{background:var(--am);border-color:var(--am);color:#0c150c;font-weight:bold;}
+.b-tout:hover{background:#ffc94d;color:#0c150c;}
 .b-mjnote{font-size:8px;color:var(--td);}
