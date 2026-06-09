@@ -31,7 +31,11 @@ const SP = () => char.special;
 
 function hpMax(){return SP().L+SP().E+Math.max(0,char.niveau-1)+(char.perks['Life Giver']||0)*SP().E+(char.survie?.wellRested?2:0);}
 function forEff(){return (char.perks['Adrenalin Rush']>0&&char.hp<hpMax())?10:SP().S;}
-function chargeMax(){const f=forEff(),b=(150+f*10)/2.2046;return Math.round((b*(char.powerArmor?1.5:1)+(char.powerArmor?200:0))*10)/10;}
+// Sacs à dos : bonus de charge max = multiplicateur × FOR (un seul sac équipé à la fois)
+const BACKPACK_BONUS={'Backpack Small':5,'Backpack Large':10};
+function isBackpack(it){return !!it && BACKPACK_BONUS[it.name]!=null;}
+function backpackMult(){const bp=char.inventory.find(it=>isBackpack(it)&&it.equipped);return bp?BACKPACK_BONUS[bp.name]:0;}
+function chargeMax(){const f=forEff(),b=(150+f*10)/2.2046;const base=b*(char.powerArmor?1.5:1)+(char.powerArmor?200:0);return Math.round((base+backpackMult()*f)*10)/10;}
 function chargeActuelle(){let t=0;char.inventory.forEach(it=>t+=(it.qty||1)*(it.w||0));char.ammo.forEach(a=>t+=a.qty*0.02);return Math.round(t*100)/100;}
 function xpNext(){return XP_TABLE[Math.min(char.niveau,20)]||21000;}
 function rdP(type){
@@ -440,12 +444,13 @@ function rInvAll(){
   const el=document.getElementById('inv-all-list');if(!el)return;
   el.innerHTML='';
   char.inventory.forEach((it,i)=>{
-    el.innerHTML+=`<div class="irow" style="grid-template-columns:44px 1fr 40px 42px 20px;gap:4px;${it.equipped?'border-color:var(--gd);background:#0a140a;':''}">
+    const bp=isBackpack(it);
+    el.innerHTML+=`<div class="irow" style="grid-template-columns:44px 1fr 40px 42px auto;gap:4px;${it.equipped?'border-color:var(--gd);background:#0a140a;':''}">
       <span class="itag ${it.type}">${it.type}</span>
-      <span class="iname${it.equipped?' eq':''}">${it.name}${it.equipped?' ●':''}</span>
+      <span class="iname${it.equipped?' eq':''}">${it.name}${it.equipped?' ●':''}${bp?` <span class="iname-cal">+${BACKPACK_BONUS[it.name]}×FOR</span>`:''}</span>
       <span class="iqval">${it.qty}</span>
       <span class="ipw">${((it.qty||1)*(it.w||0)).toFixed(2)}kg</span>
-      <span></span>
+      ${bp?`<button class="ieq-btn ${it.equipped?'on':'off'}" onclick="tEquip(${i})">${it.equipped?'● ÉQUIPÉ':'○ Équiper'}</button>`:'<span></span>'}
     </div>`;
   });
 }
@@ -639,6 +644,10 @@ function tEquip(i){
         else if(zone && oZone===zone) other.equipped=false;          // 1 pièce / emplacement
       }
     });
+  }
+  // Sac à dos : un seul équipé à la fois
+  if(!it.equipped && isBackpack(it)){
+    char.inventory.forEach((other,j)=>{ if(j!==i && isBackpack(other)) other.equipped=false; });
   }
   // Slots d'armes : 2 armes + 1 explosif
   if(!it.equipped && it.type==='WEAPON'){
