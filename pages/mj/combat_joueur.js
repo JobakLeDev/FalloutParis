@@ -7,7 +7,7 @@ const DAMAGE_EFFECTS = {
   Persistent:  { calc: (ef, dmg)    => ({ note: 'Subit '+dmg+' dmg/tour × '+ef+' tour(s) (action maj. pour arrêter)' }) },
   Piercing:    { calc: (ef, dmg, x) => ({ note: 'Ignore '+(ef*(x||1))+' RD (Perforant '+x+')' }) },
   Radioactive: { calc: (ef, dmg)    => ({ rad: ef, note: '+'+ef+' RAD après les dégâts' }) },
-  Spread:      { calc: (ef, dmg)    => ({ note: ef+'× '+Math.floor(dmg/2)+' dmg supp. zone aléatoire' }) },
+  Spread:      { calc: (ef, dmg)    => ({ dmgBonus: ef*Math.floor(dmg/2), note: ef+' touche(s) supp. × '+Math.floor(dmg/2)+' dmg (inclus, zone aléatoire)' }) },
   Stun:        { calc: (ef, dmg)    => ({ note: 'Cible étourdie : pas d\'actions normales au prochain tour' }) },
   Vicious:     { calc: (ef, dmg)    => ({ dmgBonus: ef, note: '+'+ef+' dmg (inclus)' }) },
 };
@@ -18,6 +18,16 @@ function parseEffet(eff){
   const name = parts[0];
   const val  = parts[1] ? parseInt(parts[1]) : 1;
   return DAMAGE_EFFECTS[name] ? { name, val } : null;
+}
+// Tous les effets de dégâts d'une arme (séparés par des virgules) : "Spread,Vicious" → [{Spread},{Vicious}]
+function parseEffets(eff){
+  if(!eff || eff === '—' || !eff.trim()) return [];
+  return eff.split(',').map(s => {
+    const parts = s.trim().split(/\s+/);
+    const name = parts[0];
+    const val  = parts[1] ? parseInt(parts[1]) : 1;
+    return DAMAGE_EFFECTS[name] ? { name, val } : null;
+  }).filter(Boolean);
 }
 
 const MINOR_ACTIONS = [
@@ -1594,15 +1604,20 @@ function jLancerCD(){
     vals.map(v=>'<span style="color:'+(v.includes('⚡')?'var(--am)':v==='—'?'var(--td)':'var(--tb)')+';font-size:14px;font-family:Oswald,sans-serif">'+v+'</span>').join(' ')
     +' <b style="color:var(--am)">'+dmgRaw+'dmg</b>'+(ef?' <span style="color:var(--am)">+'+ef+'⚡</span>':'');
 
-  // Calculer l'effet de dégâts (si ⚡)
+  // Calculer les effets de dégâts (si ⚡) — TOUS les effets de l'arme (Spread, Vicious, Persistent…)
   let dmgTotal = dmgRaw;
   let effetInfo = null;
   if(ef > 0){
-    const parsed = parseEffet(currentArmeInfo?.eff || '');
-    if(parsed){
-      const res = DAMAGE_EFFECTS[parsed.name].calc(ef, dmgRaw, parsed.val);
-      if(res.dmgBonus) dmgTotal += res.dmgBonus;
-      effetInfo = { nom: currentArmeInfo.eff, note: res.note, rad: res.rad || 0 };
+    const all = parseEffets(currentArmeInfo?.eff || '');
+    if(all.length){
+      const notes = []; let radSum = 0;
+      all.forEach(p => {
+        const res = DAMAGE_EFFECTS[p.name].calc(ef, dmgRaw, p.val);
+        if(res.dmgBonus) dmgTotal += res.dmgBonus;
+        if(res.rad) radSum += res.rad;
+        if(res.note) notes.push(p.name + ' : ' + res.note);
+      });
+      effetInfo = { nom: currentArmeInfo.eff, note: notes.join(' · '), rad: radSum };
     }
   }
 
