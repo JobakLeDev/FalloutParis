@@ -187,11 +187,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .tracker-item.allie .tracker-nom{ color:var(--t); font-size:10px; }
 
 /* ---- MINI-CARTE DE COMBAT (grille de cases) ---- */
-.cmap{ display:grid; gap:2px; background:#0a140a; border:1px solid var(--b2); padding:4px; }
-.cmap-cell{ aspect-ratio:1; background:#0e1a0e; border:1px solid #162416; display:flex; align-items:center; justify-content:center; font-size:11px; cursor:pointer; color:var(--td); min-width:0; user-select:none; }
+.cmap{ display:grid; gap:2px; background:#0a140a; border:1px solid var(--b2); padding:4px; width:max-content; max-width:100%; overflow:auto; }
+.cmap-cell{ width:22px; height:22px; background:#0e1a0e; border:1px solid #162416; display:flex; align-items:center; justify-content:center; font-size:10px; cursor:pointer; color:var(--td); user-select:none; }
 .cmap-cell:hover{ border-color:var(--b2); }
 .cmap-cell.obst{ background:#241a0a; color:var(--am); }
-.cmap-cell.tok{ font-family:'Oswald',sans-serif; font-weight:600; font-size:13px; }
+.cmap-cell.tok{ font-family:'Oswald',sans-serif; font-weight:600; font-size:12px; }
 .cmap-cell.tk-j{ background:#15321f; color:#9be6c0; border-color:var(--g); }
 .cmap-cell.tk-a{ background:#13251a; color:#7ed8a0; border-color:var(--gd); }
 .cmap-cell.tk-e{ background:#2a1010; color:#ff9a9a; border-color:var(--rd); }

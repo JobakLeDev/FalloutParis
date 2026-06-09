@@ -763,7 +763,7 @@ function renderCombatMap(){
   const toks = _mapTokens();
   const byPos = {}; Object.keys(combatMap.pos).forEach(id => { const p=combatMap.pos[id]; byPos[p.x+','+p.y]=id; });
   const obs = new Set((combatMap.obstacles||[]).map(o=>o.x+','+o.y));
-  let html = `<div class="cmap" style="grid-template-columns:repeat(${w},1fr)">`;
+  let html = `<div class="cmap" style="grid-template-columns:repeat(${w},22px)">`;
   for(let y=0;y<h;y++) for(let x=0;x<w;x++){
     const key = x+','+y;
     const tid = byPos[key];
