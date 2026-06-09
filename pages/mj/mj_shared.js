@@ -119,6 +119,40 @@ function lootProfileKey(enemy){
   if(type && LP.typeProfile && LP.typeProfile[type]) return LP.typeProfile[type];
   return 'human';   // unités de faction relabellisées / inconnus → humanoïdes
 }
+
+// Compétence d'attaque ennemie → compétence d'arme (sk) du DB
+const LOOT_SKILL_SK = {
+  'guns':'light_weapon', 'small guns':'light_weapon', 'big guns':'heavy_weapon',
+  'energy weapons':'en_weapon', 'explosives':'explosives', 'throwing':'throwing',
+  'melee weapons':'cac_weapon'
+};
+function _lootWdmg(w){ return parseInt(w?.dmg) || 0; }   // "4D" → 4
+// Arme RÉELLEMENT utilisée : on choisit dans le DB une arme cohérente avec
+// l'attaque de l'ennemi (compétence + nb de dés), puis on en déduit la munition (a).
+// Retourne {weapon, ammoName} ou null (bête / pas d'arme identifiable).
+function enemyWeaponLoot(enemy, profileKey){
+  const weapons = window.DB?.weapons || [];
+  if(!weapons.length) return null;
+  const atks = window.ENNEMIS_DB?.[enemy?.nom]?.attacks || [];
+  const weaponed = atks.filter(a => LOOT_SKILL_SK[a.skill]);   // ignore unarmed / melee naturel
+  let sk, targetDmg;
+  if(weaponed.length){
+    const best = weaponed.reduce((m,a) => (a.dmg||0) > (m.dmg||0) ? a : m);
+    sk = LOOT_SKILL_SK[best.skill]; targetDmg = best.dmg || 0;
+  } else if(profileKey === 'machine'){ sk = 'en_weapon'; targetDmg = 5; }
+  else if(profileKey === 'human'){ sk = Math.random() < 0.5 ? 'light_weapon' : 'cac_weapon'; targetDmg = 3; }
+  else return null;   // bête : pas d'arme
+  let cand = weapons.filter(w => w.sk === sk);
+  if(!cand.length) cand = weapons.filter(w => w.sk === 'light_weapon');
+  if(!cand.length) cand = weapons;
+  // pondération : rareté × proximité du nb de dés
+  let tot = 0; const wts = cand.map(w => { const rar = Math.max(1, 6-(w.r||3)); const close = 1/(1+Math.abs(_lootWdmg(w)-targetDmg)); const x = rar*close; tot += x; return x; });
+  let r = Math.random()*tot, pick = cand[cand.length-1];
+  for(let i=0;i<cand.length;i++){ r -= wts[i]; if(r<=0){ pick = cand[i]; break; } }
+  const a = pick.a;
+  return { weapon: pick, ammoName: (a && a !== '-' && a !== '–') ? a : null };
+}
+function _lootAmmoQty(t){ return Math.max(2, lootSumCD(4) + t*2); }   // quantité de munitions pour l'arme lâchée
 function generateCombatLoot(enemies){
   const LP = window.LOOT_PROFILES || {}; const DB = window.DB || {};
   const items = []; let caps = 0;
@@ -143,16 +177,25 @@ function generateCombatLoot(enemies){
       const p = LP.profiles?.machine || {};
       const sc = p.scrap;
       if(sc && sc.pool?.length){ const n = Math.max(1, t * (sc.perTier || 1)); for(let i=0;i<n;i++){ add(sc.pool[Math.floor(Math.random()*sc.pool.length)], 'STUFF', 'stuff', 1); } }
-      if(p.ammo && Math.random() < (p.ammo.chance ?? 0.45)){ const a = lootRollAmmo(); if(a) add(a.ammo, 'AMMO', 'ammo', a.qty); }
-      if(p.weapon && Math.random() < (p.weapon.chance ?? 0.15)){ const w = lootWeightedPick(DB.weapons); if(w) add(w.n, w.t || 'WEAPON', 'weapons', 1); }
+      // arme réellement utilisée (montée sur le robot/la tourelle) + ses munitions
+      if(p.weapon && Math.random() < (p.weapon.chance ?? 0.3)){
+        const wl = enemyWeaponLoot(en, 'machine');
+        if(wl){ add(wl.weapon.n, wl.weapon.t || 'WEAPON', 'weapons', 1); if(wl.ammoName) add(wl.ammoName, 'AMMO', 'ammo', _lootAmmoQty(t)); }
+      }
+      if(p.ammo && Math.random() < (p.ammo.chance ?? 0.6)){ const a = lootRollAmmo(); if(a) add(a.ammo, 'AMMO', 'ammo', a.qty); }
       if(p.caps && Math.random() < (p.caps.chance ?? 0.2)) caps += (p.caps.base || 0) + lootSumCD(t) * (p.caps.perTier || 2);
     } else { // human
       const p = LP.profiles?.human || {};
-      if(p.weapon && Math.random() < (p.weapon.chance ?? 0.5)){ const w = lootWeightedPick(DB.weapons); if(w) add(w.n, w.t || 'WEAPON', 'weapons', 1); }
+      // arme réellement utilisée par l'ennemi + ses munitions
+      if(p.weapon && Math.random() < (p.weapon.chance ?? 0.5)){
+        const wl = enemyWeaponLoot(en, 'human');
+        if(wl){ add(wl.weapon.n, wl.weapon.t || 'WEAPON', 'weapons', 1); if(wl.ammoName) add(wl.ammoName, 'AMMO', 'ammo', _lootAmmoQty(t)); }
+      }
       if(p.armor  && Math.random() < (p.armor.chance  ?? 0.35)){ const a = lootWeightedPick(DB.armor);  if(a) add(a.n, a.t || 'ARMOR', 'armor', 1); }
       if(p.drugs  && Math.random() < (p.drugs.chance  ?? 0.4)){ const d = lootWeightedPick(DB.drugs);  if(d) add(d.n, d.t || 'DRUGS', 'drugs', 1); }
       if(p.food   && Math.random() < (p.food.chance   ?? 0.5)){ const f = lootWeightedPick(DB.food);   if(f) add(f.n, f.t || 'FOOD', 'food', 1); }
       if(p.drinks && Math.random() < (p.drinks.chance ?? 0.4)){ const dr = lootWeightedPick(DB.drinks); if(dr) add(dr.n, dr.t || 'DRINK', 'drinks', 1); }
+      // munitions supplémentaires (en plus de celles de l'arme)
       if(p.ammo   && Math.random() < (p.ammo.chance   ?? 0.7)){ const a = lootRollAmmo(); if(a) add(a.ammo, 'AMMO', 'ammo', a.qty); }
       caps += (p.caps?.base || 0) + lootSumCD(t) * (p.caps?.perTier || 3);
     }

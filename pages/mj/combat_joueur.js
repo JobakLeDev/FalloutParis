@@ -1471,6 +1471,21 @@ function renderDiceAccess(){
   // Boutons de lancer : actifs seulement s'il reste une attaque à résoudre
   const lockDice = !attackReady;
   const lance = document.getElementById('j-lance-btn'); if(lance) lance.disabled = lockDice || (twoD20Done === attacksDone);  // un seul 2D20 par attaque
+
+  // Sélecteur de dés bonus : griser les options dont le coût AP dépasse le pool de groupe
+  const sel = document.getElementById('j-dice-sel');
+  if(sel){
+    sel.style.display = lockDice ? 'none' : '';
+    const pool = combatState?.apPool || 0;
+    const cost = {2:0, 3:1, 4:3, 5:6};
+    [2,3,4,5].forEach(i => {
+      const b = document.getElementById('j-d20-'+i); if(!b) return;
+      const tooExpensive = cost[i] > pool;
+      b.disabled = tooExpensive;
+      b.style.opacity = tooExpensive ? '0.4' : '';
+    });
+    if(cost[nbDiceJ] > pool) setNbDiceJ(2);   // option choisie devenue inabordable → retour à 2D
+  }
   const cdBtn = document.querySelector('.cd-btn');
   if(cdBtn) cdBtn.disabled = lockDice;
 

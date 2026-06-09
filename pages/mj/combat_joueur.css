@@ -56,6 +56,19 @@
 .des-row   { display: flex; align-items: center; gap: 4px; }
 .dice-result.sm { font-size: 9px; padding: 3px 4px; min-height: 0; }
 
+/* Sélecteur de dés bonus (dépense d'AP de groupe pour +d20 avant le jet) */
+.d20-sel { display: flex; align-items: center; gap: 3px; margin-bottom: 5px; flex-wrap: wrap; }
+.d20-sel-lbl { font-size: 7px; color: var(--td); letter-spacing: 1px; margin-right: 2px; }
+.d20opt {
+  background: #060d06; border: 1px solid var(--b2); color: var(--t);
+  font-family: 'Share Tech Mono', monospace; font-size: 8px; line-height: 1;
+  padding: 4px 6px; cursor: pointer; transition: all .1s;
+}
+.d20opt small { color: var(--am); font-size: 6px; margin-left: 1px; vertical-align: top; }
+.d20opt:hover:not(:disabled) { border-color: var(--g); color: var(--tb); }
+.d20opt.on { border-color: var(--am); background: var(--gk); color: var(--tb); }
+.d20opt:disabled { cursor: not-allowed; }
+
 /* ============================================================
    BANNIÈRE MON TOUR
    ============================================================ */

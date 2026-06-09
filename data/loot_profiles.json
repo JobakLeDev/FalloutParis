@@ -36,8 +36,8 @@
         "perTier": 1,
         "pool": ["Ferraille", "Circuit imprimé", "Composant électronique", "Huile de machine", "Vis et écrous", "Cellule à fusion (vide)"]
       },
-      "ammo": { "chance": 0.45 },
-      "weapon": { "chance": 0.15 },
+      "ammo": { "chance": 0.6 },
+      "weapon": { "chance": 0.3 },
       "caps": { "chance": 0.2, "base": 0, "perTier": 2 }
     }
   },
@@ -54,6 +54,11 @@
     "Mole Rat": "Mole Rat Chunks",
     "Radstag": "Grilled Radstag",
     "Yao Guai": "Yao Guai Roast",
-    "Deathclaw": "Deathclaw Steak"
+    "Deathclaw": "Deathclaw Steak",
+    "Radroach": "Radroach Meat",
+    "Bloatfly": "Bloatfly Meat",
+    "Mutant Hound": "Mutant Hound Chops",
+    "Chien sauvage": "Dog Meat",
+    "Chien": "Dog Meat"
   }
 }
