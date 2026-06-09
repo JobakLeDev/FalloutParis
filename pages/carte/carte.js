@@ -752,7 +752,7 @@ function renderMetroTokens(){
     const sel = movingMetroToken && movingMetroToken.id === id;
     const m = L.marker([pos.lat, pos.lng], { icon: L.divIcon({ className: 'token-pin' + (me ? ' me' : '') + (sel ? ' sel' : ''),
       html: `<span class="token-dot">${nom.charAt(0).toUpperCase()}</span><span class="token-label">${nom}${me ? ' (toi)' : ''}</span>`,
-      iconSize: [18, 18], iconAnchor: [9, 9] }) }).addTo(metroTokenLayer);
+      iconSize: [24, 24], iconAnchor: [12, 12] }) }).addTo(metroTokenLayer);
     if (isMJ){
       const st = nearestStation(pos.lat, pos.lng);
       const canUp = st && st.dist < METRO_DESCEND_M;
@@ -1013,12 +1013,16 @@ function renderPOIs() {
   for (const k in poiMarkers) delete poiMarkers[k];
   (mapData.pois || []).forEach(p => {
     if (!visibleFor(p)) return;
+    const hasType = !!POI_TYPES[p.type];
     const t = POI_TYPES[p.type] || POI_TYPES.other;
     const dim = isMJ && !anyRevealed(p);
+    // POI sans type défini → simple pastille verte lumineuse (pas d'icône)
+    const dotHtml = hasType
+      ? `<span class="poi-dot" style="background:${t.color}">${t.icon}</span>`
+      : `<span class="poi-dot glow"></span>`;
     const m = L.marker([p.lat, p.lng], {
       draggable: isMJ && editMode, opacity: dim ? 0.5 : 1,
-      icon: L.divIcon({ className: 'poi-pin',
-        html: `<span class="poi-dot" style="background:${t.color}">${t.icon}</span>`,
+      icon: L.divIcon({ className: 'poi-pin', html: dotHtml,
         iconSize: [16, 16], iconAnchor: [8, 8] }),
     }).addTo(poiLayer);
     m.bindTooltip(p.name + (dim ? ' 🔒' : ''), { className: 'map-tip', direction: 'top', offset: [0, -8] });
@@ -1087,7 +1091,7 @@ function renderTokens() {
       draggable: isMJ && editMode,
       icon: L.divIcon({ className: 'token-pin' + (me ? ' me' : '') + (sel ? ' sel' : ''),
         html: `<span class="token-dot">${nom.charAt(0).toUpperCase()}</span><span class="token-label">${nom}${me ? ' (toi)' : ''}</span>`,
-        iconSize: [18, 18], iconAnchor: [9, 9] }),
+        iconSize: [24, 24], iconAnchor: [12, 12] }),
     }).addTo(tokenLayer);
     let mjBtns = '';
     if (isMJ) {
@@ -1120,7 +1124,7 @@ function renderGroupMarker(party, gp, iAmMember, layer, src, underground, my){
     draggable: isMJ && editMode && !underground,
     icon: L.divIcon({ className: 'token-pin group' + (me ? ' me' : ''),
       html: `<span class="token-dot">👥</span><span class="token-label">${nom} (${gp.count})${me ? ' (toi)' : ''}</span>`,
-      iconSize: [18, 18], iconAnchor: [9, 9] }),
+      iconSize: [24, 24], iconAnchor: [12, 12] }),
   }).addTo(layer);
 
   let mjBtns = '';

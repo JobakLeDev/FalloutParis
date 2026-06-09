@@ -24,7 +24,7 @@ body.embed #mj-left,body.embed #mj-right{display:none !important;}
 body.embed #map-tabs{padding:0;}
 
 /* PARIS — carte dans un cadre fermé, centré, ~65% de la zone */
-#map-paris-wrap{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;padding:8px;overflow:hidden;}
+#map-paris-wrap{flex:1;display:flex;align-items:flex-start;justify-content:center;min-height:0;padding:0 8px 8px;overflow:hidden;}
 #map{width:66%;height:66%;background:#071307;position:relative;border:1px solid var(--b2);box-shadow:inset 0 0 30px rgba(0,0,0,0.6),0 0 0 1px #060d06;overflow:hidden;}
 /* Intégré dans la fiche (iframe) : la carte remplit tout le cadre */
 body.embed #map, body.embed #map-metro{ width:100%; height:100%; }
@@ -103,6 +103,8 @@ body.embed #map, body.embed #map-metro{ width:100%; height:100%; }
 /* POI */
 .poi-pin{display:flex !important;align-items:center;gap:4px;white-space:nowrap;}
 .poi-dot{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#08120a;border:2px solid #060d06;box-shadow:0 0 6px rgba(0,0,0,.7);flex:none;}
+/* Point par défaut (POI sans icône) : pastille verte légèrement lumineuse */
+.poi-dot.glow{width:13px;height:13px;background:#5dbe5d;border:1px solid #0c1f0c;box-shadow:0 0 6px rgba(93,190,93,.8),0 0 2px rgba(93,190,93,.6);}
 .poi-svg{width:11px;height:11px;display:block;}
 .poi-pick .poi-svg{width:18px;height:18px;}
 .poi-label{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.5px;color:var(--tb);text-shadow:0 0 4px #000,0 0 4px #000,1px 1px 2px #000;}
@@ -142,8 +144,8 @@ img.land-icon-img{
 
 /* JETONS JOUEURS */
 .token-pin{display:flex !important;align-items:center;gap:4px;white-space:nowrap;}
-.token-dot{width:18px;height:18px;border-radius:50%;background:#2a4a8a;color:#fff;border:2px solid var(--tb);display:flex;align-items:center;justify-content:center;font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;box-shadow:0 0 8px rgba(74,123,166,.8);flex:none;}
-.token-label{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.5px;color:#cfe6ff;text-shadow:0 0 4px #000,0 0 4px #000,1px 1px 2px #000;}
+.token-dot{width:24px;height:24px;border-radius:50%;background:#2a4a8a;color:#fff;border:2px solid var(--tb);display:flex;align-items:center;justify-content:center;font-family:'Oswald',sans-serif;font-size:14px;font-weight:600;box-shadow:0 0 8px rgba(74,123,166,.8);flex:none;}
+.token-label{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.5px;color:#cfe6ff;text-shadow:0 0 4px #000,0 0 4px #000,1px 1px 2px #000;}
 
 /* POPUP */
 .leaflet-popup-content-wrapper{background:var(--p2);border:1px solid var(--b2);border-radius:0;color:var(--t);}
