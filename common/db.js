@@ -8,7 +8,7 @@ const _dataBase = (() => {
   return src.replace(/common\/db\.js.*$/, 'data/');
 })();
 
-const _DATA_VER = '4';   // bump quand un /data/*.json change (force le rechargement)
+const _DATA_VER = '5';   // bump quand un /data/*.json change (force le rechargement)
 function _fetch(file) {
   return fetch(_dataBase + file + '?v=' + _DATA_VER).then(r => {
     if (!r.ok) throw new Error('DB: impossible de charger ' + file + ' (' + r.status + ')');

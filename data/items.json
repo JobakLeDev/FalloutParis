@@ -2,7 +2,7 @@
   "food": [
     {"n":"Bloodbug Steak",       "t":"FOOD","hp":10,"eff":"PV max +3 jusqu'à fin scène","rad":null,"w":0.09,"r":2},
     {"n":"Brahmin Meat",         "t":"FOOD","hp":3, "eff":"—","rad":"1D","w":0.45,"r":1},
-    {"n":"Deathclaw Steak",      "t":"FOOD","hp":14,"eff":"Relancer 1d20 tests FOR","rad":"1D","w":0.45,"r":3},
+    {"n":"Deathclaw Steak",      "t":"FOOD","hp":14,"eff":"Relancer 1d20 tests FOR","rad":null,"w":0.45,"r":3},
     {"n":"Grilled Radstag",      "t":"FOOD","hp":11,"eff":"Charge +25 jusqu'à fin scène","rad":null,"w":0.45,"r":2},
     {"n":"Mirelurk Cake",        "t":"FOOD","hp":12,"eff":"Respirer sous l'eau","rad":null,"w":0.09,"r":2},
     {"n":"Mirelurk Egg Omelette","t":"FOOD","hp":7, "eff":"+2 PA réserve groupe","rad":null,"w":0.09,"r":2},
@@ -16,12 +16,12 @@
     {"n":"Baked Bloatfly",       "t":"FOOD","hp":6, "eff":"+2 RD radiation jusqu'à fin scène suivante","rad":null,"w":0.09,"r":1},
     {"n":"Mutant Hound Chops",   "t":"FOOD","hp":8, "eff":"Soigne 2 dégâts de radiation","rad":null,"w":0.09,"r":2},
     {"n":"Mutt Chops",           "t":"FOOD","hp":6, "eff":"—","rad":null,"w":0.09,"r":1},
-    {"n":"Cram",                 "t":"FOOD","hp":5, "eff":"—","rad":null,"w":0.09,"r":1},
+    {"n":"Cram",                 "t":"FOOD","hp":3, "eff":"—","rad":"1D","w":0.09,"r":1},
     {"n":"Noodle Cup",           "t":"FOOD","hp":6, "eff":"—","rad":null,"w":0.09,"r":1},
     {"n":"Salisbury Steak",      "t":"FOOD","hp":5, "eff":"—","rad":"1D","w":0.09,"r":1},
     {"n":"Fancy Lads Snack Cakes","t":"FOOD","hp":3,"eff":"—","rad":"1D","w":0.09,"r":1},
     {"n":"Pork n Beans",         "t":"FOOD","hp":4, "eff":"—","rad":"1D","w":0.09,"r":1},
-    {"n":"Mutfruit",             "t":"FOOD","hp":3, "eff":"—","rad":"1D","w":0.09,"r":1},
+    {"n":"Mutfruit",             "t":"FOOD","hp":5, "eff":"—","rad":"1D","w":0.09,"r":1},
     {"n":"Carrot",               "t":"FOOD","hp":3, "eff":"—","rad":"1D","w":0.09,"r":1},
     {"n":"Tato",                 "t":"FOOD","hp":3, "eff":"—","rad":"1D","w":0.09,"r":1}
   ],
