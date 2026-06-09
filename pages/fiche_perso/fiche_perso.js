@@ -444,13 +444,12 @@ function rInvAll(){
   const el=document.getElementById('inv-all-list');if(!el)return;
   el.innerHTML='';
   char.inventory.forEach((it,i)=>{
-    const bp=isBackpack(it);
-    el.innerHTML+=`<div class="irow" style="grid-template-columns:44px 1fr 40px 42px auto;gap:4px;${it.equipped?'border-color:var(--gd);background:#0a140a;':''}">
+    el.innerHTML+=`<div class="irow" style="grid-template-columns:44px 1fr 40px 42px 20px;gap:4px;${it.equipped?'border-color:var(--gd);background:#0a140a;':''}">
       <span class="itag ${it.type}">${it.type}</span>
-      <span class="iname${it.equipped?' eq':''}">${it.name}${it.equipped?' ●':''}${bp?` <span class="iname-cal">+${BACKPACK_BONUS[it.name]}×FOR</span>`:''}</span>
+      <span class="iname${it.equipped?' eq':''}">${it.name}${it.equipped?' ●':''}</span>
       <span class="iqval">${it.qty}</span>
       <span class="ipw">${((it.qty||1)*(it.w||0)).toFixed(2)}kg</span>
-      ${bp?`<button class="ieq-btn ${it.equipped?'on':'off'}" onclick="tEquip(${i})">${it.equipped?'● ÉQUIPÉ':'○ Équiper'}</button>`:'<span></span>'}
+      <span></span>
     </div>`;
   });
 }
@@ -521,10 +520,15 @@ function rInvMisc(){
   char.inventory.filter(it=>it.type==='STUFF').forEach((it)=>{
     const i=char.inventory.indexOf(it);
     const db=DB.stuff.find(d=>d.n===it.name)||{};
+    const bp=isBackpack(it);
+    // Sac à dos : bouton Équiper (un seul à la fois) à la place de la colonne effet
+    const effCell=bp
+      ? `<button class="ieq-btn ${it.equipped?'on':'off'}" onclick="tEquip(${i})">${it.equipped?'● ÉQUIPÉ':'○ Équiper'}</button>`
+      : `<span class="ieff">${db.eff?.slice(0,38)||'—'}</span>`;
     el.innerHTML+=`<div class="irow stuff-cols">
       <span class="itag STUFF">DIVERS</span>
-      <span class="iname">${it.name}</span>
-      <span class="ieff">${db.eff?.slice(0,38)||'—'}</span>
+      <span class="iname${it.equipped?' eq':''}">${it.name}${it.equipped?' ●':''}${bp?` <span class="iname-cal">+${BACKPACK_BONUS[it.name]}×FOR</span>`:''}</span>
+      ${effCell}
       <span class="iqval">${it.qty}</span>
       <span class="ipw">${((it.qty||1)*(it.w||0)).toFixed(2)}kg</span>
       <button class="idel-btn" onclick="jetItem(${i})" title="Jeter">🗑</button>

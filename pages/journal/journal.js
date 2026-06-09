@@ -127,7 +127,7 @@ function render(){
   const el = document.getElementById('journal-list'); if (!el) return;
   let entries = jData.entries.map((e,idx) => ({ e, idx })).filter(x => entryVisible(x.e));
   if (filter !== 'all') entries = entries.filter(x => (x.e.type||'info') === filter);
-  entries.sort((a,b) => (a.e.time||0) - (b.e.time||0));   // chronologique
+  entries.sort((a,b) => (b.e.time||0) - (a.e.time||0));   // anti-chronologique (plus récent en haut)
   if (!entries.length) { el.innerHTML = `<div class="j-empty">${isMJ ? 'Aucune entrée — ajoute-en une ci-dessus.' : 'Aucune entrée pour l\'instant.'}</div>`; return; }
 
   let html = '', lastDay = null;
