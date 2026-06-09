@@ -792,7 +792,8 @@ function renderCombatMap(){
 
 // Compagnons en combat — cartes vertes appendues sous les joueurs
 function renderAllies(){
-  const el = document.getElementById('joueurs-combat'); if(!el) return;
+  const el = document.getElementById('allies-combat'); if(!el) return;
+  el.innerHTML = '';
   allies.forEach(a => {
     const pct = a.pvMax ? Math.round(a.pvCur/a.pvMax*100) : 0;
     const bc = pct<30?'var(--rd)':pct<60?'var(--am)':'var(--g)';
