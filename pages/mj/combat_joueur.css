@@ -213,3 +213,10 @@
 #j-en-tip{ display:none; position:fixed; z-index:99999; background:var(--p2); border:1px solid var(--rd);
   color:var(--tb); font-family:'Share Tech Mono',monospace; font-size:.62rem; line-height:1.35;
   padding:5px 8px; max-width:20rem; box-shadow:0 4px 14px rgba(0,0,0,.7); pointer-events:none; }
+
+/* ---- Layout combat joueur centré sur la carte ---- */
+.cjl{ display:grid; grid-template-columns:minmax(0,230px) minmax(0,1fr) minmax(0,210px); gap:8px; align-items:start; }
+.cjl-col{ display:flex; flex-direction:column; gap:8px; min-width:0; }
+.cjl-center > .pnl, .cjl-center > #j-fin-tour{ width:100%; box-sizing:border-box; margin:0; }
+.cjl-center #j-map-pnl{ width:100%; margin:0; --cs:30px; }   /* carte joueur agrandie, pleine largeur du centre */
+@media(max-width:1000px){ .cjl{ grid-template-columns:1fr; } }

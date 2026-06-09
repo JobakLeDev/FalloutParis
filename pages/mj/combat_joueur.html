@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css">
   <link rel="stylesheet" href="combat.css?v=9">
-  <link rel="stylesheet" href="combat_joueur.css?v=12">
+  <link rel="stylesheet" href="combat_joueur.css?v=13">
   <link rel="stylesheet" href="../../common/zoom.css?v=2">
 </head>
 <body>
@@ -36,23 +36,36 @@
   <!-- COMBAT ACTIF -->
   <div id="combat-actif" style="display:none">
 
-    <!-- GRILLE PRINCIPALE : fiche | actions(+jets) | ressources | ennemis | initiative -->
-    <div class="cj-grid">
+    <!-- BANDEAU INITIATIVE -->
+    <div class="ap-bar tracker-banner">
+      <span class="ap-bar-lbl">TOUR · R<span id="j-round">?</span></span>
+      <div id="j-tracker" class="trk-row"><span class="empty">En attente...</span></div>
+    </div>
 
-      <!-- COL 1 : ma fiche + alliés -->
-      <div class="col-gauche">
+    <!-- LAYOUT : gauche (fiche/alliés) · CENTRE (carte + actions/jets) · droite (AP/Luck) -->
+    <div class="cjl">
+
+      <!-- GAUCHE -->
+      <div class="cjl-col cjl-left">
         <div class="pnl" id="ma-carte">
           <div class="pnl-title">Ma fiche</div>
           <div id="ma-carte-content"><span class="empty">Chargement...</span></div>
         </div>
-        <div class="pnl" style="margin-top:8px">
+        <div class="pnl">
           <div class="pnl-title">Alliés</div>
           <div id="j-coequipiers"><span class="empty">Aucun coéquipier</span></div>
         </div>
       </div>
 
-      <!-- COL 2 : MES ACTIONS (en grand) + MES JETS dessous -->
-      <div class="col-actions">
+      <!-- CENTRE : Carte → Mes actions → Mes jets → exec → Terminer -->
+      <div class="cjl-col cjl-center">
+
+        <!-- CARTE -->
+        <div class="pnl" id="j-map-pnl" style="display:none">
+          <div class="pnl-title">🗺 Carte de combat <span id="j-map-hint" style="font-size:7px;color:var(--td)"></span></div>
+          <div id="j-combat-map"></div>
+        </div>
+
         <div class="pnl bottom-actions">
           <div class="pnl-title">Mes actions</div>
           <div id="j-actions"><span class="empty">—</span></div>
@@ -60,14 +73,12 @@
         </div>
 
         <!-- DÉS (masqué tant que l'attaque n'est pas validée) -->
-        <div class="pnl bottom-des" id="j-dice-panel" style="display:none;margin-top:8px">
+        <div class="pnl bottom-des" id="j-dice-panel" style="display:none">
           <div class="pnl-title">Mes jets</div>
           <div class="des-inner">
             <div id="mes-des-context" class="des-ctx">Déclare une attaque pour viser</div>
             <div id="j-dice-lock" style="display:none"></div>
-            <!-- Sélecteur de cible : visible quand Attack validée -->
             <div id="j-cible-wrap" style="display:none;margin-bottom:5px"></div>
-            <!-- Dés bonus : dépenser des AP du pool de groupe pour lancer plus de d20 (avant le jet) -->
             <div class="d20-sel" id="j-dice-sel">
               <span class="d20-sel-lbl">Dés (AP groupe)</span>
               <button class="d20opt on" id="j-d20-2" onclick="setNbDiceJ(2)" title="Gratuit">2D</button>
@@ -103,18 +114,18 @@
           </div>
         </div>
 
-        <!-- EXÉCUTION D'ACTION (Se déplacer / Defend / First Aid / Rally / Test / Assist / Command NPC…) après validation MJ -->
-        <div class="pnl bottom-des" id="j-action-exec" style="display:none;margin-top:8px">
+        <!-- EXÉCUTION D'ACTION (Se déplacer / Defend / First Aid / Rally / Test…) -->
+        <div class="pnl bottom-des" id="j-action-exec" style="display:none">
           <div class="pnl-title" id="j-action-exec-title">Action</div>
           <div id="j-action-exec-body"></div>
         </div>
 
-        <!-- TERMINER MON TOUR : tout en bas, sous Mes jets et l'exécution d'action -->
-        <div id="j-fin-tour" style="display:none;text-align:center;margin-top:10px"></div>
+        <!-- TERMINER MON TOUR -->
+        <div id="j-fin-tour" style="display:none;text-align:center"></div>
       </div>
 
-      <!-- COL 3 : AP groupe -->
-      <div class="col-ressources">
+      <!-- DROITE : AP groupe + Luck -->
+      <div class="cjl-col cjl-right">
         <div class="pnl bottom-ap">
           <div class="pnl-title">AP Groupe</div>
           <div class="j-ap-pool">
@@ -123,11 +134,8 @@
           </div>
           <div id="j-ap-spend-btns"></div>
         </div>
-      </div>
 
-      <!-- COL 4 : Chance (remplace l'ancien bloc Ennemis ; infos ennemis au survol de leur jeton) -->
-      <div class="col-milieu">
-        <div class="pnl bottom-luck" style="height:100%">
+        <div class="pnl bottom-luck">
           <div class="pnl-title">🍀 Luck</div>
           <div class="j-luck-pool">
             <div class="j-luck-dots" id="j-luck-dots"></div>
@@ -143,20 +151,6 @@
         </div>
       </div>
 
-      <!-- COL 5 : initiative (bord droit) -->
-      <div class="col-droite">
-        <div class="pnl" style="height:100%">
-          <div class="pnl-title">Initiative · R<span id="j-round">?</span></div>
-          <div id="j-tracker"><span class="empty">En attente...</span></div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- MINI-CARTE DE COMBAT (lecture + déplacement pendant Move/Sprint) -->
-    <div class="pnl" id="j-map-pnl" style="display:none;margin-top:8px">
-      <div class="pnl-title">🗺 Carte de combat <span id="j-map-hint" style="font-size:7px;color:var(--td)"></span></div>
-      <div id="j-combat-map"></div>
     </div>
 
   </div>

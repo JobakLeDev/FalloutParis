@@ -139,7 +139,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 /* TRACKER DE TOUR */
 /* Bandeau tracker horizontal (au-dessus des AP) */
 .tracker-banner{ margin-bottom:8px; }
-#tracker-tour.trk-row{ display:flex; align-items:stretch; gap:6px; flex-wrap:wrap; flex:1; min-width:0; }
+.trk-row{ display:flex; align-items:stretch; gap:6px; flex-wrap:wrap; flex:1; min-width:0; }
 .trk-row .tracker-round{ border:none; margin:0; padding:0 8px 0 0; align-self:center; white-space:nowrap; }
 .trk-row .tracker-item{ margin-bottom:0; flex:0 0 auto; }
 .trk-row .tracker-top{ margin:0; gap:6px; }
