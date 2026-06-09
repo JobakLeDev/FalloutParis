@@ -346,13 +346,15 @@ function renderGeoLayers() {
         const fonctionnelle = isMJ && f.properties.Visible !== true;  // non visible joueurs
         // Désert de radiation : vert toxique, sans bordure, plus opaque
         if (('' + (f.properties.Statut || '')).toLowerCase().includes('rad')) {
-          return { stroke: false, weight: 0, fillColor: '#5dff5d', fillOpacity: fonctionnelle ? 0.14 : 0.4 };
+          return { stroke: false, weight: 0, fillColor: '#5dff5d', fillOpacity: fonctionnelle ? 0.14 : 0.4, interactive: isMJ };
         }
         const col = geoColor(f.properties.Faction, f.properties.Type);
         return { color: col, weight: fonctionnelle ? 1 : 2, dashArray: fonctionnelle ? '4 4' : null,
-                 fillColor: col, fillOpacity: fonctionnelle ? 0.05 : 0.18, opacity: fonctionnelle ? 0.55 : 0.9 };
+                 fillColor: col, fillOpacity: fonctionnelle ? 0.05 : 0.18, opacity: fonctionnelle ? 0.55 : 0.9,
+                 interactive: isMJ };  // joueurs : zone = simple dessin, non cliquable
       },
-      onEachFeature: (f, layer) => layer.bindPopup(geoZonePopup(f.properties)),
+      // Joueurs : pas de popup (zone non interactive)
+      onEachFeature: (f, layer) => { if (isMJ) layer.bindPopup(geoZonePopup(f.properties)); },
     }).addTo(geoZoneLayer);
   }
 
@@ -992,9 +994,13 @@ function renderZones() {
     const poly = L.polygon(latlngs, {
       color: dim ? '#888' : fcol, weight: dim ? 1 : 2, dashArray: dim ? '5 5' : null,
       fillColor: fcol, fillOpacity: dim ? 0.05 : 0.15,
+      // Joueurs : zone = simple dessin, non cliquable (le clic traverse, ex. déplacement/POI)
+      interactive: isMJ,
     }).addTo(zoneLayer);
-    poly.bindPopup(zonePopup(z));
-    poly.on('popupopen', () => { openItem = { kind: 'zone', id: z.id }; });
+    if (isMJ) {
+      poly.bindPopup(zonePopup(z));
+      poly.on('popupopen', () => { openItem = { kind: 'zone', id: z.id }; });
+    }
     zonePolys[z.id] = poly;
     L.marker(polygonCentroid(latlngs), { interactive: false, icon: L.divIcon({
       className: 'zone-area-label', html: (z.name || '') + (dim ? ' 🔒' : ''), iconSize: [0, 0],
