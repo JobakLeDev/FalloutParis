@@ -1,0 +1,59 @@
+{
+  "_doc": "Profils de butin par TYPE d'ennemi (enemies.json). beast=viande+materiaux, human=armes/equipement/caps/chems/nourriture, machine=ferraille/munitions. Quantites mises a l'echelle par category (swarm<normal<elite<boss).",
+  "typeProfile": {
+    "Insecte muté": "beast",
+    "Arachnide muté": "beast",
+    "Crustacé muté": "beast",
+    "Mammifère muté": "beast",
+    "Mammifère": "beast",
+    "Reptile muté": "beast",
+    "Humain": "human",
+    "Pillard humain": "human",
+    "Humain muté": "human",
+    "Robot": "machine",
+    "Synth robotique": "machine"
+  },
+  "tierByCategory": { "swarm": 1, "normal": 2, "elite": 3, "boss": 4 },
+  "profiles": {
+    "beast": {
+      "foodPerTier": 1,
+      "materials": {
+        "chance": 0.7,
+        "pool": ["Glande mutée", "Carapace / chitine", "Cuir épais", "Sang irradié", "Os mutés"]
+      }
+    },
+    "human": {
+      "weapon": { "chance": 0.5 },
+      "armor": { "chance": 0.35 },
+      "drugs": { "chance": 0.4 },
+      "food": { "chance": 0.5 },
+      "drinks": { "chance": 0.4 },
+      "ammo": { "chance": 0.7 },
+      "caps": { "base": 0, "perTier": 3 }
+    },
+    "machine": {
+      "scrap": {
+        "perTier": 1,
+        "pool": ["Ferraille", "Circuit imprimé", "Composant électronique", "Huile de machine", "Vis et écrous", "Cellule à fusion (vide)"]
+      },
+      "ammo": { "chance": 0.45 },
+      "weapon": { "chance": 0.15 },
+      "caps": { "chance": 0.2, "base": 0, "perTier": 2 }
+    }
+  },
+  "defaultMeat": "Viande crue mutée",
+  "meatByCreature": {
+    "Radscorpion": "Radscorpion Steak",
+    "Mirelurk": "Mirelurk Cake",
+    "Mirelurk Hatchling": "Mirelurk Cake",
+    "Mirelurk Hunter": "Mirelurk Cake",
+    "Mirelurk Queen": "Mirelurk Egg Omelette",
+    "Bloodbug": "Bloodbug Steak",
+    "Stingwing": "Stingwing Filet",
+    "Brahmane sauvage": "Brahmin Meat",
+    "Mole Rat": "Mole Rat Chunks",
+    "Radstag": "Grilled Radstag",
+    "Yao Guai": "Yao Guai Roast",
+    "Deathclaw": "Deathclaw Steak"
+  }
+}

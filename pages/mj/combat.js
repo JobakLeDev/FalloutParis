@@ -592,6 +592,7 @@ function renderTracker(){
   });
 
   html += '<button class="fin-tour-btn" onclick="finDeTour()">➤ Fin de tour</button>';
+  html += '<button class="fin-tour-btn" style="background:#1a1a0a;border-color:var(--am);color:var(--am);margin-top:3px" onclick="genButinCombat()">🎒 Générer le butin</button>';
   html += '<button class="fin-tour-btn" style="background:var(--rdk);border-color:var(--rd);color:var(--rd);margin-top:3px" onclick="finCombat()">✕ Fin du combat</button>';
   el.innerHTML = html;
 }
@@ -1209,6 +1210,34 @@ async function finCombat(){
   resetActionsDeclarees();
   addLog('🏁 Combat terminé.');
   renderTracker();
+}
+
+// ============================================================
+// BUTIN DU COMBAT — génère le loot des ennemis vaincus (generateCombatLoot
+// dans mj_shared.js) et le fusionne dans le pool partagé /butin/data.
+// ============================================================
+async function genButinCombat(){
+  const defaits = ennemis.filter(e => (e.pvCur||0) <= 0);
+  if(!defaits.length){ alert('Aucun ennemi vaincu : tue les ennemis avant de générer leur butin.'); return; }
+  const { items, caps } = generateCombatLoot(defaits);
+  if(!items.length && !caps){ alert('Les ennemis vaincus ne laissent rien cette fois.'); return; }
+  const resume = items.map(it => `${it.qty}× ${it.name}`).join('\n') + (caps ? `\n${caps} caps` : '');
+  if(!confirm(`Butin de ${defaits.length} ennemi(s) vaincu(s) :\n\n${resume}\n\nAjouter au pool de butin partagé ?`)) return;
+  try{
+    const ref = db.collection('butin').doc('data');
+    const snap = await ref.get();
+    const data = snap.exists ? snap.data() : {};
+    const pool = { items: Array.isArray(data.items) ? data.items : [], caps: data.caps || 0, players: Array.isArray(data.players) ? data.players : [] };
+    items.forEach(it => {
+      const ex = pool.items.find(x => x.name===it.name && x.cat===it.cat);
+      if(ex) ex.qty += it.qty;
+      else pool.items.push({ ...it, id: 'b'+Date.now().toString(36)+Math.floor(Math.random()*999) });
+    });
+    pool.caps = (pool.caps||0) + caps;
+    await ref.set(pool);
+    addLog(`🎒 Butin généré (${items.length} objet(s)${caps?' + '+caps+' caps':''}) → pool partagé.`);
+    alert('Butin ajouté au pool. Révèle-le aux joueurs depuis le tableau de bord MJ (Butin).');
+  }catch(e){ console.error('genButinCombat', e); alert('Erreur lors de l\'ajout du butin.'); }
 }
 
 // ============================================================
