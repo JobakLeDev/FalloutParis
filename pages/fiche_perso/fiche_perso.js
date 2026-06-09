@@ -463,9 +463,9 @@ function rInvWeap(){
     const tn=getWeaponTN(it);
     el.innerHTML+=`<div class="irow weap-cols${it.equipped?' equipped-row':''}">
       <span class="itag ARMOR" style="border-color:var(--am);color:var(--am)">${db.t||'WEAPON'}</span>
-      <span class="iname${it.equipped?' eq':''}">${it.name}${db.a&&db.a!=='-'?` <span class="iname-cal">${db.a}</span>`:''}</span>
+      <span class="iname${it.equipped?' eq':''}" title="${it.name}">${it.name}${db.a&&db.a!=='-'?` <span class="iname-cal">${db.a}</span>`:''}</span>
       <span style="font-family:'Oswald',sans-serif;color:var(--am);font-size:13px">${db.dmg||'?'}</span>
-      <span class="ieff">${db.eff||'—'}</span>
+      <span class="ieff" title="${db.eff||''}">${db.eff||'—'}</span>
       <span style="font-size:9px;color:var(--td)">${db.fr??'—'}</span>
       <span style="font-size:9px;color:var(--tb)">${tn}</span>
       <span class="iqval">${it.qty}</span>
@@ -484,10 +484,10 @@ function rInvArmor(){
     const db=[...DB.armor].find(a=>a.n===it.name)||{};
     el.innerHTML+=`<div class="irow armor-cols${it.equipped?' equipped-row':''}">
       <span class="itag ${it.type}">${it.type}</span>
-      <span class="iname${it.equipped?' eq':''}">${it.name}</span>
+      <span class="iname${it.equipped?' eq':''}" title="${it.name}">${it.name}</span>
       <span class="iqval">${it.qty}</span>
       <span class="ipw">${((it.qty||1)*(it.w||0)).toFixed(2)}kg</span>
-      <span style="font-size:8px;color:var(--td)">${db.z||'—'} Ph:${db.ph||0} En:${db.en||0}</span>
+      <span style="font-size:8px;color:var(--td)">${db.z||'—'} Ph:${db.ph||0} En:${db.en||0}${db.rad?' Rad:'+db.rad:''}</span>
       <button class="ieq-btn ${it.equipped?'on':'off'}" onclick="tEquip(${i})">${it.equipped?'● ÉQUIPÉ':'○ Équiper'}</button>
       <button class="idel-btn" onclick="jetItem(${i})" title="Jeter">🗑</button>
     </div>`;
@@ -502,9 +502,9 @@ function rInvAid(){
     const db=[...DB.food,...DB.drinks,...DB.drugs].find(d=>d.n===it.name)||{};
     el.innerHTML+=`<div class="irow food-cols">
       <span class="itag ${it.type}">${it.type}</span>
-      <span class="iname">${it.name}</span>
-      <span style="font-size:9px;color:var(--g)">${db.hp!=null?'+'+db.hp+' PV':db.eff?.slice(0,14)||'—'}</span>
-      <span class="ieff">${db.eff?.slice(0,28)||db.dur||'—'}</span>
+      <span class="iname" title="${it.name}">${it.name}</span>
+      <span style="font-size:9px;color:var(--g)">${db.hp!=null?'+'+db.hp+' PV':'—'}</span>
+      <span class="ieff" title="${db.eff||db.dur||''}">${db.eff||db.dur||'—'}</span>
       <span style="font-size:8px;color:var(--am)">${db.rad||db.add||'—'}</span>
       <span class="iqval">${it.qty}</span>
       <span class="ipw">${((it.qty||1)*(it.w||0)).toFixed(2)}kg</span>
@@ -524,10 +524,10 @@ function rInvMisc(){
     // Sac à dos : bouton Équiper (un seul à la fois) à la place de la colonne effet
     const effCell=bp
       ? `<button class="ieq-btn ${it.equipped?'on':'off'}" onclick="tEquip(${i})">${it.equipped?'● ÉQUIPÉ':'○ Équiper'}</button>`
-      : `<span class="ieff">${db.eff?.slice(0,38)||'—'}</span>`;
+      : `<span class="ieff" title="${db.eff||''}">${db.eff||'—'}</span>`;
     el.innerHTML+=`<div class="irow stuff-cols">
       <span class="itag STUFF">DIVERS</span>
-      <span class="iname${it.equipped?' eq':''}">${it.name}${it.equipped?' ●':''}${bp?` <span class="iname-cal">+${BACKPACK_BONUS[it.name]}×FOR</span>`:''}</span>
+      <span class="iname${it.equipped?' eq':''}" title="${it.name}">${it.name}${it.equipped?' ●':''}${bp?` <span class="iname-cal">+${BACKPACK_BONUS[it.name]}×FOR</span>`:''}</span>
       ${effCell}
       <span class="iqval">${it.qty}</span>
       <span class="ipw">${((it.qty||1)*(it.w||0)).toFixed(2)}kg</span>

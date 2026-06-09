@@ -252,9 +252,9 @@ hr.fo{border:none;border-top:1px solid var(--b);margin:0.5rem 0;}
 .itag.STUFF{border-color:var(--b2);color:var(--td);}
 .itag.CLOTHING{border-color:#3a5a7a;color:#6a9aba;}
 .itag.OUTFIT{border-color:#5a3a7a;color:#9a6aba;}
-.iname{font-size:0.75rem;color:var(--td);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.iname{font-size:0.75rem;color:var(--td);overflow-wrap:anywhere;word-break:break-word;line-height:1.2;}
 .iname.eq{color:var(--tb);}
-.ieff{font-size:0.583rem;color:#3a5a3a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ieff{font-size:0.583rem;color:#3a5a3a;overflow-wrap:anywhere;word-break:break-word;line-height:1.2;}
 .iqty-ctrl{display:flex;align-items:center;gap:0.167rem;}
 .iqbtn{background:none;border:1px solid var(--b);color:var(--td);font-size:0.75rem;width:1.333rem;height:1.333rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .iqbtn:hover{border-color:var(--g);color:var(--t);}
