@@ -30,12 +30,15 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .cl-center > .pnl{ width:100%; box-sizing:border-box; }   /* dés/carte/actions/journal : même largeur (colonne centrale) */
 .cl-center #map-pnl{ width:100%; margin:0; }
 @media (max-width:1100px){ .combat-layout{grid-template-columns:1fr;} .cl-center{order:-1;} }
-/* Bandeau Jet de dés (au-dessus de la carte) */
-.dice-banner{ display:flex; gap:12px; align-items:flex-start; flex-wrap:wrap; }
-.dice-banner .db-ctx{ flex:1 1 180px; min-width:0; background:#060d06; border:1px solid var(--b); padding:5px; min-height:34px; font-size:9px; }
-.dice-banner .db-rolls{ flex:2 1 300px; min-width:0; display:flex; flex-direction:column; gap:4px; }
-.dice-banner .tn-row{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-.dice-banner .dice-result{ margin:0; }
+/* Bandeau Jet de dés (au-dessus de la carte) — compact */
+.dice-banner.pnl{ padding:5px 8px; }
+.dice-banner{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.dice-banner .db-ctx{ flex:1 1 160px; min-width:0; background:#060d06; border:1px solid var(--b); padding:3px 5px; min-height:0; font-size:8px; align-self:stretch; display:flex; align-items:center; }
+.dice-banner .db-rolls{ flex:2 1 300px; min-width:0; display:flex; flex-direction:row; flex-wrap:wrap; align-items:center; gap:4px 8px; }
+.dice-banner .d20-sel-row{ display:flex; gap:3px; }
+.dice-banner .tn-row{ display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
+.dice-banner .dice-result{ margin:0; font-size:9px; padding:2px 5px; min-height:0; }
+.dice-banner #convert-ap-mj, .dice-banner #bonus-dmg-mj{ flex-basis:100%; }
 .jc-card,.ennemi-card{max-width:100%;}
 
 /* PANNEAU */
