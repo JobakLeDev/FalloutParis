@@ -300,7 +300,7 @@ function _jMapToks(){
   const list = [];
   (combatState?.ordreInitiative||[]).filter(o=>o.type==='joueur').forEach(o=>list.push({ id:o.id, nom:(tousJoueurs[o.id]?.nom||o.nom||o.id), kind:'joueur', me:o.id===joueurId }));
   (combatState?.allies||[]).forEach(a=>list.push({ id:'A'+a.id, nom:a.nom, kind:'allie' }));
-  (combatState?.ennemis||[]).forEach(e=>list.push({ id:'E'+e.id, nom:e.nom, kind:'ennemi', dead:(e.pvCur||0)<=0 }));
+  (combatState?.ennemis||[]).filter(e=>!e.hidden).forEach(e=>list.push({ id:'E'+e.id, nom:e.nom, kind:'ennemi', dead:(e.pvCur||0)<=0 }));
   return list;
 }
 function renderJMap(){
@@ -1067,7 +1067,7 @@ function renderActionsDeclarees(){
   // Panneau de confirmation (action sélectionnée, pas encore envoyée)
   if(selectedActionDraft){
     const isAtk = (selectedActionDraft.type === 'Attack' || selectedActionDraft.type === 'Aim');
-    const ennemisV = (combatState?.ennemis || []).filter(e => e.pvCur > 0);
+    const ennemisV = (combatState?.ennemis || []).filter(e => e.pvCur > 0 && !e.hidden);
     const savedCible = document.getElementById('j-act-cible')?.value || cibleAttaque || '';
     const savedZone  = document.getElementById('j-act-zone')?.value || '';
     const inputStyle = 'box-sizing:border-box;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:monospace;font-size:8px;padding:3px 5px;outline:none';
@@ -1376,7 +1376,7 @@ function renderActionExec(){
         + '<button style="'+btn+'" onclick="startJMove(\''+t+'\','+range+')">🗺 Activer le déplacement</button>';
     } else {
       // Mode bandes (pas de carte) : se rapprocher / s'éloigner d'un ennemi
-      const ennemisV = (combatState?.ennemis||[]).filter(e => e.pvCur > 0);
+      const ennemisV = (combatState?.ennemis||[]).filter(e => e.pvCur > 0 && !e.hidden);
       if(!ennemisV.length){
         h = '<div style="font-size:8px;color:var(--td)">Aucun ennemi.</div><button style="'+btn+'" onclick="execMoveDist(\''+t+'\')">✓ OK</button>';
       } else {
@@ -1656,7 +1656,7 @@ function renderDiceAccess(){
   // Sélecteur de cible
   if(!cibleEl) return;
   cibleEl.style.display = 'block';
-  const ennemis = (combatState?.ennemis || []).filter(e => e.pvCur > 0);
+  const ennemis = (combatState?.ennemis || []).filter(e => e.pvCur > 0 && !e.hidden);
   if(!ennemis.length){
     cibleEl.innerHTML = '<span style="font-size:7px;color:var(--td)">Aucun ennemi vivant</span>';
     cibleAttaque = '';

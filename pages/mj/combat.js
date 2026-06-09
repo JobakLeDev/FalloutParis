@@ -699,7 +699,7 @@ function _mapTokens(){
   const list = [];
   Object.keys(combattants).forEach(id => list.push({ id, nom: (joueurs[id]?.nom||id), kind:'joueur' }));
   (allies||[]).forEach(a => list.push({ id:'A'+a.id, nom:a.nom, kind:'allie' }));
-  (ennemis||[]).forEach(e => list.push({ id:'E'+e.id, nom:e.nom, kind:'ennemi', dead:(e.pvCur||0)<=0 }));
+  (ennemis||[]).forEach(e => list.push({ id:'E'+e.id, nom:e.nom, kind:'ennemi', dead:(e.pvCur||0)<=0, hidden:e.hidden }));
   return list;
 }
 function genCombatMap(){
@@ -778,11 +778,11 @@ function renderCombatMap(){
     const terr = gridTerrainAt(combatMap, x, y);
     let cls = 'cmap-cell';
     if(terr) cls += ' b-' + terr;
-    if(t) cls += ' tok ' + (t.kind==='joueur'?'tk-j':t.kind==='allie'?'tk-a':'tk-e') + (t.dead?' dead':'') + (tid===_mapSel?' sel':'');
+    if(t) cls += ' tok ' + (t.kind==='joueur'?'tk-j':t.kind==='allie'?'tk-a':'tk-e') + (t.dead?' dead':'') + (t.hidden?' hidden-tok':'') + (tid===_mapSel?' sel':'');
     const bt = BLOCK_TYPES.find(b=>b.id===terr);
-    const label = t ? (t.kind==='ennemi'?'☠':(t.nom||'?').charAt(0).toUpperCase()) : (bt?bt.icon:'');
+    const label = t ? (t.kind==='ennemi'?(t.hidden?'🙈':'☠'):(t.nom||'?').charAt(0).toUpperCase()) : (bt?bt.icon:'');
     const onclick = t ? `mapPickToken('${tid}')` : `mapCellClick(${x},${y})`;
-    html += `<div class="${cls}" onclick="${onclick}" title="${t?t.nom:(bt?bt.label:'')}">${label}</div>`;
+    html += `<div class="${cls}" onclick="${onclick}" title="${t?(t.nom+(t.hidden?' (masqué)':'')):(bt?bt.label:'')}">${label}</div>`;
   }
   html += '</div>';
   if(_mapSel) html += '<div class="cmap-tip">Jeton sélectionné — clique une case libre pour le déplacer.</div>';
@@ -881,6 +881,7 @@ function renderEnnemis(){
         <span class="ennemi-name">${isTourActif?'▶ ':''}${e.nom}</span>
         <div style="display:flex;gap:4px;align-items:center">
           <span class="jc-init">${e.initiative!==null?e.initiative:'—'}</span>
+          <button class="e-del" style="border-color:${e.hidden?'var(--am)':'var(--b2)'};color:${e.hidden?'var(--am)':'var(--td)'}" onclick="toggleEnemyHidden(${e.id})" title="${e.hidden?'Masqué aux joueurs — cliquer pour révéler':'Visible — cliquer pour masquer'}">${e.hidden?'🙈':'👁'}</button>
           <button class="e-del" onclick="supprimerEnnemi(${e.id})">✕</button>
         </div>
       </div>
@@ -904,6 +905,13 @@ function renderEnnemis(){
       </div>
     </div>`;
   });
+}
+function toggleEnemyHidden(id){
+  const e = ennemis.find(x => x.id === id); if(!e) return;
+  e.hidden = !e.hidden;
+  addLog(e.hidden ? '🙈 '+e.nom+' masqué aux joueurs' : '👁 '+e.nom+' révélé');
+  renderCombat();
+  syncCombatToFirebase();
 }
 function chEnemyDist(id, delta){
   const e = ennemis.find(x => x.id === id); if(!e) return;

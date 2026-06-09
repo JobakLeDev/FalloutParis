@@ -216,6 +216,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .cmap-cell.tk-a{ background:radial-gradient(circle at 50% 40%,#16381f,#0c2014); color:#8fe6ad; border-color:var(--gd); }
 .cmap-cell.tk-e{ background:radial-gradient(circle at 50% 40%,#3a1212,#1a0808); color:#ff9a9a; border-color:var(--rd); box-shadow:inset 0 0 7px rgba(224,64,64,.5),0 0 5px rgba(224,64,64,.4); }
 .cmap-cell.dead{ opacity:.4; filter:grayscale(.6); }
+.cmap-cell.hidden-tok{ opacity:.45; filter:grayscale(.5); outline:1px dashed var(--am); outline-offset:-2px; }
 .cmap-cell.sel{ box-shadow:0 0 0 2px var(--am) inset,0 0 8px rgba(232,168,32,.7); }
 .cmap-cell.reach{ box-shadow:0 0 0 1px var(--g) inset,0 0 6px rgba(93,190,93,.5); animation:cmapReach 1.2s ease-in-out infinite; }
 @keyframes cmapReach{ 0%,100%{box-shadow:0 0 0 1px var(--g) inset,0 0 4px rgba(93,190,93,.35);} 50%{box-shadow:0 0 0 1px var(--g) inset,0 0 9px rgba(93,190,93,.7);} }
