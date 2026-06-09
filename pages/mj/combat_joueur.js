@@ -1116,9 +1116,7 @@ function renderActionsDeclarees(){
         + ' title="' + a.desc + '">' + lbl + '</button>';
     });
     html += '</div>';
-
-    // Terminer mon tour — sous les actions, centré (le MJ avance automatiquement)
-    html += '<div style="text-align:center;margin-top:12px"><button onclick="finMonTour()" style="background:var(--gk);border:1px solid var(--g);color:var(--g);font-family:monospace;font-size:10px;padding:7px 22px;cursor:pointer;letter-spacing:1px">✓ TERMINER MON TOUR</button></div>';
+    // (Le bouton « Terminer mon tour » est rendu séparément, sous le bloc « Mes jets ».)
   }
 
   // Box de paramètres en POPUP superposé au bloc (ne décale plus les boutons)
@@ -1126,6 +1124,7 @@ function renderActionsDeclarees(){
 
   el.innerHTML = html;
   el.style.display = html ? 'block' : 'none';
+  renderFinTour();
 
   // Restaurer la saisie après re-render
   const inp = document.getElementById('j-action-details');
@@ -1133,6 +1132,16 @@ function renderActionsDeclarees(){
     if(savedDetails) inp.value = savedDetails;
     if(inputFocused){ inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
   }
+}
+
+// Bouton « Terminer mon tour » (sous Mes jets) — visible pendant mon tour
+function renderFinTour(){
+  const el = document.getElementById('j-fin-tour'); if(!el) return;
+  const isMoTour = combatState?.ordreInitiative?.[combatState.tourActif]?.id === joueurId;
+  if(isMoTour && !turnEnded){
+    el.style.display = 'block';
+    el.innerHTML = '<button onclick="finMonTour()" class="j-fin-btn">✓ TERMINER MON TOUR</button>';
+  } else { el.style.display = 'none'; el.innerHTML = ''; }
 }
 
 function prepareAction(category, type){

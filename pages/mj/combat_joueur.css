@@ -48,21 +48,36 @@
 #j-ennemis .jc-sv { font-size: 10px; }
 #j-ennemis .jc-bar { height: 3px; }
 
-/* Layout interne des dés */
-.des-inner { display: flex; align-items: center; gap: 12px; }
-.des-ctx   { flex: 0 0 auto; max-width: 180px; padding: 4px 6px; background: #060d06; border: 1px solid var(--b); font-size: 8px; color: var(--td); min-height: 24px; }
-.des-cols  { display: flex; gap: 16px; flex: 1; }
-.des-col   { display: flex; flex-direction: column; gap: 3px; flex: 1; }
-.des-row   { display: flex; align-items: center; gap: 4px; }
-.dice-result.sm { font-size: 9px; padding: 3px 4px; min-height: 0; }
+/* Layout interne des dés — vertical et aéré */
+.bottom-des { border-color: var(--b2); }
+#j-dice-panel .pnl-title { color: var(--am); }
+.des-inner { display: flex; flex-direction: column; gap: 8px; }
+.des-ctx   { width: 100%; padding: 5px 8px; background: #081308; border: 1px solid var(--b2); border-left: 3px solid var(--am); font-size: 9px; color: var(--tb); letter-spacing: .5px; }
+.des-cols  { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.des-col   { display: flex; flex-direction: column; gap: 5px; background: #060d06; border: 1px solid var(--b); padding: 7px 8px; }
+.des-row   { display: flex; align-items: center; gap: 6px; }
+.des-row .tn-lbl { font-size: 8px; color: var(--td); letter-spacing: 2px; flex: none; min-width: 1.6rem; }
+.des-row .cd-inp { font-family: 'Oswald', sans-serif; font-size: 18px; color: var(--tb); background: #0c150c; border: 1px solid var(--b2); padding: 2px 8px; min-width: 2.2rem; text-align: center; }
+.des-row .dice-btn, .des-row .cd-btn { flex: 1; background: var(--gk); border: 1px solid var(--g); color: var(--tb); font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 1px; padding: 6px 4px; cursor: pointer; transition: all .1s; }
+.des-row .dice-btn:hover:not(:disabled), .des-row .cd-btn:hover:not(:disabled) { background: var(--g); color: #08120a; }
+.des-row .dice-btn:disabled, .des-row .cd-btn:disabled { opacity: .4; cursor: not-allowed; }
+.des-row .cd-btn { border-color: var(--am); color: var(--am); }
+.des-row .cd-btn:hover:not(:disabled) { background: var(--am); color: #08120a; }
+.dice-result.sm { font-size: 11px; padding: 4px 6px; min-height: 0; background: #0c150c; border: 1px solid var(--b); text-align: center; }
+.j-fin-btn { background: var(--gk); border: 1px solid var(--g); color: var(--g); font-family: 'Share Tech Mono', monospace; font-size: 11px; padding: 8px 26px; cursor: pointer; letter-spacing: 1px; transition: all .1s; }
+.j-fin-btn:hover { background: var(--g); color: #08120a; }
 
+/* En-tête de colonne (Toucher / Dégâts) */
+.des-col-h { font-size: 7px; color: var(--td); letter-spacing: 2px; text-align: center; border-bottom: 1px solid var(--b); padding-bottom: 3px; }
+/* Cible visée */
+#j-cible-wrap { font-size: 8px; }
 /* Sélecteur de dés bonus (dépense d'AP de groupe pour +d20 avant le jet) */
-.d20-sel { display: flex; align-items: center; gap: 3px; margin-bottom: 5px; flex-wrap: wrap; }
-.d20-sel-lbl { font-size: 7px; color: var(--td); letter-spacing: 1px; margin-right: 2px; }
+.d20-sel { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; background: #060d06; border: 1px solid var(--b); padding: 5px 7px; }
+.d20-sel-lbl { font-size: 7px; color: var(--td); letter-spacing: 1px; margin-right: 3px; }
 .d20opt {
-  background: #060d06; border: 1px solid var(--b2); color: var(--t);
-  font-family: 'Share Tech Mono', monospace; font-size: 8px; line-height: 1;
-  padding: 4px 6px; cursor: pointer; transition: all .1s;
+  background: #0c150c; border: 1px solid var(--b2); color: var(--t);
+  font-family: 'Share Tech Mono', monospace; font-size: 9px; line-height: 1;
+  padding: 5px 8px; cursor: pointer; transition: all .1s;
 }
 .d20opt small { color: var(--am); font-size: 6px; margin-left: 1px; vertical-align: top; }
 .d20opt:hover:not(:disabled) { border-color: var(--g); color: var(--tb); }

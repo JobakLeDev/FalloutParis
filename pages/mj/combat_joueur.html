@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css">
   <link rel="stylesheet" href="combat.css?v=2">
-  <link rel="stylesheet" href="combat_joueur.css?v=9">
+  <link rel="stylesheet" href="combat_joueur.css?v=10">
   <link rel="stylesheet" href="../../common/zoom.css?v=2">
 </head>
 <body>
@@ -77,6 +77,7 @@
             </div>
             <div class="des-cols">
               <div class="des-col">
+                <div class="des-col-h">🎯 TOUCHER</div>
                 <div class="des-row">
                   <span class="tn-lbl">TN</span>
                   <span class="cd-inp" id="j-tn-val" title="TN de l'arme (calculé)">10</span>
@@ -88,6 +89,7 @@
                 <div id="j-convert-ap" style="display:none;margin-top:3px"></div>
               </div>
               <div class="des-col">
+                <div class="des-col-h">💥 DÉGÂTS</div>
                 <div class="des-row">
                   <span class="tn-lbl">DC</span>
                   <span class="cd-inp" id="j-nb-cd-disp" title="Dés de combat de l'arme">2</span>
@@ -100,6 +102,9 @@
             <div id="j-attack-result" style="display:none;margin-top:5px"></div>
           </div>
         </div>
+
+        <!-- TERMINER MON TOUR : sous Mes jets -->
+        <div id="j-fin-tour" style="display:none;text-align:center;margin-top:10px"></div>
 
         <!-- EXÉCUTION D'ACTION (Defend / First Aid / Rally / Test / Assist / Command NPC…) après validation MJ -->
         <div class="pnl bottom-des" id="j-action-exec" style="display:none;margin-top:8px">
@@ -163,7 +168,7 @@
   <script src="../../common/db.js?v=7"></script>
   <script src="../../common/survie.js?v=1"></script>
   <script src="mj_shared.js?v=5"></script>
-  <script src="combat_joueur.js?v=30"></script>
+  <script src="combat_joueur.js?v=31"></script>
   <script>document.addEventListener('DOMContentLoaded', () => window.DB_READY.then(initJoueur));</script>
   <script src="../../common/responsive.js?v=1"></script>
 </body>
