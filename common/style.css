@@ -254,6 +254,7 @@ hr.fo{border:none;border-top:1px solid var(--b);margin:0.5rem 0;}
 .itag.OUTFIT{border-color:#5a3a7a;color:#9a6aba;}
 .iname{font-size:0.75rem;color:var(--td);overflow-wrap:anywhere;word-break:break-word;line-height:1.2;}
 .iname.eq{color:var(--tb);}
+.imods{color:var(--am);font-size:0.55rem;letter-spacing:0;}
 .ieff{font-size:0.583rem;color:#3a5a3a;overflow-wrap:anywhere;word-break:break-word;line-height:1.2;}
 .iqty-ctrl{display:flex;align-items:center;gap:0.167rem;}
 .iqbtn{background:none;border:1px solid var(--b);color:var(--td);font-size:0.75rem;width:1.333rem;height:1.333rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
@@ -274,9 +275,9 @@ hr.fo{border:none;border-top:1px solid var(--b);margin:0.5rem 0;}
 .charge-lbl{display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:0.25rem;}
 
 /* ARMOR GRID (cols: tag, name, effect, qty, weight, equip, del) */
-.armor-cols{grid-template-columns:3.667rem 1fr auto auto auto 10rem 1.667rem;}
+.armor-cols{grid-template-columns:3.667rem minmax(0,1fr) 2.5rem 3.8rem 9rem 6rem 1.667rem;}
 /* FOOD cols: tag, name, soin, effet, rad, qty, weight, del */
-.food-cols{grid-template-columns:3.667rem 1fr auto auto auto auto auto 6.667rem 1.667rem;}
+.food-cols{grid-template-columns:3.667rem minmax(0,1fr) 4rem 7rem 3rem 2.5rem 3.8rem 5rem 1.667rem;}
 /* DRUGS cols: tag, name, effets, durée, qty, weight, del */
 .drugs-cols{grid-template-columns:3.667rem 1fr 6.667rem 3.333rem 3.333rem 3.333rem 1.667rem;}
 /* STUFF cols: tag, name, effet, qty, weight, del */

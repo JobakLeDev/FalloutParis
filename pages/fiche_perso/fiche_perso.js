@@ -37,6 +37,14 @@ function isBackpack(it){return !!it && BACKPACK_BONUS[it.name]!=null;}
 function backpackMult(){const bp=char.inventory.find(it=>isBackpack(it)&&it.equipped);return bp?BACKPACK_BONUS[bp.name]:0;}
 function chargeMax(){const f=forEff(),b=(150+f*10)/2.2046;const base=b*(char.powerArmor?1.5:1)+(char.powerArmor?200:0);return Math.round((base+backpackMult()*f)*10)/10;}
 function chargeActuelle(){let t=0;char.inventory.forEach(it=>t+=(it.qty||1)*(it.w||0));char.ammo.forEach(a=>t+=a.qty*0.02);return Math.round(t*100)/100;}
+// Résumé court des mods d'un objet (préfixes), kind='weapon'|'armor'
+function modSummary(it, kind){
+  if(!it||!it.mods) return '';
+  const M = kind==='weapon' ? (window.WEAPON_MODS||{}) : (window.ARMOR_MODS||{});
+  const parts=[];
+  (M.slots||[]).forEach(slot=>{ const id=it.mods[slot]; if(!id) return; const m=(M[slot]||[]).find(x=>x.id===id); if(m) parts.push(m.prefix||m.name); });
+  return parts.join(' · ');
+}
 function xpNext(){return XP_TABLE[Math.min(char.niveau,20)]||21000;}
 function rdP(type){
   const p=char.perks,s=SP();
@@ -469,7 +477,7 @@ function rInvWeap(){
     const tn=getWeaponTN(it);
     el.innerHTML+=`<div class="irow weap-cols${it.equipped?' equipped-row':''}">
       <span class="itag ARMOR" style="border-color:var(--am);color:var(--am)">${db.t||'WEAPON'}</span>
-      <span class="iname${it.equipped?' eq':''}" title="${db._prefix?db._prefix+' ':''}${it.name}">${(it.mods&&Object.values(it.mods).filter(Boolean).length)?'🔧 ':''}${it.name}${db.a&&db.a!=='-'?` <span class="iname-cal">${db.a}</span>`:''}</span>
+      <span class="iname${it.equipped?' eq':''}" title="${db._prefix?db._prefix+' ':''}${it.name}">${it.name}${db.a&&db.a!=='-'?` <span class="iname-cal">${db.a}</span>`:''}${(()=>{const sm=modSummary(it,'weapon');return sm?` <small class="imods">🔧 ${sm}</small>`:'';})()}</span>
       <span style="font-family:'Oswald',sans-serif;color:var(--am);font-size:13px">${db.dmg||'?'}</span>
       <span class="ieff" title="${db.eff||''}">${db.eff||'—'}</span>
       <span style="font-size:9px;color:var(--td)">${db.fr??'—'}</span>
@@ -493,7 +501,7 @@ function rInvArmor(){
     const rdMod=db.bonus&&(db.bonus.phys||db.bonus.energy||db.bonus.rad);
     el.innerHTML+=`<div class="irow armor-cols${it.equipped?' equipped-row':''}">
       <span class="itag ${it.type}">${it.type}</span>
-      <span class="iname${it.equipped?' eq':''}" title="${it.name}">${nMods?'🔧 ':''}${it.name}</span>
+      <span class="iname${it.equipped?' eq':''}" title="${it.name}">${it.name}${(()=>{const sm=modSummary(it,'armor');return sm?` <small class="imods">🔧 ${sm}</small>`:'';})()}</span>
       <span class="iqval">${it.qty}</span>
       <span class="ipw">${((it.qty||1)*(it.w||0)).toFixed(2)}kg</span>
       <span style="font-size:8px;color:${rdMod?'var(--am)':'var(--td)'}">${base.z||'—'} Ph:${db.ph||0} En:${db.en||0}${db.rad?' Rad:'+db.rad:''}</span>
