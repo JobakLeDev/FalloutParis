@@ -17,6 +17,22 @@ const CAT_ICON    = { weapons:'🔫', armor:'🛡', ammo:'▪', food:'🍖', dri
                       WEAPON:'🔫', ARMOR:'🛡', POWERARMOR:'🛡', CLOTHING:'👕', OUTFIT:'👕', AMMO:'▪', FOOD:'🍖', DRINK:'🥤', DRUGS:'💊', STUFF:'🔧' };
 
 function esc(s){ return (s==null?'':''+s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+// Info-bulle flottante au survol (échappe au clipping de .sh-pane, gère le zoom du body)
+let _shTip;
+function _shTipShow(row){
+  const tip = row.getAttribute('data-tip'); if(!tip) return;
+  if(!_shTip){ _shTip = document.createElement('div'); _shTip.id = 'sh-tip'; document.body.appendChild(_shTip); }
+  _shTip.textContent = tip;
+  const z = window.__fpZoom || 1;
+  const r = row.getBoundingClientRect();   // coords visuelles → /zoom pour le position:fixed
+  _shTip.style.display = 'block';
+  _shTip.style.left = (r.left / z + 8) + 'px';
+  _shTip.style.top  = (r.bottom / z + 3) + 'px';
+}
+function _shTipHide(){ if(_shTip) _shTip.style.display = 'none'; }
+document.addEventListener('mouseover', e => { const row = e.target.closest?.('.sh-row[data-tip]'); if(row) _shTipShow(row); });
+document.addEventListener('mouseout',  e => { if(e.target.closest?.('.sh-row[data-tip]')) _shTipHide(); });
+
 // Texte d'info (survol) décrivant ce que fait un objet, d'après les DB
 function itemTip(name){
   const DBs = window.DB || {}; let d;
@@ -105,9 +121,10 @@ function renderBuy(){
     const price = buyPrice(it);
     const can = !!viewerId && caps >= price;
     const unit = (it.cat==='ammo'||it.type==='AMMO') && it.unit>1 ? ` <small>(×${it.unit})</small>` : '';
-    return `<div class="sh-row">
+    const tip = esc(itemTip(it.name)||'');
+    return `<div class="sh-row"${tip?` data-tip="${tip}"`:''}>
       <span class="sh-ic">${CAT_ICON[it.cat]||CAT_ICON[it.type]||'▪'}</span>
-      <span class="sh-nom" title="${esc(itemTip(it.name)||'')}">${esc(it.name)}${unit}<small> · r${rarityOf(it)}</small></span>
+      <span class="sh-nom">${esc(it.name)}${unit}<small> · r${rarityOf(it)}</small></span>
       <span class="sh-qty">stock ${it.qty}</span>
       <span class="sh-price">${price}</span>
       ${viewerId ? `<button class="sh-act" onclick="buy('${it.id}')" ${can?'':'disabled'}>Acheter</button>` : '<span class="sh-qty">—</span>'}
@@ -123,9 +140,10 @@ function renderSell(){
   el.innerHTML = inv.map((it, idx) => {
     const i = me.inventory.indexOf(it);
     const price = sellPrice(it);
-    return `<div class="sh-row">
+    const tip = esc(itemTip(it.name)||'');
+    return `<div class="sh-row"${tip?` data-tip="${tip}"`:''}>
       <span class="sh-ic">${CAT_ICON[it.type]||'🔧'}</span>
-      <span class="sh-nom" title="${esc(itemTip(it.name)||'')}">${esc(it.name)}${it.qty>1?` <small>×${it.qty}</small>`:''}</span>
+      <span class="sh-nom">${esc(it.name)}${it.qty>1?` <small>×${it.qty}</small>`:''}</span>
       <span class="sh-price">${price}</span>
       <button class="sh-act sell" onclick="sell(${i})">Vendre</button>
     </div>`;
