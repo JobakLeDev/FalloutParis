@@ -693,7 +693,7 @@ function renderCombat(){
 // combatMap = { w, h, obstacles:[{x,y}], pos:{ [tokenId]:{x,y} } }
 // tokenId : joueurId | 'E'+enemyId | 'A'+allyId
 // ============================================================
-let combatMap = null, _mapSel = null, _obstMode = false;
+let combatMap = null, _mapSel = null, _blockSel = null;
 function _mapTokens(){
   // Liste des combattants à placer : {id, nom, kind:'joueur'|'ennemi'|'allie', color, dead}
   const list = [];
@@ -704,20 +704,20 @@ function _mapTokens(){
 }
 function genCombatMap(){
   const w = 14, h = 8;
-  const map = { w, h, obstacles: [], pos: {} };
+  const map = { w, h, terrain: {}, pos: {} };
   const toks = _mapTokens();
-  const allies = toks.filter(t => t.kind!=='ennemi');
-  const foes   = toks.filter(t => t.kind==='ennemi');
+  const amis = toks.filter(t => t.kind!=='ennemi');
+  const foes = toks.filter(t => t.kind==='ennemi');
   let y = 1;
-  allies.forEach(t => { map.pos[t.id] = { x: 1, y: Math.min(h-1, y) }; y += 1; });
-  // ennemis à droite, distance variable
+  amis.forEach(t => { map.pos[t.id] = { x: 1, y: Math.min(h-1, y) }; y += 1; });
   foes.forEach((t,i) => { map.pos[t.id] = { x: w-2-(i%2), y: 1 + (i % (h-1)) }; });
-  // quelques obstacles au milieu
-  const nObs = 4 + Math.floor(Math.random()*4);
-  for(let k=0;k<nObs;k++){
-    const ox = 4 + Math.floor(Math.random()*(w-8));
+  // décor aléatoire au centre : murs / débris / couverture
+  const deco = ['wall','rubble','cover','wall','cover'];
+  const n = 5 + Math.floor(Math.random()*5);
+  for(let k=0;k<n;k++){
+    const ox = 3 + Math.floor(Math.random()*(w-6));
     const oy = Math.floor(Math.random()*h);
-    if(!Object.values(map.pos).some(p=>p.x===ox&&p.y===oy)) map.obstacles.push({ x:ox, y:oy });
+    if(!Object.values(map.pos).some(p=>p.x===ox&&p.y===oy)) map.terrain[ox+','+oy] = deco[Math.floor(Math.random()*deco.length)];
   }
   combatMap = map;
   recomputeBandsFromMap();
@@ -725,8 +725,8 @@ function genCombatMap(){
   syncCombatToFirebase();
   addLog('🗺 Carte de combat générée');
 }
-function clearCombatMap(){ combatMap = null; _mapSel = null; renderCombat(); syncCombatToFirebase(); }
-function toggleObstacleMode(){ _obstMode = !_obstMode; _mapSel = null; const b=document.getElementById('obst-btn'); if(b) b.style.borderColor=_obstMode?'var(--am)':''; renderCombatMap(); }
+function clearCombatMap(){ combatMap = null; _mapSel = null; _blockSel = null; renderCombat(); syncCombatToFirebase(); }
+function setBlockBrush(id){ _blockSel = (_blockSel===id ? null : id); _mapSel = null; renderCombatMap(); }
 // Recalcule la bande de distance de chaque ennemi = distance (cases) au joueur/allié le plus proche
 function recomputeBandsFromMap(){
   if(!combatMap || !combatMap.pos) return;
@@ -738,17 +738,19 @@ function recomputeBandsFromMap(){
     e.dist = gridBand(d);
   });
 }
-function mapPickToken(id){ _mapSel = (_mapSel===id ? null : id); renderCombatMap(); }
+function mapPickToken(id){ _mapSel = (_mapSel===id ? null : id); _blockSel = null; renderCombatMap(); }
 function mapCellClick(x, y){
   if(!combatMap) return;
-  if(_obstMode){
-    const i = combatMap.obstacles.findIndex(o => o.x===x && o.y===y);
-    if(i>=0) combatMap.obstacles.splice(i,1);
-    else if(!Object.values(combatMap.pos).some(p=>p.x===x&&p.y===y)) combatMap.obstacles.push({x,y});
-    renderCombatMap(); syncCombatToFirebase(); return;
+  combatMap.terrain = combatMap.terrain || {};
+  const key = x+','+y;
+  if(_blockSel){   // pinceau de terrain actif : peindre / effacer
+    if(Object.values(combatMap.pos).some(p=>p.x===x&&p.y===y)) return;   // pas sur un jeton
+    if(_blockSel === 'erase' || combatMap.terrain[key] === _blockSel) delete combatMap.terrain[key];
+    else combatMap.terrain[key] = _blockSel;
+    recomputeBandsFromMap(); renderCombatMap(); syncCombatToFirebase(); return;
   }
   if(_mapSel){
-    if(gridOccupied(combatMap, x, y)) return;   // case prise / obstacle / hors grille
+    if(gridOccupied(combatMap, x, y)) return;   // case prise / bloc solide / hors grille
     combatMap.pos[_mapSel] = { x, y };
     _mapSel = null;
     recomputeBandsFromMap();
@@ -762,22 +764,29 @@ function renderCombatMap(){
   const { w, h } = combatMap;
   const toks = _mapTokens();
   const byPos = {}; Object.keys(combatMap.pos).forEach(id => { const p=combatMap.pos[id]; byPos[p.x+','+p.y]=id; });
-  const obs = new Set((combatMap.obstacles||[]).map(o=>o.x+','+o.y));
-  let html = `<div class="cmap" style="grid-template-columns:repeat(${w},22px)">`;
+  // Palette de blocs (MJ)
+  let pal = '<div class="cmap-palette">'
+    + '<button class="cmap-brush'+(!_blockSel&&!_mapSel?' on':'')+'" onclick="setBlockBrush(null)" title="Déplacer les jetons">✋</button>';
+  BLOCK_TYPES.forEach(b => pal += '<button class="cmap-brush b-'+b.id+(_blockSel===b.id?' on':'')+'" onclick="setBlockBrush(\''+b.id+'\')" title="'+b.label+'">'+b.icon+'</button>');
+  pal += '<button class="cmap-brush'+(_blockSel==='erase'?' on':'')+'" onclick="setBlockBrush(\'erase\')" title="Effacer le terrain">⌫</button>';
+  pal += '</div>';
+  let html = pal + `<div class="cmap" style="grid-template-columns:repeat(${w},22px)">`;
   for(let y=0;y<h;y++) for(let x=0;x<w;x++){
     const key = x+','+y;
     const tid = byPos[key];
     const t = tid ? toks.find(z=>z.id===tid) : null;
+    const terr = gridTerrainAt(combatMap, x, y);
     let cls = 'cmap-cell';
-    if(obs.has(key)) cls += ' obst';
+    if(terr) cls += ' b-' + terr;
     if(t) cls += ' tok ' + (t.kind==='joueur'?'tk-j':t.kind==='allie'?'tk-a':'tk-e') + (t.dead?' dead':'') + (tid===_mapSel?' sel':'');
-    const label = t ? (t.kind==='ennemi'?'☠':(t.nom||'?').charAt(0).toUpperCase()) : (obs.has(key)?'🧱':'');
+    const bt = BLOCK_TYPES.find(b=>b.id===terr);
+    const label = t ? (t.kind==='ennemi'?'☠':(t.nom||'?').charAt(0).toUpperCase()) : (bt?bt.icon:'');
     const onclick = t ? `mapPickToken('${tid}')` : `mapCellClick(${x},${y})`;
-    html += `<div class="${cls}" onclick="${onclick}" title="${t?t.nom:''}">${label}</div>`;
+    html += `<div class="${cls}" onclick="${onclick}" title="${t?t.nom:(bt?bt.label:'')}">${label}</div>`;
   }
   html += '</div>';
-  if(_mapSel) html += '<div style="font-size:8px;color:var(--am);margin-top:4px">Jeton sélectionné — clique une case libre pour le déplacer.</div>';
-  if(_obstMode) html += '<div style="font-size:8px;color:var(--am);margin-top:4px">Mode obstacles : clique une case pour ajouter/retirer un 🧱.</div>';
+  if(_mapSel) html += '<div class="cmap-tip">Jeton sélectionné — clique une case libre pour le déplacer.</div>';
+  else if(_blockSel) html += '<div class="cmap-tip">Pinceau « '+(_blockSel==='erase'?'Effacer':(BLOCK_TYPES.find(b=>b.id===_blockSel)?.label||''))+' » — clique les cases.</div>';
   el.innerHTML = html;
 }
 

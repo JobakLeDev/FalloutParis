@@ -186,19 +186,45 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .tracker-item.allie{ border-left:3px solid var(--g); padding-top:4px; padding-bottom:4px; }
 .tracker-item.allie .tracker-nom{ color:var(--t); font-size:10px; }
 
-/* ---- MINI-CARTE DE COMBAT (grille de cases) ---- */
-/* Le panneau de carte épouse la largeur de la grille (centré) */
+/* ---- MINI-CARTE DE COMBAT (grille — esprit Pip-Boy) ---- */
 #map-pnl, #j-map-pnl{ width:fit-content; max-width:100%; margin-left:auto; margin-right:auto; }
 #map-pnl .pnl-title, #j-map-pnl .pnl-title{ white-space:normal; }
-.cmap{ display:grid; gap:2px; background:#0a140a; border:1px solid var(--b2); padding:4px; width:max-content; max-width:100%; overflow:auto; margin:6px auto 0; }
+.cmap{
+  position:relative; display:grid; gap:1px; padding:5px; margin:6px auto 0;
+  width:max-content; max-width:100%; overflow:auto;
+  background:#04140a; border:1px solid var(--g);
+  box-shadow:inset 0 0 14px rgba(93,190,93,.18), 0 0 10px rgba(0,0,0,.6);
+}
+/* Scanlines CRT par-dessus la grille */
+.cmap::after{ content:''; position:absolute; inset:0; pointer-events:none; z-index:3;
+  background:repeating-linear-gradient(0deg, rgba(0,0,0,0) 0 2px, rgba(0,0,0,.18) 2px 3px); }
+.cmap-cell{ width:22px; height:22px; display:flex; align-items:center; justify-content:center;
+  font-size:11px; cursor:pointer; user-select:none; color:#3f6f4f;
+  background:radial-gradient(circle at 50% 40%, #0c2014, #07160d);
+  border:1px solid rgba(93,190,93,.14); box-shadow:inset 0 0 3px rgba(93,190,93,.08); }
+.cmap-cell:hover{ border-color:var(--g); box-shadow:inset 0 0 6px rgba(93,190,93,.35); }
 .cmap-cell[data-eid]{ cursor:help; }
-.cmap-cell{ width:22px; height:22px; background:#0e1a0e; border:1px solid #162416; display:flex; align-items:center; justify-content:center; font-size:10px; cursor:pointer; color:var(--td); user-select:none; }
-.cmap-cell:hover{ border-color:var(--b2); }
-.cmap-cell.obst{ background:#241a0a; color:var(--am); }
-.cmap-cell.tok{ font-family:'Oswald',sans-serif; font-weight:600; font-size:12px; }
-.cmap-cell.tk-j{ background:#15321f; color:#9be6c0; border-color:var(--g); }
-.cmap-cell.tk-a{ background:#13251a; color:#7ed8a0; border-color:var(--gd); }
-.cmap-cell.tk-e{ background:#2a1010; color:#ff9a9a; border-color:var(--rd); }
-.cmap-cell.dead{ opacity:.4; }
-.cmap-cell.sel{ box-shadow:0 0 0 2px var(--am) inset; }
-.cmap-cell.reach{ box-shadow:0 0 0 1px var(--g) inset; cursor:pointer; }
+/* Types de blocs */
+.cmap-cell.b-wall{ background:repeating-linear-gradient(45deg,#1c3a24,#1c3a24 3px,#12281a 3px,#12281a 6px); color:#7ed87e; border-color:var(--gd); }
+.cmap-cell.b-rubble{ background:radial-gradient(circle at 50% 50%, #2a3a1e, #16240f); color:#b9c98a; border-color:#5a6a3a; }
+.cmap-cell.b-cover{ background:#0e2416; color:#9be6c0; border:1px dashed var(--g); }
+.cmap-cell.b-hazard{ background:repeating-linear-gradient(45deg,#2a2206,#2a2206 4px,#1a1604 4px,#1a1604 8px); color:var(--am); border-color:var(--am); text-shadow:0 0 5px rgba(232,168,32,.8); }
+.cmap-cell.b-water{ background:linear-gradient(180deg,#0a2630,#08303a); color:#6fd3e6; border-color:#2a6a7a; }
+/* Jetons */
+.cmap-cell.tok{ font-family:'Oswald',sans-serif; font-weight:700; font-size:13px; z-index:2; }
+.cmap-cell.tk-j{ background:radial-gradient(circle at 50% 40%,#1c4a2c,#0c2014); color:#bdf5cf; border-color:var(--g); box-shadow:inset 0 0 7px rgba(93,190,93,.5),0 0 5px rgba(93,190,93,.4); }
+.cmap-cell.tk-a{ background:radial-gradient(circle at 50% 40%,#16381f,#0c2014); color:#8fe6ad; border-color:var(--gd); }
+.cmap-cell.tk-e{ background:radial-gradient(circle at 50% 40%,#3a1212,#1a0808); color:#ff9a9a; border-color:var(--rd); box-shadow:inset 0 0 7px rgba(224,64,64,.5),0 0 5px rgba(224,64,64,.4); }
+.cmap-cell.dead{ opacity:.4; filter:grayscale(.6); }
+.cmap-cell.sel{ box-shadow:0 0 0 2px var(--am) inset,0 0 8px rgba(232,168,32,.7); }
+.cmap-cell.reach{ box-shadow:0 0 0 1px var(--g) inset,0 0 6px rgba(93,190,93,.5); animation:cmapReach 1.2s ease-in-out infinite; }
+@keyframes cmapReach{ 0%,100%{box-shadow:0 0 0 1px var(--g) inset,0 0 4px rgba(93,190,93,.35);} 50%{box-shadow:0 0 0 1px var(--g) inset,0 0 9px rgba(93,190,93,.7);} }
+/* Palette de pinceaux (MJ) */
+.cmap-palette{ display:flex; gap:3px; flex-wrap:wrap; margin-bottom:5px; justify-content:center; }
+.cmap-brush{ width:26px; height:24px; background:#060d06; border:1px solid var(--b2); color:var(--t);
+  font-family:'Share Tech Mono',monospace; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.cmap-brush:hover{ border-color:var(--g); }
+.cmap-brush.on{ border-color:var(--am); box-shadow:0 0 6px rgba(232,168,32,.5); }
+.cmap-brush.b-wall{ color:#7ed87e; } .cmap-brush.b-rubble{ color:#b9c98a; } .cmap-brush.b-cover{ color:#9be6c0; }
+.cmap-brush.b-hazard{ color:var(--am); } .cmap-brush.b-water{ color:#6fd3e6; }
+.cmap-tip{ font-size:8px; color:var(--am); margin-top:4px; text-align:center; }

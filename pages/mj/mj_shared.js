@@ -81,9 +81,24 @@ const GRID_MOVE = 3, GRID_SPRINT = 6;   // cases par déplacement (1 zone ≈ 3 
 function gridChebyshev(a, b){ return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y)); }
 // distance en cases → bande (0 Contact, 1 Moyenne, 2 Longue, 3 Extrême)
 function gridBand(cells){ if(cells <= 1) return 0; if(cells <= 4) return 1; if(cells <= 7) return 2; return 3; }
+// Types de blocs de terrain (MJ peut les peindre). solid = bloque le passage/placement.
+const BLOCK_TYPES = [
+  { id:'wall',   label:'Mur',        icon:'▦', solid:true  },
+  { id:'rubble', label:'Débris',     icon:'⛰', solid:true  },
+  { id:'cover',  label:'Couverture', icon:'◫', solid:false },
+  { id:'hazard', label:'Danger',     icon:'☢', solid:false },
+  { id:'water',  label:'Eau',        icon:'≈', solid:false },
+];
+function blockSolid(id){ const b = BLOCK_TYPES.find(t=>t.id===id); return !!(b && b.solid); }
+// Terrain d'une case (gère l'ancien format obstacles[] = murs)
+function gridTerrainAt(grid, x, y){
+  if(grid.terrain && grid.terrain[x+','+y]) return grid.terrain[x+','+y];
+  if((grid.obstacles||[]).some(o => o.x===x && o.y===y)) return 'wall';
+  return null;
+}
 function gridOccupied(grid, x, y){
   if(x<0||y<0||x>=grid.w||y>=grid.h) return true;
-  if((grid.obstacles||[]).some(o => o.x===x && o.y===y)) return true;
+  if(blockSolid(gridTerrainAt(grid, x, y))) return true;
   return Object.values(grid.pos||{}).some(p => p.x===x && p.y===y);
 }
 
