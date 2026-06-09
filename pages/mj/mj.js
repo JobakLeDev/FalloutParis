@@ -439,6 +439,13 @@ function openCatalogue(){
     ? Object.keys(joueurs).map(id=>`<option value="${id}">${joueurs[id]?.nom||id}</option>`).join('')
     : '<option value="">Aucun joueur</option>';
   m.classList.add('on');
+  // Le body est zoomé (responsive.js) → vh×zoom déborde. On fixe la taille en px réels / zoom.
+  const z = window.__fpZoom || 1;
+  const box = m.querySelector('.mj-cat-box');
+  if(box){
+    box.style.maxHeight = Math.round(0.86 * window.innerHeight / z) + 'px';
+    box.style.maxWidth  = Math.round(0.92 * window.innerWidth  / z) + 'px';
+  }
   renderCatalogue();
 }
 function closeCatalogue(){ document.getElementById('mj-cat-modal')?.classList.remove('on'); }
