@@ -557,44 +557,20 @@ function renderTracker(){
       return;
     }
 
-    // Pastilles actions
-    const minDots = [0,1].map(i =>
-      '<span class="act-dot' + (i < s.mineure ? ' on' : '') + '" onclick="useMineure(\'' + key + '\',false)" title="Action mineure"></span>'
-    ).join('');
-    const majDots = [0,1].map(i =>
-      '<span class="act-dot maj' + (i < s.majeure ? ' on' : '') + '" onclick="useMajeure(\'' + key + '\',false)" title="Action majeure"></span>'
-    ).join('');
-
-    html += '<div class="tracker-item' + (isActif?' actif':'') + (c.type==='ennemi'?' ennemi':'') + '">';
-    html += '<div class="tracker-top">';
-    html += '<span class="tracker-nom">' + (isActif?'▶ ':'') + c.nom + '</span>';
-    html += '<span class="tracker-init">' + c.init + '</span>';
-    html += '</div>';
-    html += '<div class="tracker-actions">';
-    html += '<div class="act-group"><span class="act-lbl">Min</span>' + minDots + '</div>';
-    html += '<div class="act-group"><span class="act-lbl">Maj</span>' + majDots + '</div>';
-    html += '<div class="act-group pa-group"><span class="act-lbl">PA</span>';
-    html += '<button class="pa-btn" onclick="chPA(\'' + key + '\',-1)">−</button>';
-    html += '<b class="pa-val">' + s.pa + '</b>';
-    html += '<button class="pa-btn" onclick="chPA(\'' + key + '\',1)">+</button>';
-    html += '</div>';
-    if(c.type==='joueur'){
-      html += '<button class="luck-btn" onclick="depenseLuck(\'' + c.id + '\')" title="Dépenser Chance pour agir maintenant">🍀</button>';
-    }
-    html += '</div>';
-    // Boutons actions bonus
-    if(isActif){
-      html += '<div class="tracker-extra">';
-      html += '<button class="xbtn" onclick="useMineure(\'' + key + '\',true)">+Min (-1PA)</button>';
-      html += '<button class="xbtn" onclick="useMajeure(\'' + key + '\',true)">+Maj (-2PA)</button>';
-      html += '</div>';
-    }
-    html += '</div>';
+    // Entrée simple : nom + initiative (plus de contrôles par combattant)
+    html += '<div class="tracker-item' + (isActif?' actif':'') + (c.type==='ennemi'?' ennemi':'') + '">'
+      + '<div class="tracker-top">'
+      + '<span class="tracker-nom">' + (isActif?'▶ ':'') + c.nom + '</span>'
+      + '<span class="tracker-init">' + c.init + '</span>'
+      + '</div></div>';
   });
 
-  html += '<button class="fin-tour-btn" onclick="finDeTour()">➤ Fin de tour</button>';
-  html += '<button class="fin-tour-btn" style="background:#1a1a0a;border-color:var(--am);color:var(--am);margin-top:3px" onclick="genButinCombat()">🎒 Générer le butin</button>';
-  html += '<button class="fin-tour-btn" style="background:var(--rdk);border-color:var(--rd);color:var(--rd);margin-top:3px" onclick="finCombat()">✕ Fin du combat</button>';
+  // Boutons de flux de combat (en bout de bandeau)
+  html += '<div class="trk-flow">'
+    + '<button class="fin-tour-btn" onclick="finDeTour()">➤ Fin de tour</button>'
+    + '<button class="fin-tour-btn" style="background:#1a1a0a;border-color:var(--am);color:var(--am)" onclick="genButinCombat()">🎒 Butin</button>'
+    + '<button class="fin-tour-btn" style="background:var(--rdk);border-color:var(--rd);color:var(--rd)" onclick="finCombat()">✕ Fin</button>'
+    + '</div>';
   el.innerHTML = html;
 }
 
