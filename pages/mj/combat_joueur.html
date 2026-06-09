@@ -7,8 +7,8 @@
   <title>Fallout Paris — Combat</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css">
-  <link rel="stylesheet" href="combat.css?v=4">
-  <link rel="stylesheet" href="combat_joueur.css?v=11">
+  <link rel="stylesheet" href="combat.css?v=5">
+  <link rel="stylesheet" href="combat_joueur.css?v=12">
   <link rel="stylesheet" href="../../common/zoom.css?v=2">
 </head>
 <body>
@@ -113,7 +113,7 @@
         <div id="j-fin-tour" style="display:none;text-align:center;margin-top:10px"></div>
       </div>
 
-      <!-- COL 3 : RESSOURCES (AP groupe + Luck empilés) -->
+      <!-- COL 3 : AP groupe -->
       <div class="col-ressources">
         <div class="pnl bottom-ap">
           <div class="pnl-title">AP Groupe</div>
@@ -123,8 +123,11 @@
           </div>
           <div id="j-ap-spend-btns"></div>
         </div>
+      </div>
 
-        <div class="pnl bottom-luck" style="margin-top:8px">
+      <!-- COL 4 : Chance (remplace l'ancien bloc Ennemis ; infos ennemis au survol de leur jeton) -->
+      <div class="col-milieu">
+        <div class="pnl bottom-luck" style="height:100%">
           <div class="pnl-title">🍀 Luck</div>
           <div class="j-luck-pool">
             <div class="j-luck-dots" id="j-luck-dots"></div>
@@ -137,14 +140,6 @@
               <button class="j-ap-spend-btn" onclick="luckOfTheDrawJ()">🍀 Luck of the Draw (−1)</button>
             </div>
           </div>
-        </div>
-      </div>
-
-      <!-- COL 4 : ennemis -->
-      <div class="col-milieu">
-        <div class="pnl" style="height:100%">
-          <div class="pnl-title">Ennemis</div>
-          <div id="j-ennemis"><span class="empty">Aucun ennemi</span></div>
         </div>
       </div>
 
@@ -174,7 +169,7 @@
   <script src="../../common/db.js?v=7"></script>
   <script src="../../common/survie.js?v=1"></script>
   <script src="mj_shared.js?v=6"></script>
-  <script src="combat_joueur.js?v=35"></script>
+  <script src="combat_joueur.js?v=36"></script>
   <script>document.addEventListener('DOMContentLoaded', () => window.DB_READY.then(initJoueur));</script>
   <script src="../../common/responsive.js?v=1"></script>
 </body>

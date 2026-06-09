@@ -207,3 +207,9 @@
   box-shadow:0 0 0 9999px rgba(0,0,0,.45), 0 4px 18px rgba(0,0,0,.6);
   padding:8px; max-height:92%; overflow:auto;
 }
+
+/* Info-bulle ennemi au survol (jeton grille / ligne d'initiative) */
+.tracker-item[data-eid]{ cursor:help; }
+#j-en-tip{ display:none; position:fixed; z-index:99999; background:var(--p2); border:1px solid var(--rd);
+  color:var(--tb); font-family:'Share Tech Mono',monospace; font-size:.62rem; line-height:1.35;
+  padding:5px 8px; max-width:20rem; box-shadow:0 4px 14px rgba(0,0,0,.7); pointer-events:none; }

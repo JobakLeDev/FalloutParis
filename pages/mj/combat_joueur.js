@@ -325,7 +325,8 @@ function renderJMap(){
     let onclick='';
     if(_jMoveActive && myPos && !t && !obs.has(key) && gridChebyshev(myPos,{x,y})<=_jMoveRange){ cls+=' reach'; onclick=`moveJSelf(${x},${y})`; }
     const label = t ? (t.kind==='ennemi'?'☠':(t.nom||'?').charAt(0).toUpperCase()) : (obs.has(key)?'🧱':'');
-    html += `<div class="${cls}"${onclick?` onclick="${onclick}"`:''} title="${t?t.nom:''}">${label}</div>`;
+    const eAttr = (t && t.kind==='ennemi') ? ` data-eid="${t.id.slice(1)}"` : '';
+    html += `<div class="${cls}"${onclick?` onclick="${onclick}"`:''}${eAttr} title="${t?t.nom:''}">${label}</div>`;
   }
   html += '</div>';
   el.innerHTML = html;
@@ -818,13 +819,35 @@ function renderTrackerJoueur(){
         +'<span class="tracker-init" style="font-size:7px;color:var(--td)">avec PC</span>'
         +'</div></div>';
     }
-    return '<div class="tracker-item'+(isActif?' actif':'')+(c.type==='ennemi'?' ennemi':'')+(isMe?' c-est-moi':'')+'">'
+    const eAttr = (c.type==='ennemi' && c.eid!=null) ? ' data-eid="'+c.eid+'"' : '';
+    return '<div class="tracker-item'+(isActif?' actif':'')+(c.type==='ennemi'?' ennemi':'')+(isMe?' c-est-moi':'')+'"'+eAttr+'>'
       +'<div class="tracker-top">'
       +'<span class="tracker-nom">'+(isActif?'▶ ':'')+c.nom+(isMe?' ◀':'')+' </span>'
       +'<span class="tracker-init">'+c.init+'</span>'
       +'</div></div>';
   }).join('');
 }
+
+// ---- INFO ENNEMI AU SURVOL (jeton grille / ligne d'initiative) ----
+let _jEnTip;
+function _enemyById(id){ return (combatState?.ennemis||[]).find(e => String(e.id) === String(id)); }
+function enemyTipText(e){
+  if(!e) return '';
+  const band = (enemyGridBand(e) ?? e.dist ?? 1);
+  return '☠ '+e.nom+' — PV '+e.pvCur+'/'+e.pvMax+' · ATQ '+e.atq+' DC · RD '+e.rd+' · '+(RANGE_LABELS[band]||'');
+}
+function _jEnTipShow(elT){
+  const e = _enemyById(elT.getAttribute('data-eid')); if(!e) return;
+  if(!_jEnTip){ _jEnTip = document.createElement('div'); _jEnTip.id = 'j-en-tip'; document.body.appendChild(_jEnTip); }
+  _jEnTip.textContent = enemyTipText(e);
+  const z = window.__fpZoom || 1; const r = elT.getBoundingClientRect();
+  _jEnTip.style.display = 'block';
+  _jEnTip.style.left = (r.left / z) + 'px';
+  _jEnTip.style.top  = (r.bottom / z + 3) + 'px';
+}
+function _jEnTipHide(){ if(_jEnTip) _jEnTip.style.display = 'none'; }
+document.addEventListener('mouseover', e => { const t = e.target.closest?.('[data-eid]'); if(t) _jEnTipShow(t); });
+document.addEventListener('mouseout',  e => { if(e.target.closest?.('[data-eid]')) _jEnTipHide(); });
 
 // ---- ENNEMIS ----
 function renderEnnemisJoueur(){
