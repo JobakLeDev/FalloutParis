@@ -223,6 +223,21 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .mj-mo{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;z-index:9999;}
 .mj-mo.on{display:flex;}
 .mj-msg-box{width:42rem;max-width:94vw;background:var(--p);border:1px solid var(--b2);overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 30px rgba(0,0,0,.6);}
+/* Catalogue d'objets */
+.mj-cat-box{width:46rem;max-width:94vw;background:var(--p);border:1px solid var(--b2);display:flex;flex-direction:column;box-shadow:0 0 30px rgba(0,0,0,.6);max-height:88vh;}
+.mj-cat-bar{display:flex;gap:6px;align-items:center;padding:.5rem .7rem;border-bottom:1px solid var(--b);flex-wrap:wrap;}
+.mj-cat-tabs{display:flex;gap:3px;flex-wrap:wrap;}
+.mj-cat-tab{background:#060d06;border:1px solid var(--b2);color:var(--td);font-family:'Share Tech Mono',monospace;font-size:8px;padding:4px 8px;cursor:pointer;letter-spacing:1px;}
+.mj-cat-tab:hover{border-color:var(--g);color:var(--t);}
+.mj-cat-tab.on{border-color:var(--am);background:var(--gk);color:var(--tb);}
+.mj-cat-bar #mj-cat-search{flex:1;min-width:6rem;background:#060d06;border:1px solid var(--b2);color:var(--tb);font-family:'Share Tech Mono',monospace;font-size:9px;padding:4px 6px;outline:none;}
+.mj-cat-bar #mj-cat-joueur{background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:9px;padding:4px;outline:none;}
+.mj-cat-list{overflow-y:auto;padding:.4rem .6rem;}
+.mj-cat-row{display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center;padding:4px 2px;border-bottom:1px solid var(--b);}
+.mj-cat-nom{font-size:10px;color:var(--tb);}
+.mj-cat-nom small{color:var(--td);font-size:8px;}
+.mj-cat-row .cat-give{border-color:var(--am);color:var(--am);}
+.mj-cat-row .cat-give:hover{background:var(--am);color:#0c150c;}
 .mj-msg-head{display:flex;justify-content:space-between;align-items:center;padding:.5rem .8rem;border-bottom:1px solid var(--b2);font-family:'Oswald',sans-serif;letter-spacing:2px;color:var(--g);}
 .mj-msg-body{display:flex;height:60vh;}
 .mj-msg-contacts{width:11rem;flex:none;border-right:1px solid var(--b);overflow-y:auto;background:#060d06;}

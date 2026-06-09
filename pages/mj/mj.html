@@ -7,7 +7,7 @@
   <title>Fallout Paris — MJ</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css">
-  <link rel="stylesheet" href="mj.css?v=9">
+  <link rel="stylesheet" href="mj.css?v=10">
 </head>
 <body>
 
@@ -263,7 +263,8 @@
           </div>
           <div id="loot-cats" class="loot-cats"></div>
           <div class="gen-btns" style="margin-top:6px">
-            <button class="gen-btn" style="grid-column:1/-1" onclick="genButin()">🎲 Générer le butin</button>
+            <button class="gen-btn" onclick="genButin()">🎲 Générer</button>
+            <button class="gen-btn" onclick="openCatalogue()">📦 Catalogue</button>
           </div>
           <div class="loot-access">
             <div class="ctrl-lbl" style="min-width:0">Accès joueurs <span style="color:var(--td)">(bandeau sur leur fiche)</span></div>
@@ -384,6 +385,19 @@
 
 <div class="msg-bar" id="msg-bar"></div>
 
+<!-- CATALOGUE D'OBJETS (MJ) -->
+<div class="mj-mo" id="mj-cat-modal">
+  <div class="mj-cat-box">
+    <div class="mj-msg-head"><span>📦 CATALOGUE — Ajouter au pool de butin ou directement à un joueur</span><button class="hbtn" onclick="closeCatalogue()">✕</button></div>
+    <div class="mj-cat-bar">
+      <div class="mj-cat-tabs" id="mj-cat-tabs"></div>
+      <input type="text" id="mj-cat-search" placeholder="Rechercher…" oninput="renderCatalogue()">
+      <select id="mj-cat-joueur" title="Joueur destinataire (pour « → joueur »)"></select>
+    </div>
+    <div class="mj-cat-list" id="mj-cat-list"></div>
+  </div>
+</div>
+
 <!-- MESSAGERIE MJ -->
 <div class="mj-mo" id="mj-msg-modal">
   <div class="mj-msg-box">
@@ -409,7 +423,7 @@
   <script src="../../common/survie.js?v=1"></script>
   <script src="mj_shared.js?v=4"></script>
   <script src="zones.js"></script>
-  <script src="mj.js?v=9"></script>
+  <script src="mj.js?v=10"></script>
   <script src="../../common/responsive.js?v=1"></script>
 </body>
 </html>

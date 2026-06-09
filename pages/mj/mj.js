@@ -392,6 +392,104 @@ function rmButin(i){ butinData.items.splice(i,1); saveButin(); }
 function clearButin(){ if(confirm('Vider le pool de butin ?')){ butinData = {items:[],caps:0,players:[]}; saveButin(); } }
 function chButinCaps(d){ butinData.caps = Math.max(0,(butinData.caps||0)+d); saveButin(); }
 
+// ============================================================
+// CATALOGUE D'OBJETS (MJ) — parcourir tous les objets par catégorie
+// et les ajouter au pool de butin OU directement à un joueur.
+// ============================================================
+const CATALOGUE_CATS = [
+  {k:'weapons',l:'Armes',type:'WEAPON'},{k:'armor',l:'Armure',type:'ARMOR'},
+  {k:'food',l:'Nourriture',type:'FOOD'},{k:'drinks',l:'Boissons',type:'DRINK'},
+  {k:'drugs',l:'Chems',type:'DRUGS'},{k:'stuff',l:'Divers',type:'STUFF'},
+  {k:'ammo',l:'Munitions',type:'AMMO'},
+];
+let _catCat = 'weapons';
+const CAT_AMMO_QTY = 10;   // quantité de munitions ajoutée par clic
+function _catList(cat){
+  if(cat==='ammo') return (DB.ammo||[]).map(n=>({n}));
+  return ({weapons:DB.weapons,armor:DB.armor,food:DB.food,drinks:DB.drinks,drugs:DB.drugs,stuff:DB.stuff})[cat]||[];
+}
+function _catInfo(it,cat){
+  const fx=e=>(e&&e!=='—'&&e!=='–')?e:'';
+  if(cat==='weapons') return `${it.dmg||''}${fx(it.eff)?' · '+fx(it.eff):''}${it.a&&it.a!=='-'?' · '+it.a:''}`;
+  if(cat==='armor')   return `Ph${it.ph||0}/En${it.en||0}${it.rad?'/Rad'+it.rad:''} ${it.z||''}`;
+  if(cat==='food'||cat==='drinks') return `+${it.hp||0}PV${fx(it.eff)?' · '+fx(it.eff):''}`;
+  if(cat==='drugs')   return fx(it.eff);
+  if(cat==='stuff')   return fx(it.eff);
+  return '';
+}
+function _catBuildInv(name,cat){
+  const def=_catList(cat).find(x=>x.n===name)||{};
+  let type=({weapons:'WEAPON',food:'FOOD',drinks:'DRINK',drugs:'DRUGS',stuff:'STUFF'})[cat]||'STUFF';
+  if(cat==='armor') type=def.t||'ARMOR';
+  const item={name, type, qty:1, w:def.w||0, equipped:false};
+  if(type==='ARMOR'||type==='POWERARMOR') item.zone=def.z||'';
+  if(type==='WEAPON') item.persoBonus=false;
+  return item;
+}
+function renderCatTabs(){
+  const tb=document.getElementById('mj-cat-tabs'); if(!tb) return;
+  tb.innerHTML=CATALOGUE_CATS.map(c=>`<button class="mj-cat-tab${c.k===_catCat?' on':''}" onclick="setCatCat('${c.k}')">${c.l}</button>`).join('');
+}
+function setCatCat(k){ _catCat=k; renderCatTabs(); renderCatalogue(); }
+function openCatalogue(){
+  const m=document.getElementById('mj-cat-modal'); if(!m) return;
+  renderCatTabs();
+  const js=document.getElementById('mj-cat-joueur');
+  if(js) js.innerHTML = Object.keys(joueurs).length
+    ? Object.keys(joueurs).map(id=>`<option value="${id}">${joueurs[id]?.nom||id}</option>`).join('')
+    : '<option value="">Aucun joueur</option>';
+  m.classList.add('on');
+  renderCatalogue();
+}
+function closeCatalogue(){ document.getElementById('mj-cat-modal')?.classList.remove('on'); }
+function renderCatalogue(){
+  const el=document.getElementById('mj-cat-list'); if(!el) return;
+  const q=(document.getElementById('mj-cat-search')?.value||'').toLowerCase();
+  let list=_catList(_catCat);
+  if(q) list=list.filter(it=>(it.n||'').toLowerCase().includes(q));
+  if(!list.length){ el.innerHTML='<div class="empty" style="padding:10px;font-size:9px;color:var(--td)">Aucun objet.</div>'; return; }
+  el.innerHTML=list.map(it=>{
+    const nm=(it.n||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+    const info=_catInfo(it,_catCat);
+    return `<div class="mj-cat-row">
+      <span class="mj-cat-nom">${it.n}${info?` <small>${info}</small>`:''}</span>
+      <button class="bp-mini" onclick="catToPool('${nm}','${_catCat}')" title="Ajouter au pool de butin">+ Pool</button>
+      <button class="bp-mini cat-give" onclick="catToJoueur('${nm}','${_catCat}')" title="Donner au joueur sélectionné">→ joueur</button>
+    </div>`;
+  }).join('');
+}
+function catToPool(name,cat){
+  const def=_catList(cat).find(x=>x.n===name)||{};
+  const catDef=CATALOGUE_CATS.find(c=>c.k===cat)||{};
+  const type = cat==='armor' ? (def.t||'ARMOR') : catDef.type;
+  const qty = cat==='ammo' ? CAT_AMMO_QTY : 1;
+  addToPool({name, type, cat, qty, w:def.w||0, r:def.r||3});
+  saveButin();
+  if(typeof showMsg==='function') showMsg(`+ ${name} → pool de butin`);
+}
+async function catToJoueur(name,cat){
+  const jid=document.getElementById('mj-cat-joueur')?.value;
+  if(!jid){ alert('Aucun joueur sélectionné.'); return; }
+  const ref=db.collection('joueurs').doc(jid);
+  let snap; try{ snap=await ref.get(); }catch(e){ alert('Erreur Firebase'); return; }
+  if(!snap.exists){ alert('Fiche joueur introuvable.'); return; }
+  const d=snap.data();
+  if(cat==='ammo'){
+    const ammo=Array.isArray(d.ammo)?d.ammo:[];
+    const ex=ammo.find(a=>a.cal===name);
+    if(ex) ex.qty=(ex.qty||0)+CAT_AMMO_QTY; else ammo.push({cal:name,qty:CAT_AMMO_QTY});
+    await ref.update({ammo,lastUpdate:Date.now()});
+  } else {
+    const inv=Array.isArray(d.inventory)?d.inventory:[];
+    const item=_catBuildInv(name,cat);
+    const ex=inv.find(it=>it.name===item.name && it.type===item.type);
+    if(ex) ex.qty=(ex.qty||1)+1; else inv.push(item);
+    await ref.update({inventory:inv,lastUpdate:Date.now()});
+  }
+  if(typeof showMsg==='function') showMsg(`${name} → ${joueurs[jid]?.nom||jid}`);
+  logAction(`Objet donné : ${name}${cat==='ammo'?' ×'+CAT_AMMO_QTY:''} → ${joueurs[jid]?.nom||jid}`);
+}
+
 // Accès joueurs au butin (bandeau sur leur fiche)
 function renderLootAccess(){
   const el = document.getElementById('loot-access-list'); if(!el) return;
@@ -554,8 +652,10 @@ function clockBtns(p){
 function renderParties(){
   const el = document.getElementById('parties-list'); if(!el) return;
   ensureSoloParties();
-  const groups = (tempsData.parties||[]).filter(p=>!p.solo);
-  const solos  = (tempsData.parties||[]).filter(p=>p.solo);
+  // Tri auto par temps de campagne croissant : le groupe/joueur le PLUS EN AVANCE est en bas
+  const byTime = (a,b) => ((a.minutes!=null?a.minutes:TEMPS_DEFAUT) - (b.minutes!=null?b.minutes:TEMPS_DEFAUT));
+  const groups = (tempsData.parties||[]).filter(p=>!p.solo).sort(byTime);
+  const solos  = (tempsData.parties||[]).filter(p=>p.solo).sort(byTime);
   let h = '';
   groups.forEach(p => {
     const col = collapsedParties.has(p.id);
