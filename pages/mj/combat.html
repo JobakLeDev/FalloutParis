@@ -7,7 +7,7 @@
   <title>Fallout Paris — Combat</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css">
-  <link rel="stylesheet" href="combat.css">
+  <link rel="stylesheet" href="combat.css?v=3">
   <link rel="stylesheet" href="../../common/zoom.css?v=2">
 </head>
 <body>
@@ -134,6 +134,19 @@
 
   </div><!-- /combat-grid -->
 
+  <!-- MINI-CARTE DE COMBAT (grille) -->
+  <div class="pnl" id="map-pnl" style="margin-top:8px">
+    <div class="pnl-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+      <span>🗺 Carte de combat <span style="font-size:7px;color:var(--td)">— clic jeton puis case pour déplacer</span></span>
+      <span style="display:flex;gap:6px">
+        <button class="init-btn" onclick="genCombatMap()">🎲 Générer</button>
+        <button class="init-btn" id="obst-btn" onclick="toggleObstacleMode()">🧱 Obstacles</button>
+        <button class="init-btn" onclick="clearCombatMap()">✕ Retirer</button>
+      </span>
+    </div>
+    <div id="combat-map"><span class="empty" style="font-size:8px;color:var(--td)">Pas de carte — clique « Générer ».</span></div>
+  </div>
+
 </div><!-- /app -->
 
 <!-- MODAL PARTAGE -->
@@ -168,9 +181,9 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="../../common/shared.js"></script>
   <script src="../../common/db.js?v=6"></script>
-  <script src="mj_shared.js?v=5"></script>
-  <script src="combat_sync.js"></script>
-  <script src="combat.js?v=13"></script>
+  <script src="mj_shared.js?v=6"></script>
+  <script src="combat_sync.js?v=2"></script>
+  <script src="combat.js?v=14"></script>
   <script>document.addEventListener("DOMContentLoaded", () => window.DB_READY.then(init));</script>
   <script src="../../common/responsive.js?v=1"></script>
 </body>

@@ -289,6 +289,64 @@ function renderCombatJoueur(){
   renderCoequipiers();
   renderTrackerJoueur();
   renderEnnemisJoueur();
+  renderJMap();
+}
+
+// ============================================================
+// MINI-CARTE DE COMBAT (vue joueur) — lecture + déplacement pendant Move/Sprint
+// ============================================================
+let _jMoveActive = null, _jMoveRange = 0;   // type d'action de déplacement en cours + portée (cases)
+function _jMapToks(){
+  const list = [];
+  (combatState?.ordreInitiative||[]).filter(o=>o.type==='joueur').forEach(o=>list.push({ id:o.id, nom:(tousJoueurs[o.id]?.nom||o.nom||o.id), kind:'joueur', me:o.id===joueurId }));
+  (combatState?.allies||[]).forEach(a=>list.push({ id:'A'+a.id, nom:a.nom, kind:'allie' }));
+  (combatState?.ennemis||[]).forEach(e=>list.push({ id:'E'+e.id, nom:e.nom, kind:'ennemi', dead:(e.pvCur||0)<=0 }));
+  return list;
+}
+function renderJMap(){
+  const pnl = document.getElementById('j-map-pnl'); const el = document.getElementById('j-combat-map');
+  const grid = combatState?.grid;
+  if(!pnl || !el) return;
+  if(!grid || !grid.w){ pnl.style.display='none'; return; }
+  pnl.style.display='';
+  const hint = document.getElementById('j-map-hint');
+  if(hint) hint.textContent = _jMoveActive ? `— déplace-toi : clique une case verte (≤ ${_jMoveRange} cases)` : '';
+  const { w, h } = grid;
+  const toks = _jMapToks();
+  const byPos = {}; Object.keys(grid.pos||{}).forEach(id => { const p=grid.pos[id]; byPos[p.x+','+p.y]=id; });
+  const obs = new Set((grid.obstacles||[]).map(o=>o.x+','+o.y));
+  const myPos = grid.pos?.[joueurId];
+  let html = `<div class="cmap" style="grid-template-columns:repeat(${w},1fr)">`;
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+    const key=x+','+y; const tid=byPos[key]; const t=tid?toks.find(z=>z.id===tid):null;
+    let cls='cmap-cell';
+    if(obs.has(key)) cls+=' obst';
+    if(t) cls+=' tok '+(t.kind==='joueur'?'tk-j':t.kind==='allie'?'tk-a':'tk-e')+(t.dead?' dead':'')+(t.me?' sel':'');
+    let onclick='';
+    if(_jMoveActive && myPos && !t && !obs.has(key) && gridChebyshev(myPos,{x,y})<=_jMoveRange){ cls+=' reach'; onclick=`moveJSelf(${x},${y})`; }
+    const label = t ? (t.kind==='ennemi'?'☠':(t.nom||'?').charAt(0).toUpperCase()) : (obs.has(key)?'🧱':'');
+    html += `<div class="${cls}"${onclick?` onclick="${onclick}"`:''} title="${t?t.nom:''}">${label}</div>`;
+  }
+  html += '</div>';
+  el.innerHTML = html;
+}
+// Bande de distance d'un ennemi calculée depuis la grille (jeton ennemi ↔ mon jeton)
+function enemyGridBand(e){
+  const g = combatState?.grid; if(!g || !g.pos) return null;
+  const ep = g.pos['E'+e.id], mp = g.pos[joueurId];
+  if(!ep || !mp) return null;
+  return gridBand(gridChebyshev(ep, mp));
+}
+function startJMove(type, range){ _jMoveActive = type; _jMoveRange = range; renderJMap();
+  const pnl=document.getElementById('j-map-pnl'); if(pnl) pnl.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+async function moveJSelf(x,y){
+  if(!_jMoveActive || !combatState?.grid || !db) return;
+  const type = _jMoveActive; _jMoveActive = null; _jMoveRange = 0;
+  combatState.grid.pos = combatState.grid.pos || {};
+  combatState.grid.pos[joueurId] = { x, y };
+  try { await db.collection(COMBATS_COLL).doc(combatId).update({ ['grid.pos.'+joueurId]: { x, y } }); } catch(e){ console.error(e); }
+  renderJMap();
+  if(typeof _finishExec==='function') _finishExec(type, 'se déplace en ('+x+','+y+')');
 }
 
 // ---- AP POOL (vue joueur) ----
@@ -783,7 +841,7 @@ function renderEnnemisJoueur(){
       +'<div class="jc-stat"><span class="jc-sl">PV</span><span class="jc-sv'+(pct<30?' danger':'')+'">'+e.pvCur+'/'+e.pvMax+'</span></div>'
       +'<div class="jc-stat"><span class="jc-sl">ATQ</span><span class="jc-sv">'+e.atq+'</span></div>'
       +'<div class="jc-stat"><span class="jc-sl">RD</span><span class="jc-sv">'+e.rd+'</span></div>'
-      +'<div class="jc-stat"><span class="jc-sl">📏</span><span class="jc-sv" style="color:var(--am)">'+(RANGE_LABELS[e.dist??1]||'Moy.')+'</span></div>'
+      +'<div class="jc-stat"><span class="jc-sl">📏</span><span class="jc-sv" style="color:var(--am)">'+(RANGE_LABELS[(enemyGridBand(e)??e.dist??1)]||'Moy.')+'</span></div>'
       +'</div></div>';
   }).join('');
 }
@@ -832,7 +890,9 @@ async function jLancer2D20(){
   // Difficulté de portée : arme vs distance de la cible
   const cibleId = (myAim && myAim.cible) ? myAim.cible : cibleAttaque;
   const enCible = (combatState?.ennemis||[]).find(e => String(e.id) === String(cibleId));
-  const rangePen = rangeDifficulty(currentArmeInfo?.rng || '—', enCible ? (enCible.dist ?? 1) : 1);
+  const gBand = enCible ? enemyGridBand(enCible) : null;   // distance via la grille si dispo
+  const enDist = (gBand != null) ? gBand : (enCible ? (enCible.dist ?? 1) : 1);
+  const rangePen = rangeDifficulty(currentArmeInfo?.rng || '—', enDist);
   if(rangePen >= 99){
     document.getElementById('j-dice-result').innerHTML =
       '<span style="color:var(--rd)">⚔ Trop loin pour la mêlée — rapproche-toi (Move/Sprint)</span>';
@@ -1285,17 +1345,24 @@ function renderActionExec(){
       + '<button style="'+btn+'" onclick="execActionRoll(\''+t+'\')">Lancer 2D20</button></div>'
       + '<div id="ax-result" style="margin-top:6px;font-size:9px"></div>';
   } else if(cfg.move){
-    // déplacement : choisir un ennemi + direction (se rapprocher / s'éloigner) de cfg.move cran(s)
-    const ennemisV = (combatState?.ennemis||[]).filter(e => e.pvCur > 0);
-    if(!ennemisV.length){
-      h = '<div style="font-size:8px;color:var(--td)">Aucun ennemi.</div><button style="'+btn+'" onclick="execMoveDist(\''+t+'\')">✓ OK</button>';
+    const range = cfg.move===1 ? GRID_MOVE : GRID_SPRINT;   // 3 (Move) / 6 (Sprint)
+    if(combatState?.grid && combatState.grid.pos?.[joueurId]){
+      // Mode grille : déplacer son jeton sur la carte
+      h = '<div style="font-size:8px;color:var(--td);margin-bottom:5px">Déplace-toi de <b style="color:var(--am)">'+range+'</b> cases max sur la carte ci-dessous.</div>'
+        + '<button style="'+btn+'" onclick="startJMove(\''+t+'\','+range+')">🗺 Activer le déplacement</button>';
     } else {
-      h = '<div style="font-size:7px;color:var(--td);margin-bottom:2px">Par rapport à</div>'
-        + '<select id="ax-move-enemy" style="'+inp+';width:100%;margin-bottom:5px">'
-        + ennemisV.map(e=>'<option value="'+e.id+'">'+e.nom+' — '+(RANGE_LABELS[e.dist??1]||'')+'</option>').join('') + '</select>'
-        + '<div style="font-size:7px;color:var(--td);margin-bottom:2px">Déplacement (×'+cfg.move+')</div>'
-        + '<select id="ax-move-dir" style="'+inp+';width:100%;margin-bottom:5px"><option value="-1">▶ Se rapprocher</option><option value="1">◀ S\'éloigner</option></select>'
-        + '<button style="'+btn+'" onclick="execMoveDist(\''+t+'\')">✓ Confirmer</button>';
+      // Mode bandes (pas de carte) : se rapprocher / s'éloigner d'un ennemi
+      const ennemisV = (combatState?.ennemis||[]).filter(e => e.pvCur > 0);
+      if(!ennemisV.length){
+        h = '<div style="font-size:8px;color:var(--td)">Aucun ennemi.</div><button style="'+btn+'" onclick="execMoveDist(\''+t+'\')">✓ OK</button>';
+      } else {
+        h = '<div style="font-size:7px;color:var(--td);margin-bottom:2px">Par rapport à</div>'
+          + '<select id="ax-move-enemy" style="'+inp+';width:100%;margin-bottom:5px">'
+          + ennemisV.map(e=>'<option value="'+e.id+'">'+e.nom+' — '+(RANGE_LABELS[e.dist??1]||'')+'</option>').join('') + '</select>'
+          + '<div style="font-size:7px;color:var(--td);margin-bottom:2px">Déplacement (×'+cfg.move+')</div>'
+          + '<select id="ax-move-dir" style="'+inp+';width:100%;margin-bottom:5px"><option value="-1">▶ Se rapprocher</option><option value="1">◀ S\'éloigner</option></select>'
+          + '<button style="'+btn+'" onclick="execMoveDist(\''+t+'\')">✓ Confirmer</button>';
+      }
     }
   } else {
     // action sans jet

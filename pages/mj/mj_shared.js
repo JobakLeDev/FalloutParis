@@ -76,6 +76,17 @@ function rangeDifficulty(weaponRng, enemyDist){
   return Math.abs(d - w);
 }
 
+// ---- MINI-CARTE DE COMBAT (grille de cases) ----
+const GRID_MOVE = 3, GRID_SPRINT = 6;   // cases par déplacement (1 zone ≈ 3 cases)
+function gridChebyshev(a, b){ return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y)); }
+// distance en cases → bande (0 Contact, 1 Moyenne, 2 Longue, 3 Extrême)
+function gridBand(cells){ if(cells <= 1) return 0; if(cells <= 4) return 1; if(cells <= 7) return 2; return 3; }
+function gridOccupied(grid, x, y){
+  if(x<0||y<0||x>=grid.w||y>=grid.h) return true;
+  if((grid.obstacles||[]).some(o => o.x===x && o.y===y)) return true;
+  return Object.values(grid.pos||{}).some(p => p.x===x && p.y===y);
+}
+
 // XP d'un PNJ selon son niveau et sa catégorie (window.NPC_XP chargé via db.js)
 // cat : 'normal' | 'mighty' | 'legendary'  — extrapole au-delà du niveau 20
 function getNpcXP(level, cat = 'normal') {

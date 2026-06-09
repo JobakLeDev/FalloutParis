@@ -27,6 +27,7 @@ async function syncCombatToFirebase(){
       allies: (typeof allies !== 'undefined' ? allies : []).map(a => ({ ...a })),
       apPool:   typeof apPool   !== 'undefined' ? apPool   : 0,
       mjApPool: typeof mjApPool !== 'undefined' ? mjApPool : 0,
+      grid: (typeof combatMap !== 'undefined' && combatMap) ? combatMap : null,
       lastUpdate: Date.now(),
     }, { merge: true });
     // Mise à jour du pointeur courant (utilisé par firebase.js côté joueur)
