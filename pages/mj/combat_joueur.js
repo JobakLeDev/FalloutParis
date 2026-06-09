@@ -1198,6 +1198,7 @@ function renderActionsDeclarees(){
         + ' title="' + a.desc + '">' + lbl + '</button>';
     });
     html += '</div>';
+    html += '<div id="j-exec-minor"></div>';   // exécution d'une action mineure (ex. Se déplacer) — entre mineures et majeures
 
     const majorPending = as.majeure?.pending;
     const noMajorSlots = (s.majeure ?? 1) <= 0;   // grisé si plus d'action majeure dispo
@@ -1215,6 +1216,7 @@ function renderActionsDeclarees(){
         + ' title="' + a.desc + '">' + lbl + '</button>';
     });
     html += '</div>';
+    html += '<div id="j-exec-major"></div>';   // exécution d'une action majeure (Sprint/Defend/…)
     // (Le bouton « Terminer mon tour » est rendu séparément, sous le bloc « Mes jets ».)
   }
 
@@ -1340,10 +1342,12 @@ function _allyTargets(ownOnly){
 }
 
 function renderActionExec(){
-  const panel = document.getElementById('j-action-exec'); if(!panel) return;
+  const oldPanel = document.getElementById('j-action-exec'); if(oldPanel) oldPanel.style.display='none';   // ancien emplacement non utilisé
+  const cMin = document.getElementById('j-exec-minor'), cMaj = document.getElementById('j-exec-major');
+  const clearExec = () => { if(cMin) cMin.innerHTML=''; if(cMaj) cMaj.innerHTML=''; };
   const as = actionState;
   const isMoTour = combatState?.ordreInitiative?.[combatState.tourActif]?.id === joueurId;
-  if(!isMoTour || turnEnded || !as){ panel.style.display='none'; return; }
+  if(!isMoTour || turnEnded || !as){ clearExec(); return; }
   // Première action à effet validée, non encore exécutée
   let found=null;
   for(const type in ACTION_EXEC){
@@ -1351,10 +1355,8 @@ function renderActionExec(){
     const used=(as[cfg.cat]?.used||[]).filter(t=>t===type).length;
     if(used > (actionsExecuted[type]||0)){ found={type,cfg}; break; }
   }
-  if(!found){ panel.style.display='none'; return; }
-  panel.style.display='';
-  document.getElementById('j-action-exec-title').textContent = found.cfg.lbl;
-  const body = document.getElementById('j-action-exec-body');
+  clearExec();
+  if(!found) return;
   const inp = 'background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:monospace;font-size:8px;padding:3px 5px;outline:none';
   const btn = 'background:var(--gk);border:1px solid var(--g);color:var(--g);font-family:monospace;font-size:9px;padding:5px 14px;cursor:pointer;letter-spacing:1px';
   const t=found.type, cfg=found.cfg;
@@ -1413,7 +1415,11 @@ function renderActionExec(){
     let noteInp = cfg.note ? '<input type="text" id="ax-note" placeholder="Précision (optionnel)…" style="'+inp+';width:100%;margin-bottom:5px">' : '';
     h = allySel + noteInp + '<button style="'+btn+'" onclick="execActionSimple(\''+t+'\')">✓ Confirmer</button>';
   }
-  body.innerHTML = h;
+  // Rendu dans le conteneur de la catégorie : mineure → entre actions mineures et majeures ; majeure → sous les majeures
+  const cont = (cfg.cat==='mineure') ? cMin : cMaj;
+  if(cont) cont.innerHTML = '<div class="pnl bottom-des j-exec-box" style="margin-top:6px">'
+    + '<div class="pnl-title">' + cfg.lbl + '</div>'
+    + '<div>' + h + '</div></div>';
 }
 async function execMoveDist(type){
   const cfg = ACTION_EXEC[type]; if(!cfg) return;
