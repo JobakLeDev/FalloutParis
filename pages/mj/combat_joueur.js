@@ -1558,6 +1558,7 @@ async function consumeChem(i){
   const it = inv[i];
   const name = it.name;
   it.qty = Math.max(0, (it.qty ?? 1) - 1);
+  if(it.qty <= 0) inv.splice(i, 1);   // épuisé → retiré de l'inventaire
   const upd = { inventory: inv };
   let effetTxt = '';
   const def = (window.DB?.drugs||[]).find(d => d.n === name)
