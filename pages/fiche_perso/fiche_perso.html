@@ -7,7 +7,7 @@
   <title>Fallout Paris — Fiche Personnage</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css?v=79">
-  <link rel="stylesheet" href="fiche_perso.css?v=79">
+  <link rel="stylesheet" href="fiche_perso.css?v=80">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
@@ -96,6 +96,10 @@
       <div class="ptitle">S.P.E.C.I.A.L</div>
       <div id="sg"></div>
       <div class="caps-box"><span class="caps-ic">◉</span><span class="caps-lbl">CAPS</span><span id="caps-val" class="caps-val">0</span></div>
+      <div id="pnl-effects" style="display:none">
+        <div class="mp-sub">Effets actifs</div>
+        <div id="effects-content"></div>
+      </div>
     </div>
 
     <!-- MON PERSONNAGE : armure (Vault Boy) + armes équipées + survie -->
@@ -121,10 +125,6 @@
           <div id="pnl-survie">
             <div class="mp-sub">Survie</div>
             <div id="survie-content"></div>
-          </div>
-          <div id="pnl-effects" style="display:none">
-            <div class="mp-sub">Effets actifs</div>
-            <div id="effects-content"></div>
           </div>
           <div id="pnl-gen-weap">
             <div class="mp-sub weap-toggle" onclick="toggleWeapCollapse()">Armes équipées <span id="weap-chev">▾</span></div>
