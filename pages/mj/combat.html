@@ -7,7 +7,7 @@
   <title>Fallout Paris — Combat</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css">
-  <link rel="stylesheet" href="combat.css?v=9">
+  <link rel="stylesheet" href="combat.css?v=10">
   <link rel="stylesheet" href="../../common/zoom.css?v=2">
 </head>
 <body>
@@ -52,10 +52,10 @@
     </div>
   </div>
 
-  <!-- LAYOUT : gauche (joueurs/ennemis) · centre (carte) · droite (dés/tracker/actions/log) -->
+  <!-- LAYOUT : gauche (Joueurs) · centre (Dés/Carte/Actions/Journal) · droite (Ennemis/Tracker) -->
   <div class="combat-layout">
 
-    <!-- GAUCHE -->
+    <!-- GAUCHE : Joueurs -->
     <div class="cl-col cl-left">
       <div class="pnl">
         <div class="pnl-title">
@@ -65,21 +65,40 @@
         <div class="sel-bar" id="sel-joueurs"></div>
         <div id="joueurs-combat"></div>
       </div>
-
-      <div class="pnl">
-        <div class="pnl-title">
-          Ennemis
-          <button class="add-ennemi-btn" onclick="ouvrirModalEnnemi()">+ Ajouter</button>
-        </div>
-        <div id="ennemis-combat"></div>
-      </div>
     </div>
 
-    <!-- CENTRE : CARTE -->
-    <div class="cl-center">
+    <!-- CENTRE : bandeau Dés → Carte → Actions → Journal -->
+    <div class="cl-col cl-center">
+
+      <!-- BANDEAU : Jet de dés -->
+      <div class="pnl dice-banner">
+        <div class="db-ctx" id="dice-context"><span class="empty">Sélectionne un joueur puis une arme</span></div>
+        <div class="db-rolls">
+          <div class="d20-sel-row">
+            <button class="d20-sel-btn on" id="d20-btn-2" onclick="setNbDiceMJ(2)">2D20</button>
+            <button class="d20-sel-btn" id="d20-btn-3" onclick="setNbDiceMJ(3)">3D −1AP</button>
+            <button class="d20-sel-btn" id="d20-btn-4" onclick="setNbDiceMJ(4)">4D −3AP</button>
+            <button class="d20-sel-btn" id="d20-btn-5" onclick="setNbDiceMJ(5)">5D −6AP</button>
+          </div>
+          <div class="tn-row">
+            <span class="tn-lbl">TN</span>
+            <input type="number" class="tn-inp" id="tn-val" value="10" min="1" max="20">
+            <button class="dice-btn" id="lance-btn" onclick="lancer2D20()">2D20</button>
+            <span class="tn-lbl">DC</span>
+            <input type="number" class="cd-inp" id="nb-cd" value="2" min="1" max="10">
+            <button class="cd-btn" onclick="lancerCD()">Dés CD</button>
+          </div>
+          <div class="dice-result" id="dice-result">—</div>
+          <div class="dice-result" id="cd-result">—</div>
+          <div id="convert-ap-mj" style="display:none"></div>
+          <div id="bonus-dmg-mj" style="display:none"></div>
+        </div>
+      </div>
+
+      <!-- CARTE -->
       <div class="pnl" id="map-pnl">
         <div class="pnl-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
-          <span>🗺 Carte de combat <span style="font-size:7px;color:var(--td)">— clic jeton puis case pour déplacer</span></span>
+          <span>🗺 Carte de combat <span style="font-size:7px;color:var(--td)">— clic jeton puis case</span></span>
           <span style="display:flex;gap:6px">
             <button class="init-btn" onclick="genCombatMap()">🎲 Générer</button>
             <button class="init-btn" onclick="clearCombatMap()">✕ Retirer</button>
@@ -87,42 +106,8 @@
         </div>
         <div id="combat-map"><span class="empty" style="font-size:8px;color:var(--td)">Pas de carte — clique « Générer ».</span></div>
       </div>
-    </div>
 
-    <!-- DROITE -->
-    <div class="cl-col cl-right">
-      <div class="pnl">
-        <div class="pnl-title">Jet de dés</div>
-        <div id="dice-context" style="padding:5px;background:#060d06;border:1px solid var(--b);margin-bottom:6px;min-height:36px">
-          <span class="empty">Sélectionne un joueur puis une arme</span>
-        </div>
-        <div class="d20-sel-row">
-          <button class="d20-sel-btn on" id="d20-btn-2" onclick="setNbDiceMJ(2)">2D20</button>
-          <button class="d20-sel-btn" id="d20-btn-3" onclick="setNbDiceMJ(3)">3D −1AP</button>
-          <button class="d20-sel-btn" id="d20-btn-4" onclick="setNbDiceMJ(4)">4D −3AP</button>
-          <button class="d20-sel-btn" id="d20-btn-5" onclick="setNbDiceMJ(5)">5D −6AP</button>
-        </div>
-        <div class="tn-row">
-          <span class="tn-lbl">TN</span>
-          <input type="number" class="tn-inp" id="tn-val" value="10" min="1" max="20">
-          <button class="dice-btn" id="lance-btn" onclick="lancer2D20()">2D20</button>
-        </div>
-        <div class="dice-result" id="dice-result">—</div>
-        <div id="convert-ap-mj" style="display:none;margin-top:4px"></div>
-        <div class="cd-row">
-          <span class="tn-lbl">DC</span>
-          <input type="number" class="cd-inp" id="nb-cd" value="2" min="1" max="10">
-          <button class="cd-btn" onclick="lancerCD()">Dés Combat</button>
-        </div>
-        <div class="dice-result" id="cd-result" style="margin-top:4px">—</div>
-        <div id="bonus-dmg-mj" style="display:none;margin-top:4px"></div>
-      </div>
-
-      <div class="pnl">
-        <div class="pnl-title">Tracker de tour</div>
-        <div id="tracker-tour"><span class="empty">Lance l'initiative pour démarrer</span></div>
-      </div>
-
+      <!-- ACTIONS JOUEURS (sous la carte, même largeur) -->
       <div class="pnl">
         <div class="pnl-title" style="display:flex;justify-content:space-between;align-items:center">
           Actions joueurs
@@ -131,12 +116,30 @@
         <div id="actions-joueurs-notif"><span class="empty">Aucune action en attente</span></div>
       </div>
 
+      <!-- JOURNAL (sous, même largeur) -->
       <div class="pnl">
         <div class="pnl-title">
-          Journal
+          Journal des actions
           <button class="log-clear" onclick="clearLog()">Effacer</button>
         </div>
         <div class="scr" id="combat-log"></div>
+      </div>
+
+    </div>
+
+    <!-- DROITE : Ennemis + Tracker -->
+    <div class="cl-col cl-right">
+      <div class="pnl">
+        <div class="pnl-title">
+          Ennemis
+          <button class="add-ennemi-btn" onclick="ouvrirModalEnnemi()">+ Ajouter</button>
+        </div>
+        <div id="ennemis-combat"></div>
+      </div>
+
+      <div class="pnl">
+        <div class="pnl-title">Tracker de tour</div>
+        <div id="tracker-tour"><span class="empty">Lance l'initiative pour démarrer</span></div>
       </div>
     </div>
 
