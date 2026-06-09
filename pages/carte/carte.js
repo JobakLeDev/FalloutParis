@@ -464,8 +464,8 @@ function geoZonePopup(p) {
   let h = `<div class="zpop"><div class="zpop-title">${p.Nom || 'Zone'}</div>
     <div class="zpop-pool"><span style="color:${col}">${facLabel}</span>${p.Type ? ' · ' + p.Type : ''}${p.Statut ? ' · ' + p.Statut : ''}</div>`;
   if (p.Descriptio) h += `<div class="zpop-pool" style="color:var(--td)">${p.Descriptio}</div>`;
-  h += `<a class="zpop-link" href="../mj/mj.html?${geoZoneGenQuery(p)}">⚔ Générer une rencontre</a>`;
-  if (!isMJ) {} // joueurs : pas d'outils
+  // Lien générateur de rencontres : MJ uniquement (les joueurs ne déclenchent pas de rencontre)
+  if (isMJ) h += `<a class="zpop-link" href="../mj/mj.html?${geoZoneGenQuery(p)}">⚔ Générer une rencontre</a>`;
   return h + '</div>';
 }
 
@@ -1371,8 +1371,11 @@ function zonePopup(z) {
   if (z.threat && z.threat !== 'normal') tags.push('Menace ' + (THREAT_LABELS[z.threat] || z.threat));
   let h = `<div class="zpop"><div class="zpop-title">${z.name || base.label || z.baseZone || 'Zone'}</div>`;
   if (tags.length) h += `<div class="zpop-pool">${tags.join(' · ')}</div>`;
-  const qs = new URLSearchParams({ zone: z.baseZone || '', occ: z.occupation || '', var: z.variation || '', threat: z.threat || '' });
-  h += `<a class="zpop-link" href="../mj/mj.html?${qs.toString()}">⚔ Générer une rencontre</a>`;
+  // Lien vers le générateur de rencontres : MJ uniquement (les joueurs ne déclenchent pas de rencontre)
+  if (isMJ) {
+    const qs = new URLSearchParams({ zone: z.baseZone || '', occ: z.occupation || '', var: z.variation || '', threat: z.threat || '' });
+    h += `<a class="zpop-link" href="../mj/mj.html?${qs.toString()}">⚔ Générer une rencontre</a>`;
+  }
   if (isMJ) h += `<div class="zpop-mj"><button onclick="editZone('${z.id}')">✎ Éditer</button>
     <button onclick="deleteZone('${z.id}')" class="del">🗑</button></div>` + revealControls('zone', z.id, z);
   return h + '</div>';
