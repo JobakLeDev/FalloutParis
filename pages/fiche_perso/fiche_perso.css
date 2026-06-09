@@ -321,6 +321,6 @@ html, body { height: 100%; overflow: hidden; }
    On réactive le défilement de la page (le zoom fait déborder
    le contenu prévu pour un seul écran).
    ============================================================ */
-body { zoom: 1.5; }
+/* zoom piloté par common/responsive.js */
 html, body { overflow-x: hidden !important; overflow-y: auto !important; height: auto !important; min-height: 0 !important; }
 .pip { max-width: 1400px; margin: 0 auto; height: auto; }
