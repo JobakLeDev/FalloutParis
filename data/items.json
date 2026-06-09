@@ -61,7 +61,7 @@
     {"n":"Mentats",          "t":"DRUGS",        "eff":"Relancer PER/INT","dur":"Durable","add":"3D","w":0.05,"r":2},
     {"n":"Jet",              "t":"DRUGS",        "eff":"Actions supp. coûtent -1 PA","dur":"Bref","add":"2D","w":0.05,"r":2},
     {"n":"Psycho",           "t":"DRUGS",        "eff":"+2D dégâts, +3 RD phys","dur":"Durable","add":"2D","w":0.05,"r":2},
-    {"n":"Overdrive",        "t":"DRUGS",        "eff":"+3D dégâts, relancer jusqu'à 3D","dur":"Durable","add":"1D","w":0.05,"r":3},
+    {"n":"Overdrive",        "t":"DRUGS",        "eff":"Action de visée : relancer 1 d20 supplémentaire","dur":"Durable","add":"1D","w":0.05,"r":3},
     {"n":"Day Tripper",      "t":"DRUGS",        "eff":"Difficulté CHA/LCK -1","dur":"Durable","add":"1D","w":0.05,"r":2},
     {"n":"Calmex",           "t":"DRUGS",        "eff":"Relancer PER/AGI, +2D furtif","dur":"Durable","add":"1D","w":0.05,"r":3},
     {"n":"Fury",             "t":"DRUGS",        "eff":"+3 RD phys, +3D mêlée","dur":"Durable","add":"1D","w":0.05,"r":3},
