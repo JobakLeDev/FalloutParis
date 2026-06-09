@@ -7,21 +7,27 @@ const db=firebase.initializeApp(firebaseConfig).firestore();
 
 // ---- LOCK ----
 document.getElementById('lock-input').addEventListener('keydown',e=>{if(e.key==='Enter')unlock();});
+function enterApp(){
+  document.getElementById('lock').style.display='none';
+  document.getElementById('app').style.display='block';
+  chargerListe().then(()=>{
+    // Si un id est dans l'URL, charger ce perso automatiquement
+    const urlId=new URLSearchParams(window.location.search).get('id');
+    if(urlId) charger(urlId);
+  });
+}
 function unlock(){
   const v=document.getElementById('lock-input').value;
   if(v===MJ_CODE){
-    document.getElementById('lock').style.display='none';
-    document.getElementById('app').style.display='block';
-    chargerListe().then(()=>{
-      // Si un id est dans l'URL, charger ce perso automatiquement
-      const urlId=new URLSearchParams(window.location.search).get('id');
-      if(urlId) charger(urlId);
-    });
+    sessionStorage.setItem('mj_auth','1');   // partagé avec l'écran MJ
+    enterApp();
   } else {
     document.getElementById('lock-err').style.display='block';
     document.getElementById('lock-input').value='';
   }
 }
+// Déjà authentifié sur l'écran MJ → pas de mot de passe
+if(sessionStorage.getItem('mj_auth')==='1') enterApp();
 
 // ---- DONNÉES ----
 // SKILLS_DEF défini dans common/shared.js
