@@ -92,6 +92,23 @@ const BLOCK_TYPES = [
   { id:'water',  label:'Eau',        icon:'≈', solid:false },
 ];
 function blockSolid(id){ const b = BLOCK_TYPES.find(t=>t.id===id); return !!(b && b.solid); }
+// Lignes de bord (sur les arêtes entre cases) : murs / portes / fenêtres
+const EDGE_TYPES = [
+  { id:'wall',   label:'Mur',     icon:'┃' },
+  { id:'door',   label:'Porte',   icon:'╫' },
+  { id:'window', label:'Fenêtre', icon:'┆' },
+];
+// grid.edges = { "V,x,y":type (arête verticale à gauche de la case x,y) , "H,x,y":type (arête horizontale en haut de x,y) }
+// Rendu des lignes existantes (HTML d'overlay), cs = taille de case en px
+function gridEdgesHtml(grid, cs){
+  const pad = 5, gap = 1, pitch = cs + gap; const E = grid.edges || {}; let h = '';
+  for(const key in E){
+    const p = key.split(','); const o = p[0], x = +p[1], y = +p[2], type = E[key];
+    if(o === 'V') h += '<div class="cedge cedge-v e-'+type+'" style="left:'+(pad+x*pitch-gap)+'px;top:'+(pad+y*pitch)+'px;height:'+cs+'px"></div>';
+    else          h += '<div class="cedge cedge-h e-'+type+'" style="top:'+(pad+y*pitch-gap)+'px;left:'+(pad+x*pitch)+'px;width:'+cs+'px"></div>';
+  }
+  return h;
+}
 // Terrain d'une case (gère l'ancien format obstacles[] = murs)
 function gridTerrainAt(grid, x, y){
   if(grid.terrain && grid.terrain[x+','+y]) return grid.terrain[x+','+y];

@@ -329,6 +329,7 @@ function renderJMap(){
     const eAttr = (t && t.kind==='ennemi') ? ` data-eid="${t.id.slice(1)}"` : '';
     html += `<div class="${cls}"${onclick?` onclick="${onclick}"`:''}${eAttr} title="${t?t.nom:(bt?bt.label:'')}">${label}</div>`;
   }
+  html += '<div class="cmap-edges">' + (typeof gridEdgesHtml==='function' ? gridEdgesHtml(grid, 30) : '') + '</div>';
   html += '</div>';
   el.innerHTML = html;
 }

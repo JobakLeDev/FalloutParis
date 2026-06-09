@@ -669,7 +669,7 @@ function renderCombat(){
 // combatMap = { w, h, obstacles:[{x,y}], pos:{ [tokenId]:{x,y} } }
 // tokenId : joueurId | 'E'+enemyId | 'A'+allyId
 // ============================================================
-let combatMap = null, _mapSel = null, _blockSel = null;
+let combatMap = null, _mapSel = null, _blockSel = null, _edgeSel = null;
 function _mapTokens(){
   // Liste des combattants à placer : {id, nom, kind:'joueur'|'ennemi'|'allie', color, dead}
   const list = [];
@@ -701,8 +701,26 @@ function genCombatMap(){
   syncCombatToFirebase();
   addLog('🗺 Carte de combat générée');
 }
-function clearCombatMap(){ combatMap = null; _mapSel = null; _blockSel = null; renderCombat(); syncCombatToFirebase(); }
-function setBlockBrush(id){ _blockSel = (_blockSel===id ? null : id); _mapSel = null; renderCombatMap(); }
+function clearCombatMap(){ combatMap = null; _mapSel = null; _blockSel = null; _edgeSel = null; renderCombat(); syncCombatToFirebase(); }
+function setBlockBrush(id){ _blockSel = (_blockSel===id ? null : id); _mapSel = null; _edgeSel = null; renderCombatMap(); }
+function setEdgeBrush(id){ _edgeSel = (_edgeSel===id ? null : id); _mapSel = null; _blockSel = null; renderCombatMap(); }
+function edgeClick(o, x, y){
+  if(!combatMap || !_edgeSel) return;
+  combatMap.edges = combatMap.edges || {};
+  const key = o + ',' + x + ',' + y;
+  if(_edgeSel === 'erase' || combatMap.edges[key] === _edgeSel) delete combatMap.edges[key];
+  else combatMap.edges[key] = _edgeSel;
+  renderCombatMap(); syncCombatToFirebase();
+}
+// Zones cliquables sur les arêtes (uniquement quand un pinceau d'arête est actif)
+function edgeHotspots(grid, cs){
+  const pad = 5, gap = 1, pitch = cs + gap; let h = '';
+  for(let y=0;y<grid.h;y++) for(let x=0;x<=grid.w;x++)
+    h += '<div class="cedge-hot" style="left:'+(pad+x*pitch-gap-3)+'px;top:'+(pad+y*pitch+2)+'px;height:'+(cs-4)+'px;width:8px" onclick="edgeClick(\'V\','+x+','+y+')"></div>';
+  for(let x=0;x<grid.w;x++) for(let y=0;y<=grid.h;y++)
+    h += '<div class="cedge-hot" style="top:'+(pad+y*pitch-gap-3)+'px;left:'+(pad+x*pitch+2)+'px;width:'+(cs-4)+'px;height:8px" onclick="edgeClick(\'H\','+x+','+y+')"></div>';
+  return h;
+}
 // Recalcule la bande de distance de chaque ennemi = distance (cases) au joueur/allié le plus proche
 function recomputeBandsFromMap(){
   if(!combatMap || !combatMap.pos) return;
@@ -766,6 +784,12 @@ function renderCombatMap(){
   BLOCK_TYPES.forEach(b => pal += '<button class="cmap-brush b-'+b.id+(_blockSel===b.id?' on':'')+'" onclick="setBlockBrush(\''+b.id+'\')" title="'+b.label+'">'+b.icon+'</button>');
   pal += '<button class="cmap-brush'+(_blockSel==='erase'?' on':'')+'" onclick="setBlockBrush(\'erase\')" title="Effacer le terrain">⌫</button>';
   pal += '</div>';
+  // Palette 2 : lignes d'arête (murs/portes/fenêtres)
+  pal += '<div class="cmap-palette">';
+  EDGE_TYPES.forEach(b => pal += '<button class="cmap-brush ce-'+b.id+(_edgeSel===b.id?' on':'')+'" onclick="setEdgeBrush(\''+b.id+'\')" title="Ligne : '+b.label+'">'+b.icon+'</button>');
+  pal += '<button class="cmap-brush'+(_edgeSel==='erase'?' on':'')+'" onclick="setEdgeBrush(\'erase\')" title="Effacer une ligne">⌫</button>';
+  pal += '</div>';
+  const cs = 32;   // taille de case MJ (= --cs)
   let html = pal + `<div class="cmap" style="grid-template-columns:repeat(${w},var(--cs,22px))">`;
   for(let y=0;y<h;y++) for(let x=0;x<w;x++){
     const key = x+','+y;
@@ -780,9 +804,12 @@ function renderCombatMap(){
     const onclick = t ? `mapPickToken('${tid}')` : `mapCellClick(${x},${y})`;
     html += `<div class="${cls}" onclick="${onclick}" title="${t?(t.nom+(t.hidden?' (masqué)':'')):(bt?bt.label:'')}">${label}</div>`;
   }
+  // Overlay des lignes d'arête (+ zones cliquables si pinceau d'arête actif)
+  html += '<div class="cmap-edges">' + gridEdgesHtml(combatMap, cs) + (_edgeSel ? edgeHotspots(combatMap, cs) : '') + '</div>';
   html += '</div>';
   if(_mapSel) html += '<div class="cmap-tip">Jeton sélectionné — clique une case libre pour le déplacer.</div>';
   else if(_blockSel) html += '<div class="cmap-tip">Pinceau « '+(_blockSel==='erase'?'Effacer':(BLOCK_TYPES.find(b=>b.id===_blockSel)?.label||''))+' » — clique les cases.</div>';
+  else if(_edgeSel) html += '<div class="cmap-tip">Ligne « '+(_edgeSel==='erase'?'Effacer':(EDGE_TYPES.find(b=>b.id===_edgeSel)?.label||''))+' » — clique les bords entre cases.</div>';
   el.innerHTML = html;
 }
 

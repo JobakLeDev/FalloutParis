@@ -254,3 +254,15 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .cmap-brush.b-wall{ color:#7ed87e; } .cmap-brush.b-rubble{ color:#b9c98a; } .cmap-brush.b-cover{ color:#9be6c0; }
 .cmap-brush.b-hazard{ color:var(--am); } .cmap-brush.b-water{ color:#6fd3e6; }
 .cmap-tip{ font-size:8px; color:var(--am); margin-top:4px; text-align:center; }
+/* Lignes d'arête (murs/portes/fenêtres) */
+.cmap-edges{ position:absolute; inset:0; pointer-events:none; z-index:4; }
+.cedge{ position:absolute; border-radius:1px; }
+.cedge-v{ width:3px; }
+.cedge-h{ height:3px; }
+.cedge.e-wall{ background:var(--g); box-shadow:0 0 5px rgba(93,190,93,.85); }
+.cedge.e-door{ background:var(--am); box-shadow:0 0 5px rgba(232,168,32,.8); }
+.cedge-v.e-window{ background:repeating-linear-gradient(0deg,#5fd0e6 0 4px,transparent 4px 7px); }
+.cedge-h.e-window{ background:repeating-linear-gradient(90deg,#5fd0e6 0 4px,transparent 4px 7px); }
+.cedge-hot{ position:absolute; z-index:6; cursor:pointer; pointer-events:auto; background:rgba(232,168,32,.10); }
+.cedge-hot:hover{ background:rgba(232,168,32,.5); }
+.cmap-brush.ce-wall{ color:var(--g); } .cmap-brush.ce-door{ color:var(--am); } .cmap-brush.ce-window{ color:#5fd0e6; }
