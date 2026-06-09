@@ -827,6 +827,7 @@ async function appliquer(action){
     else if(action==='rad')  upd.rad = Math.min(hpMax,(d.rad||0)+parseInt(document.getElementById('val-rad').value||1));
     else if(action==='derad') upd.rad = Math.max(0,(d.rad||0)-parseInt(document.getElementById('val-derad').value||4));
     else if(action==='derad-full') upd.rad = 0;
+    else if(action==='clear-effects') upd.activeEffects = [];
     else if(action==='xp'||action==='xp-500'||action==='xp-1000'){
       const v = action==='xp'?parseInt(document.getElementById('val-xp').value||100):action==='xp-500'?500:1000;
       let xp=(d.xp||0)+v, niv=d.niveau||1;
@@ -855,7 +856,7 @@ async function appliquer(action){
     await db.collection('joueurs').doc(id).update(upd);
   });
   await Promise.all(promises);
-  const lbls={dmg:'Dégâts',heal:'Soins',fullheal:'Soin complet',rad:'Radiation',derad:'Rad soignée','derad-full':'Rad retirée',xp:'XP','xp-500':'+500 XP','xp-1000':'+1000 XP','repos-court':'Repos court','repos-long':'Repos long','bien-repos':'Bien reposé','reset-wounds':'Blessures effacées','luck-init':'Luck initialisé','luck-recover':'Luck récupéré','caps-give':'Caps donnés','caps-remove':'Caps retirés'};
+  const lbls={dmg:'Dégâts',heal:'Soins',fullheal:'Soin complet',rad:'Radiation',derad:'Rad soignée','derad-full':'Rad retirée','clear-effects':'Effets purgés',xp:'XP','xp-500':'+500 XP','xp-1000':'+1000 XP','repos-court':'Repos court','repos-long':'Repos long','bien-repos':'Bien reposé','reset-wounds':'Blessures effacées','luck-init':'Luck initialisé','luck-recover':'Luck récupéré','caps-give':'Caps donnés','caps-remove':'Caps retirés'};
   showMsg(`✓ ${lbls[action]||action} — ${selected.size} joueur(s)`);
   const names = [...selected].map(id => joueurs[id]?.nom || id).join(', ');
   const valMap = { dmg:'val-dmg', heal:'val-heal', rad:'val-rad', derad:'val-derad', xp:'val-xp', 'luck-recover':'val-luck-rec', 'caps-give':'val-caps', 'caps-remove':'val-caps' };

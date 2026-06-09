@@ -1215,8 +1215,14 @@ async function finCombat(){
   tourActif = 0;
   numRound = 0;
   // Effacer le combatId sur les fiches joueurs (retire le bandeau combat)
-  Object.keys(combattants).forEach(id => {
-    db.collection('joueurs').doc(id).update({ combatId: null }).catch(()=>{});
+  // + purge auto des effets actifs de durée « combat » (chems Brefs)
+  Object.keys(combattants).forEach(async id => {
+    try {
+      const snap = await db.collection('joueurs').doc(id).get();
+      const upd = { combatId: null };
+      if(snap.exists) upd.activeEffects = (snap.data().activeEffects||[]).filter(e => e.dur !== 'combat');
+      db.collection('joueurs').doc(id).update(upd).catch(()=>{});
+    } catch(e){ db.collection('joueurs').doc(id).update({ combatId: null }).catch(()=>{}); }
   });
   stopCombat();
   resetActionsDeclarees();
