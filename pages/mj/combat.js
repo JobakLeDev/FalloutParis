@@ -758,9 +758,29 @@ function mapCellClick(x, y){
     syncCombatToFirebase();
   }
 }
+// Place automatiquement les jetons manquants (ex. compagnon ajouté après génération) et nettoie les disparus
+function _freeMapCell(grid, rightSide){
+  const cols = rightSide ? [grid.w-2, grid.w-3, grid.w-1] : [1, 2, 0];
+  for(const x of cols) for(let y=0;y<grid.h;y++) if(!gridOccupied(grid, x, y)) return { x, y };
+  for(let x=0;x<grid.w;x++) for(let y=0;y<grid.h;y++) if(!gridOccupied(grid, x, y)) return { x, y };
+  return null;
+}
+function ensureMapPositions(){
+  if(!combatMap) return;
+  combatMap.pos = combatMap.pos || {};
+  let changed = false;
+  const toks = _mapTokens();
+  toks.forEach(t => {
+    if(!combatMap.pos[t.id]){ const p = _freeMapCell(combatMap, t.kind==='ennemi'); if(p){ combatMap.pos[t.id] = p; changed = true; } }
+  });
+  const ids = new Set(toks.map(t => t.id));
+  Object.keys(combatMap.pos).forEach(id => { if(!ids.has(id)){ delete combatMap.pos[id]; changed = true; } });
+  if(changed){ recomputeBandsFromMap(); syncCombatToFirebase(); }
+}
 function renderCombatMap(){
   const el = document.getElementById('combat-map'); if(!el) return;
   if(!combatMap){ el.innerHTML = '<span class="empty" style="font-size:8px;color:var(--td)">Pas de carte — clique « Générer ».</span>'; return; }
+  ensureMapPositions();
   const { w, h } = combatMap;
   const toks = _mapTokens();
   const byPos = {}; Object.keys(combatMap.pos).forEach(id => { const p=combatMap.pos[id]; byPos[p.x+','+p.y]=id; });
