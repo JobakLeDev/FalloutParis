@@ -7,7 +7,7 @@
   <title>Fallout Paris — Combat</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css">
-  <link rel="stylesheet" href="combat.css?v=8">
+  <link rel="stylesheet" href="combat.css?v=9">
   <link rel="stylesheet" href="../../common/zoom.css?v=2">
 </head>
 <body>
@@ -52,31 +52,45 @@
     </div>
   </div>
 
-  <!-- GRILLE 4 colonnes -->
-  <div class="combat-grid">
+  <!-- LAYOUT : gauche (joueurs/ennemis) · centre (carte) · droite (dés/tracker/actions/log) -->
+  <div class="combat-layout">
 
-    <!-- COL 1 : JOUEURS -->
-    <div class="pnl">
-      <div class="pnl-title">
-        Joueurs
-        <button class="init-btn" onclick="lancerInitiative()">🎲 Initiative</button>
+    <!-- GAUCHE -->
+    <div class="cl-col cl-left">
+      <div class="pnl">
+        <div class="pnl-title">
+          Joueurs
+          <button class="init-btn" onclick="lancerInitiative()">🎲 Initiative</button>
+        </div>
+        <div class="sel-bar" id="sel-joueurs"></div>
+        <div id="joueurs-combat"></div>
       </div>
-      <div class="sel-bar" id="sel-joueurs"></div>
-      <div id="joueurs-combat"></div>
+
+      <div class="pnl">
+        <div class="pnl-title">
+          Ennemis
+          <button class="add-ennemi-btn" onclick="ouvrirModalEnnemi()">+ Ajouter</button>
+        </div>
+        <div id="ennemis-combat"></div>
+      </div>
     </div>
 
-    <!-- COL 2 : ENNEMIS -->
-    <div class="pnl">
-      <div class="pnl-title">
-        Ennemis
-        <button class="add-ennemi-btn" onclick="ouvrirModalEnnemi()">+ Ajouter</button>
+    <!-- CENTRE : CARTE -->
+    <div class="cl-center">
+      <div class="pnl" id="map-pnl">
+        <div class="pnl-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+          <span>🗺 Carte de combat <span style="font-size:7px;color:var(--td)">— clic jeton puis case pour déplacer</span></span>
+          <span style="display:flex;gap:6px">
+            <button class="init-btn" onclick="genCombatMap()">🎲 Générer</button>
+            <button class="init-btn" onclick="clearCombatMap()">✕ Retirer</button>
+          </span>
+        </div>
+        <div id="combat-map"><span class="empty" style="font-size:8px;color:var(--td)">Pas de carte — clique « Générer ».</span></div>
       </div>
-      <div id="ennemis-combat"></div>
     </div>
 
-    <!-- COL 3 : DÉS + LOG -->
-    <div style="display:flex;flex-direction:column;gap:8px">
-
+    <!-- DROITE -->
+    <div class="cl-col cl-right">
       <div class="pnl">
         <div class="pnl-title">Jet de dés</div>
         <div id="dice-context" style="padding:5px;background:#060d06;border:1px solid var(--b);margin-bottom:6px;min-height:36px">
@@ -105,19 +119,6 @@
       </div>
 
       <div class="pnl">
-        <div class="pnl-title">
-          Journal
-          <button class="log-clear" onclick="clearLog()">Effacer</button>
-        </div>
-        <div class="scr" id="combat-log"></div>
-      </div>
-
-    </div>
-
-    <!-- COL 4 : TRACKER DE TOUR + ACTIONS JOUEURS -->
-    <div style="display:flex;flex-direction:column;gap:8px">
-
-      <div class="pnl">
         <div class="pnl-title">Tracker de tour</div>
         <div id="tracker-tour"><span class="empty">Lance l'initiative pour démarrer</span></div>
       </div>
@@ -130,21 +131,16 @@
         <div id="actions-joueurs-notif"><span class="empty">Aucune action en attente</span></div>
       </div>
 
+      <div class="pnl">
+        <div class="pnl-title">
+          Journal
+          <button class="log-clear" onclick="clearLog()">Effacer</button>
+        </div>
+        <div class="scr" id="combat-log"></div>
+      </div>
     </div>
 
-  </div><!-- /combat-grid -->
-
-  <!-- MINI-CARTE DE COMBAT (grille) -->
-  <div class="pnl" id="map-pnl" style="margin-top:8px">
-    <div class="pnl-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
-      <span>🗺 Carte de combat <span style="font-size:7px;color:var(--td)">— clic jeton puis case pour déplacer</span></span>
-      <span style="display:flex;gap:6px">
-        <button class="init-btn" onclick="genCombatMap()">🎲 Générer</button>
-        <button class="init-btn" onclick="clearCombatMap()">✕ Retirer</button>
-      </span>
-    </div>
-    <div id="combat-map"><span class="empty" style="font-size:8px;color:var(--td)">Pas de carte — clique « Générer ».</span></div>
-  </div>
+  </div><!-- /combat-layout -->
 
 </div><!-- /app -->
 

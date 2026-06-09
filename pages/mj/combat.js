@@ -770,7 +770,7 @@ function renderCombatMap(){
   BLOCK_TYPES.forEach(b => pal += '<button class="cmap-brush b-'+b.id+(_blockSel===b.id?' on':'')+'" onclick="setBlockBrush(\''+b.id+'\')" title="'+b.label+'">'+b.icon+'</button>');
   pal += '<button class="cmap-brush'+(_blockSel==='erase'?' on':'')+'" onclick="setBlockBrush(\'erase\')" title="Effacer le terrain">⌫</button>';
   pal += '</div>';
-  let html = pal + `<div class="cmap" style="grid-template-columns:repeat(${w},22px)">`;
+  let html = pal + `<div class="cmap" style="grid-template-columns:repeat(${w},var(--cs,22px))">`;
   for(let y=0;y<h;y++) for(let x=0;x<w;x++){
     const key = x+','+y;
     const tid = byPos[key];

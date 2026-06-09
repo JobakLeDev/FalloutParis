@@ -315,7 +315,7 @@ function renderJMap(){
   const toks = _jMapToks();
   const byPos = {}; Object.keys(grid.pos||{}).forEach(id => { const p=grid.pos[id]; byPos[p.x+','+p.y]=id; });
   const myPos = grid.pos?.[joueurId];
-  let html = `<div class="cmap" style="grid-template-columns:repeat(${w},22px)">`;
+  let html = `<div class="cmap" style="grid-template-columns:repeat(${w},var(--cs,22px))">`;
   for(let y=0;y<h;y++) for(let x=0;x<w;x++){
     const key=x+','+y; const tid=byPos[key]; const t=tid?toks.find(z=>z.id===tid):null;
     const terr = gridTerrainAt(grid, x, y);

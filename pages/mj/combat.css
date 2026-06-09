@@ -23,6 +23,12 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 
 /* LAYOUT */
 .combat-grid{display:grid;grid-template-columns:minmax(0,320px) minmax(0,320px) 260px 260px;gap:8px;align-items:start;}
+/* Layout combat MJ : gauche · CARTE (centre) · droite */
+.combat-layout{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr) minmax(0,300px);gap:10px;align-items:start;}
+.cl-col{display:flex;flex-direction:column;gap:8px;min-width:0;}
+.cl-center{display:flex;justify-content:center;min-width:0;}
+.cl-center #map-pnl{margin-top:0;}
+@media (max-width:1100px){ .combat-layout{grid-template-columns:1fr;} .cl-center{order:-1;} }
 .jc-card,.ennemi-card{max-width:100%;}
 
 /* PANNEAU */
@@ -188,6 +194,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 
 /* ---- MINI-CARTE DE COMBAT (grille — esprit Pip-Boy) ---- */
 #map-pnl, #j-map-pnl{ width:fit-content; max-width:100%; margin-left:auto; margin-right:auto; }
+#map-pnl{ --cs:32px; }   /* carte MJ agrandie */
 #map-pnl .pnl-title, #j-map-pnl .pnl-title{ white-space:normal; }
 .cmap{
   position:relative; display:grid; gap:1px; padding:5px; margin:6px auto 0;
@@ -198,7 +205,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 /* Scanlines CRT par-dessus la grille */
 .cmap::after{ content:''; position:absolute; inset:0; pointer-events:none; z-index:3;
   background:repeating-linear-gradient(0deg, rgba(0,0,0,0) 0 2px, rgba(0,0,0,.18) 2px 3px); }
-.cmap-cell{ width:22px; height:22px; display:flex; align-items:center; justify-content:center;
+.cmap-cell{ width:var(--cs,22px); height:var(--cs,22px); display:flex; align-items:center; justify-content:center;
   font-size:11px; cursor:pointer; user-select:none; color:#3f6f4f;
   background:radial-gradient(circle at 50% 40%, #0c2014, #07160d);
   border:1px solid rgba(93,190,93,.14); box-shadow:inset 0 0 3px rgba(93,190,93,.08); }
