@@ -187,7 +187,10 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .tracker-item.allie .tracker-nom{ color:var(--t); font-size:10px; }
 
 /* ---- MINI-CARTE DE COMBAT (grille de cases) ---- */
-.cmap{ display:grid; gap:2px; background:#0a140a; border:1px solid var(--b2); padding:4px; width:max-content; max-width:100%; overflow:auto; margin:0 auto; }
+/* Le panneau de carte épouse la largeur de la grille (centré) */
+#map-pnl, #j-map-pnl{ width:fit-content; max-width:100%; margin-left:auto; margin-right:auto; }
+#map-pnl .pnl-title, #j-map-pnl .pnl-title{ white-space:normal; }
+.cmap{ display:grid; gap:2px; background:#0a140a; border:1px solid var(--b2); padding:4px; width:max-content; max-width:100%; overflow:auto; margin:6px auto 0; }
 .cmap-cell[data-eid]{ cursor:help; }
 .cmap-cell{ width:22px; height:22px; background:#0e1a0e; border:1px solid #162416; display:flex; align-items:center; justify-content:center; font-size:10px; cursor:pointer; color:var(--td); user-select:none; }
 .cmap-cell:hover{ border-color:var(--b2); }
