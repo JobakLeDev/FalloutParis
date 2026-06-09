@@ -1638,8 +1638,9 @@ function jLancerCD(){
   const arEl = document.getElementById('j-attack-result');
   if(arEl){
     arEl.style.display = 'block';
+    const brk = dmgTotal>dmgRaw ? ' <span style="color:var(--td);font-size:8px">('+dmgRaw+' + '+(dmgTotal-dmgRaw)+' effet)</span>' : '';
     let html = '<div style="font-size:9px;color:var(--tb);padding:4px 6px;border:1px solid var(--g);background:#060d06;margin-top:2px">'
-      + '⚔ <b>'+nom+'</b> inflige <b style="color:var(--am)">'+dmgTotal+' dmg</b>'+(ef?' <span style="color:var(--am)">'+ef+'⚡</span>':'')
+      + '⚔ <b>'+nom+'</b> inflige <b style="color:var(--am)">'+dmgTotal+' dmg</b>'+brk+(ef?' <span style="color:var(--am)">'+ef+'⚡</span>':'')
       + cible+zoneTxt+'</div>';
     if(effetInfo){
       html += '<div style="font-size:8px;padding:3px 6px;border:1px solid var(--am);border-top:none;background:#1a1200">'
@@ -1655,7 +1656,7 @@ function jLancerCD(){
   if(db && combatId){
     db.collection(COMBATS_COLL).doc(combatId).update({
       attackResult: { joueur: joueurId, nom, cible: cibleNomTxt, cibleId: cibleAttaque, zone, zoneAimee,
-        dmg: dmgTotal, ef,
+        dmg: dmgTotal, base: dmgRaw, ef,
         effetNom: effetInfo?.nom||'', effetNote: effetInfo?.note||'', rad: effetInfo?.rad||0,
         ts: Date.now() }
     }).catch(()=>{});
