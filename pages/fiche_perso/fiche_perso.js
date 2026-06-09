@@ -149,9 +149,9 @@ function jetItem(i){
 function utiliserItem(i){
   const it=char.inventory[i];
   if(!it||it.qty<=0)return;
-  const db=[...DB.food,...DB.drinks,...DB.drugs].find(d=>d.n===it.name)||{};
-  if(db.hp>0) char.hp=Math.min(hpMax(),char.hp+db.hp);
-  if(db.rad&&typeof db.rad==='number'&&db.rad<0) char.rad=Math.max(0,char.rad+db.rad);
+  const def=[...DB.food,...DB.drinks,...DB.drugs].find(d=>d.n===it.name)||{};
+  if(def.hp>0) char.hp=Math.min(hpMax(),char.hp+def.hp);
+  if(def.rad&&typeof def.rad==='number'&&def.rad<0) char.rad=Math.max(0,char.rad+def.rad);
   if(it.name==='RadAway') char.rad=Math.max(0,char.rad-4);
   if(it.name==='RadAway Diluted') char.rad=Math.max(0,char.rad-2);
   // Survie : manger/boire remet le compteur à zéro (Rassasié / Désaltéré)
@@ -162,6 +162,11 @@ function utiliserItem(i){
   it.qty--;
   if(it.qty<=0)char.inventory.splice(i,1);
   rAll();
+  // Journal d'actions du MJ : trace l'utilisation de l'objet
+  if(typeof fpLogAction==='function' && typeof db!=='undefined'){
+    const eff=def.eff && def.eff!=='—' && def.eff!=='–' ? ' ('+def.eff+')' : (def.hp>0?' (+'+def.hp+' PV)':'');
+    fpLogAction(db, char.name || (typeof JOUEUR_ID!=='undefined'?JOUEUR_ID:'Joueur'), `utilise ${it.name}${eff}`);
+  }
 }
 
 

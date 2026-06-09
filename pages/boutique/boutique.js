@@ -17,6 +17,18 @@ const CAT_ICON    = { weapons:'🔫', armor:'🛡', ammo:'▪', food:'🍖', dri
                       WEAPON:'🔫', ARMOR:'🛡', POWERARMOR:'🛡', CLOTHING:'👕', OUTFIT:'👕', AMMO:'▪', FOOD:'🍖', DRINK:'🥤', DRUGS:'💊', STUFF:'🔧' };
 
 function esc(s){ return (s==null?'':''+s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+// Texte d'info (survol) décrivant ce que fait un objet, d'après les DB
+function itemTip(name){
+  const DBs = window.DB || {}; let d;
+  const fx = e => (e && e!=='—' && e!=='–') ? e : '';
+  if ((d=(DBs.weapons||[]).find(x=>x.n===name))) return `${d.t||'Arme'} · ${d.dmg||''} dégâts${fx(d.eff)?' · '+fx(d.eff):''}${d.a&&d.a!=='-'?' · munition '+d.a:''}`;
+  if ((d=(DBs.armor||[]).find(x=>x.n===name)))  return `Armure ${d.z||''} · Phys ${d.ph||0} / Énergie ${d.en||0}${d.rad?' / Rad '+d.rad:''}`;
+  if ((d=(DBs.food||[]).find(x=>x.n===name)))   return `Nourriture · +${d.hp||0} PV${fx(d.eff)?' · '+fx(d.eff):''}${d.rad?' · irradié '+d.rad:''}`;
+  if ((d=(DBs.drinks||[]).find(x=>x.n===name))) return `Boisson · +${d.hp||0} PV${fx(d.eff)?' · '+fx(d.eff):''}${d.rad?' · irradié '+d.rad:''}`;
+  if ((d=(DBs.drugs||[]).find(x=>x.n===name)))  return `Chem · ${fx(d.eff)||''}${d.dur?' ('+d.dur+')':''}${d.add?' · addictif':''}`;
+  if ((d=(DBs.stuff||[]).find(x=>x.n===name)))  return fx(d.eff);
+  return '';
+}
 let _toastT;
 function toast(msg, err){ const el=document.getElementById('sh-toast'); if(!el) return; el.textContent=msg; el.className='on'+(err?' err':''); clearTimeout(_toastT); _toastT=setTimeout(()=>el.className='',2600); }
 
@@ -95,7 +107,7 @@ function renderBuy(){
     const unit = (it.cat==='ammo'||it.type==='AMMO') && it.unit>1 ? ` <small>(×${it.unit})</small>` : '';
     return `<div class="sh-row">
       <span class="sh-ic">${CAT_ICON[it.cat]||CAT_ICON[it.type]||'▪'}</span>
-      <span class="sh-nom">${esc(it.name)}${unit}<small> · r${rarityOf(it)}</small></span>
+      <span class="sh-nom" title="${esc(itemTip(it.name)||'')}">${esc(it.name)}${unit}<small> · r${rarityOf(it)}</small></span>
       <span class="sh-qty">stock ${it.qty}</span>
       <span class="sh-price">${price}</span>
       ${viewerId ? `<button class="sh-act" onclick="buy('${it.id}')" ${can?'':'disabled'}>Acheter</button>` : '<span class="sh-qty">—</span>'}
@@ -113,7 +125,7 @@ function renderSell(){
     const price = sellPrice(it);
     return `<div class="sh-row">
       <span class="sh-ic">${CAT_ICON[it.type]||'🔧'}</span>
-      <span class="sh-nom">${esc(it.name)}${it.qty>1?` <small>×${it.qty}</small>`:''}</span>
+      <span class="sh-nom" title="${esc(itemTip(it.name)||'')}">${esc(it.name)}${it.qty>1?` <small>×${it.qty}</small>`:''}</span>
       <span class="sh-price">${price}</span>
       <button class="sh-act sell" onclick="sell(${i})">Vendre</button>
     </div>`;
