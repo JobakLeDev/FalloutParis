@@ -1450,26 +1450,29 @@ async function consumeChem(i){
   it.qty = Math.max(0, (it.qty ?? 1) - 1);
   const upd = { inventory: inv };
   let effetTxt = '';
-  // Effet du chem appliqué automatiquement : soin de PV (Stimpak…) + réduction de RAD (RadAway…)
   const def = (window.DB?.drugs||[]).find(d => d.n === name)
            || (window.DB?.food||[]).find(d => d.n === name)
            || (window.DB?.drinks||[]).find(d => d.n === name) || {};
-  if(def.hp){
-    const hpMax = getHpMax(joueurData);
-    const cur = joueurData.hp || 0;
-    const nv = Math.min(hpMax, cur + def.hp);
-    upd.hp = nv; joueurData.hp = nv;
-    if(nv>cur) effetTxt += ' (+'+(nv-cur)+' PV)';
+  const fx = (typeof fpParseConsumable === 'function') ? fpParseConsumable(def) : { instant:{ hp:def.hp||0, radHeal:0, ap:0 }, buff:null };
+  // Buff temporaire → effet actif (visible sur la fiche aussi)
+  if(fx.buff){
+    joueurData.activeEffects = Array.isArray(joueurData.activeEffects) ? joueurData.activeEffects : [];
+    joueurData.activeEffects.push({ id:'e'+Date.now().toString(36)+Math.floor(Math.random()*999), src:name, ...fx.buff });
+    upd.activeEffects = joueurData.activeEffects;
+    effetTxt += ' (effet actif)';
   }
-  const radM = (def.eff||'').match(/Soigne\s+(\d+)\s+rad/i);
-  if(radM){
-    const dec = parseInt(radM[1])||0;
-    const curRad = joueurData.rad || 0;
-    const nv = Math.max(0, curRad - dec);
-    upd.rad = nv; joueurData.rad = nv;
-    if(nv<curRad) effetTxt += ' (−'+(curRad-nv)+' RAD)';
+  if(fx.instant.hp){
+    const hpMax = getHpMax(joueurData) + (typeof fpEffSum==='function'?fpEffSum(joueurData.activeEffects,'hpMax'):0);
+    const cur = joueurData.hp || 0; const nv = Math.min(hpMax, cur + fx.instant.hp);
+    upd.hp = nv; joueurData.hp = nv; if(nv>cur) effetTxt += ' (+'+(nv-cur)+' PV)';
+  }
+  if(fx.instant.radHeal){
+    const curRad = joueurData.rad || 0; const nv = Math.max(0, curRad - fx.instant.radHeal);
+    upd.rad = nv; joueurData.rad = nv; if(nv<curRad) effetTxt += ' (−'+(curRad-nv)+' RAD)';
   }
   try { await db.collection('joueurs').doc(joueurId).update(upd); } catch(e){ console.error(e); }
+  // AP immédiats → pool de groupe
+  if(fx.instant.ap){ try { await _updateAPGroupe(fx.instant.ap); effetTxt += ' (+'+fx.instant.ap+' AP groupe)'; } catch(e){} }
   return '💊 Prend ' + name + effetTxt;
 }
 
@@ -1575,7 +1578,10 @@ function jLancerCD(){
   if(!canAttackNow()) return;      // anti-spam : pas d'attaque en attente de résolution
   attacksDone++;                   // l'attaque est résolue (réactive les dés s'il reste une attaque validée)
   renderDiceAccess();              // verrouille immédiatement si plus d'attaque dispo
-  const nb = nbDCActuel || 2;
+  let nb = nbDCActuel || 2;
+  // Bonus dégâts mêlée des effets actifs (Psycho, Yao Guai Roast…)
+  if(['cac_weapon','barehand','throwing'].includes(lastSkKeyJ) && typeof fpEffSum==='function')
+    nb += fpEffSum(joueurData?.activeEffects, 'dmgMelee');
   const vals = Array.from({length:nb},()=>FACES_CD[Math.floor(Math.random()*6)]);
   const dmgRaw = vals.reduce((a,v)=>a+(parseInt(v)||0),0);
   const ef = vals.filter(v=>v.includes('⚡')).length;

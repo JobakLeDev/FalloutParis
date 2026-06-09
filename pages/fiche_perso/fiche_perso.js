@@ -29,13 +29,14 @@ const SP = () => char.special;
 // CALCULS — Fonctions de calcul dérivées des stats
 // ============================================================
 
-function hpMax(){return SP().L+SP().E+Math.max(0,char.niveau-1)+(char.perks['Life Giver']||0)*SP().E+(char.survie?.wellRested?2:0);}
+function effSum(key){return (typeof fpEffSum==='function')?fpEffSum(char.activeEffects,key):0;}
+function hpMax(){return SP().L+SP().E+Math.max(0,char.niveau-1)+(char.perks['Life Giver']||0)*SP().E+(char.survie?.wellRested?2:0)+effSum('hpMax');}
 function forEff(){return (char.perks['Adrenalin Rush']>0&&char.hp<hpMax())?10:SP().S;}
 // Sacs à dos : bonus de charge max = multiplicateur × FOR (un seul sac équipé à la fois)
 const BACKPACK_BONUS={'Backpack Small':5,'Backpack Large':10};
 function isBackpack(it){return !!it && BACKPACK_BONUS[it.name]!=null;}
 function backpackMult(){const bp=char.inventory.find(it=>isBackpack(it)&&it.equipped);return bp?BACKPACK_BONUS[bp.name]:0;}
-function chargeMax(){const f=forEff(),b=(150+f*10)/2.2046;const base=b*(char.powerArmor?1.5:1)+(char.powerArmor?200:0);return Math.round((base+backpackMult()*f)*10)/10;}
+function chargeMax(){const f=forEff(),b=(150+f*10)/2.2046;const base=b*(char.powerArmor?1.5:1)+(char.powerArmor?200:0);return Math.round((base+backpackMult()*f+effSum('charge'))*10)/10;}
 function chargeActuelle(){let t=0;char.inventory.forEach(it=>t+=(it.qty||1)*(it.w||0));char.ammo.forEach(a=>t+=a.qty*0.02);return Math.round(t*100)/100;}
 // Résumé court des mods d'un objet (préfixes), kind='weapon'|'armor'
 function modSummary(it, kind){
@@ -76,7 +77,7 @@ function getLocRD(zone){
       aRad=(db.rad===999||aRad===999)?999:Math.max(aRad,e.rad||0);
     }
   });
-  return{phys:aPh+rdP('phys'), en:aEn+rdP('en'), rad:aRad===999?999:aRad+rdP('rad')};
+  return{phys:aPh+rdP('phys')+effSum('phys'), en:aEn+rdP('en')+effSum('energy'), rad:aRad===999?999:aRad+rdP('rad')+effSum('rad')};
 }
 function getWeaponTN(inv){
   const db=DB.weapons.find(w=>w.n===inv.name);if(!db)return 0;
@@ -159,10 +160,12 @@ function utiliserItem(i){
   const it=char.inventory[i];
   if(!it||it.qty<=0)return;
   const def=[...DB.food,...DB.drinks,...DB.drugs].find(d=>d.n===it.name)||{};
-  if(def.hp>0) char.hp=Math.min(hpMax(),char.hp+def.hp);
+  const fx=(typeof fpParseConsumable==='function')?fpParseConsumable(def):{instant:{hp:def.hp||0,radHeal:0},buff:null};
+  // Buff temporaire d'abord (pour que le soin tienne compte du +PV max)
+  if(fx.buff){ char.activeEffects=char.activeEffects||[]; char.activeEffects.push({ id:'e'+Date.now().toString(36)+Math.floor(Math.random()*999), src:it.name, ...fx.buff }); }
+  if(fx.instant.hp>0) char.hp=Math.min(hpMax(),char.hp+fx.instant.hp);
+  if(fx.instant.radHeal>0) char.rad=Math.max(0,char.rad-fx.instant.radHeal);
   if(def.rad&&typeof def.rad==='number'&&def.rad<0) char.rad=Math.max(0,char.rad+def.rad);
-  if(it.name==='RadAway') char.rad=Math.max(0,char.rad-4);
-  if(it.name==='RadAway Diluted') char.rad=Math.max(0,char.rad-2);
   // Survie : manger/boire remet le compteur à zéro (Rassasié / Désaltéré)
   if(window._fpCampaignMin!=null){ char.survie=char.survie||{};
     if(it.type==='FOOD') char.survie.eat=window._fpCampaignMin;
@@ -179,7 +182,32 @@ function utiliserItem(i){
 }
 
 
-function rAll(){rSpecial();rCaps();rGenWeap();rHP();rMeta();rStatus();rWeapEq();rAmmo();rPerkRD();rLocs();rLocsGen();rInventory();rSkills();rPerks();rPerkEff();rCharge();rLevelUp();rCompanions();rSurvie();}
+function rAll(){rSpecial();rCaps();rGenWeap();rHP();rMeta();rStatus();rWeapEq();rAmmo();rPerkRD();rLocs();rLocsGen();rInventory();rSkills();rPerks();rPerkEff();rCharge();rLevelUp();rCompanions();rSurvie();rEffects();}
+
+// ---- EFFETS ACTIFS (buffs temporaires de nourriture/chems) ----
+function _effSummary(ef){
+  const m=ef.mods||{}, p=[];
+  if(m.hpMax) p.push('+'+m.hpMax+' PV max');
+  if(m.phys) p.push('+'+m.phys+' RD phys');
+  if(m.energy) p.push('+'+m.energy+' RD én.');
+  if(m.rad) p.push('+'+m.rad+' RD rad');
+  if(m.charge) p.push('+'+m.charge+' charge');
+  if(m.dmgMelee) p.push('+'+m.dmgMelee+'D mêlée');
+  if(m.regen) p.push('régén '+m.regen+' PV/tour');
+  if(ef.reroll&&ef.reroll.length) p.push('relance '+ef.reroll.join('/'));
+  return p.join(' · ') || ef.note || '';
+}
+function rEffects(){
+  const el=document.getElementById('effects-content'); const pnl=document.getElementById('pnl-effects');
+  const list=char.activeEffects||[];
+  if(pnl) pnl.style.display = list.length ? '' : 'none';
+  if(!el) return;
+  el.innerHTML = list.length ? list.map(ef=>
+    `<div class="eff-row"><span class="eff-n">${ef.src||ef.name||'Effet'}</span><span class="eff-d">${_effSummary(ef)}</span><button class="eff-x" onclick="rmEffect('${ef.id}')" title="Retirer">✕</button></div>`
+  ).join('') + `<button class="eff-purge" onclick="purgeEffects()">⏹ Fin de scène (tout purger)</button>` : '';
+}
+function rmEffect(id){ char.activeEffects=(char.activeEffects||[]).filter(e=>e.id!==id); rAll(); }
+function purgeEffects(){ if(!(char.activeEffects||[]).length) return; char.activeEffects=[]; rAll(); }
 function rCaps(){const el=document.getElementById('caps-val');if(el)el.textContent=(char.caps||0).toLocaleString('fr-FR');}
 
 // ---- SURVIE : faim / soif / sommeil + Fatigue (lié à l'horloge) ----

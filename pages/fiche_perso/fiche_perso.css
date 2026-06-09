@@ -83,6 +83,15 @@ html, body { height: 100%; overflow: hidden; }
 
 .iname-cal{ font-size:0.62rem; color:var(--td); letter-spacing:0; margin-left:0.25rem; }
 
+/* Effets actifs (buffs temporaires) */
+.eff-row{ display:flex; align-items:center; gap:0.4rem; padding:0.2rem 0; border-bottom:1px solid var(--b); }
+.eff-n{ font-size:0.62rem; color:var(--tb); flex:none; max-width:7rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.eff-d{ font-size:0.58rem; color:var(--am); flex:1; line-height:1.2; }
+.eff-x{ background:none; border:1px solid var(--b2); color:var(--rd); font-size:0.6rem; cursor:pointer; padding:0 0.3rem; flex:none; }
+.eff-x:hover{ border-color:var(--rd); }
+.eff-purge{ width:100%; margin-top:0.35rem; background:var(--gk); border:1px solid var(--b2); color:var(--td); font-family:'Share Tech Mono',monospace; font-size:0.58rem; padding:0.25rem; cursor:pointer; letter-spacing:0.5px; }
+.eff-purge:hover{ border-color:var(--am); color:var(--am); }
+
 /* ============================================================
    LANCER DE DÉS PUBLIC (joueur)
    ============================================================ */

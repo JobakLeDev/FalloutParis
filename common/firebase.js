@@ -61,6 +61,7 @@ function appliquerDonnees(data) {
   if (data.caps         !== undefined) char.caps         = data.caps;
   if (data.survie       !== undefined) char.survie        = data.survie || {};
   if (data.companions   !== undefined) char.companions   = data.companions;
+  if (data.activeEffects !== undefined) char.activeEffects = Array.isArray(data.activeEffects) ? data.activeEffects : [];
 }
 
 // ---- Mettre à jour l'affichage du nom dans le bandeau ----
@@ -99,6 +100,7 @@ function saveToFirebase() {
         caps:         char.caps,
         companions:   char.companions,
         survie:       char.survie,
+        activeEffects: char.activeEffects || [],
         lastUpdate:   Date.now(),
       }, { merge: true });
       setStatus('✓ Synchronisé', '#5dbe5d');

@@ -80,6 +80,47 @@ function fpApplyArmorMods(base, mods){
   };
 }
 
+// ============================================================
+// EFFETS DE CONSOMMABLES → effets immédiats + buff temporaire
+// def = entrée DB de l'objet {n, hp, eff, rad, dur, add}
+// Retour : { instant:{hp,radHeal,ap,apMax,cure}, buff:{name,mods,reroll[],note,dur}|null }
+// ============================================================
+function fpParseConsumable(def){
+  const out = { instant:{ hp:0, radHeal:0, ap:0, apMax:0, cure:false }, buff:null };
+  if(!def) return out;
+  const eff = (def.eff || '').toString();
+  const e = eff.toLowerCase();
+  let m;
+  // ---- immédiat ----
+  if(typeof def.hp === 'number' && def.hp > 0) out.instant.hp = def.hp;
+  if((m = e.match(/soigne\s+(\d+)\s*(rad|d[ée]g[aâ]ts?\s+de\s+radiation)/))) out.instant.radHeal = parseInt(m[1]) || 0;
+  if(/r[ée]serve\s+pa|pa\s+max|max(imum)?\s+ap/.test(e)){ const mm = e.match(/(\d+)/); out.instant.apMax = mm ? (parseInt(mm[1])||1) : 1; }
+  else if((m = e.match(/\+?(\d+)\s*pa\b/)) || (m = e.match(/(\d+)\s*ap\b/))) out.instant.ap = parseInt(m[1]) || 0;
+  if(/addiction|maladie|illness/.test(e)) out.instant.cure = true;
+  // ---- buff temporaire ----
+  const mods = {}; const reroll = [];
+  if((m = e.match(/pv\s*max\s*\+?(\d+)/)) || (m = e.match(/\+?(\d+)\s*pv\s*max/)) || (m = e.match(/max\s*hp\s*\+?(\d+)/))) mods.hpMax = parseInt(m[1])||0;
+  if((m = e.match(/\+?(\d+)\s*rd\s*phys/)))      mods.phys   = parseInt(m[1])||0;
+  if((m = e.match(/\+?(\d+)\s*rd\s*[ée]nergie/)))mods.energy = parseInt(m[1])||0;
+  if((m = e.match(/\+?(\d+)\s*rd\s*radiation/))) mods.rad    = parseInt(m[1])||0;
+  if((m = e.match(/charge\s*\+?(\d+)/)))         mods.charge = parseInt(m[1])||0;
+  if((m = e.match(/\+?(\d+)\s*(d|cd|dc)\b.*m[êe]l[ée]e/))) mods.dmgMelee = parseInt(m[1])||0;
+  if((m = e.match(/regen\s*(\d+)\s*pv|(\d+)\s*pv\s*\/\s*tour|1\s*hp\s+at\s+the\s+start/))) mods.regen = parseInt(m[1]||m[2]||'1')||1;
+  const RR = { 'for':'S','fr':'S','str':'S','per':'P','end':'E','int':'I','cha':'C','agi':'A','lck':'L','chance':'L' };
+  const rrm = e.match(/relancer[^.]*?\b(for|fr|str|per|end|int|cha|agi|lck|chance)\b/g);
+  if(rrm){ rrm.forEach(s => { const a = s.match(/\b(for|fr|str|per|end|int|cha|agi|lck|chance)\b/); if(a && RR[a[1]] && !reroll.includes(RR[a[1]])) reroll.push(RR[a[1]]); }); }
+  if(Object.keys(mods).length || reroll.length){
+    let dur = 'scene';
+    if(def.dur === 'Bref') dur = 'combat';
+    else if(def.dur === 'Durable' || def.dur === 'Lasting') dur = 'scene';
+    else if(/jusqu'à fin de combat|ce combat/.test(e)) dur = 'combat';
+    out.buff = { name: def.n || 'Effet', mods, reroll, note: eff, dur };
+  }
+  return out;
+}
+// Somme d'un modificateur sur une liste d'effets actifs
+function fpEffSum(list, key){ return (list||[]).reduce((t,ef) => t + ((ef.mods && ef.mods[key]) || 0), 0); }
+
 const XP_TABLE = [0,100,300,600,1000,1500,2100,2800,3600,4500,5500,6600,7800,9100,10500,12000,13600,15300,17100,19000,21000];
 
 const SKILLS_DEF = [
