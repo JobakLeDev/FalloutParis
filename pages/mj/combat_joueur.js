@@ -324,7 +324,7 @@ function renderJMap(){
     if(terr) cls+=' b-'+terr;
     if(t) cls+=' tok '+(t.kind==='joueur'?'tk-j':t.kind==='allie'?'tk-a':'tk-e')+(t.dead?' dead':'')+(t.me?' sel':'');
     let onclick='';
-    if(_jMoveActive && myPos && !t && !gridOccupied(grid,x,y) && gridChebyshev(myPos,{x,y})<=_jMoveRange){ cls+=' reach'; onclick=`moveJSelf(${x},${y})`; }
+    if(_jMoveActive && myPos && !t && !gridOccupied(grid,x,y) && gridManhattan(myPos,{x,y})<=_jMoveRange){ cls+=' reach'; onclick=`moveJSelf(${x},${y})`; }
     const label = t ? (t.kind==='ennemi'?'☠':(t.nom||'?').charAt(0).toUpperCase()) : (bt?bt.icon:'');
     const eAttr = (t && t.kind==='ennemi') ? ` data-eid="${t.id.slice(1)}"` : '';
     html += `<div class="${cls}"${onclick?` onclick="${onclick}"`:''}${eAttr} title="${t?t.nom:(bt?bt.label:'')}">${label}</div>`;
