@@ -484,8 +484,10 @@ function rInvWeap(){
       <span style="font-size:9px;color:var(--tb)">${tn}</span>
       <span class="iqval">${it.qty}</span>
       <span class="ipw">${((it.qty||1)*(it.w||0)).toFixed(2)}kg</span>
-      <button class="ieq-btn ${it.equipped?'on':'off'}" onclick="tEquip(${i})">${it.equipped?'● ÉQUIPÉ':'○ Équiper'}</button>
-      <button class="idel-btn" onclick="jetItem(${i})" title="Jeter">🗑</button>
+      <span class="iacts">
+        <button class="ieq-btn ${it.equipped?'on':'off'}" onclick="tEquip(${i})" title="${it.equipped?'Équipé — cliquer pour retirer':'Équiper'}">${it.equipped?'● ÉQ':'○ ÉQ'}</button>
+        <button class="idel-btn" onclick="jetItem(${i})" title="Jeter">🗑</button>
+      </span>
     </div>`;
   });
 }

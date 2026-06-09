@@ -283,7 +283,8 @@ hr.fo{border:none;border-top:1px solid var(--b);margin:0.5rem 0;}
 /* STUFF cols: tag, name, effet, qty, weight, del */
 .stuff-cols{grid-template-columns:3.667rem 1fr 6.667rem 3.333rem 3.333rem 1.667rem;}
 /* WEAPONS cols: tag, name, dmg, effets, FR, SR, qty, weight, equip, del */
-.weap-cols{grid-template-columns:3.667rem 1fr 2.667rem 5rem 2rem 3rem 3.333rem 3.5rem 5rem 1.667rem;}
+.weap-cols{grid-template-columns:3.667rem minmax(0,1fr) 2.667rem 5rem 2rem 3rem 3rem 3.5rem 6rem;}
+.iacts{display:flex;gap:3px;align-items:center;justify-content:flex-end;}
 
 /* MODAL */
 .mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:200;align-items:center;justify-content:center;}
