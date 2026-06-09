@@ -926,6 +926,10 @@ function setAttaqueEnnemi(eid){
     const agi = c.data.special?.A||5;
     html += '<option value="' + c.data._id + '">' + (c.data.nom||c.data._id).toUpperCase() + ' (AGI ' + agi + ')</option>';
   });
+  // Compagnons (alliés) ciblables
+  (allies||[]).filter(a => (a.pvCur||0) > 0).forEach(a => {
+    html += '<option value="A' + a.id + '">🐾 ' + (a.nom||'').toUpperCase() + ' (PV ' + a.pvCur + '/' + a.pvMax + ')</option>';
+  });
   html += '</select></div>';
   html += '<div class="ctx-diff">Difficulté : <select id="diff-sel" onchange="majDC()" style="background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:monospace;font-size:9px;padding:2px 4px;outline:none"><option value="0">D0</option><option value="1" selected>D1</option><option value="2">D2</option><option value="3">D3</option></select><span id="cible-def-note" style="color:var(--g);font-size:8px;margin-left:6px"></span></div>';
   html += '<div id="dc-suggest" class="ctx-dc">DC : <b style="color:var(--rd)" id="dc-nb">' + nbDC + '</b> (' + e.atq + ')</div>';
@@ -938,6 +942,14 @@ function majTNCible(){
   const id = sel.value;
   const note = document.getElementById('cible-def-note');
   if(!id){ if(note) note.textContent=''; return; }
+  if(id[0]==='A'){   // cible = compagnon (allié)
+    const a = (allies||[]).find(x => String(x.id) === String(id.slice(1)));
+    document.getElementById('tn-val').value = 8;   // TN par défaut (créature : pas d'AGI)
+    const diffSel = document.getElementById('diff-sel'); if(diffSel) diffSel.value = '1';
+    if(note) note.textContent = a ? ('🐾 ' + a.nom) : '';
+    if(typeof majDC === 'function') majDC();
+    return;
+  }
   const d = combattants[id]?.data; if(!d) return;
   document.getElementById('tn-val').value = d.special?.A||5;
   // La Défense de la cible (bonus Defend) augmente la difficulté de l'attaque
@@ -1173,6 +1185,20 @@ function lancerCD(){
   if(panel && panel._atkMode === 'enemy'){
     const sel = document.getElementById('cible-sel');
     const pid = sel ? sel.value : '';
+    // Cible = compagnon (allié)
+    if(pid && pid[0]==='A'){
+      const a = (allies||[]).find(x => String(x.id) === String(pid.slice(1)));
+      if(!a){ addLog('💥 '+(panel._ennemNom||'Ennemi')+' '+nb+'DC: '+dmg+'dmg — aucune cible sélectionnée'); return; }
+      if(panel._lastHit === false){ addLog('🗡 '+(panel._ennemNom||'Ennemi')+' rate '+a.nom+' (pas de dégâts)'); panel._atkMode=null; return; }
+      const dt = panel._dmgType || 'physical';
+      const rdObj = a.dr || {};
+      const rd = (dt==='energy') ? (rdObj.energy ?? a.rd ?? 0) : (dt==='radiation'||dt==='rad') ? (rdObj.rad ?? a.rd ?? 0) : (rdObj.phys ?? a.rd ?? 0);
+      const net = rd===999 ? 0 : Math.max(0, dmg - rd);
+      addLog('🗡 '+(panel._ennemNom||'Ennemi')+' touche 🐾 '+a.nom+' : '+net+' ('+dmg+'dmg − RD '+(rd===999?'∞':rd)+(ef?' · +'+ef+'⚡':'')+')');
+      panel._atkMode = null;
+      dmgAllie(a.id, net);
+      return;
+    }
     const c = pid ? combattants[pid] : null;
     if(!c){ addLog('💥 '+(panel._ennemNom||'Ennemi')+' '+nb+'DC: '+dmg+'dmg — aucune cible sélectionnée'); return; }
     if(panel._lastHit === false){ addLog('🗡 '+(panel._ennemNom||'Ennemi')+' rate '+(c.data.nom||pid)+' (pas de dégâts)'); panel._atkMode=null; return; }
