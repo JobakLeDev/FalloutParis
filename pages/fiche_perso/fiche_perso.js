@@ -202,9 +202,10 @@ function rEffects(){
   const list=char.activeEffects||[];
   if(pnl) pnl.style.display = list.length ? '' : 'none';
   if(!el) return;
-  el.innerHTML = list.length ? list.map(ef=>
-    `<div class="eff-row"><span class="eff-n">${ef.src||ef.name||'Effet'}</span><span class="eff-d">${_effSummary(ef)}</span><button class="eff-x" onclick="rmEffect('${ef.id}')" title="Retirer">✕</button></div>`
-  ).join('') + `<button class="eff-purge" onclick="purgeEffects()">⏹ Fin de scène (tout purger)</button>` : '';
+  // Lecture seule (info joueur) — pas de boutons
+  el.innerHTML = list.map(ef=>
+    `<div class="eff-row"><span class="eff-n">${ef.src||ef.name||'Effet'}</span><span class="eff-d">${_effSummary(ef)}</span></div>`
+  ).join('');
 }
 function rmEffect(id){ char.activeEffects=(char.activeEffects||[]).filter(e=>e.id!==id); rAll(); }
 function purgeEffects(){ if(!(char.activeEffects||[]).length) return; char.activeEffects=[]; rAll(); }
