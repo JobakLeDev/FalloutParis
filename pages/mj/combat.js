@@ -787,6 +787,12 @@ function renderEnnemis(){
         <div class="jc-stat"><span class="jc-sl">RD</span><span class="jc-sv">${e.rd}</span></div>
         <div class="jc-stat"><span class="jc-sl">XP</span><span class="jc-sv">${e.xp}</span></div>
       </div>
+      <div class="ennemi-dist" style="display:flex;align-items:center;gap:5px;justify-content:center;margin:4px 0;font-size:9px">
+        <span class="jc-sl">📏 Distance</span>
+        <button class="dmg-btn" style="padding:1px 7px" onclick="chEnemyDist(${e.id},-1)" title="Rapprocher">−</button>
+        <b style="color:var(--am);min-width:4.5rem;text-align:center">${RANGE_LABELS[e.dist??1]||'Moyenne'}</b>
+        <button class="dmg-btn" style="padding:1px 7px" onclick="chEnemyDist(${e.id},1)" title="Éloigner">+</button>
+      </div>
       <div class="ennemi-dmg">
         <input type="number" class="dmg-inp" id="dmg-${e.id}" value="1" min="0">
         <button class="dmg-btn" onclick="dmgEnnemi(${e.id},parseInt(document.getElementById('dmg-${e.id}').value)||1)">Dégâts</button>
@@ -794,6 +800,12 @@ function renderEnnemis(){
       </div>
     </div>`;
   });
+}
+function chEnemyDist(id, delta){
+  const e = ennemis.find(x => x.id === id); if(!e) return;
+  e.dist = Math.max(0, Math.min(3, (e.dist ?? 1) + delta));
+  renderEnnemis();
+  if(typeof syncCombatToFirebase === 'function') syncCombatToFirebase();
 }
 
 // ---- DÉS ----

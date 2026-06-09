@@ -60,8 +60,20 @@ function enemyInstanceFromDB(nom, lvl = 1) {
     dr: e.dr || { phys, energy: 0, rad: 0, poison: 0 },
     defense: e.defense ?? 1,
     level: e.level ?? L,
-    category: e.category || 'normal'
+    category: e.category || 'normal',
+    dist: 1   // distance vs joueurs : 0=Close 1=Medium 2=Long 3=Extreme (réglable en combat)
   };
+}
+
+// ---- DISTANCE / PORTÉE (combat) ----
+const RANGE_LABELS = ['Contact', 'Moyenne', 'Longue', 'Extrême'];   // index 0..3 (Close/Medium/Long/Extreme)
+function weaponRangeBand(rng){ const m = { C:0, M:1, L:2, X:3 }; return (rng in m) ? m[rng] : -1; }   // -1 = mêlée (—)
+// Difficulté ajoutée par la portée : |distance ennemi − portée idéale de l'arme|. Mêlée : 0 au contact, sinon impossible (99).
+function rangeDifficulty(weaponRng, enemyDist){
+  const w = weaponRangeBand(weaponRng);
+  const d = (enemyDist == null) ? 1 : enemyDist;
+  if(w < 0) return d === 0 ? 0 : 99;   // mêlée hors contact = impossible
+  return Math.abs(d - w);
 }
 
 // XP d'un PNJ selon son niveau et sa catégorie (window.NPC_XP chargé via db.js)

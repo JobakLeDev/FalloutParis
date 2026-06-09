@@ -773,6 +773,7 @@ function renderEnnemisJoueur(){
       +'<div class="jc-stat"><span class="jc-sl">PV</span><span class="jc-sv'+(pct<30?' danger':'')+'">'+e.pvCur+'/'+e.pvMax+'</span></div>'
       +'<div class="jc-stat"><span class="jc-sl">ATQ</span><span class="jc-sv">'+e.atq+'</span></div>'
       +'<div class="jc-stat"><span class="jc-sl">RD</span><span class="jc-sv">'+e.rd+'</span></div>'
+      +'<div class="jc-stat"><span class="jc-sl">📏</span><span class="jc-sv" style="color:var(--am)">'+(RANGE_LABELS[e.dist??1]||'Moy.')+'</span></div>'
       +'</div></div>';
   }).join('');
 }
@@ -802,7 +803,8 @@ function selArme(nom, tn, dmg, persoBonus=false){
   const wdb = nom==='__unarmed__' ? {} : fpApplyWeaponMods(WEAPONS_DB[nom]||{}, invItem?.mods);
   lastSkKeyJ = nom==='__unarmed__' ? 'barehand' : (wdb.sk||'');
   const ammoType = nom==='__unarmed__' ? '' : (wdb.a||'');
-  currentArmeInfo = {nom, skKey:lastSkKeyJ, persoBonus, dmg, eff: nom==='__unarmed__' ? '' : (wdb.eff||''), ammoType};
+  const rng = nom==='__unarmed__' ? '—' : (wdb.rng||'—');   // portée idéale (C/M/L/—)
+  currentArmeInfo = {nom, skKey:lastSkKeyJ, persoBonus, dmg, eff: nom==='__unarmed__' ? '' : (wdb.eff||''), ammoType, rng};
   useStackedDeck = false;
   const btn=document.getElementById('j-stacked-deck-btn'); if(btn) btn.classList.remove('on');
   const tnEl=document.getElementById('j-tn-val'); if(tnEl) tnEl.textContent = tn;
@@ -817,7 +819,16 @@ async function jLancer2D20(){
   if(!canAttackNow() || twoD20Done === attacksDone) return;   // anti-spam : un seul toucher par attaque
   aimRerolled = false;
   const tn = parseInt(document.getElementById('j-tn-val').textContent)||10;
-  const diff = 1;
+  // Difficulté de portée : arme vs distance de la cible
+  const cibleId = (myAim && myAim.cible) ? myAim.cible : cibleAttaque;
+  const enCible = (combatState?.ennemis||[]).find(e => String(e.id) === String(cibleId));
+  const rangePen = rangeDifficulty(currentArmeInfo?.rng || '—', enCible ? (enCible.dist ?? 1) : 1);
+  if(rangePen >= 99){
+    document.getElementById('j-dice-result').innerHTML =
+      '<span style="color:var(--rd)">⚔ Trop loin pour la mêlée — rapproche-toi (Move/Sprint)</span>';
+    return;
+  }
+  const diff = 1 + rangePen;
 
   // Vérification et déduction des munitions (armes à distance uniquement)
   const ammoType = currentArmeInfo?.ammoType;
@@ -858,6 +869,7 @@ async function jLancer2D20(){
   let r=dés.map(d=>'<span style="color:'+(d<=tn?'var(--g)':'var(--rd)')+';font-size:16px;font-family:Oswald,sans-serif">'+d+'</span>').join('/');
   r+=' <b style="color:'+col+'">'+succes+'s</b>';
   if(crits) r+='<span style="color:var(--am)">+'+crits+'★</span>';
+  if(rangePen>0) r+=' <span style="color:var(--td)" title="Difficulté de portée">(D'+diff+' · portée +'+rangePen+')</span>';
   if(echec) r+=' <span style="color:var(--rd)">ÉCHEC</span>';
   else r+='→<b style="color:var(--am)">'+dcTotal+'DC</b>';
   document.getElementById('j-dice-result').innerHTML = r;
@@ -1187,6 +1199,8 @@ const ACTION_EXEC = {
   'Pass':        { cat:'majeure', noRoll:true, lbl:'⏸ Passer' },
   'Ready':       { cat:'majeure', noRoll:true, note:true, lbl:'⏳ Action préparée' },
   'Interact':    { cat:'mineure', noRoll:true, note:true, lbl:'✋ Interaction' },
+  'Move':        { cat:'mineure', noRoll:true, move:1, lbl:'🏃 Se déplacer (1 zone)' },
+  'Sprint':      { cat:'majeure', noRoll:true, move:2, lbl:'🏃💨 Sprint (2 zones)' },
 };
 
 function _roll2D20(tn, diff, extraDice){
@@ -1251,6 +1265,19 @@ function renderActionExec(){
       + (cfg.skill ? '<span style="font-size:8px;color:var(--td)">TN <b style="color:var(--tb);font-size:13px;font-family:Oswald,sans-serif">'+tnNow+'</b>'+(cfg.diff?' · D'+cfg.diff:' · D0')+'</span>' : '<span style="font-size:8px;color:var(--td)">D'+cfg.diff+'</span>')
       + '<button style="'+btn+'" onclick="execActionRoll(\''+t+'\')">Lancer 2D20</button></div>'
       + '<div id="ax-result" style="margin-top:6px;font-size:9px"></div>';
+  } else if(cfg.move){
+    // déplacement : choisir un ennemi + direction (se rapprocher / s'éloigner) de cfg.move cran(s)
+    const ennemisV = (combatState?.ennemis||[]).filter(e => e.pvCur > 0);
+    if(!ennemisV.length){
+      h = '<div style="font-size:8px;color:var(--td)">Aucun ennemi.</div><button style="'+btn+'" onclick="execMoveDist(\''+t+'\')">✓ OK</button>';
+    } else {
+      h = '<div style="font-size:7px;color:var(--td);margin-bottom:2px">Par rapport à</div>'
+        + '<select id="ax-move-enemy" style="'+inp+';width:100%;margin-bottom:5px">'
+        + ennemisV.map(e=>'<option value="'+e.id+'">'+e.nom+' — '+(RANGE_LABELS[e.dist??1]||'')+'</option>').join('') + '</select>'
+        + '<div style="font-size:7px;color:var(--td);margin-bottom:2px">Déplacement (×'+cfg.move+')</div>'
+        + '<select id="ax-move-dir" style="'+inp+';width:100%;margin-bottom:5px"><option value="-1">▶ Se rapprocher</option><option value="1">◀ S\'éloigner</option></select>'
+        + '<button style="'+btn+'" onclick="execMoveDist(\''+t+'\')">✓ Confirmer</button>';
+    }
   } else {
     // action sans jet
     let allySel='';
@@ -1262,6 +1289,19 @@ function renderActionExec(){
     h = allySel + noteInp + '<button style="'+btn+'" onclick="execActionSimple(\''+t+'\')">✓ Confirmer</button>';
   }
   body.innerHTML = h;
+}
+async function execMoveDist(type){
+  const cfg = ACTION_EXEC[type]; if(!cfg) return;
+  const eid = document.getElementById('ax-move-enemy')?.value;
+  const dir = parseInt(document.getElementById('ax-move-dir')?.value || '-1');
+  const ennemis = (combatState?.ennemis||[]).map(e => ({...e}));
+  const idx = ennemis.findIndex(e => String(e.id) === String(eid));
+  if(idx < 0 || !db){ _finishExec(type, 'déplacement'); return; }
+  const before = ennemis[idx].dist ?? 1;
+  ennemis[idx].dist = Math.max(0, Math.min(3, before + dir * (cfg.move || 1)));
+  try { await db.collection(COMBATS_COLL).doc(combatId).update({ ennemis }); } catch(e){ console.error(e); }
+  const lbl = (dir < 0 ? '▶ se rapproche de ' : '◀ s\'éloigne de ') + ennemis[idx].nom + ' → ' + (RANGE_LABELS[ennemis[idx].dist] || '');
+  _finishExec(type, lbl);
 }
 
 // Marque l'action comme exécutée et journalise au MJ
