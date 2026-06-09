@@ -300,7 +300,7 @@ function _jMapToks(){
   const list = [];
   (combatState?.ordreInitiative||[]).filter(o=>o.type==='joueur').forEach(o=>list.push({ id:o.id, nom:(tousJoueurs[o.id]?.nom||o.nom||o.id), kind:'joueur', me:o.id===joueurId }));
   (combatState?.allies||[]).forEach(a=>list.push({ id:'A'+a.id, nom:a.nom, kind:'allie' }));
-  (combatState?.ennemis||[]).filter(e=>!e.hidden).forEach(e=>list.push({ id:'E'+e.id, nom:e.nom, kind:'ennemi', dead:(e.pvCur||0)<=0 }));
+  (combatState?.ennemis||[]).filter(e=>!e.hidden && enemyVisible(e)).forEach(e=>list.push({ id:'E'+e.id, nom:e.nom, kind:'ennemi', dead:(e.pvCur||0)<=0 }));
   return list;
 }
 function renderJMap(){
@@ -334,6 +334,13 @@ function renderJMap(){
   html += '<div class="cmap-edges">' + (typeof gridEdgesHtml==='function' ? gridEdgesHtml(grid, 30) : '') + '</div>';
   html += '</div>';
   el.innerHTML = html;
+}
+// Ennemi visible depuis ma position (ligne de vue non coupée par un mur) — vrai si pas de grille/position
+function enemyVisible(e){
+  const g = combatState?.grid; if(!g || !g.pos) return true;
+  const ep = g.pos['E'+e.id], mp = g.pos[joueurId];
+  if(!ep || !mp || typeof gridLineOfSight!=='function') return true;
+  return gridLineOfSight(g, mp, ep);
 }
 // Bande de distance d'un ennemi calculée depuis la grille (jeton ennemi ↔ mon jeton)
 function enemyGridBand(e){
@@ -917,6 +924,11 @@ async function jLancer2D20(){
   // Difficulté de portée : arme vs distance de la cible
   const cibleId = (myAim && myAim.cible) ? myAim.cible : cibleAttaque;
   const enCible = (combatState?.ennemis||[]).find(e => String(e.id) === String(cibleId));
+  if(enCible && !enemyVisible(enCible)){
+    document.getElementById('j-dice-result').innerHTML =
+      '<span style="color:var(--rd)">🧱 Cible hors de vue (mur) — impossible de l\'atteindre</span>';
+    return;
+  }
   const gBand = enCible ? enemyGridBand(enCible) : null;   // distance via la grille si dispo
   const enDist = (gBand != null) ? gBand : (enCible ? (enCible.dist ?? 1) : 1);
   const rangePen = rangeDifficulty(currentArmeInfo?.rng || '—', enDist);
@@ -1070,7 +1082,7 @@ function renderActionsDeclarees(){
   // Panneau de confirmation (action sélectionnée, pas encore envoyée)
   if(selectedActionDraft){
     const isAtk = (selectedActionDraft.type === 'Attack' || selectedActionDraft.type === 'Aim');
-    const ennemisV = (combatState?.ennemis || []).filter(e => e.pvCur > 0 && !e.hidden);
+    const ennemisV = (combatState?.ennemis || []).filter(e => e.pvCur > 0 && !e.hidden && enemyVisible(e));
     const savedCible = document.getElementById('j-act-cible')?.value || cibleAttaque || '';
     const savedZone  = document.getElementById('j-act-zone')?.value || '';
     const inputStyle = 'box-sizing:border-box;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:monospace;font-size:8px;padding:3px 5px;outline:none';
@@ -1379,7 +1391,7 @@ function renderActionExec(){
         + '<button style="'+btn+'" onclick="startJMove(\''+t+'\','+range+')">🗺 Activer le déplacement</button>';
     } else {
       // Mode bandes (pas de carte) : se rapprocher / s'éloigner d'un ennemi
-      const ennemisV = (combatState?.ennemis||[]).filter(e => e.pvCur > 0 && !e.hidden);
+      const ennemisV = (combatState?.ennemis||[]).filter(e => e.pvCur > 0 && !e.hidden && enemyVisible(e));
       if(!ennemisV.length){
         h = '<div style="font-size:8px;color:var(--td)">Aucun ennemi.</div><button style="'+btn+'" onclick="execMoveDist(\''+t+'\')">✓ OK</button>';
       } else {
@@ -1659,7 +1671,7 @@ function renderDiceAccess(){
   // Sélecteur de cible
   if(!cibleEl) return;
   cibleEl.style.display = 'block';
-  const ennemis = (combatState?.ennemis || []).filter(e => e.pvCur > 0 && !e.hidden);
+  const ennemis = (combatState?.ennemis || []).filter(e => e.pvCur > 0 && !e.hidden && enemyVisible(e));
   if(!ennemis.length){
     cibleEl.innerHTML = '<span style="font-size:7px;color:var(--td)">Aucun ennemi vivant</span>';
     cibleAttaque = '';

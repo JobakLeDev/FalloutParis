@@ -109,6 +109,27 @@ function gridEdgeBlocks(grid, x1, y1, x2, y2){
   const t = (grid.edges || {})[gridEdgeBetween(x1, y1, x2, y2)];
   return t === 'wall' || t === 'window';
 }
+// Ligne de vue entre deux cases (centre→centre) : false si un mur/fenêtre coupe le trajet
+function gridLineOfSight(grid, a, b){
+  if(!grid) return true;
+  const steps = Math.max(1, Math.ceil(Math.hypot(b.x-a.x, b.y-a.y)) * 10);
+  const ax = a.x + 0.5, ay = a.y + 0.5;
+  let cx = a.x, cy = a.y;
+  for(let i=1;i<=steps;i++){
+    const t = i/steps;
+    const sx = ax + (b.x - a.x) * t, sy = ay + (b.y - a.y) * t;
+    const nx = Math.floor(sx), ny = Math.floor(sy);
+    if(nx===cx && ny===cy) continue;
+    if(nx!==cx && ny!==cy){
+      // passage en coin : bloqué seulement si les deux contournements sont murés
+      const path1 = gridEdgeBlocks(grid, cx, cy, nx, cy) || gridEdgeBlocks(grid, nx, cy, nx, ny);
+      const path2 = gridEdgeBlocks(grid, cx, cy, cx, ny) || gridEdgeBlocks(grid, cx, ny, nx, ny);
+      if(path1 && path2) return false;
+    } else if(gridEdgeBlocks(grid, cx, cy, nx, ny)) return false;
+    cx = nx; cy = ny;
+  }
+  return true;
+}
 // Cases atteignables (parcours orthogonal, coût 1/case) sans traverser mur/fenêtre ni bloc/jeton
 function reachableCells(grid, start, range){
   const res = {}, seen = {}; const q = [{ x:start.x, y:start.y, d:0 }];
