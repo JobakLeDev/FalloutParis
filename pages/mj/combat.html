@@ -7,7 +7,7 @@
   <title>Fallout Paris — Combat</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css">
-  <link rel="stylesheet" href="combat.css?v=10">
+  <link rel="stylesheet" href="combat.css?v=11">
   <link rel="stylesheet" href="../../common/zoom.css?v=2">
 </head>
 <body>
@@ -23,6 +23,12 @@
       <a class="hbtn" href="mj.html">← MJ</a>
       <a class="hbtn" href="../../index.html">Accueil</a>
     </div>
+  </div>
+
+  <!-- BANDEAU TRACKER DE TOUR -->
+  <div class="ap-bar tracker-banner">
+    <span class="ap-bar-lbl">TOUR</span>
+    <div id="tracker-tour" class="trk-row"><span class="empty">Lance l'initiative pour démarrer</span></div>
   </div>
 
   <!-- BARRE AP GROUPE + MJ -->
@@ -136,11 +142,6 @@
           <button class="add-ennemi-btn" onclick="ouvrirModalEnnemi()">+ Ajouter</button>
         </div>
         <div id="ennemis-combat"></div>
-      </div>
-
-      <div class="pnl">
-        <div class="pnl-title">Tracker de tour</div>
-        <div id="tracker-tour"><span class="empty">Lance l'initiative pour démarrer</span></div>
       </div>
     </div>
 
