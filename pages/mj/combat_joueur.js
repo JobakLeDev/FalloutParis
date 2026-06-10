@@ -324,12 +324,16 @@ function renderJMap(){
     const bt = (typeof BLOCK_TYPES!=='undefined') ? BLOCK_TYPES.find(b=>b.id===terr) : null;
     let cls='cmap-cell';
     if(terr) cls+=' b-'+terr;
-    if(t) cls+=' tok '+(t.kind==='joueur'?'tk-j':t.kind==='allie'?'tk-a':'tk-e')+(t.dead?' dead':'')+(t.me?' sel':'');
+    if(t && t.me) cls+=' sel';
     let onclick='';
     if(reach && reach[key]!=null){ cls+=' reach'; onclick=`moveJSelf(${x},${y})`; }
-    const label = t ? (t.kind==='ennemi'?'☠':(t.nom||'?').charAt(0).toUpperCase()) : (bt?bt.icon:'');
+    let inner;
+    if(t){
+      if(t.kind==='ennemi') inner = '<span class="cen'+(t.dead?' dead':'')+'">☠</span>';
+      else inner = '<span class="ctok '+(t.kind==='joueur'?'ctok-j':'ctok-a')+(t.dead?' dead':'')+'">'+((t.nom||'?').charAt(0).toUpperCase())+'</span>';
+    } else inner = (bt?bt.icon:'');
     const eAttr = (t && t.kind==='ennemi') ? ` data-eid="${t.id.slice(1)}"` : '';
-    html += `<div class="${cls}"${onclick?` onclick="${onclick}"`:''}${eAttr} title="${t?t.nom:(bt?bt.label:'')}">${label}</div>`;
+    html += `<div class="${cls}"${onclick?` onclick="${onclick}"`:''}${eAttr} title="${t?t.nom:(bt?bt.label:'')}">${inner}</div>`;
   }
   html += '<div class="cmap-edges">' + (typeof gridEdgesHtml==='function' ? gridEdgesHtml(grid, 30) : '') + '</div>';
   html += '</div>';

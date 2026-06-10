@@ -153,10 +153,24 @@ function reachableCells(grid, start, range){
 // Rendu des lignes existantes (HTML d'overlay), cs = taille de case en px
 function gridEdgesHtml(grid, cs){
   const pad = 5, gap = 1, pitch = cs + gap; const E = grid.edges || {}; let h = '';
+  const isWall = (o,x,y)=> E[o+','+x+','+y] === 'wall';
+  // Segments — étendus de `gap` à chaque extrémité pour se rejoindre aux sommets (lignes continues)
   for(const key in E){
     const p = key.split(','); const o = p[0], x = +p[1], y = +p[2], type = E[key];
-    if(o === 'V') h += '<div class="cedge cedge-v e-'+type+'" style="left:'+(pad+x*pitch-gap)+'px;top:'+(pad+y*pitch)+'px;height:'+cs+'px"></div>';
-    else          h += '<div class="cedge cedge-h e-'+type+'" style="top:'+(pad+y*pitch-gap)+'px;left:'+(pad+x*pitch)+'px;width:'+cs+'px"></div>';
+    if(o === 'V') h += '<div class="cedge cedge-v e-'+type+'" style="left:'+(pad+x*pitch-gap)+'px;top:'+(pad+y*pitch-gap)+'px;height:'+(cs+2*gap)+'px"></div>';
+    else          h += '<div class="cedge cedge-h e-'+type+'" style="top:'+(pad+y*pitch-gap)+'px;left:'+(pad+x*pitch-gap)+'px;width:'+(cs+2*gap)+'px"></div>';
+  }
+  // Arrondi des angles simples (L) : un sommet où exactement 1 mur vertical + 1 mur horizontal se rejoignent.
+  // Les angles droits complets, les T et les croix (≥3 segments, ou 2 colinéaires) ne sont PAS arrondis.
+  for(let vx=0; vx<=grid.w; vx++){
+    for(let vy=0; vy<=grid.h; vy++){
+      const nv = (isWall('V',vx,vy-1)?1:0) + (isWall('V',vx,vy)?1:0);
+      const nh = (isWall('H',vx-1,vy)?1:0) + (isWall('H',vx,vy)?1:0);
+      if(nv===1 && nh===1){
+        const cx = pad + vx*pitch - gap/2, cy = pad + vy*pitch - gap/2;
+        h += '<div class="cedge-knee" style="left:'+(cx-2)+'px;top:'+(cy-2)+'px"></div>';
+      }
+    }
   }
   return h;
 }

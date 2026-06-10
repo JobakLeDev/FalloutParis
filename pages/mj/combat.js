@@ -798,11 +798,16 @@ function renderCombatMap(){
     const terr = gridTerrainAt(combatMap, x, y);
     let cls = 'cmap-cell';
     if(terr) cls += ' b-' + terr;
-    if(t) cls += ' tok ' + (t.kind==='joueur'?'tk-j':t.kind==='allie'?'tk-a':'tk-e') + (t.dead?' dead':'') + (t.hidden?' hidden-tok':'') + (tid===_mapSel?' sel':'');
+    if(t && tid===_mapSel) cls += ' sel';
     const bt = BLOCK_TYPES.find(b=>b.id===terr);
-    const label = t ? (t.kind==='ennemi'?(t.hidden?'🙈':'☠'):(t.nom||'?').charAt(0).toUpperCase()) : (bt?bt.icon:'');
+    let inner;
+    if(t){
+      if(t.kind==='ennemi') inner = '<span class="cen'+(t.dead?' dead':'')+(t.hidden?' hidden':'')+'">'+(t.hidden?'🙈':'☠')+'</span>';
+      else inner = '<span class="ctok '+(t.kind==='joueur'?'ctok-j':'ctok-a')+(t.dead?' dead':'')+'">'+((t.nom||'?').charAt(0).toUpperCase())+'</span>';
+    } else inner = (bt?bt.icon:'');
+    const eAttr = (t && t.kind==='ennemi') ? ` data-eid="${t.id.slice(1)}"` : '';
     const onclick = t ? `mapPickToken('${tid}')` : `mapCellClick(${x},${y})`;
-    html += `<div class="${cls}" onclick="${onclick}" title="${t?(t.nom+(t.hidden?' (masqué)':'')):(bt?bt.label:'')}">${label}</div>`;
+    html += `<div class="${cls}" onclick="${onclick}"${eAttr} title="${t?(t.nom+(t.hidden?' (masqué)':'')):(bt?bt.label:'')}">${inner}</div>`;
   }
   // Overlay des lignes d'arête (+ zones cliquables si pinceau d'arête actif)
   html += '<div class="cmap-edges">' + gridEdgesHtml(combatMap, cs) + (_edgeSel ? edgeHotspots(combatMap, cs) : '') + '</div>';

@@ -224,10 +224,10 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .cmap::after{ content:''; position:absolute; inset:0; pointer-events:none; z-index:3;
   background:repeating-linear-gradient(0deg, rgba(0,0,0,0) 0 2px, rgba(0,0,0,.18) 2px 3px); }
 .cmap-cell{ width:var(--cs,22px); height:var(--cs,22px); display:flex; align-items:center; justify-content:center;
-  font-size:11px; cursor:pointer; user-select:none; color:#3f6f4f;
-  background:radial-gradient(circle at 50% 40%, #0c2014, #07160d);
-  border:1px solid rgba(93,190,93,.14); box-shadow:inset 0 0 3px rgba(93,190,93,.08); }
-.cmap-cell:hover{ border-color:var(--g); box-shadow:inset 0 0 6px rgba(93,190,93,.35); }
+  font-size:11px; cursor:pointer; user-select:none; color:#3f6f4f; position:relative;
+  background:#08140d;
+  border:1px solid rgba(93,190,93,.05); box-shadow:none; }
+.cmap-cell:hover{ border-color:rgba(93,190,93,.4); box-shadow:inset 0 0 6px rgba(93,190,93,.22); }
 .cmap-cell[data-eid]{ cursor:help; }
 /* Types de blocs */
 .cmap-cell.b-wall{ background:repeating-linear-gradient(45deg,#1c3a24,#1c3a24 3px,#12281a 3px,#12281a 6px); color:#7ed87e; border-color:var(--gd); }
@@ -235,13 +235,18 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .cmap-cell.b-cover{ background:#0e2416; color:#9be6c0; border:1px dashed var(--g); }
 .cmap-cell.b-hazard{ background:repeating-linear-gradient(45deg,#2a2206,#2a2206 4px,#1a1604 4px,#1a1604 8px); color:var(--am); border-color:var(--am); text-shadow:0 0 5px rgba(232,168,32,.8); }
 .cmap-cell.b-water{ background:linear-gradient(180deg,#0a2630,#08303a); color:#6fd3e6; border-color:#2a6a7a; }
-/* Jetons */
-.cmap-cell.tok{ font-family:'Oswald',sans-serif; font-weight:700; font-size:13px; z-index:2; }
-.cmap-cell.tk-j{ background:radial-gradient(circle at 50% 40%,#1c4a2c,#0c2014); color:#bdf5cf; border-color:var(--g); box-shadow:inset 0 0 7px rgba(93,190,93,.5),0 0 5px rgba(93,190,93,.4); }
-.cmap-cell.tk-a{ background:radial-gradient(circle at 50% 40%,#16381f,#0c2014); color:#8fe6ad; border-color:var(--gd); }
-.cmap-cell.tk-e{ background:radial-gradient(circle at 50% 40%,#3a1212,#1a0808); color:#ff9a9a; border-color:var(--rd); box-shadow:inset 0 0 7px rgba(224,64,64,.5),0 0 5px rgba(224,64,64,.4); }
-.cmap-cell.dead{ opacity:.4; filter:grayscale(.6); }
-.cmap-cell.hidden-tok{ opacity:.45; filter:grayscale(.5); outline:1px dashed var(--am); outline-offset:-2px; }
+/* Jetons : pastilles rondes (persos/alliés), pictogramme nu (ennemis) */
+.ctok{ width:calc(var(--cs,22px) - 5px); height:calc(var(--cs,22px) - 5px); border-radius:50%; z-index:2;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Oswald',sans-serif; font-weight:700; font-size:calc(var(--cs,22px)*0.48); line-height:1; }
+.ctok-j{ background:radial-gradient(circle at 50% 35%,#2f6a40,#0c2014); color:#d6ffe2; border:2px solid var(--g);
+  box-shadow:0 0 7px rgba(93,190,93,.65),inset 0 0 4px rgba(93,190,93,.4); }
+.ctok-a{ background:radial-gradient(circle at 50% 35%,#1e4228,#0c1810); color:#9bedb8; border:2px solid var(--gd);
+  box-shadow:0 0 4px rgba(93,190,93,.35); }
+.cen{ z-index:2; color:#ff8f8f; font-size:calc(var(--cs,22px)*0.66); line-height:1;
+  text-shadow:0 0 6px rgba(224,64,64,.75); }
+.ctok.dead,.cen.dead{ opacity:.4; filter:grayscale(.6); }
+.cen.hidden{ opacity:.55; filter:grayscale(.4); }
 .cmap-cell.sel{ box-shadow:0 0 0 2px var(--am) inset,0 0 8px rgba(232,168,32,.7); }
 .cmap-cell.reach{ box-shadow:0 0 0 1px var(--g) inset,0 0 6px rgba(93,190,93,.5); animation:cmapReach 1.2s ease-in-out infinite; }
 @keyframes cmapReach{ 0%,100%{box-shadow:0 0 0 1px var(--g) inset,0 0 4px rgba(93,190,93,.35);} 50%{box-shadow:0 0 0 1px var(--g) inset,0 0 9px rgba(93,190,93,.7);} }
@@ -266,3 +271,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .cedge-hot{ position:absolute; z-index:6; cursor:pointer; pointer-events:auto; background:rgba(232,168,32,.10); }
 .cedge-hot:hover{ background:rgba(232,168,32,.5); }
 .cmap-brush.ce-wall{ color:var(--g); } .cmap-brush.ce-door{ color:var(--am); } .cmap-brush.ce-window{ color:#5fd0e6; }
+/* Noeud arrondi aux angles simples (L) des murs */
+.cedge-knee{ position:absolute; width:4px; height:4px; border-radius:50%; z-index:5;
+  background:var(--g); box-shadow:0 0 5px rgba(93,190,93,.85); }
