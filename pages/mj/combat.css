@@ -266,6 +266,16 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .cedge-h{ height:3px; }
 .cedge.e-wall{ background:var(--g); box-shadow:0 0 5px rgba(93,190,93,.85); }
 .cedge.e-door{ background:var(--am); box-shadow:0 0 5px rgba(232,168,32,.8); }
+/* Porte ouverte : le battant pivote de 90° autour de son gond */
+.cedge.e-doorOpen{ background:var(--am); opacity:.85; border-radius:2px; box-shadow:0 0 5px rgba(232,168,32,.7);
+  transition:transform .25s ease; }
+.cedge-v.e-doorOpen{ transform-origin:50% 0; transform:rotate(-90deg); }
+.cedge-h.e-doorOpen{ transform-origin:0 50%; transform:rotate(90deg); }
+/* Zone cliquable pour ouvrir/fermer une porte adjacente */
+.cdoor-hot{ position:absolute; z-index:7; cursor:pointer; pointer-events:auto;
+  background:rgba(232,168,32,.12); border:1px solid rgba(232,168,32,.5); border-radius:2px; }
+.cdoor-hot:hover{ background:rgba(232,168,32,.5); box-shadow:0 0 7px rgba(232,168,32,.7); }
+.cdoor-hot::after{ content:'🚪'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:10px; }
 .cedge-v.e-window{ background:repeating-linear-gradient(0deg,#5fd0e6 0 4px,transparent 4px 7px); }
 .cedge-h.e-window{ background:repeating-linear-gradient(90deg,#5fd0e6 0 4px,transparent 4px 7px); }
 .cedge-hot{ position:absolute; z-index:6; cursor:pointer; pointer-events:auto; background:rgba(232,168,32,.10); }

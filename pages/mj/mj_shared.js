@@ -98,7 +98,7 @@ const EDGE_TYPES = [
   { id:'door',   label:'Porte',   icon:'╫' },
   { id:'window', label:'Fenêtre', icon:'┆' },
 ];
-// Arête entre deux cases adjacentes → clé d'arête ; mur/fenêtre bloquent le passage, porte non
+// Arête entre deux cases adjacentes → clé d'arête ; mur/fenêtre + porte FERMÉE bloquent ; porte ouverte non
 function gridEdgeBetween(x1, y1, x2, y2){
   if(x2 > x1) return 'V,' + x2 + ',' + y1;
   if(x2 < x1) return 'V,' + x1 + ',' + y1;
@@ -107,7 +107,7 @@ function gridEdgeBetween(x1, y1, x2, y2){
 }
 function gridEdgeBlocks(grid, x1, y1, x2, y2){
   const t = (grid.edges || {})[gridEdgeBetween(x1, y1, x2, y2)];
-  return t === 'wall' || t === 'window';
+  return t === 'wall' || t === 'window' || t === 'door';   // 'doorOpen' laisse passer/voir
 }
 // Ligne de vue entre deux cases (centre→centre) : false si un mur/fenêtre coupe le trajet
 function gridLineOfSight(grid, a, b){
@@ -171,6 +171,35 @@ function gridEdgesHtml(grid, cs){
         h += '<div class="cedge-knee" style="left:'+(cx-2)+'px;top:'+(cy-2)+'px"></div>';
       }
     }
+  }
+  return h;
+}
+// Portes (door/doorOpen) bordant une case → HTML de zones cliquables (ouvrir/fermer).
+// fnName = nom d'une fonction globale appelée avec la clé d'arête, ex: openDoorJ('V,3,2')
+function gridDoorHotspots(grid, pos, cs, fnName){
+  if(!grid || !pos) return '';
+  const pad = 5, gap = 1, pitch = cs + gap; const E = grid.edges || {}; const x = pos.x, y = pos.y; let h = '';
+  const isDoor = k => E[k] === 'door' || E[k] === 'doorOpen';
+  const add = (key, o, ex, ey) => {
+    if(!isDoor(key)) return;
+    if(o === 'V') h += '<div class="cdoor-hot" style="left:'+(pad+ex*pitch-gap-2)+'px;top:'+(pad+ey*pitch+3)+'px;width:8px;height:'+(cs-6)+'px" onclick="'+fnName+'(\''+key+'\')" title="Ouvrir / fermer la porte"></div>';
+    else        h += '<div class="cdoor-hot" style="top:'+(pad+ey*pitch-gap-2)+'px;left:'+(pad+ex*pitch+3)+'px;height:8px;width:'+(cs-6)+'px" onclick="'+fnName+'(\''+key+'\')" title="Ouvrir / fermer la porte"></div>';
+  };
+  add('V,'+x+','+y,     'V', x,   y);   // gauche
+  add('V,'+(x+1)+','+y, 'V', x+1, y);   // droite
+  add('H,'+x+','+y,     'H', x,   y);   // haut
+  add('H,'+x+','+(y+1), 'H', x,   y+1); // bas
+  return h;
+}
+// Toutes les portes de la grille → zones cliquables (vue MJ : ouvre/ferme n'importe quelle porte)
+function gridAllDoorHotspots(grid, cs, fnName){
+  if(!grid || !grid.edges) return '';
+  const pad = 5, gap = 1, pitch = cs + gap; let h = '';
+  for(const key in grid.edges){
+    const t = grid.edges[key]; if(t !== 'door' && t !== 'doorOpen') continue;
+    const p = key.split(','); const o = p[0], x = +p[1], y = +p[2];
+    if(o === 'V') h += '<div class="cdoor-hot" style="left:'+(pad+x*pitch-gap-2)+'px;top:'+(pad+y*pitch+3)+'px;width:8px;height:'+(cs-6)+'px" onclick="'+fnName+'(\''+key+'\')" title="Ouvrir / fermer la porte"></div>';
+    else        h += '<div class="cdoor-hot" style="top:'+(pad+y*pitch-gap-2)+'px;left:'+(pad+x*pitch+3)+'px;height:8px;width:'+(cs-6)+'px" onclick="'+fnName+'(\''+key+'\')" title="Ouvrir / fermer la porte"></div>';
   }
   return h;
 }

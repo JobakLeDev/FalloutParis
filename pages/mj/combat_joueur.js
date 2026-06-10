@@ -336,8 +336,22 @@ function renderJMap(){
     html += `<div class="${cls}"${onclick?` onclick="${onclick}"`:''}${eAttr} title="${t?t.nom:(bt?bt.label:'')}">${inner}</div>`;
   }
   html += '<div class="cmap-edges">' + (typeof gridEdgesHtml==='function' ? gridEdgesHtml(grid, 30) : '') + '</div>';
+  // Portes adjacentes à mon jeton → cliquables (ouvrir/fermer en pivotant 90°)
+  if(myPos && typeof gridDoorHotspots==='function')
+    html += '<div class="cmap-edges">' + gridDoorHotspots(grid, myPos, 30, 'openDoorJ') + '</div>';
   html += '</div>';
   el.innerHTML = html;
+}
+// Ouvrir / fermer une porte adjacente (pivote de 90°) — écrit l'état dans le doc combat
+async function openDoorJ(key){
+  const grid = combatState?.grid; if(!grid || !db) return;
+  const cur = (grid.edges||{})[key];
+  if(cur !== 'door' && cur !== 'doorOpen') return;
+  const nv = cur === 'door' ? 'doorOpen' : 'door';
+  grid.edges[key] = nv;
+  renderJMap();   // retour visuel immédiat
+  try { await db.collection(COMBATS_COLL).doc(combatId).update({ ['grid.edges.'+key]: nv }); }
+  catch(e){ console.error(e); }
 }
 // Ennemi visible depuis ma position (ligne de vue non coupée par un mur) — vrai si pas de grille/position
 function enemyVisible(e){

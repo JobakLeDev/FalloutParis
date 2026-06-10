@@ -712,6 +712,15 @@ function edgeClick(o, x, y){
   else combatMap.edges[key] = _edgeSel;
   renderCombatMap(); syncCombatToFirebase();
 }
+// Ouvrir / fermer une porte (MJ) — pivote de 90°, persiste
+function openDoorMJ(key){
+  if(!combatMap || !combatMap.edges) return;
+  const cur = combatMap.edges[key];
+  if(cur !== 'door' && cur !== 'doorOpen') return;
+  combatMap.edges[key] = cur === 'door' ? 'doorOpen' : 'door';
+  recomputeBandsFromMap();
+  renderCombatMap(); syncCombatToFirebase();
+}
 // Zones cliquables sur les arêtes (uniquement quand un pinceau d'arête est actif)
 function edgeHotspots(grid, cs){
   const pad = 5, gap = 1, pitch = cs + gap; let h = '';
@@ -809,8 +818,9 @@ function renderCombatMap(){
     const onclick = t ? `mapPickToken('${tid}')` : `mapCellClick(${x},${y})`;
     html += `<div class="${cls}" onclick="${onclick}"${eAttr} title="${t?(t.nom+(t.hidden?' (masqué)':'')):(bt?bt.label:'')}">${inner}</div>`;
   }
-  // Overlay des lignes d'arête (+ zones cliquables si pinceau d'arête actif)
-  html += '<div class="cmap-edges">' + gridEdgesHtml(combatMap, cs) + (_edgeSel ? edgeHotspots(combatMap, cs) : '') + '</div>';
+  // Overlay des lignes d'arête (+ zones cliquables si pinceau d'arête actif ; sinon, portes ouvrables)
+  const doorHot = (!_edgeSel && !_blockSel && !_mapSel) ? gridAllDoorHotspots(combatMap, cs, 'openDoorMJ') : '';
+  html += '<div class="cmap-edges">' + gridEdgesHtml(combatMap, cs) + (_edgeSel ? edgeHotspots(combatMap, cs) : doorHot) + '</div>';
   html += '</div>';
   if(_mapSel) html += '<div class="cmap-tip">Jeton sélectionné — clique une case libre pour le déplacer.</div>';
   else if(_blockSel) html += '<div class="cmap-tip">Pinceau « '+(_blockSel==='erase'?'Effacer':(BLOCK_TYPES.find(b=>b.id===_blockSel)?.label||''))+' » — clique les cases.</div>';
