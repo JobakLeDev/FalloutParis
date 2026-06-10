@@ -366,7 +366,6 @@ function renderJMap(){
     const bt = (typeof BLOCK_TYPES!=='undefined') ? BLOCK_TYPES.find(b=>b.id===terr) : null;
     let cls='cmap-cell';
     if(terr) cls+=' b-'+terr;
-    if(t && t.me) cls+=' sel';
     let onclick='', style='';
     if(reach && reach[key]!=null){
       cls+=' reach-snap'; onclick=`moveJSelf(${x},${y})`;
@@ -380,7 +379,7 @@ function renderJMap(){
     if(t){
       const glow = (t.id===activeTok && !t.dead) ? ' turn-glow' : '';
       if(t.kind==='ennemi') inner = '<span class="cen'+(t.dead?' dead':'')+glow+'">☠</span>';
-      else inner = '<span class="ctok '+(t.kind==='joueur'?'ctok-j':'ctok-a')+(t.dead?' dead':'')+glow+'">'+((t.nom||'?').charAt(0).toUpperCase())+'</span>';
+      else inner = '<span class="ctok '+(t.kind==='joueur'?'ctok-j':'ctok-a')+(t.dead?' dead':'')+glow+(t.me?' me-ring':'')+'">'+((t.nom||'?').charAt(0).toUpperCase())+'</span>';
     } else inner = (bt?bt.icon:'');
     if(reach && reach[key]!=null && !t) inner += '<span class="snap-dot"></span>';   // point d'accroche souris
     const eAttr = (t && t.kind==='ennemi') ? ` data-eid="${t.id.slice(1)}"` : '';

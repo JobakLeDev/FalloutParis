@@ -254,6 +254,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .ctok.dead,.cen.dead{ opacity:.4; filter:grayscale(.6); }
 .cen.hidden{ opacity:.55; filter:grayscale(.4); }
 /* Halo « c'est son tour » sur le jeton actif de la carte */
+/* Mon jeton (vue joueur) : anneau circulaire, pas de carré */
+.ctok.me-ring{ box-shadow:0 0 0 2px var(--am),0 0 8px rgba(232,168,32,.55); }
 .ctok.turn-glow{ box-shadow:0 0 0 2px var(--am),0 0 12px 3px rgba(232,168,32,.85); animation:tokTurnGlow 1.15s ease-in-out infinite; }
 .cen.turn-glow{ text-shadow:0 0 5px rgba(232,168,32,1),0 0 11px rgba(232,168,32,.8); animation:tokTurnGlow 1.15s ease-in-out infinite; }
 @keyframes tokTurnGlow{ 0%,100%{ filter:brightness(1); } 50%{ filter:brightness(1.4); } }
