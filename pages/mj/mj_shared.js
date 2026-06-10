@@ -107,9 +107,14 @@ function gridEdgeBetween(x1, y1, x2, y2){
 }
 function gridEdgeBlocks(grid, x1, y1, x2, y2){
   const t = (grid.edges || {})[gridEdgeBetween(x1, y1, x2, y2)];
-  return t === 'wall' || t === 'window' || t === 'door';   // 'doorOpen' laisse passer/voir
+  return t === 'wall' || t === 'window' || t === 'door';   // passage : 'doorOpen' laisse passer
 }
-// Ligne de vue entre deux cases (centre→centre) : false si un mur/fenêtre coupe le trajet
+// Arête qui bloque la VUE : mur et porte fermée. La FENÊTRE laisse voir/viser à travers (mais bloque le passage).
+function gridEdgeBlocksSight(grid, x1, y1, x2, y2){
+  const t = (grid.edges || {})[gridEdgeBetween(x1, y1, x2, y2)];
+  return t === 'wall' || t === 'door';   // 'window' transparent ; 'doorOpen' transparent
+}
+// Ligne de vue entre deux cases (centre→centre) : false si un mur/porte fermée coupe le trajet (fenêtre transparente)
 function gridLineOfSight(grid, a, b){
   if(!grid) return true;
   const steps = Math.max(1, Math.ceil(Math.hypot(b.x-a.x, b.y-a.y)) * 10);
@@ -121,11 +126,11 @@ function gridLineOfSight(grid, a, b){
     const nx = Math.floor(sx), ny = Math.floor(sy);
     if(nx===cx && ny===cy) continue;
     if(nx!==cx && ny!==cy){
-      // passage en coin : bloqué seulement si les deux contournements sont murés
-      const path1 = gridEdgeBlocks(grid, cx, cy, nx, cy) || gridEdgeBlocks(grid, nx, cy, nx, ny);
-      const path2 = gridEdgeBlocks(grid, cx, cy, cx, ny) || gridEdgeBlocks(grid, cx, ny, nx, ny);
+      // passage en coin : bloqué seulement si les deux contournements coupent la vue
+      const path1 = gridEdgeBlocksSight(grid, cx, cy, nx, cy) || gridEdgeBlocksSight(grid, nx, cy, nx, ny);
+      const path2 = gridEdgeBlocksSight(grid, cx, cy, cx, ny) || gridEdgeBlocksSight(grid, cx, ny, nx, ny);
       if(path1 && path2) return false;
-    } else if(gridEdgeBlocks(grid, cx, cy, nx, ny)) return false;
+    } else if(gridEdgeBlocksSight(grid, cx, cy, nx, ny)) return false;
     cx = nx; cy = ny;
   }
   return true;
