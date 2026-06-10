@@ -162,7 +162,8 @@ function utiliserItem(i){
   const def=[...DB.food,...DB.drinks,...DB.drugs].find(d=>d.n===it.name)||{};
   const fx=(typeof fpParseConsumable==='function')?fpParseConsumable(def):{instant:{hp:def.hp||0,radHeal:0},buff:null};
   // Buff temporaire d'abord (pour que le soin tienne compte du +PV max)
-  if(fx.buff){ char.activeEffects=char.activeEffects||[]; char.activeEffects.push({ id:'e'+Date.now().toString(36)+Math.floor(Math.random()*999), src:it.name, ...fx.buff }); }
+  // Un même aliment/chem ne CUMULE pas son buff : on retire l'effet du même objet avant de le ré-appliquer (refresh). Les PV gagnés (instant) restent appliqués à chaque fois.
+  if(fx.buff){ char.activeEffects=(char.activeEffects||[]).filter(e=>e.src!==it.name); char.activeEffects.push({ id:'e'+Date.now().toString(36)+Math.floor(Math.random()*999), src:it.name, ...fx.buff }); }
   if(fx.instant.hp>0) char.hp=Math.min(hpMax(),char.hp+fx.instant.hp);
   if(fx.instant.radHeal>0) char.rad=Math.max(0,char.rad-fx.instant.radHeal);
   if(def.rad&&typeof def.rad==='number'&&def.rad<0) char.rad=Math.max(0,char.rad+def.rad);

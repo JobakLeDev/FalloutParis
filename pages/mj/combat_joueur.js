@@ -1690,7 +1690,8 @@ async function consumeChem(i){
   const fx = (typeof fpParseConsumable === 'function') ? fpParseConsumable(def) : { instant:{ hp:def.hp||0, radHeal:0, ap:0 }, buff:null };
   // Buff temporaire → effet actif (visible sur la fiche aussi)
   if(fx.buff){
-    joueurData.activeEffects = Array.isArray(joueurData.activeEffects) ? joueurData.activeEffects : [];
+    // Un même chem/aliment ne cumule pas son buff : on remplace l'effet du même objet (refresh). Les PV restent gagnés à chaque prise.
+    joueurData.activeEffects = (Array.isArray(joueurData.activeEffects) ? joueurData.activeEffects : []).filter(e => e.src !== name);
     joueurData.activeEffects.push({ id:'e'+Date.now().toString(36)+Math.floor(Math.random()*999), src:name, ...fx.buff });
     upd.activeEffects = joueurData.activeEffects;
     effetTxt += ' (effet actif)';
