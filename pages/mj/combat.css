@@ -328,6 +328,19 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 /* Noeud arrondi aux angles simples (L) des murs */
 .cedge-knee{ position:absolute; width:4px; height:4px; border-radius:50%; z-index:5;
   background:var(--g); box-shadow:0 0 5px rgba(93,190,93,.85); }
+/* Étranger Mystérieux — bouton (joueur) + overlay de ciblage (MJ) */
+.mj-stranger-btn{ display:block; width:100%; margin-top:6px; background:#1a1206; border:1px solid var(--am); color:var(--am);
+  font-family:'Share Tech Mono',monospace; font-size:9px; padding:6px; cursor:pointer; letter-spacing:1px; border-radius:3px; }
+.mj-stranger-btn:hover:not([disabled]){ background:#2a1d08; box-shadow:0 0 8px rgba(232,168,32,.5); }
+.mj-stranger-btn[disabled]{ opacity:.4; cursor:default; }
+#stranger-pick{ position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center; background:rgba(2,6,3,.55); }
+#stranger-pick .sp-box{ background:var(--p2); border:1px solid var(--am); border-radius:6px; padding:14px; max-width:380px; width:92%;
+  box-shadow:0 0 24px rgba(232,168,32,.4); display:flex; flex-direction:column; gap:6px; }
+#stranger-pick .sp-h{ font-family:'Oswald',sans-serif; color:var(--am); letter-spacing:1px; font-size:13px; margin-bottom:4px; text-align:center; }
+#stranger-pick .sp-h small{ color:var(--td); font-size:8px; letter-spacing:1px; }
+#stranger-pick .sp-en{ background:#13251a; border:1px solid var(--rd); color:var(--tb); font-family:'Share Tech Mono',monospace; font-size:10px; padding:7px; cursor:pointer; border-radius:3px; }
+#stranger-pick .sp-en:hover{ background:#2a0e0e; box-shadow:0 0 8px rgba(224,64,64,.5); }
+#stranger-pick .sp-cancel{ background:none; border:1px solid var(--b2); color:var(--td); font-family:monospace; font-size:8px; padding:5px; cursor:pointer; margin-top:4px; border-radius:3px; }
 /* Traceur d'attaque (trait attaquant → cible) */
 .cmap-tracer{ position:absolute; height:3px; transform-origin:0 50%; z-index:6; pointer-events:none; border-radius:2px;
   background:linear-gradient(90deg, rgba(232,168,32,.4), var(--am)); box-shadow:0 0 7px rgba(232,168,32,.9);

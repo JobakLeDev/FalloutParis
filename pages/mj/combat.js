@@ -30,6 +30,7 @@ let lastLuckyTimingTs = 0;
 let lastLuckDrawTs = 0;
 let lastAttackResultTs = 0;
 let lastFxTs = 0;               // dédup traceur/clignotement (fxAttack)
+let lastStrangerTs = 0;         // dédup appel Étranger Mystérieux
 let lastTurnDoneTs = {};        // {joueurId: ts} — dernier "Terminer mon tour" traité (avance auto sans validation MJ)
 let _turnDoneSeeded = false;    // au 1er snapshot, on enregistre les turnDone existants sans avancer
 let lastActionResultTs = 0;     // dernier résultat d'action à effet (Defend/Rally/First Aid…) journalisé
@@ -164,6 +165,11 @@ function deverrouiller(){
         fpFireTracer('#combat-map .cmap', combatMap, 32, f.fromTok, f.toTok, !f.hit);
         if(f.hit) fpFlashToken('#combat-map .cmap', combatMap, 32, f.toTok);
       }, 60);
+    }
+    // Appel de l'Étranger Mystérieux par un joueur → le MJ résout l'apparition
+    if(data.strangerReq && data.strangerReq.ts > lastStrangerTs){
+      lastStrangerTs = data.strangerReq.ts;
+      handleStrangerReq(data.strangerReq.nom || data.strangerReq.joueur);
     }
     // Résultat d'une action à effet (Defend / Rally / First Aid / Test / Assist / Command NPC / Pass…)
     if(data.actionResult && data.actionResult.ts > lastActionResultTs){
@@ -1029,6 +1035,42 @@ function setActif(id){ joueurActif = joueurActif===id?null:id; armeActive=null; 
 function fpBroadcastFx(fromTok, toTok, hit){
   if(!db || !currentCombatId) return;
   db.collection(COMBATS_COLL).doc(currentCombatId).update({ fxAttack: { fromTok, toTok, hit: !!hit, ts: Date.now() } }).catch(()=>{});
+}
+function _combatSfxMJ(file){
+  try{ if(localStorage.getItem('fp_sfxMuted') === '1') return; const a = new Audio('../../audio/sfx/' + file); a.volume = 0.6; a.play().catch(()=>{}); }catch(e){}
+}
+// ---- ÉTRANGER MYSTÉRIEUX (perk) ----
+// Le joueur a dépensé 1 Chance ; le MJ tire l'apparition (≈25 % : d20 ≤ 5). S'il apparaît, le MJ choisit la cible.
+function handleStrangerReq(nom){
+  const roll = Math.floor(Math.random()*20) + 1;
+  _combatSfxMJ('combat_alert_sfx.mp3');
+  addLog('🕴 ' + nom + ' invoque l\'Étranger Mystérieux… (d20 = ' + roll + ')');
+  if(roll > 5){ addLog('… l\'Étranger ne se montre pas cette fois.'); return; }
+  const vivants = (ennemis||[]).filter(e => (e.pvCur||0) > 0);
+  if(!vivants.length){ addLog('🕴 L\'Étranger apparaît… mais il n\'y a plus de cible.'); return; }
+  let ov = document.getElementById('stranger-pick'); if(ov) ov.remove();
+  ov = document.createElement('div'); ov.id = 'stranger-pick';
+  ov.innerHTML = '<div class="sp-box"><div class="sp-h">🕴 L\'Étranger Mystérieux apparaît<br><small>Choisis sa cible (8 DC)</small></div>'
+    + vivants.map(e => '<button class="sp-en" onclick="strangerHit('+e.id+')">' + e.nom + ' — ' + e.pvCur + '/' + e.pvMax + ' PV</button>').join('')
+    + '<button class="sp-cancel" onclick="strangerCancel()">Annuler (l\'Étranger repart)</button></div>';
+  document.body.appendChild(ov);
+}
+function strangerCancel(){ const ov = document.getElementById('stranger-pick'); if(ov) ov.remove(); addLog('🕴 L\'Étranger repart sans tirer.'); }
+function strangerHit(eid){
+  const ov = document.getElementById('stranger-pick'); if(ov) ov.remove();
+  const e = ennemis.find(x => x.id === eid); if(!e) return;
+  const vals = Array.from({length:8}, () => FACES_CD[Math.floor(Math.random()*6)]);
+  const dmg = vals.reduce((a,v) => a + (parseInt(v)||0), 0);
+  const rd = parseInt(e.rd) || 0;
+  const net = Math.max(0, dmg - rd);
+  const avant = e.pvCur;
+  e.pvCur = Math.max(0, e.pvCur - net);
+  addLog('🕴💥 L\'Étranger Mystérieux abat ' + net + ' sur ' + e.nom + ' (' + dmg + ' − RD ' + rd + ') · ' + avant + '→' + e.pvCur + ' PV' + (e.pvCur<=0?' 💀 éliminé !':''));
+  // Clignotement de la cible chez tous (pas de traceur : l'Étranger n'a pas de jeton) + son côté joueurs
+  if(db && currentCombatId){
+    db.collection(COMBATS_COLL).doc(currentCombatId).update({ fxAttack: { fromTok:'', toTok:'E'+e.id, hit:true, stranger:true, ts:Date.now() } }).catch(()=>{});
+  }
+  renderCombat(); renderTracker(); syncCombatToFirebase();
 }
 function setAttaqueEnnemi(eid){
   const e = ennemis.find(e=>e.id===eid); if(!e) return;

@@ -185,6 +185,7 @@ function initJoueur(){
     if(data.fxAttack && data.fxAttack.ts > lastFxTs){
       lastFxTs = data.fxAttack.ts;
       const f = data.fxAttack;
+      if(f.stranger) _combatSfx('combat_alert_sfx.mp3', 0);   // l'Étranger Mystérieux frappe
       setTimeout(() => {
         fpFireTracer('#j-combat-map .cmap', combatState?.grid, 30, f.fromTok, f.toTok, !f.hit);
         if(f.hit) fpFlashToken('#j-combat-map .cmap', combatState?.grid, 30, f.toTok);
@@ -811,6 +812,30 @@ function renderActionsJoueur(){
       '<span class="act-section-lbl">PA</span>' +
       '<span class="pa-val-j">' + (s.pa||0) + '</span>' +
     '</div>';
+
+  // Étranger Mystérieux (perk) : début de combat (round 1), à mon tour, 1 fois — dépenser 1 Chance
+  const isMoTour = combatState?.ordreInitiative?.[combatState.tourActif]?.id === joueurId;
+  const hasStranger = (joueurData?.perks?.['Mysterious Stranger'] || 0) > 0;
+  const strangerUsed = !!combatState?.strangerUsed?.[joueurId];
+  if((combatState.numRound||1) === 1 && isMoTour && !turnEnded && hasStranger && !strangerUsed){
+    const luck = joueurData?.luck_points || 0;
+    el.innerHTML += '<button class="mj-stranger-btn"' + (luck < 1 ? ' disabled' : '') + ' onclick="callStrangerJ()" '
+      + 'title="Début de combat : dépenser 1 Chance, l\'Étranger Mystérieux peut intervenir">🕴 Étranger Mystérieux (−1 🍀)</button>';
+  }
+}
+// Appel de l'Étranger Mystérieux : dépense 1 Chance, envoie la requête au MJ (qui résout l'apparition)
+async function callStrangerJ(){
+  if(!db || !combatState) return;
+  const isMoTour = combatState?.ordreInitiative?.[combatState.tourActif]?.id === joueurId;
+  if(!isMoTour || (combatState.numRound||1) !== 1) return;
+  if((joueurData?.perks?.['Mysterious Stranger'] || 0) < 1) return;
+  if(combatState?.strangerUsed?.[joueurId]) return;
+  const luck = joueurData?.luck_points || 0; if(luck < 1) return;
+  await db.collection('joueurs').doc(joueurId).update({ luck_points: luck - 1, lastUpdate: Date.now() });
+  const upd = {};
+  upd['strangerUsed.' + joueurId] = true;
+  upd['strangerReq'] = { joueur: joueurId, nom: (joueurData?.nom || joueurId).toUpperCase(), ts: Date.now() };
+  try { await db.collection(COMBATS_COLL).doc(combatId).update(upd); } catch(e){ console.error(e); }
 }
 
 async function depenseActionJoueur(type){
