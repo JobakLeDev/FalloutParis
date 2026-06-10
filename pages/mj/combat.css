@@ -260,6 +260,14 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .cmap-cell.sel{ box-shadow:0 0 0 2px var(--am) inset,0 0 8px rgba(232,168,32,.7); }
 .cmap-cell.reach{ box-shadow:0 0 0 1px var(--g) inset,0 0 6px rgba(93,190,93,.5); animation:cmapReach 1.2s ease-in-out infinite; }
 @keyframes cmapReach{ 0%,100%{box-shadow:0 0 0 1px var(--g) inset,0 0 4px rgba(93,190,93,.35);} 50%{box-shadow:0 0 0 1px var(--g) inset,0 0 9px rgba(93,190,93,.7);} }
+/* Mode déplacement (joueur) : pas de quadrillage, juste les bords de la zone + points d'accroche */
+.cmap.moving .cmap-cell{ border-color:transparent; box-shadow:none; }
+.cmap.moving .cmap-cell:hover{ border-color:transparent; box-shadow:none; }
+.cmap-cell.reach-snap{ cursor:pointer; }
+.cmap-cell.reach-snap:hover{ background:rgba(93,190,93,.12); }
+.snap-dot{ width:7px; height:7px; border-radius:50%; background:rgba(93,190,93,.5);
+  box-shadow:0 0 4px rgba(93,190,93,.5); transition:transform .1s, background .1s, box-shadow .1s; pointer-events:none; }
+.cmap-cell.reach-snap:hover .snap-dot{ background:var(--g); box-shadow:0 0 9px rgba(93,190,93,1); transform:scale(1.5); }
 /* Palette de pinceaux (MJ) — deux catégories (blocs / arêtes) sur une ligne, chacune dans un cadre léger */
 .cmap-palette{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:5px; justify-content:center; align-items:center; }
 .cmap-pgroup{ display:flex; gap:2px; padding:2px; background:#0a160d; border:1px solid var(--b); border-radius:4px; }

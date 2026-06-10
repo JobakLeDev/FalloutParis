@@ -697,7 +697,7 @@ function _mapTokens(){
   return list;
 }
 function genCombatMap(){
-  const w = 14, h = 8;
+  const w = 21, h = 12;
   const map = { w, h, terrain: {}, pos: {} };
   const toks = _mapTokens();
   const amis = toks.filter(t => t.kind!=='ennemi');
@@ -707,7 +707,7 @@ function genCombatMap(){
   foes.forEach((t,i) => { map.pos[t.id] = { x: w-2-(i%2), y: 1 + (i % (h-1)) }; });
   // décor aléatoire au centre : murs / débris / couverture
   const deco = ['wall','rubble','cover','wall','cover'];
-  const n = 5 + Math.floor(Math.random()*5);
+  const n = 9 + Math.floor(Math.random()*9);
   for(let k=0;k<n;k++){
     const ox = 3 + Math.floor(Math.random()*(w-6));
     const oy = Math.floor(Math.random()*h);

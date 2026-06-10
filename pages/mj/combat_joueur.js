@@ -330,7 +330,9 @@ function renderJMap(){
   const activeTok = !_act ? null : (_act.type==='joueur' ? _act.id : _act.type==='ennemi' ? ('E'+_act.eid) : _act.type==='allie' ? ('A'+_act.aid) : null);
   // Cases atteignables (parcours qui contourne murs/fenêtres) quand on se déplace
   const reach = (_jMoveActive && myPos) ? reachableCells(grid, myPos, _jMoveRange) : null;
-  let html = `<div class="cmap" style="grid-template-columns:repeat(${w},var(--cs,22px))">`;
+  const moving = !!reach;   // mode déplacement : on masque le quadrillage, on affiche bords de zone + points d'accroche
+  const nbReach = (x,y) => reach && reach[x+','+y]!=null;
+  let html = `<div class="cmap${moving?' moving':''}" style="grid-template-columns:repeat(${w},var(--cs,22px))">`;
   for(let y=0;y<h;y++) for(let x=0;x<w;x++){
     const key=x+','+y; const tid=byPos[key]; const t=tid?toks.find(z=>z.id===tid):null;
     const terr = gridTerrainAt(grid, x, y);
@@ -338,16 +340,24 @@ function renderJMap(){
     let cls='cmap-cell';
     if(terr) cls+=' b-'+terr;
     if(t && t.me) cls+=' sel';
-    let onclick='';
-    if(reach && reach[key]!=null){ cls+=' reach'; onclick=`moveJSelf(${x},${y})`; }
+    let onclick='', style='';
+    if(reach && reach[key]!=null){
+      cls+=' reach-snap'; onclick=`moveJSelf(${x},${y})`;
+      // bord de la zone atteignable : on borde seulement les côtés donnant sur une case NON atteignable
+      if(!nbReach(x,y-1)) style+='border-top:2px solid var(--g);';
+      if(!nbReach(x+1,y)) style+='border-right:2px solid var(--g);';
+      if(!nbReach(x,y+1)) style+='border-bottom:2px solid var(--g);';
+      if(!nbReach(x-1,y)) style+='border-left:2px solid var(--g);';
+    }
     let inner;
     if(t){
       const glow = (t.id===activeTok && !t.dead) ? ' turn-glow' : '';
       if(t.kind==='ennemi') inner = '<span class="cen'+(t.dead?' dead':'')+glow+'">☠</span>';
       else inner = '<span class="ctok '+(t.kind==='joueur'?'ctok-j':'ctok-a')+(t.dead?' dead':'')+glow+'">'+((t.nom||'?').charAt(0).toUpperCase())+'</span>';
     } else inner = (bt?bt.icon:'');
+    if(reach && reach[key]!=null && !t) inner += '<span class="snap-dot"></span>';   // point d'accroche souris
     const eAttr = (t && t.kind==='ennemi') ? ` data-eid="${t.id.slice(1)}"` : '';
-    html += `<div class="${cls}"${onclick?` onclick="${onclick}"`:''}${eAttr} title="${t?t.nom:(bt?bt.label:'')}">${inner}</div>`;
+    html += `<div class="${cls}"${style?` style="${style}"`:''}${onclick?` onclick="${onclick}"`:''}${eAttr} title="${t?t.nom:(bt?bt.label:'')}">${inner}</div>`;
   }
   html += '<div class="cmap-edges">' + (typeof gridEdgesHtml==='function' ? gridEdgesHtml(grid, 30) : '') + '</div>';
   // Portes adjacentes à mon jeton → cliquables (déclare une action mineure) — seulement à mon tour

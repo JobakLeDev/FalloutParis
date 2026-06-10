@@ -77,12 +77,12 @@ function rangeDifficulty(weaponRng, enemyDist){
 }
 
 // ---- MINI-CARTE DE COMBAT (grille de cases) ----
-const GRID_MOVE = 3, GRID_SPRINT = 6;   // cases par déplacement (1 zone ≈ 3 cases)
+const GRID_MOVE = 5, GRID_SPRINT = 9;   // cases par déplacement (grille agrandie : déplacement plus fin)
 function gridChebyshev(a, b){ return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y)); }
 // Distance de déplacement (pas de diagonale gratuite : une diagonale = 2 cases)
 function gridManhattan(a, b){ return Math.abs(a.x - b.x) + Math.abs(a.y - b.y); }
 // distance en cases → bande (0 Contact, 1 Moyenne, 2 Longue, 3 Extrême)
-function gridBand(cells){ if(cells <= 1) return 0; if(cells <= 4) return 1; if(cells <= 7) return 2; return 3; }
+function gridBand(cells){ if(cells <= 1) return 0; if(cells <= 6) return 1; if(cells <= 11) return 2; return 3; }
 // Types de blocs de terrain (MJ peut les peindre). solid = bloque le passage/placement.
 const BLOCK_TYPES = [
   { id:'wall',   label:'Mur',        icon:'▦', solid:true  },
