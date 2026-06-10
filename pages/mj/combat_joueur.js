@@ -69,6 +69,7 @@ let aimRerolled = false;      // true si le re-roll Aim a déjà été utilisé 
 let cibleAttaque = '';        // nom de l'ennemi ciblé (sélecteur)
 const AIM_ZONES = ['', 'Tête', 'Torse', 'Bras G.', 'Bras D.', 'Jambe G.', 'Jambe D.'];  // '' = zone non ciblée
 let lastAttackResultTs = 0;   // dédup notification résultat attaque
+let lastFxTs = 0;             // dédup traceur/clignotement (fxAttack)
 let actionState = null;       // extrait de combatState.actionsDeclarees[joueurId]
 let selectedActionDraft = null; // {category, type, desc} — action en cours de saisie
 let myAim = null;            // {cible, zone} — visée déclarée ce tour (Attack/Aim) ; zone '' = non visée
@@ -164,11 +165,14 @@ function initJoueur(){
     actionState = combatState?.actionsDeclarees?.[joueurId] || null;
     hide('attente'); show('combat-actif'); hide('combat-termine');
     renderCombatJoueur();
-    // Traceur visuel : trait de l'attaquant vers la cible quand une attaque se résout
-    if(data.attackResult && data.attackResult.ts > lastAttackResultTs){
-      lastAttackResultTs = data.attackResult.ts;
-      const r = data.attackResult;
-      setTimeout(() => fpFireTracer('#j-combat-map .cmap', combatState?.grid, 30, r.joueur, 'E'+r.cibleId, !!r.miss), 40);
+    // Effet visuel d'attaque : traceur attaquant → cible (+ clignotement de la cible touchée)
+    if(data.fxAttack && data.fxAttack.ts > lastFxTs){
+      lastFxTs = data.fxAttack.ts;
+      const f = data.fxAttack;
+      setTimeout(() => {
+        fpFireTracer('#j-combat-map .cmap', combatState?.grid, 30, f.fromTok, f.toTok, !f.hit);
+        if(f.hit) fpFlashToken('#j-combat-map .cmap', combatState?.grid, 30, f.toTok);
+      }, 60);
     }
   });
 }
@@ -350,6 +354,19 @@ function renderJMap(){
   const _isMoTour = _act?.type==='joueur' && _act.id===joueurId;
   if(myPos && _isMoTour && !turnEnded && typeof gridDoorHotspots==='function')
     html += '<div class="cmap-edges">' + gridDoorHotspots(grid, myPos, 30, 'openDoorJ') + '</div>';
+  // Ligne de visée pendant l'attaque : pointillés tant qu'on n'a pas touché, plein dès le succès au 2D20
+  const aimTgt = (myAim && myAim.cible) ? myAim.cible : cibleAttaque;
+  if(myPos && _isMoTour && !turnEnded && aimTgt && typeof canAttackNow==='function' && canAttackNow()){
+    const tp = grid.pos['E'+aimTgt];
+    if(tp){
+      const solid = (twoD20Done===attacksDone) && !lastAttackMissed && lastRollDice.length>0;
+      const pad=5, cs=30, pitch=cs+1;
+      const cx=p=>pad+p.x*pitch+cs/2, cy=p=>pad+p.y*pitch+cs/2;
+      const x1=cx(myPos), y1=cy(myPos), x2=cx(tp), y2=cy(tp);
+      const len=Math.hypot(x2-x1,y2-y1), ang=Math.atan2(y2-y1,x2-x1)*180/Math.PI;
+      html += '<div class="cmap-aimline'+(solid?' solid':'')+'" style="left:'+x1+'px;top:'+y1+'px;width:'+len+'px;transform:rotate('+ang+'deg)"></div>';
+    }
+  }
   html += '</div>';
   el.innerHTML = html;
 }
@@ -568,6 +585,7 @@ function aimRelancerDe(idx){
   renderAimReroll();
   renderMissFortune();
   renderDiceAccess();
+  if(typeof renderJMap==='function') renderJMap();
 }
 
 async function missFortuneJ(diceIdx){
@@ -601,6 +619,7 @@ async function missFortuneJ(diceIdx){
   if(!echec && arEl){ arEl.style.display='none'; arEl.innerHTML=''; }
   renderMissFortune();
   renderDiceAccess();
+  if(typeof renderJMap==='function') renderJMap();
 }
 // Confirmer le ratage (échec définitif) : résout l'attaque sans dégâts
 function resolveMissJ(){
@@ -608,14 +627,17 @@ function resolveMissJ(){
   attacksDone++;
   lastAttackMissed = false;
   if(db && combatId){
+    const _ts = Date.now();
     db.collection(COMBATS_COLL).doc(combatId).update({
-      attackResult: { joueur: joueurId, nom: (joueurData?.nom||joueurId), cible: cibleNom(cibleAttaque), cibleId: cibleAttaque, miss: true, dmg: 0, ts: Date.now() }
+      attackResult: { joueur: joueurId, nom: (joueurData?.nom||joueurId), cible: cibleNom(cibleAttaque), cibleId: cibleAttaque, miss: true, dmg: 0, ts: _ts },
+      fxAttack: { fromTok: joueurId, toTok: 'E'+cibleAttaque, hit: false, ts: _ts }
     }).catch(()=>{});
   }
   const mf=document.getElementById('j-miss-fortune'); if(mf){ mf.style.display='none'; mf.innerHTML=''; }
   const arEl=document.getElementById('j-attack-result');
   if(arEl){ arEl.style.display='block'; arEl.innerHTML='<div style="font-size:9px;color:var(--rd);padding:4px 6px;border:1px solid var(--rd);background:var(--rdk)">✗ Attaque ratée — aucun dégât</div>'; }
   renderDiceAccess();
+  if(typeof renderJMap==='function') renderJMap();
 }
 
 // ---- LUCKY TIMING ----
@@ -1077,6 +1099,7 @@ async function jLancer2D20(){
       bdEl.style.display='block'; bdEl.innerHTML=btns;
     } else { bdEl.style.display='none'; }
   }
+  if(typeof renderJMap==='function') renderJMap();   // ligne de visée : pointillés → plein si touché
 }
 
 // ============================================================
@@ -1744,7 +1767,7 @@ function renderDiceAccess(){
   const sel = document.getElementById('j-cible-sel');
   if(sel){
     cibleAttaque = sel.value;
-    sel.onchange = () => { cibleAttaque = sel.value; };
+    sel.onchange = () => { cibleAttaque = sel.value; if(typeof renderJMap==='function') renderJMap(); };
   }
 }
 
@@ -1810,14 +1833,17 @@ function jLancerCD(){
 
   // Envoyer au MJ pour son log
   if(db && combatId){
+    const _ts = Date.now();
     db.collection(COMBATS_COLL).doc(combatId).update({
       attackResult: { joueur: joueurId, nom, cible: cibleNomTxt, cibleId: cibleAttaque, zone, zoneAimee,
         dmg: dmgTotal, base: dmgRaw, ef,
         effetNom: effetInfo?.nom||'', effetNote: effetInfo?.note||'', rad: effetInfo?.rad||0,
-        ts: Date.now() }
+        ts: _ts },
+      fxAttack: { fromTok: joueurId, toTok: 'E'+cibleAttaque, hit: true, ts: _ts }
     }).catch(()=>{});
   }
 
   // L'attaque est faite : proposer « Terminer mon tour » (verrou déjà posé en tête)
   renderActionsDeclarees();
+  if(typeof renderJMap==='function') renderJMap();   // efface la ligne de visée
 }

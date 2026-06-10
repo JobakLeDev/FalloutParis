@@ -29,6 +29,7 @@ let lastInfoRequestTs = 0;
 let lastLuckyTimingTs = 0;
 let lastLuckDrawTs = 0;
 let lastAttackResultTs = 0;
+let lastFxTs = 0;               // dédup traceur/clignotement (fxAttack)
 let lastTurnDoneTs = {};        // {joueurId: ts} — dernier "Terminer mon tour" traité (avance auto sans validation MJ)
 let _turnDoneSeeded = false;    // au 1er snapshot, on enregistre les turnDone existants sans avancer
 let lastActionResultTs = 0;     // dernier résultat d'action à effet (Defend/Rally/First Aid…) journalisé
@@ -154,8 +155,15 @@ function deverrouiller(){
           }
         }
       }
-      // Traceur visuel : trait du jeton attaquant vers sa cible (après re-render)
-      setTimeout(() => fpFireTracer('#combat-map .cmap', combatMap, 32, r.joueur, 'E'+r.cibleId, !!r.miss), 40);
+    }
+    // Effet visuel d'attaque (traceur + clignotement de la cible touchée) — toutes attaques
+    if(data.fxAttack && data.fxAttack.ts > lastFxTs){
+      lastFxTs = data.fxAttack.ts;
+      const f = data.fxAttack;
+      setTimeout(() => {
+        fpFireTracer('#combat-map .cmap', combatMap, 32, f.fromTok, f.toTok, !f.hit);
+        if(f.hit) fpFlashToken('#combat-map .cmap', combatMap, 32, f.toTok);
+      }, 60);
     }
     // Résultat d'une action à effet (Defend / Rally / First Aid / Test / Assist / Command NPC / Pass…)
     if(data.actionResult && data.actionResult.ts > lastActionResultTs){
@@ -1017,11 +1025,17 @@ function chEnemyDist(id, delta){
 // ---- DÉS ----
 function setActif(id){ joueurActif = joueurActif===id?null:id; armeActive=null; renderJoueursCombat(); updateDicePanel(); }
 
+// Diffuse un effet d'attaque (traceur + clignotement) à tous les écrans via le doc combat
+function fpBroadcastFx(fromTok, toTok, hit){
+  if(!db || !currentCombatId) return;
+  db.collection(COMBATS_COLL).doc(currentCombatId).update({ fxAttack: { fromTok, toTok, hit: !!hit, ts: Date.now() } }).catch(()=>{});
+}
 function setAttaqueEnnemi(eid){
   const e = ennemis.find(e=>e.id===eid); if(!e) return;
   const panel = document.getElementById('dice-context');
   const nbDC = parseInt(e.atq)||2;
   panel._nbDC = nbDC;
+  panel._eid = e.id;
   panel._modeEnnemi = true;
   panel._ennemNom = e.nom;
   panel._atkMode = 'enemy';                       // ennemi → joueur : dégâts auto (RD localisée, zone aléatoire)
@@ -1300,25 +1314,27 @@ function lancerCD(){
     if(pid && pid[0]==='A'){
       const a = (allies||[]).find(x => String(x.id) === String(pid.slice(1)));
       if(!a){ addLog('💥 '+(panel._ennemNom||'Ennemi')+' '+nb+'DC: '+dmg+'dmg — aucune cible sélectionnée'); return; }
-      if(panel._lastHit === false){ addLog('🗡 '+(panel._ennemNom||'Ennemi')+' rate '+a.nom+' (pas de dégâts)'); panel._atkMode=null; return; }
+      if(panel._lastHit === false){ addLog('🗡 '+(panel._ennemNom||'Ennemi')+' rate '+a.nom+' (pas de dégâts)'); fpBroadcastFx('E'+panel._eid, 'A'+a.id, false); panel._atkMode=null; return; }
       const dt = panel._dmgType || 'physical';
       const rdObj = a.dr || {};
       const rd = (dt==='energy') ? (rdObj.energy ?? a.rd ?? 0) : (dt==='radiation'||dt==='rad') ? (rdObj.rad ?? a.rd ?? 0) : (rdObj.phys ?? a.rd ?? 0);
       const net = rd===999 ? 0 : Math.max(0, dmg - rd);
       addLog('🗡 '+(panel._ennemNom||'Ennemi')+' touche 🐾 '+a.nom+' : '+net+' ('+dmg+'dmg − RD '+(rd===999?'∞':rd)+(ef?' · +'+ef+'⚡':'')+')');
+      fpBroadcastFx('E'+panel._eid, 'A'+a.id, true);
       panel._atkMode = null;
       dmgAllie(a.id, net);
       return;
     }
     const c = pid ? combattants[pid] : null;
     if(!c){ addLog('💥 '+(panel._ennemNom||'Ennemi')+' '+nb+'DC: '+dmg+'dmg — aucune cible sélectionnée'); return; }
-    if(panel._lastHit === false){ addLog('🗡 '+(panel._ennemNom||'Ennemi')+' rate '+(c.data.nom||pid)+' (pas de dégâts)'); panel._atkMode=null; return; }
+    if(panel._lastHit === false){ addLog('🗡 '+(panel._ennemNom||'Ennemi')+' rate '+(c.data.nom||pid)+' (pas de dégâts)'); fpBroadcastFx('E'+panel._eid, pid, false); panel._atkMode=null; return; }
     const loc = rollLocation();
     const rdObj = playerLocRD(c.data, loc);
     const dt = panel._dmgType || 'physical';
     const rd = (dt==='energy') ? rdObj.en : (dt==='radiation'||dt==='rad') ? rdObj.rad : rdObj.phys;
     const net = rd===999 ? 0 : Math.max(0, dmg - rd);
     addLog('🗡 '+(panel._ennemNom||'Ennemi')+' touche '+(c.data.nom||pid)+' ['+loc.label+'] : '+net+' ('+dmg+'dmg − RD '+(rd===999?'∞':rd)+(ef?' · +'+ef+'⚡':'')+')');
+    fpBroadcastFx('E'+panel._eid, pid, true);
     panel._atkMode = null;
     dmgJoueur(pid, net);   // applique aux PV + sync Firebase
     return;
@@ -1329,12 +1345,13 @@ function lancerCD(){
     const eid = sel ? sel.value : '';
     const e = eid ? ennemis.find(x => x.id == eid) : null;
     if(!e){ addLog('🐾💥 '+(panel._ennemNom||'Compagnon')+' '+nb+'DC: '+dmg+'dmg — aucune cible sélectionnée'); return; }
-    if(panel._lastHit === false){ addLog('🐾 '+(panel._ennemNom||'Compagnon')+' rate '+e.nom+' (pas de dégâts)'); panel._atkMode=null; return; }
+    if(panel._lastHit === false){ addLog('🐾 '+(panel._ennemNom||'Compagnon')+' rate '+e.nom+' (pas de dégâts)'); fpBroadcastFx('A'+panel._allyId, 'E'+e.id, false); panel._atkMode=null; return; }
     const rd = parseInt(e.rd)||0;
     const net = Math.max(0, dmg - rd);
     const avant = e.pvCur;
     e.pvCur = Math.max(0, e.pvCur - net);
     addLog('🐾💥 '+(panel._ennemNom||'Compagnon')+' inflige '+net+' à '+e.nom+' ('+dmg+'dmg − RD '+rd+(ef?' · +'+ef+'⚡':'')+') · '+avant+'→'+e.pvCur+' PV'+(e.pvCur<=0?' 💀 éliminé !':''));
+    fpBroadcastFx('A'+panel._allyId, 'E'+e.id, true);
     panel._atkMode = null;   // évite une 2e application sur re-clic
     renderCombat(); renderTracker(); syncCombatToFirebase();
     return;

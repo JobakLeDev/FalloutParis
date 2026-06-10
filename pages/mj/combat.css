@@ -324,3 +324,19 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   animation:cmapTracer .75s ease-out forwards; }
 .cmap-tracer.miss{ background:linear-gradient(90deg, rgba(190,190,190,.25), #bcbcbc); box-shadow:0 0 5px rgba(200,200,200,.7); }
 @keyframes cmapTracer{ 0%{opacity:0} 12%{opacity:1} 55%{opacity:1} 100%{opacity:0} }
+/* Ligne de visée pendant le lancer (pointillés → plein si touché) */
+.cmap-aimline{ position:absolute; height:0; transform-origin:0 50%; z-index:5; pointer-events:none;
+  border-top:2px dashed rgba(232,168,32,.85); filter:drop-shadow(0 0 3px rgba(232,168,32,.6)); }
+.cmap-aimline.solid{ height:3px; border-top:none; border-radius:2px;
+  background:linear-gradient(90deg, rgba(232,168,32,.5), var(--am)); box-shadow:0 0 7px rgba(232,168,32,.9); }
+/* Clignotement « prend des dégâts » (style NES, on/off net) */
+.dmg-flash{ animation:dmgFlash .6s steps(1) 1; }
+@keyframes dmgFlash{
+  0%{ opacity:1; filter:brightness(2.6) drop-shadow(0 0 4px #fff); }
+  16%{ opacity:.12; filter:none; }
+  33%{ opacity:1; filter:brightness(2.6) drop-shadow(0 0 4px #fff); }
+  50%{ opacity:.12; filter:none; }
+  66%{ opacity:1; filter:brightness(2.6) drop-shadow(0 0 4px #fff); }
+  83%{ opacity:.12; filter:none; }
+  100%{ opacity:1; filter:none; }
+}

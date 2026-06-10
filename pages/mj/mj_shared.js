@@ -230,6 +230,17 @@ function fpFireTracer(mapSelector, grid, cs, fromId, toId, miss){
   mapEl.appendChild(el);
   setTimeout(() => { if(el.parentNode) el.parentNode.removeChild(el); }, 750);
 }
+// Clignotement « prend des dégâts » (style NES) sur le jeton ciblé
+function fpFlashToken(mapSelector, grid, cs, tokId){
+  const mapEl = (typeof mapSelector === 'string') ? document.querySelector(mapSelector) : mapSelector;
+  if(!mapEl || !grid || !grid.pos) return;
+  const p = grid.pos[tokId]; if(!p) return;
+  const cell = mapEl.querySelectorAll('.cmap-cell')[p.y * grid.w + p.x]; if(!cell) return;
+  const span = cell.querySelector('.ctok, .cen'); if(!span) return;
+  span.classList.remove('dmg-flash'); void span.offsetWidth;   // relance l'animation
+  span.classList.add('dmg-flash');
+  setTimeout(() => span.classList.remove('dmg-flash'), 700);
+}
 // Terrain d'une case (gère l'ancien format obstacles[] = murs)
 function gridTerrainAt(grid, x, y){
   if(grid.terrain && grid.terrain[x+','+y]) return grid.terrain[x+','+y];
