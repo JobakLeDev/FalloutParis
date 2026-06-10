@@ -212,6 +212,24 @@ function gridAllDoorHotspots(grid, cs, fnName){
   }
   return h;
 }
+// Traceur d'attaque : trait du jeton attaquant vers sa cible sur la carte, qui s'efface après l'animation
+function fpFireTracer(mapSelector, grid, cs, fromId, toId, miss){
+  if(!grid || !grid.pos) return;
+  const mapEl = (typeof mapSelector === 'string') ? document.querySelector(mapSelector) : mapSelector;
+  if(!mapEl) return;
+  const a = grid.pos[fromId], b = grid.pos[toId];
+  if(!a || !b) return;
+  const pad = 5, gap = 1, pitch = cs + gap;
+  const cx = p => pad + p.x*pitch + cs/2, cy = p => pad + p.y*pitch + cs/2;
+  const x1 = cx(a), y1 = cy(a), x2 = cx(b), y2 = cy(b);
+  const len = Math.hypot(x2-x1, y2-y1), ang = Math.atan2(y2-y1, x2-x1) * 180 / Math.PI;
+  const el = document.createElement('div');
+  el.className = 'cmap-tracer' + (miss ? ' miss' : '');
+  el.style.left = x1 + 'px'; el.style.top = y1 + 'px'; el.style.width = len + 'px';
+  el.style.transform = 'rotate(' + ang + 'deg)';
+  mapEl.appendChild(el);
+  setTimeout(() => { if(el.parentNode) el.parentNode.removeChild(el); }, 750);
+}
 // Terrain d'une case (gère l'ancien format obstacles[] = murs)
 function gridTerrainAt(grid, x, y){
   if(grid.terrain && grid.terrain[x+','+y]) return grid.terrain[x+','+y];

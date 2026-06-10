@@ -164,6 +164,12 @@ function initJoueur(){
     actionState = combatState?.actionsDeclarees?.[joueurId] || null;
     hide('attente'); show('combat-actif'); hide('combat-termine');
     renderCombatJoueur();
+    // Traceur visuel : trait de l'attaquant vers la cible quand une attaque se résout
+    if(data.attackResult && data.attackResult.ts > lastAttackResultTs){
+      lastAttackResultTs = data.attackResult.ts;
+      const r = data.attackResult;
+      setTimeout(() => fpFireTracer('#j-combat-map .cmap', combatState?.grid, 30, r.joueur, 'E'+r.cibleId, !!r.miss), 40);
+    }
   });
 }
 

@@ -318,3 +318,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 /* Noeud arrondi aux angles simples (L) des murs */
 .cedge-knee{ position:absolute; width:4px; height:4px; border-radius:50%; z-index:5;
   background:var(--g); box-shadow:0 0 5px rgba(93,190,93,.85); }
+/* Traceur d'attaque (trait attaquant → cible) */
+.cmap-tracer{ position:absolute; height:3px; transform-origin:0 50%; z-index:6; pointer-events:none; border-radius:2px;
+  background:linear-gradient(90deg, rgba(232,168,32,.4), var(--am)); box-shadow:0 0 7px rgba(232,168,32,.9);
+  animation:cmapTracer .75s ease-out forwards; }
+.cmap-tracer.miss{ background:linear-gradient(90deg, rgba(190,190,190,.25), #bcbcbc); box-shadow:0 0 5px rgba(200,200,200,.7); }
+@keyframes cmapTracer{ 0%{opacity:0} 12%{opacity:1} 55%{opacity:1} 100%{opacity:0} }

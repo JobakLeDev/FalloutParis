@@ -154,6 +154,8 @@ function deverrouiller(){
           }
         }
       }
+      // Traceur visuel : trait du jeton attaquant vers sa cible (après re-render)
+      setTimeout(() => fpFireTracer('#combat-map .cmap', combatMap, 32, r.joueur, 'E'+r.cibleId, !!r.miss), 40);
     }
     // Résultat d'une action à effet (Defend / Rally / First Aid / Test / Assist / Command NPC / Pass…)
     if(data.actionResult && data.actionResult.ts > lastActionResultTs){
