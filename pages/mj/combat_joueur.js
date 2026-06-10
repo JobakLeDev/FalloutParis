@@ -70,6 +70,21 @@ let cibleAttaque = '';        // nom de l'ennemi ciblé (sélecteur)
 const AIM_ZONES = ['', 'Tête', 'Torse', 'Bras G.', 'Bras D.', 'Jambe G.', 'Jambe D.'];  // '' = zone non ciblée
 let lastAttackResultTs = 0;   // dédup notification résultat attaque
 let lastFxTs = 0;             // dédup traceur/clignotement (fxAttack)
+let _finSfxDone = false;      // sons de fin de combat (XP / niveau) joués une seule fois
+
+// Joue un son de SFX (respecte le mute global, contourne le blocage autoplay au 1er geste)
+function _combatSfx(file, delay){
+  try{ if(localStorage.getItem('fp_sfxMuted') === '1') return; }catch(e){}
+  setTimeout(() => {
+    try{
+      const a = new Audio('../../audio/sfx/' + file); a.volume = 0.6;
+      a.play().catch(() => {
+        const g = () => { a.play().catch(()=>{}); document.removeEventListener('pointerdown',g); document.removeEventListener('keydown',g); };
+        document.addEventListener('pointerdown', g); document.addEventListener('keydown', g);
+      });
+    }catch(e){}
+  }, delay || 0);
+}
 let actionState = null;       // extrait de combatState.actionsDeclarees[joueurId]
 let selectedActionDraft = null; // {category, type, desc} — action en cours de saisie
 let myAim = null;            // {cible, zone} — visée déclarée ce tour (Attack/Aim) ; zone '' = non visée
@@ -162,6 +177,7 @@ function initJoueur(){
       return;
     }
     combatState = data;
+    _finSfxDone = false;   // un nouveau combat actif → rejouer les sons à la prochaine fin
     actionState = combatState?.actionsDeclarees?.[joueurId] || null;
     hide('attente'); show('combat-actif'); hide('combat-termine');
     renderCombatJoueur();
@@ -273,6 +289,17 @@ function renderCombatTermine(data){
   html += '</div></div>';
 
   el.innerHTML = html;
+
+  // Sons de fin de combat : XP gagnée et/ou montée de niveau (joués une seule fois)
+  if(!_finSfxDone){
+    _finSfxDone = true;
+    const curXp = joueurData?.xp || 0, curLvl = joueurData?.niveau || 1;
+    let simLvl = curLvl, simXp = curXp + xpTotal;
+    while(simLvl < 20 && simXp >= (XP_TABLE[Math.min(simLvl, 20)] || 21000)) simLvl++;
+    const leveledUp = simLvl > curLvl;
+    if(xpTotal > 0) _combatSfx('xp_up_sfx.mp3', 300);
+    if(leveledUp)   _combatSfx('lvl_up_sfx.mp3', xpTotal > 0 ? 1100 : 300);
+  }
 }
 
 function renderCombatJoueur(){
