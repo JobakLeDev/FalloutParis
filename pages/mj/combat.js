@@ -876,9 +876,9 @@ function renderAllies(){
     const pct = a.pvMax ? Math.round(a.pvCur/a.pvMax*100) : 0;
     const bc = pct<30?'var(--rd)':pct<60?'var(--am)':'var(--g)';
     const isTourActif = ordreInitiative.length && ordreInitiative[tourActif]?.aid===a.id;
-    el.innerHTML += `<div class="jc-card allie${a.pvCur<=0?' dead':''}${isTourActif?' tour-actif':''}${_mapSel==='A'+a.id?' mapsel-card':''}" data-tokid="A${a.id}">
+    el.innerHTML += `<div class="jc-card allie${a.pvCur<=0?' dead':''}${isTourActif?' tour-actif':''}${_mapSel==='A'+a.id?' mapsel-card':''}${_collapsedCards.has('A'+a.id)?' collapsed':''}" data-tokid="A${a.id}">
       <div class="jc-top">
-        <span class="jc-name">🐾 ${isTourActif?'▶ ':''}${a.nom}</span>
+        <span class="jc-name">${_collapseBtn('A'+a.id)}🐾 ${isTourActif?'▶ ':''}${a.nom}</span>
         <span class="jc-init" title="Agit avec ${a.ownerNom}" style="font-size:8px;color:var(--td)">↳ ${a.ownerNom}</span>
       </div>
       <div class="jc-bar"><div style="width:${pct}%;height:100%;background:${bc}"></div></div>
@@ -900,6 +900,16 @@ function renderAllies(){
 
 // getHpMax, getTN définis dans mj_shared.js
 
+// Cartes repliées (réduites au nom) sur l'écran MJ — clé = tokid (id joueur / 'A'+allié / 'E'+ennemi)
+const _collapsedCards = new Set();
+function toggleCardCollapse(tid, ev){
+  if(ev) ev.stopPropagation();
+  if(_collapsedCards.has(tid)) _collapsedCards.delete(tid); else _collapsedCards.add(tid);
+  renderJoueursCombat(); if(typeof renderAllies==='function') renderAllies(); renderEnnemis();
+}
+function _collapseBtn(tid){
+  return '<button class="card-collapse-btn" onclick="toggleCardCollapse(\''+tid+'\',event)" title="Réduire / agrandir">'+(_collapsedCards.has(tid)?'▸':'▾')+'</button>';
+}
 function renderJoueursCombat(){
   const el = document.getElementById('joueurs-combat'); el.innerHTML='';
   const ids = Object.keys(combattants);
@@ -915,9 +925,9 @@ function renderJoueursCombat(){
     const weapsEq = (d.inventory||[]).filter(it=>it.equipped&&it.type==='WEAPON');
     const rad = d.rad||0;
 
-    el.innerHTML += `<div class="jc-card${isActif?' actif':''}${isTourActif?' tour-actif':''}${_mapSel===id?' mapsel-card':''}" data-tokid="${id}" onclick="setActif('${id}')">
+    el.innerHTML += `<div class="jc-card${isActif?' actif':''}${isTourActif?' tour-actif':''}${_mapSel===id?' mapsel-card':''}${_collapsedCards.has(id)?' collapsed':''}" data-tokid="${id}" onclick="setActif('${id}')">
       <div class="jc-top">
-        <span class="jc-name">${isTourActif?'▶ ':''}${(d.nom||id).toUpperCase()}${defenseBonus[id]>0?` <span style="color:var(--g);font-size:9px" title="Bonus de Défense (Defend)">🛡+${defenseBonus[id]}</span>`:''}</span>
+        <span class="jc-name">${_collapseBtn(id)}${isTourActif?'▶ ':''}${(d.nom||id).toUpperCase()}${defenseBonus[id]>0?` <span style="color:var(--g);font-size:9px" title="Bonus de Défense (Defend)">🛡+${defenseBonus[id]}</span>`:''}</span>
         <span class="jc-init">${initiative!==null?initiative:'—'}</span>
       </div>
       <div class="jc-bar"><div style="width:${pct}%;height:100%;background:${barColor}"></div></div>
@@ -955,9 +965,9 @@ function renderEnnemis(){
     const pct = Math.round(e.pvCur/e.pvMax*100);
     const bc = pct<30?'var(--rd)':pct<60?'var(--am)':'var(--g)';
     const isTourActif = ordreInitiative.length && ordreInitiative[tourActif]?.eid===e.id;
-    el.innerHTML += `<div class="ennemi-card${e.pvCur<=0?' dead':''}${isTourActif?' tour-actif':''}${_mapSel==='E'+e.id?' mapsel-card':''}" data-tokid="E${e.id}">
+    el.innerHTML += `<div class="ennemi-card${e.pvCur<=0?' dead':''}${isTourActif?' tour-actif':''}${_mapSel==='E'+e.id?' mapsel-card':''}${_collapsedCards.has('E'+e.id)?' collapsed':''}" data-tokid="E${e.id}">
       <div class="jc-top">
-        <span class="ennemi-name">${isTourActif?'▶ ':''}${e.nom}</span>
+        <span class="ennemi-name">${_collapseBtn('E'+e.id)}${isTourActif?'▶ ':''}${e.nom}</span>
         <div style="display:flex;gap:4px;align-items:center">
           <span class="jc-init">${e.initiative!==null?e.initiative:'—'}</span>
           <button class="e-del" style="border-color:${e.hidden?'var(--am)':'var(--b2)'};color:${e.hidden?'var(--am)':'var(--td)'}" onclick="toggleEnemyHidden(${e.id})" title="${e.hidden?'Masqué aux joueurs — cliquer pour révéler':'Visible — cliquer pour masquer'}">${e.hidden?'🙈':'👁'}</button>

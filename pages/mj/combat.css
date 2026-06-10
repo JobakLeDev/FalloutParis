@@ -60,6 +60,12 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .jc-card:hover{border-color:var(--b2);}
 .jc-card.actif{border-color:var(--g);background:#0a180a;}
 .jc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+/* Repli des cartes combattants (MJ) : ne garder que la ligne du nom */
+.card-collapse-btn{background:none;border:none;color:var(--td);cursor:pointer;font-size:9px;padding:0 4px 0 0;line-height:1;vertical-align:middle;}
+.card-collapse-btn:hover{color:var(--t);}
+.jc-card.collapsed,.ennemi-card.collapsed{padding-top:5px;padding-bottom:5px;}
+.jc-card.collapsed>:not(.jc-top),.ennemi-card.collapsed>:not(.jc-top){display:none;}
+.jc-card.collapsed .jc-top,.ennemi-card.collapsed .jc-top{margin-bottom:0;}
 .jc-name{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;color:var(--tb);}
 .ennemi-name{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:1px;color:#e07070;}
 .jc-init{font-family:'Oswald',sans-serif;font-size:14px;color:var(--am);}
