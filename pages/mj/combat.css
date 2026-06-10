@@ -269,8 +269,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 /* Porte ouverte : le battant pivote de 90° autour de son gond */
 .cedge.e-doorOpen{ background:var(--am); opacity:.85; border-radius:2px; box-shadow:0 0 5px rgba(232,168,32,.7);
   transition:transform .25s ease; }
-.cedge-v.e-doorOpen{ transform-origin:50% 0; transform:rotate(-90deg); }
-.cedge-h.e-doorOpen{ transform-origin:0 50%; transform:rotate(90deg); }
+/* Gonds — V : haut/bas ; H : gauche/droite. Deux portes adjacentes prennent des gonds opposés → ouverture large */
+.cedge-v.e-doorOpen.dh-top{ transform-origin:50% 0;    transform:rotate(-90deg); }
+.cedge-v.e-doorOpen.dh-bot{ transform-origin:50% 100%; transform:rotate(-90deg); }
+.cedge-h.e-doorOpen.dh-left{  transform-origin:0 50%;   transform:rotate(90deg); }
+.cedge-h.e-doorOpen.dh-right{ transform-origin:100% 50%; transform:rotate(90deg); }
 /* Zone cliquable pour ouvrir/fermer une porte adjacente */
 .cdoor-hot{ position:absolute; z-index:7; cursor:pointer; pointer-events:auto;
   background:rgba(232,168,32,.12); border:1px solid rgba(232,168,32,.5); border-radius:2px; }

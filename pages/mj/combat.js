@@ -74,6 +74,14 @@ function deverrouiller(){
     }
     if(data.assistDie) _assistDie = data.assistDie;
     if(data.defenseBonus) defenseBonus = data.defenseBonus;
+    // Positions des jetons : les joueurs déplacent les leurs de leur côté → réintégrer pour ne pas les écraser au prochain sync
+    if(data.grid && combatMap){
+      const incoming = JSON.stringify(data.grid.pos || {});
+      if(incoming !== JSON.stringify(combatMap.pos || {})){
+        combatMap.pos = data.grid.pos || {};
+        if(typeof renderCombatMap === 'function') renderCombatMap();
+      }
+    }
     // Notification info joueur
     if(data.infoRequest && data.infoRequest.ts > lastInfoRequestTs) {
       lastInfoRequestTs = data.infoRequest.ts;
@@ -702,6 +710,14 @@ function genCombatMap(){
   addLog('🗺 Carte de combat générée');
 }
 function clearCombatMap(){ combatMap = null; _mapSel = null; _blockSel = null; _edgeSel = null; renderCombat(); syncCombatToFirebase(); }
+// Force la carte du MJ chez les joueurs — update (remplace tout le champ grid, donc supprime aussi les arêtes effacées que `set merge` laissait)
+async function pushMapToPlayers(){
+  if(!db || !currentCombatId){ return; }
+  try {
+    await db.collection(COMBATS_COLL).doc(currentCombatId).update({ grid: combatMap || null, lastUpdate: Date.now() });
+    addLog('🔄 Carte resynchronisée chez les joueurs.');
+  } catch(e){ console.error('pushMapToPlayers:', e); }
+}
 function setBlockBrush(id){ _blockSel = (_blockSel===id ? null : id); _mapSel = null; _edgeSel = null; renderCombatMap(); }
 function setEdgeBrush(id){ _edgeSel = (_edgeSel===id ? null : id); _mapSel = null; _blockSel = null; renderCombatMap(); }
 function edgeClick(o, x, y){

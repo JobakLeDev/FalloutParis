@@ -155,10 +155,19 @@ function gridEdgesHtml(grid, cs){
   const pad = 5, gap = 1, pitch = cs + gap; const E = grid.edges || {}; let h = '';
   const isWall = (o,x,y)=> E[o+','+x+','+y] === 'wall';
   // Segments — étendus de `gap` à chaque extrémité pour se rejoindre aux sommets (lignes continues)
+  const isDoorK = k => E[k] === 'door' || E[k] === 'doorOpen';
   for(const key in E){
     const p = key.split(','); const o = p[0], x = +p[1], y = +p[2], type = E[key];
-    if(o === 'V') h += '<div class="cedge cedge-v e-'+type+'" style="left:'+(pad+x*pitch-gap)+'px;top:'+(pad+y*pitch-gap)+'px;height:'+(cs+2*gap)+'px"></div>';
-    else          h += '<div class="cedge cedge-h e-'+type+'" style="top:'+(pad+y*pitch-gap)+'px;left:'+(pad+x*pitch-gap)+'px;width:'+(cs+2*gap)+'px"></div>';
+    // Porte ouverte : gond choisi pour que deux portes côte à côte s'ouvrent sur des gonds OPPOSÉS (ouverture large)
+    let hinge = '';
+    if(type === 'doorOpen'){
+      if(o === 'V'){ const up = isDoorK('V,'+x+','+(y-1)), down = isDoorK('V,'+x+','+(y+1));
+        hinge = ' ' + ((up && !down) ? 'dh-bot' : 'dh-top'); }
+      else { const left = isDoorK('H,'+(x-1)+','+y), right = isDoorK('H,'+(x+1)+','+y);
+        hinge = ' ' + ((left && !right) ? 'dh-right' : 'dh-left'); }
+    }
+    if(o === 'V') h += '<div class="cedge cedge-v e-'+type+hinge+'" style="left:'+(pad+x*pitch-gap)+'px;top:'+(pad+y*pitch-gap)+'px;height:'+(cs+2*gap)+'px"></div>';
+    else          h += '<div class="cedge cedge-h e-'+type+hinge+'" style="top:'+(pad+y*pitch-gap)+'px;left:'+(pad+x*pitch-gap)+'px;width:'+(cs+2*gap)+'px"></div>';
   }
   // Arrondi des angles simples (L) : un sommet où exactement 1 mur vertical + 1 mur horizontal se rejoignent.
   // Les angles droits complets, les T et les croix (≥3 segments, ou 2 colinéaires) ne sont PAS arrondis.
