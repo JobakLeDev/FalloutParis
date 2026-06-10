@@ -70,6 +70,7 @@ let cibleAttaque = '';        // nom de l'ennemi ciblé (sélecteur)
 const AIM_ZONES = ['', 'Tête', 'Torse', 'Bras G.', 'Bras D.', 'Jambe G.', 'Jambe D.'];  // '' = zone non ciblée
 let lastAttackResultTs = 0;   // dédup notification résultat attaque
 let lastFxTs = 0;             // dédup traceur/clignotement (fxAttack)
+let _fxSeeded = false;        // au 1er snapshot : on adopte les ts existants sans rejouer (évite le son/flash au rechargement)
 let _diceDismissed = false;  // popup « Mes jets » fermé manuellement (bouton OK)
 let _lastSeenValidated = 0;  // nb d'attaques validées déjà vues (pour ré-ouvrir le popup à chaque nouvelle attaque)
 // Ferme le popup de jets d'attaque (bouton OK) jusqu'à la prochaine attaque validée
@@ -175,6 +176,8 @@ function initJoueur(){
       return;
     }
     const data = snap.data();
+    // 1er snapshot : adopter les ts déjà présents dans le doc sans rejouer les effets (sinon son/flash au rechargement)
+    if(!_fxSeeded){ _fxSeeded = true; lastFxTs = data.fxAttack?.ts || 0; lastAttackResultTs = Math.max(lastAttackResultTs, data.attackResult?.ts || 0); }
     if(!data.actif){
       // Combat terminé (pas "en attente") — afficher l'écran de fin
       combatState = data;
@@ -680,7 +683,7 @@ function resolveMissJ(){
   }
   const mf=document.getElementById('j-miss-fortune'); if(mf){ mf.style.display='none'; mf.innerHTML=''; }
   const arEl=document.getElementById('j-attack-result');
-  if(arEl){ arEl.style.display='block'; arEl.innerHTML='<div style="font-size:9px;color:var(--rd);padding:4px 6px;border:1px solid var(--rd);background:var(--rdk)">✗ Attaque ratée — aucun dégât</div>'; }
+  if(arEl){ arEl.style.display='block'; arEl.innerHTML='<div class="miss-box" style="font-size:9px;color:var(--rd);padding:4px 6px;border:1px solid var(--rd);background:var(--rdk)">✗ Attaque ratée — aucun dégât</div>'; }
   renderDiceAccess();
   if(typeof renderJMap==='function') renderJMap();
 }
@@ -1122,7 +1125,7 @@ async function jLancer2D20(){
     // Échec : pas de dégâts pour l'instant. Le joueur peut relancer un dé (Miss Fortune) ou confirmer le ratage.
     const arEl = document.getElementById('j-attack-result');
     if(arEl){ arEl.style.display='block'; arEl.innerHTML =
-      '<div style="font-size:9px;color:var(--rd);padding:4px 6px;border:1px solid var(--rd);background:var(--rdk)">'
+      '<div class="miss-box" style="font-size:9px;color:var(--rd);padding:4px 6px;border:1px solid var(--rd);background:var(--rdk)">'
       + '✗ Échec — relance un dé (🎯 Aim / 🍀 Miss Fortune ci-dessus) ou '
       + '<button onclick="resolveMissJ()" style="background:none;border:1px solid var(--rd);color:var(--rd);font-family:monospace;font-size:8px;padding:1px 6px;cursor:pointer;margin-left:4px">Confirmer le ratage</button></div>'; }
   }
@@ -1782,6 +1785,9 @@ function renderDiceAccess(){
   if(av > _lastSeenValidated){ _lastSeenValidated = av; _diceDismissed = false; }
   const showPanel = isMoTour && !turnEnded && (attackReady || attacksDone > 0) && !_diceDismissed;
   if(panel) panel.style.display = showPanel ? '' : 'none';
+  // Filet : si l'attaque n'est plus ratée (relance Aim/Miss Fortune réussie), faire disparaître le message d'échec
+  const arBox = document.getElementById('j-attack-result');
+  if(arBox && !lastAttackMissed && arBox.querySelector('.miss-box')){ arBox.style.display='none'; arBox.innerHTML=''; }
   // Bouton OK (fermer le popup) : visible une fois le jet effectué / l'attaque résolue
   const closeWrap = document.getElementById('j-dice-close-wrap');
   if(closeWrap) closeWrap.style.display = (showPanel && ((twoD20Done === attacksDone) || attacksDone > 0)) ? 'block' : 'none';

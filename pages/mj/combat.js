@@ -31,6 +31,7 @@ let lastLuckDrawTs = 0;
 let lastAttackResultTs = 0;
 let lastFxTs = 0;               // dédup traceur/clignotement (fxAttack)
 let lastStrangerTs = 0;         // dédup appel Étranger Mystérieux
+let _fxSeeded = false;          // 1er snapshot : adopter les ts existants sans rejouer (évite son/flash/dégâts au rechargement)
 let lastTurnDoneTs = {};        // {joueurId: ts} — dernier "Terminer mon tour" traité (avance auto sans validation MJ)
 let _turnDoneSeeded = false;    // au 1er snapshot, on enregistre les turnDone existants sans avancer
 let lastActionResultTs = 0;     // dernier résultat d'action à effet (Defend/Rally/First Aid…) journalisé
@@ -68,6 +69,12 @@ function deverrouiller(){
   db.collection(COMBATS_COLL).doc(currentCombatId).onSnapshot(snap => {
     if(!snap.exists) return;
     const data = snap.data();
+    // 1er snapshot : adopter les ts déjà présents (fx/stranger/attaque) sans rejouer effets/son/dégâts au rechargement de l'écran
+    if(!_fxSeeded){ _fxSeeded = true;
+      lastFxTs = data.fxAttack?.ts || 0;
+      lastStrangerTs = data.strangerReq?.ts || 0;
+      lastAttackResultTs = Math.max(lastAttackResultTs, data.attackResult?.ts || 0);
+    }
     if(data.apPool !== undefined && data.apPool !== apPool) {
       apPool = data.apPool; renderAPPool();
     }
