@@ -51,15 +51,15 @@
 /* Layout interne des dés — vertical et aéré */
 .bottom-des { border-color: var(--b2); }
 #j-dice-panel .pnl-title, #j-action-exec .pnl-title { color: var(--am); }
-/* Jets d'attaque : popup flottant par-dessus les actions, fond à peine assombri (box-shadow = backdrop) */
+/* Jets d'attaque : popup flottant ANCRÉ par-dessus le bloc d'actions — la carte (au-dessus) reste visible, pas de voile plein écran */
 #j-dice-panel{
-  position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
-  width:min(430px,94vw); max-height:86vh; overflow:auto; z-index:140; margin:0;
+  position:absolute; left:50%; top:-4px; transform:translateX(-50%);
+  width:calc(100% + 10px); max-width:440px; max-height:70vh; overflow:auto; z-index:60; margin:0;
   border:1px solid var(--g); border-radius:6px; background:var(--p2);
-  box-shadow:0 0 0 100vmax rgba(4,9,5,.40), 0 12px 40px rgba(0,0,0,.65);
+  box-shadow:0 10px 34px rgba(0,0,0,.72), 0 0 0 1px rgba(93,190,93,.35), 0 0 18px rgba(93,190,93,.25);
   animation:jDicePop .14s ease-out;
 }
-@keyframes jDicePop{ from{ opacity:0; transform:translate(-50%,-46%) scale(.97); } to{ opacity:1; transform:translate(-50%,-50%) scale(1); } }
+@keyframes jDicePop{ from{ opacity:0; transform:translateX(-50%) translateY(-6px) scale(.97); } to{ opacity:1; transform:translateX(-50%) translateY(0) scale(1); } }
 #j-dice-panel .pnl-title{ position:sticky; top:0; background:var(--p2); padding-bottom:4px; }
 .des-inner { display: flex; flex-direction: column; gap: 8px; }
 .des-ctx   { width: 100%; padding: 5px 8px; background: #081308; border: 1px solid var(--b2); border-left: 3px solid var(--am); font-size: 9px; color: var(--tb); letter-spacing: .5px; }

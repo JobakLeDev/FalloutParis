@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css">
   <link rel="stylesheet" href="combat.css?v=24">
-  <link rel="stylesheet" href="combat_joueur.css?v=14">
+  <link rel="stylesheet" href="combat_joueur.css?v=15">
   <link rel="stylesheet" href="../../common/zoom.css?v=2">
 </head>
 <body>
@@ -70,9 +70,8 @@
           <div class="pnl-title">Mes actions</div>
           <div id="j-actions"><span class="empty">—</span></div>
           <div id="j-actions-decl" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid var(--b)"></div>
-        </div>
 
-        <!-- DÉS (masqué tant que l'attaque n'est pas validée) -->
+        <!-- DÉS : popup flottant ANCRÉ par-dessus le bloc d'actions (la carte reste visible) -->
         <div class="pnl bottom-des" id="j-dice-panel" style="display:none">
           <div class="pnl-title">Mes jets</div>
           <div class="des-inner">
@@ -113,6 +112,7 @@
             <div id="j-attack-result" style="display:none;margin-top:5px"></div>
           </div>
         </div>
+        </div><!-- /bottom-actions -->
 
         <!-- (Exécution d'action — Se déplacer/Defend/… — rendue inline dans « Mes actions » : mineure entre min/maj, majeure sous les majeures) -->
 
