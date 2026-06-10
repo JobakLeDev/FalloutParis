@@ -254,10 +254,11 @@ function fpEnemyImg(nom){
 function fpEnemyTokenHtml(nom, opts){
   opts = opts || {};
   const cls = (opts.dead?' dead':'') + (opts.hidden?' hidden':'') + (opts.glow?' turn-glow':'');
-  if(opts.hidden) return '<span class="cen'+cls+'">🙈</span>';
+  const rot = opts.rot ? ' style="transform:rotate('+opts.rot+'deg)"' : '';
+  if(opts.hidden) return '<span class="cen'+cls+'"'+rot+'>🙈</span>';
   const file = fpEnemyImg(nom);
-  if(file) return '<img class="cen-img'+cls+'" src="../../img/tokens/'+file+'.png" alt="">';
-  return '<span class="cen'+cls+'">☠</span>';
+  if(file) return '<img class="cen-img'+cls+'"'+rot+' src="../../img/tokens/'+file+'.png" alt="">';
+  return '<span class="cen'+cls+'"'+rot+'>☠</span>';
 }
 // Clignotement « prend des dégâts » (style NES) sur le jeton ciblé
 function fpFlashToken(mapSelector, grid, cs, tokId){

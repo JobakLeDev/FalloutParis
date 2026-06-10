@@ -390,8 +390,10 @@ function renderJMap(){
     let inner;
     if(t){
       const glow = (t.id===activeTok && !t.dead) ? ' turn-glow' : '';
-      if(t.kind==='ennemi') inner = fpEnemyTokenHtml(t.nom, { dead:t.dead, glow:(t.id===activeTok && !t.dead) });
-      else inner = '<span class="ctok '+(t.kind==='joueur'?'ctok-j':'ctok-a')+(t.dead?' dead':'')+glow+(t.me?' me-ring':'')+'">'+((t.nom||'?').charAt(0).toUpperCase())+'</span>';
+      const rot = (grid.rot && grid.rot[t.id]) || 0;
+      const rotStyle = rot ? ' style="transform:rotate('+rot+'deg)"' : '';
+      if(t.kind==='ennemi') inner = fpEnemyTokenHtml(t.nom, { dead:t.dead, glow:(t.id===activeTok && !t.dead), rot });
+      else inner = '<span class="ctok '+(t.kind==='joueur'?'ctok-j':'ctok-a')+(t.dead?' dead':'')+glow+(t.me?' me-ring':'')+'"'+rotStyle+'>'+((t.nom||'?').charAt(0).toUpperCase())+'</span>';
     } else inner = (bt?bt.icon:'');
     if(reach && reach[key]!=null && !t) inner += '<span class="snap-dot"></span>';   // point d'accroche souris
     const eAttr = (t && t.kind==='ennemi') ? ` data-eid="${t.id.slice(1)}"` : '';

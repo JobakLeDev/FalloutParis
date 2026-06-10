@@ -781,6 +781,13 @@ function recomputeBandsFromMap(){
   });
 }
 function mapPickToken(id){ _mapSel = (_mapSel===id ? null : id); _blockSel = null; renderCombatMap(); }
+// Rotation d'un jeton par paliers de 90° (persiste dans la grille → visible côté joueurs)
+function rotateMapToken(tid, delta){
+  if(!combatMap) return;
+  combatMap.rot = combatMap.rot || {};
+  combatMap.rot[tid] = ((((combatMap.rot[tid]||0) + delta) % 360) + 360) % 360;
+  renderCombatMap(); syncCombatToFirebase();
+}
 function mapCellClick(x, y){
   if(!combatMap) return;
   combatMap.terrain = combatMap.terrain || {};
@@ -854,8 +861,10 @@ function renderCombatMap(){
     let inner;
     if(t){
       const glow = (tid===activeTok && !t.dead) ? ' turn-glow' : '';
-      if(t.kind==='ennemi') inner = fpEnemyTokenHtml(t.nom, { dead:t.dead, hidden:t.hidden, glow:(tid===activeTok && !t.dead) });
-      else inner = '<span class="ctok '+(t.kind==='joueur'?'ctok-j':'ctok-a')+(t.dead?' dead':'')+glow+'">'+((t.nom||'?').charAt(0).toUpperCase())+'</span>';
+      const rot = (combatMap.rot && combatMap.rot[tid]) || 0;
+      const rotStyle = rot ? ' style="transform:rotate('+rot+'deg)"' : '';
+      if(t.kind==='ennemi') inner = fpEnemyTokenHtml(t.nom, { dead:t.dead, hidden:t.hidden, glow:(tid===activeTok && !t.dead), rot });
+      else inner = '<span class="ctok '+(t.kind==='joueur'?'ctok-j':'ctok-a')+(t.dead?' dead':'')+glow+'"'+rotStyle+'>'+((t.nom||'?').charAt(0).toUpperCase())+'</span>';
     } else inner = (bt?bt.icon:'');
     const eAttr = (t && t.kind==='ennemi') ? ` data-eid="${t.id.slice(1)}"` : '';
     const onclick = t ? `mapPickToken('${tid}')` : `mapCellClick(${x},${y})`;
@@ -884,6 +893,10 @@ function mapSideMenu(){
   } else {
     btns += '<div class="cmap-side-note">Clique une case libre pour déplacer ce jeton.</div>';
   }
+  btns += '<div class="cmap-side-rot">'
+    + '<button class="cmap-side-btn" onclick="rotateMapToken(\''+_mapSel+'\',-90)" title="Pivoter à gauche">⟲ 90°</button>'
+    + '<button class="cmap-side-btn" onclick="rotateMapToken(\''+_mapSel+'\',90)" title="Pivoter à droite">⟳ 90°</button>'
+    + '</div>';
   btns += '<button class="cmap-side-btn alt" onclick="mapPickToken(\''+_mapSel+'\')">✕ Désélectionner</button>';
   return '<div class="cmap-side"><div class="cmap-side-h">'+ic+' '+t.nom+'</div>'+btns+'</div>';
 }

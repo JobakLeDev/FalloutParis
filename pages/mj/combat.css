@@ -251,11 +251,15 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   box-shadow:0 0 4px rgba(93,190,93,.35); }
 .cen{ z-index:2; color:#ff8f8f; font-size:calc(var(--cs,22px)*0.66); line-height:1;
   text-shadow:0 0 6px rgba(224,64,64,.75); }
-/* Jeton ennemi en image détourée (battlemap) */
-.cen-img{ z-index:2; width:calc(var(--cs,22px) - 1px); height:calc(var(--cs,22px) - 1px); object-fit:contain;
-  filter:drop-shadow(0 0 2px rgba(224,64,64,.55)); pointer-events:none; }
+/* Jeton ennemi en image détourée (battlemap) — léger liseré rouge (= ennemi) suivant la silhouette */
+.cen-img{ z-index:2; width:calc(var(--cs,22px) - 1px); height:calc(var(--cs,22px) - 1px); object-fit:contain; pointer-events:none;
+  filter:drop-shadow(1px 0 0 var(--rd)) drop-shadow(-1px 0 0 var(--rd)) drop-shadow(0 1px 0 var(--rd)) drop-shadow(0 -1px 0 var(--rd)); }
 .cen-img.dead{ opacity:.4; filter:grayscale(.7); }
-.cen-img.turn-glow{ filter:drop-shadow(0 0 5px rgba(232,168,32,.95)); animation:tokTurnGlow 1.15s ease-in-out infinite; }
+.cen-img.turn-glow{ animation:cenTurnGlow 1.15s ease-in-out infinite; }
+@keyframes cenTurnGlow{
+  0%,100%{ filter:drop-shadow(1px 0 0 var(--rd)) drop-shadow(-1px 0 0 var(--rd)) drop-shadow(0 1px 0 var(--rd)) drop-shadow(0 -1px 0 var(--rd)) drop-shadow(0 0 3px var(--am)); }
+  50%{   filter:drop-shadow(1px 0 0 var(--rd)) drop-shadow(-1px 0 0 var(--rd)) drop-shadow(0 1px 0 var(--rd)) drop-shadow(0 -1px 0 var(--rd)) drop-shadow(0 0 9px var(--am)); }
+}
 .ctok.dead,.cen.dead{ opacity:.4; filter:grayscale(.6); }
 .cen.hidden{ opacity:.55; filter:grayscale(.4); }
 /* Halo « c'est son tour » sur le jeton actif de la carte */
@@ -294,6 +298,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .cmap-side-btn.alt{ border-color:var(--b2); color:var(--td); }
 .cmap-side-btn.alt:hover{ border-color:var(--am); color:var(--am); }
 .cmap-side-note{ font-size:8px; color:var(--td); line-height:1.35; }
+.cmap-side-rot{ display:flex; gap:5px; }
+.cmap-side-rot .cmap-side-btn{ flex:1; padding:6px 2px; }
 /* Indicateur « sélectionné sur la carte » sur la carte du combattant */
 .mapsel-card{ position:relative; outline:2px solid var(--am); outline-offset:1px; box-shadow:0 0 10px rgba(232,168,32,.45); }
 .mapsel-card::after{ content:'📍'; position:absolute; top:2px; right:3px; font-size:10px; z-index:3;
