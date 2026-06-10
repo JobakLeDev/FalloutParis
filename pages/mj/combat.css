@@ -250,8 +250,29 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .cmap-cell.sel{ box-shadow:0 0 0 2px var(--am) inset,0 0 8px rgba(232,168,32,.7); }
 .cmap-cell.reach{ box-shadow:0 0 0 1px var(--g) inset,0 0 6px rgba(93,190,93,.5); animation:cmapReach 1.2s ease-in-out infinite; }
 @keyframes cmapReach{ 0%,100%{box-shadow:0 0 0 1px var(--g) inset,0 0 4px rgba(93,190,93,.35);} 50%{box-shadow:0 0 0 1px var(--g) inset,0 0 9px rgba(93,190,93,.7);} }
-/* Palette de pinceaux (MJ) */
-.cmap-palette{ display:flex; gap:3px; flex-wrap:wrap; margin-bottom:5px; justify-content:center; }
+/* Palette de pinceaux (MJ) — deux catégories (blocs / arêtes) sur une ligne, chacune dans un cadre léger */
+.cmap-palette{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:5px; justify-content:center; align-items:center; }
+.cmap-pgroup{ display:flex; gap:2px; padding:2px; background:#0a160d; border:1px solid var(--b); border-radius:4px; }
+#combat-map{ text-align:center; }
+/* Wrapper relatif : le menu latéral se positionne à droite SANS décaler la carte */
+.cmap-wrap{ position:relative; display:inline-block; margin:0 auto; }
+.cmap-wrap .cmap{ margin:0; }
+/* Bandeau vertical à droite (jeton sélectionné) */
+.cmap-side{ position:absolute; top:0; left:100%; margin-left:8px; width:132px; z-index:8;
+  display:flex; flex-direction:column; gap:5px; padding:7px 6px; text-align:left;
+  background:#0a160d; border:1px solid var(--b2); border-radius:5px; box-shadow:0 0 10px rgba(0,0,0,.55); }
+.cmap-side-h{ font-family:'Oswald',sans-serif; font-size:10px; color:var(--tb); letter-spacing:1px;
+  border-bottom:1px solid var(--b); padding-bottom:4px; word-break:break-word; }
+.cmap-side-btn{ background:#13251a; border:1px solid var(--g); color:var(--t); font-family:'Share Tech Mono',monospace;
+  font-size:9px; padding:6px; cursor:pointer; border-radius:3px; text-align:center; }
+.cmap-side-btn:hover{ background:var(--gk); color:var(--tb); }
+.cmap-side-btn.alt{ border-color:var(--b2); color:var(--td); }
+.cmap-side-btn.alt:hover{ border-color:var(--am); color:var(--am); }
+.cmap-side-note{ font-size:8px; color:var(--td); line-height:1.35; }
+/* Indicateur « sélectionné sur la carte » sur la carte du combattant */
+.mapsel-card{ position:relative; outline:2px solid var(--am); outline-offset:1px; box-shadow:0 0 10px rgba(232,168,32,.45); }
+.mapsel-card::after{ content:'📍'; position:absolute; top:2px; right:3px; font-size:10px; z-index:3;
+  filter:drop-shadow(0 0 3px rgba(232,168,32,.9)); }
 .cmap-brush{ width:26px; height:24px; background:#060d06; border:1px solid var(--b2); color:var(--t);
   font-family:'Share Tech Mono',monospace; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
 .cmap-brush:hover{ border-color:var(--g); }

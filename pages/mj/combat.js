@@ -803,19 +803,20 @@ function renderCombatMap(){
   const { w, h } = combatMap;
   const toks = _mapTokens();
   const byPos = {}; Object.keys(combatMap.pos).forEach(id => { const p=combatMap.pos[id]; byPos[p.x+','+p.y]=id; });
-  // Palette de blocs (MJ)
-  let pal = '<div class="cmap-palette">'
-    + '<button class="cmap-brush'+(!_blockSel&&!_mapSel?' on':'')+'" onclick="setBlockBrush(null)" title="Déplacer les jetons">✋</button>';
+  // Palette MJ — deux catégories (blocs / arêtes) sur une seule ligne, chacune dans un cadre léger sans titre
+  let pal = '<div class="cmap-palette">';
+  pal += '<div class="cmap-pgroup">'
+    + '<button class="cmap-brush'+(!_blockSel&&!_edgeSel&&!_mapSel?' on':'')+'" onclick="setBlockBrush(null)" title="Déplacer les jetons">✋</button>';
   BLOCK_TYPES.forEach(b => pal += '<button class="cmap-brush b-'+b.id+(_blockSel===b.id?' on':'')+'" onclick="setBlockBrush(\''+b.id+'\')" title="'+b.label+'">'+b.icon+'</button>');
   pal += '<button class="cmap-brush'+(_blockSel==='erase'?' on':'')+'" onclick="setBlockBrush(\'erase\')" title="Effacer le terrain">⌫</button>';
   pal += '</div>';
-  // Palette 2 : lignes d'arête (murs/portes/fenêtres)
-  pal += '<div class="cmap-palette">';
+  pal += '<div class="cmap-pgroup">';
   EDGE_TYPES.forEach(b => pal += '<button class="cmap-brush ce-'+b.id+(_edgeSel===b.id?' on':'')+'" onclick="setEdgeBrush(\''+b.id+'\')" title="Ligne : '+b.label+'">'+b.icon+'</button>');
   pal += '<button class="cmap-brush'+(_edgeSel==='erase'?' on':'')+'" onclick="setEdgeBrush(\'erase\')" title="Effacer une ligne">⌫</button>';
   pal += '</div>';
+  pal += '</div>';
   const cs = 32;   // taille de case MJ (= --cs)
-  let html = pal + `<div class="cmap" style="grid-template-columns:repeat(${w},var(--cs,22px))">`;
+  let html = pal + '<div class="cmap-wrap">' + `<div class="cmap" style="grid-template-columns:repeat(${w},var(--cs,22px))">`;
   for(let y=0;y<h;y++) for(let x=0;x<w;x++){
     const key = x+','+y;
     const tid = byPos[key];
@@ -837,11 +838,34 @@ function renderCombatMap(){
   // Overlay des lignes d'arête (+ zones cliquables si pinceau d'arête actif ; sinon, portes ouvrables)
   const doorHot = (!_edgeSel && !_blockSel && !_mapSel) ? gridAllDoorHotspots(combatMap, cs, 'openDoorMJ') : '';
   html += '<div class="cmap-edges">' + gridEdgesHtml(combatMap, cs) + (_edgeSel ? edgeHotspots(combatMap, cs) : doorHot) + '</div>';
-  html += '</div>';
-  if(_mapSel) html += '<div class="cmap-tip">Jeton sélectionné — clique une case libre pour le déplacer.</div>';
-  else if(_blockSel) html += '<div class="cmap-tip">Pinceau « '+(_blockSel==='erase'?'Effacer':(BLOCK_TYPES.find(b=>b.id===_blockSel)?.label||''))+' » — clique les cases.</div>';
+  html += '</div>';                 // /cmap
+  html += mapSideMenu();            // bandeau vertical à droite (jeton sélectionné) — hors flux, ne décale pas la carte
+  html += '</div>';                 // /cmap-wrap
+  if(_blockSel) html += '<div class="cmap-tip">Pinceau « '+(_blockSel==='erase'?'Effacer':(BLOCK_TYPES.find(b=>b.id===_blockSel)?.label||''))+' » — clique les cases.</div>';
   else if(_edgeSel) html += '<div class="cmap-tip">Ligne « '+(_edgeSel==='erase'?'Effacer':(EDGE_TYPES.find(b=>b.id===_edgeSel)?.label||''))+' » — clique les bords entre cases.</div>';
   el.innerHTML = html;
+  _markSelCards();                  // indicateur de sélection sur la carte du combattant
+}
+// Bandeau vertical à droite de la carte quand un jeton est sélectionné (masquer/démasquer, désélectionner)
+function mapSideMenu(){
+  if(!_mapSel) return '';
+  const t = _mapTokens().find(z => z.id === _mapSel); if(!t) return '';
+  const ic = t.kind==='ennemi' ? '☠' : (t.kind==='allie' ? '🐾' : '◈');
+  let btns = '';
+  if(t.kind==='ennemi'){
+    const eid = _mapSel.slice(1);
+    btns += '<button class="cmap-side-btn" onclick="toggleEnemyHidden('+eid+')">'+(t.hidden?'👁 Démasquer':'🙈 Masquer')+'</button>';
+  } else {
+    btns += '<div class="cmap-side-note">Clique une case libre pour déplacer ce jeton.</div>';
+  }
+  btns += '<button class="cmap-side-btn alt" onclick="mapPickToken(\''+_mapSel+'\')">✕ Désélectionner</button>';
+  return '<div class="cmap-side"><div class="cmap-side-h">'+ic+' '+t.nom+'</div>'+btns+'</div>';
+}
+// Surligne la carte (panneau Joueurs/Alliés/Ennemis) du jeton sélectionné sur la map
+function _markSelCards(){
+  document.querySelectorAll('[data-tokid]').forEach(el => {
+    el.classList.toggle('mapsel-card', el.getAttribute('data-tokid') === _mapSel);
+  });
 }
 
 // Compagnons en combat — cartes vertes appendues sous les joueurs
@@ -852,7 +876,7 @@ function renderAllies(){
     const pct = a.pvMax ? Math.round(a.pvCur/a.pvMax*100) : 0;
     const bc = pct<30?'var(--rd)':pct<60?'var(--am)':'var(--g)';
     const isTourActif = ordreInitiative.length && ordreInitiative[tourActif]?.aid===a.id;
-    el.innerHTML += `<div class="jc-card allie${a.pvCur<=0?' dead':''}${isTourActif?' tour-actif':''}">
+    el.innerHTML += `<div class="jc-card allie${a.pvCur<=0?' dead':''}${isTourActif?' tour-actif':''}${_mapSel==='A'+a.id?' mapsel-card':''}" data-tokid="A${a.id}">
       <div class="jc-top">
         <span class="jc-name">🐾 ${isTourActif?'▶ ':''}${a.nom}</span>
         <span class="jc-init" title="Agit avec ${a.ownerNom}" style="font-size:8px;color:var(--td)">↳ ${a.ownerNom}</span>
@@ -891,7 +915,7 @@ function renderJoueursCombat(){
     const weapsEq = (d.inventory||[]).filter(it=>it.equipped&&it.type==='WEAPON');
     const rad = d.rad||0;
 
-    el.innerHTML += `<div class="jc-card${isActif?' actif':''}${isTourActif?' tour-actif':''}" onclick="setActif('${id}')">
+    el.innerHTML += `<div class="jc-card${isActif?' actif':''}${isTourActif?' tour-actif':''}${_mapSel===id?' mapsel-card':''}" data-tokid="${id}" onclick="setActif('${id}')">
       <div class="jc-top">
         <span class="jc-name">${isTourActif?'▶ ':''}${(d.nom||id).toUpperCase()}${defenseBonus[id]>0?` <span style="color:var(--g);font-size:9px" title="Bonus de Défense (Defend)">🛡+${defenseBonus[id]}</span>`:''}</span>
         <span class="jc-init">${initiative!==null?initiative:'—'}</span>
@@ -931,7 +955,7 @@ function renderEnnemis(){
     const pct = Math.round(e.pvCur/e.pvMax*100);
     const bc = pct<30?'var(--rd)':pct<60?'var(--am)':'var(--g)';
     const isTourActif = ordreInitiative.length && ordreInitiative[tourActif]?.eid===e.id;
-    el.innerHTML += `<div class="ennemi-card${e.pvCur<=0?' dead':''}${isTourActif?' tour-actif':''}">
+    el.innerHTML += `<div class="ennemi-card${e.pvCur<=0?' dead':''}${isTourActif?' tour-actif':''}${_mapSel==='E'+e.id?' mapsel-card':''}" data-tokid="E${e.id}">
       <div class="jc-top">
         <span class="ennemi-name">${isTourActif?'▶ ':''}${e.nom}</span>
         <div style="display:flex;gap:4px;align-items:center">
