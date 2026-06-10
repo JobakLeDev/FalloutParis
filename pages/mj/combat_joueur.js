@@ -390,7 +390,7 @@ function renderJMap(){
     let inner;
     if(t){
       const glow = (t.id===activeTok && !t.dead) ? ' turn-glow' : '';
-      if(t.kind==='ennemi') inner = '<span class="cen'+(t.dead?' dead':'')+glow+'">☠</span>';
+      if(t.kind==='ennemi') inner = fpEnemyTokenHtml(t.nom, { dead:t.dead, glow:(t.id===activeTok && !t.dead) });
       else inner = '<span class="ctok '+(t.kind==='joueur'?'ctok-j':'ctok-a')+(t.dead?' dead':'')+glow+(t.me?' me-ring':'')+'">'+((t.nom||'?').charAt(0).toUpperCase())+'</span>';
     } else inner = (bt?bt.icon:'');
     if(reach && reach[key]!=null && !t) inner += '<span class="snap-dot"></span>';   // point d'accroche souris

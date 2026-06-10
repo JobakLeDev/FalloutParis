@@ -235,6 +235,71 @@ function fpFireTracer(mapSelector, grid, cs, fromId, toId, miss){
   mapEl.appendChild(el);
   setTimeout(() => { if(el.parentNode) el.parentNode.removeChild(el); }, 750);
 }
+// ============================================================
+// JETONS-IMAGES D'ENNEMIS (battlemap) — détourage + réduction côté navigateur
+// Les fichiers /img/<clé>.png sont mappés aux ennemis par mots-clés sur leur nom.
+// ============================================================
+const ENEMY_IMG_RULES = [
+  { re:/ghoul|goule/i,                                                  f:'ghoul'    },
+  { re:/mole\s*-?rat|molerat|rat-?taupe|taupe/i,                        f:'molerat'  },
+  { re:/roach|radroach|cafard|blatte/i,                                 f:'radroach' },
+  { re:/robot|protectron|assaultron|sentry|sentinelle|handy|serviable|tourelle|turret|synth|eyebot|mr\.?\s|mister/i, f:'robot' },
+];
+function fpEnemyImg(nom){
+  const n = '' + (nom || '');
+  for(const r of ENEMY_IMG_RULES) if(r.re.test(n)) return r.f;
+  return null;
+}
+// Cache: undefined=non traité · null=en cours · false=échec · string=dataURL prête
+const _tokImgCache = {};
+function fpProcessTokenImg(file){
+  if(file in _tokImgCache) return;     // déjà en cours / fait
+  _tokImgCache[file] = null;
+  const img = new Image();
+  img.onload = function(){
+    try{
+      const N = 96, c = document.createElement('canvas'); c.width = N; c.height = N;
+      const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, N, N);
+      const id = ctx.getImageData(0, 0, N, N), d = id.data;
+      // Couleur de fond = moyenne des 4 coins
+      const cs = [0, (N-1)*4, N*(N-1)*4, (N*N-1)*4];
+      let br=0,bg=0,bb=0; cs.forEach(o=>{br+=d[o];bg+=d[o+1];bb+=d[o+2];}); br/=4; bg/=4; bb/=4;
+      const FUZZ = 75;
+      const near = o => (Math.abs(d[o]-br)+Math.abs(d[o+1]-bg)+Math.abs(d[o+2]-bb)) < FUZZ;
+      // Flood-fill depuis tous les pixels de bord : rend transparent le fond contigu uniquement
+      const stack = [], seen = new Uint8Array(N*N);
+      for(let x=0;x<N;x++){ stack.push(x); stack.push((N-1)*N+x); }
+      for(let y=0;y<N;y++){ stack.push(y*N); stack.push(y*N+N-1); }
+      while(stack.length){
+        const p = stack.pop(); if(seen[p]) continue; seen[p] = 1;
+        const o = p*4; if(!near(o)) continue;
+        d[o+3] = 0;
+        const x = p%N, y = (p/N)|0;
+        if(x>0) stack.push(p-1); if(x<N-1) stack.push(p+1);
+        if(y>0) stack.push(p-N); if(y<N-1) stack.push(p+N);
+      }
+      ctx.putImageData(id, 0, 0);
+      _tokImgCache[file] = c.toDataURL('image/png');
+    }catch(e){ _tokImgCache[file] = false; }
+    if(typeof renderCombatMap === 'function') renderCombatMap();
+    if(typeof renderJMap === 'function') renderJMap();
+  };
+  img.onerror = function(){ _tokImgCache[file] = false; };
+  img.src = '../../img/' + file + '.png';
+}
+// HTML du jeton ennemi : image détourée si dispo (sinon pictogramme ☠ / 🙈)
+function fpEnemyTokenHtml(nom, opts){
+  opts = opts || {};
+  const cls = (opts.dead?' dead':'') + (opts.hidden?' hidden':'') + (opts.glow?' turn-glow':'');
+  if(opts.hidden) return '<span class="cen'+cls+'">🙈</span>';
+  const file = fpEnemyImg(nom);
+  if(file){
+    const url = _tokImgCache[file];
+    if(typeof url === 'string') return '<img class="cen-img'+cls+'" src="'+url+'" alt="">';
+    if(!(file in _tokImgCache)) fpProcessTokenImg(file);
+  }
+  return '<span class="cen'+cls+'">☠</span>';
+}
 // Clignotement « prend des dégâts » (style NES) sur le jeton ciblé
 function fpFlashToken(mapSelector, grid, cs, tokId){
   const mapEl = (typeof mapSelector === 'string') ? document.querySelector(mapSelector) : mapSelector;

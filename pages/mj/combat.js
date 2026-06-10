@@ -854,7 +854,7 @@ function renderCombatMap(){
     let inner;
     if(t){
       const glow = (tid===activeTok && !t.dead) ? ' turn-glow' : '';
-      if(t.kind==='ennemi') inner = '<span class="cen'+(t.dead?' dead':'')+(t.hidden?' hidden':'')+glow+'">'+(t.hidden?'🙈':'☠')+'</span>';
+      if(t.kind==='ennemi') inner = fpEnemyTokenHtml(t.nom, { dead:t.dead, hidden:t.hidden, glow:(tid===activeTok && !t.dead) });
       else inner = '<span class="ctok '+(t.kind==='joueur'?'ctok-j':'ctok-a')+(t.dead?' dead':'')+glow+'">'+((t.nom||'?').charAt(0).toUpperCase())+'</span>';
     } else inner = (bt?bt.icon:'');
     const eAttr = (t && t.kind==='ennemi') ? ` data-eid="${t.id.slice(1)}"` : '';

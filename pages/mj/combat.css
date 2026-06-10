@@ -251,6 +251,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   box-shadow:0 0 4px rgba(93,190,93,.35); }
 .cen{ z-index:2; color:#ff8f8f; font-size:calc(var(--cs,22px)*0.66); line-height:1;
   text-shadow:0 0 6px rgba(224,64,64,.75); }
+/* Jeton ennemi en image détourée (battlemap) */
+.cen-img{ z-index:2; width:calc(var(--cs,22px) - 1px); height:calc(var(--cs,22px) - 1px); object-fit:contain;
+  filter:drop-shadow(0 0 2px rgba(224,64,64,.55)); pointer-events:none; }
+.cen-img.dead{ opacity:.4; filter:grayscale(.7); }
+.cen-img.turn-glow{ filter:drop-shadow(0 0 5px rgba(232,168,32,.95)); animation:tokTurnGlow 1.15s ease-in-out infinite; }
 .ctok.dead,.cen.dead{ opacity:.4; filter:grayscale(.6); }
 .cen.hidden{ opacity:.55; filter:grayscale(.4); }
 /* Halo « c'est son tour » sur le jeton actif de la carte */
