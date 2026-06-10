@@ -192,7 +192,7 @@ function initJoueur(){
     if(data.fxAttack && data.fxAttack.ts > lastFxTs){
       lastFxTs = data.fxAttack.ts;
       const f = data.fxAttack;
-      if(f.stranger) _combatSfx('combat_alert_sfx.mp3', 0);   // l'Étranger Mystérieux frappe
+      if(f.stranger) _combatSfx('mysterious_stranger_sfx.mp3', 0);   // l'Étranger Mystérieux frappe
       setTimeout(() => {
         fpFireTracer('#j-combat-map .cmap', combatState?.grid, 30, f.fromTok, f.toTok, !f.hit);
         if(f.hit) fpFlashToken('#j-combat-map .cmap', combatState?.grid, 30, f.toTok);

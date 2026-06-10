@@ -1043,7 +1043,7 @@ function _combatSfxMJ(file){
 // Le joueur a dépensé 1 Chance ; le MJ tire l'apparition (≈25 % : d20 ≤ 5). S'il apparaît, le MJ choisit la cible.
 function handleStrangerReq(nom){
   const roll = Math.floor(Math.random()*20) + 1;
-  _combatSfxMJ('combat_alert_sfx.mp3');
+  _combatSfxMJ('mysterious_stranger_sfx.mp3');
   addLog('🕴 ' + nom + ' invoque l\'Étranger Mystérieux… (d20 = ' + roll + ')');
   if(roll > 5){ addLog('… l\'Étranger ne se montre pas cette fois.'); return; }
   const vivants = (ennemis||[]).filter(e => (e.pvCur||0) > 0);
