@@ -70,6 +70,13 @@ let cibleAttaque = '';        // nom de l'ennemi ciblé (sélecteur)
 const AIM_ZONES = ['', 'Tête', 'Torse', 'Bras G.', 'Bras D.', 'Jambe G.', 'Jambe D.'];  // '' = zone non ciblée
 let lastAttackResultTs = 0;   // dédup notification résultat attaque
 let lastFxTs = 0;             // dédup traceur/clignotement (fxAttack)
+let _diceDismissed = false;  // popup « Mes jets » fermé manuellement (bouton OK)
+let _lastSeenValidated = 0;  // nb d'attaques validées déjà vues (pour ré-ouvrir le popup à chaque nouvelle attaque)
+// Ferme le popup de jets d'attaque (bouton OK) jusqu'à la prochaine attaque validée
+function closeDicePopupJ(){
+  _diceDismissed = true;
+  const panel = document.getElementById('j-dice-panel'); if(panel) panel.style.display = 'none';
+}
 let _finSfxDone = false;      // sons de fin de combat (XP / niveau) joués une seule fois
 
 // Joue un son de SFX (respecte le mute global, contourne le blocage autoplay au 1er geste)
@@ -309,6 +316,7 @@ function renderCombatJoueur(){
   const tk = (combatState.numRound||0) + ':' + (combatState.tourActif||0);
   if(tk !== _turnKey){
     _turnKey = tk; myAim = null; turnEnded = false; attacksDone = 0; twoD20Done = -1; lastAttackMissed = false;
+    _diceDismissed = false; _lastSeenValidated = 0;   // popup de jets : réinitialisé au changement de tour
     currentArmeInfo = null; armeSelectionnee = null; lastRollDice = [];
     actionsExecuted = {};   // actions à effet déjà exécutées ce tour
     const dc = document.getElementById('mes-des-context'); if(dc) dc.textContent = 'Déclare une attaque pour viser';
@@ -1769,8 +1777,14 @@ function renderDiceAccess(){
   // Le bloc d'attaque (lancer de dés) n'apparaît QU'UNE FOIS L'ATTAQUE VALIDÉE par le MJ,
   // pendant MON tour uniquement, puis reste tant que l'attaque se résout (reroll/conversion/dégâts bonus).
   const isMoTour = combatState?.ordreInitiative?.[combatState.tourActif]?.id === joueurId;
-  const showPanel = isMoTour && !turnEnded && (attackReady || attacksDone > 0);
+  // Une nouvelle attaque validée ré-ouvre le popup (annule une fermeture manuelle précédente)
+  const av = attacksValidated();
+  if(av > _lastSeenValidated){ _lastSeenValidated = av; _diceDismissed = false; }
+  const showPanel = isMoTour && !turnEnded && (attackReady || attacksDone > 0) && !_diceDismissed;
   if(panel) panel.style.display = showPanel ? '' : 'none';
+  // Bouton OK (fermer le popup) : visible une fois le jet effectué / l'attaque résolue
+  const closeWrap = document.getElementById('j-dice-close-wrap');
+  if(closeWrap) closeWrap.style.display = (showPanel && ((twoD20Done === attacksDone) || attacksDone > 0)) ? 'block' : 'none';
 
   // Plus de verrou « en attente » : le panneau ne s'affiche que lorsqu'on peut réellement lancer.
   if(lockEl) lockEl.style.display = 'none';
