@@ -22,6 +22,16 @@ function fpLogAction(dbInst, who, text){
   } catch(e){ console.warn('fpLogAction', e); }
 }
 
+// État de santé selon le % de PV restant (graduel) — partagé fiche joueur + tableau MJ.
+// On n'est « blessé » qu'en dessous de 60 %, puis ça s'aggrave par paliers.
+//   sev 0 OK (≥60%) · 1 BLESSÉ (35–59%) · 2 GRAVEMENT BLESSÉ (15–34%) · 3 CRITIQUE (<15%)
+function fpHealthStatus(pct){
+  if(pct >= 60) return { sev:0, label:'OK' };
+  if(pct >= 35) return { sev:1, label:'BLESSÉ' };
+  if(pct >= 15) return { sev:2, label:'GRAVEMENT BLESSÉ' };
+  return { sev:3, label:'CRITIQUE' };
+}
+
 // ============================================================
 // MODS D'ARMES / D'ARMURES (window.WEAPON_MODS / ARMOR_MODS chargés par db.js)
 // item.mods = { receiver:'hardened', barrel:'long', ... } (ids de mods par emplacement)

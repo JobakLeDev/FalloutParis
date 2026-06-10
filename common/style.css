@@ -60,6 +60,7 @@ html::after{
 .bdg{font-size:0.583rem;padding:0.083rem 0.417rem;border:1px solid;letter-spacing:1px;}
 .bdg.ok{border-color:var(--gd);color:var(--g);}
 .bdg.w{border-color:var(--am);color:var(--am);}
+.bdg.grave{border-color:#ff8a3d;color:#ff8a3d;}
 .bdg.d{border-color:var(--rd);color:var(--rd);}
 
 /* TABS */

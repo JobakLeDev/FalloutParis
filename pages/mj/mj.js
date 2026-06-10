@@ -770,8 +770,9 @@ function renderJoueurs(){
     const d = joueurs[id];
     const hpMax = getHpMax(d);
     const pct = Math.round(Math.max(0,d.hp||0)/hpMax*100);
-    const statut = pct>=100?'ok':pct<30?'critique':'blesse';
-    const statutLbl = pct>=100?'OK':pct<30?'CRITIQUE':'BLESSÉ';
+    const _hs = (typeof fpHealthStatus==='function') ? fpHealthStatus(pct) : {sev:pct>=100?0:pct<30?3:1,label:pct>=100?'OK':pct<30?'CRITIQUE':'BLESSÉ'};
+    const statut = ['ok','blesse','grave','critique'][_hs.sev];
+    const statutLbl = _hs.label;
     const sel = selected.has(id);
     const weaps = (d.inventory||[]).filter(it=>it.equipped&&it.type==='WEAPON').map(it=>it.name).join(', ')||'—';
     const barColor = pct<30?'var(--rd)':pct<60?'var(--am)':'var(--g)';

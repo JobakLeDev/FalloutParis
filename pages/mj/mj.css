@@ -46,6 +46,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .jc-badge{font-size:7px;padding:1px 5px;border:1px solid;letter-spacing:1px;}
 .jc-badge.ok{border-color:var(--gd);color:var(--g);}
 .jc-badge.blesse{border-color:var(--am);color:var(--am);}
+.jc-badge.grave{border-color:#ff8a3d;color:#ff8a3d;}
 .jc-badge.critique{border-color:var(--rd);color:var(--rd);}
 .jc-stat{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;}
 .jc-stat-lbl{font-size:8px;color:var(--td);}

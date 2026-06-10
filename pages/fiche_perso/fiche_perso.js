@@ -399,7 +399,8 @@ function rStatus(){
   const el=document.getElementById('statuts');if(el)el.innerHTML=lines.join('<br>')||'<span style="opacity:0.4">Aucun statut actif</span>';
   const b=document.getElementById('bdgs');if(!b)return;
   const pct=Math.round(char.hp/max*100);
-  b.innerHTML=`<span class="bdg ${pct>=100?'ok':pct<30?'d':'w'}">${pct>=100?'OK':pct<30?'CRITIQUE':'BLESSÉ'}</span>`;
+  const _hs=(typeof fpHealthStatus==='function')?fpHealthStatus(pct):{sev:pct>=100?0:pct<30?3:1,label:pct>=100?'OK':pct<30?'CRITIQUE':'BLESSÉ'};
+  b.innerHTML=`<span class="bdg ${['ok','w','grave','d'][_hs.sev]}">${_hs.label}</span>`;
   if(nerd)b.innerHTML+=`<span class="bdg d">NERD RAGE</span>`;
   if(char.powerArmor)b.innerHTML+=`<span class="bdg ok">PA</span>`;
 }
