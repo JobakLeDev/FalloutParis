@@ -1,4 +1,9 @@
-Liste des truc à implémenter : 
+Liste des truc à implémenter :
 
--quand un joueur fait un echec complet a son test d'attaque, il doit pouvoir utiliser aim ou miss fortune ou même les deux, pour relancer des d20
--le ennemis doivent pouvoir cibler les compagnons
+(rien en attente — ajoute tes nouvelles idées ici)
+
+--- Fait ---
+-[OK] échec complet d'attaque : Aim + Miss Fortune peuvent relancer des d20 (et la relance qui réussit débloque les dégâts)
+-[OK] halo lumineux sur le jeton dont c'est le tour (carte MJ + joueur ; ennemis non visibles non concernés côté joueur)
+-[OK] portes : le joueur déclare une action mineure (clic porte adjacente à son tour), le MJ valide pour ouvrir ; le MJ ouvre directement
+-[OK] deux portes accolées : gonds aux extrémités, ouverture symétrique (paire verticale → vers la droite ; paire horizontale → vers le bas)

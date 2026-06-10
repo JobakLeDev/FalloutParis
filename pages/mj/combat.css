@@ -253,6 +253,10 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   text-shadow:0 0 6px rgba(224,64,64,.75); }
 .ctok.dead,.cen.dead{ opacity:.4; filter:grayscale(.6); }
 .cen.hidden{ opacity:.55; filter:grayscale(.4); }
+/* Halo « c'est son tour » sur le jeton actif de la carte */
+.ctok.turn-glow{ box-shadow:0 0 0 2px var(--am),0 0 12px 3px rgba(232,168,32,.85); animation:tokTurnGlow 1.15s ease-in-out infinite; }
+.cen.turn-glow{ text-shadow:0 0 5px rgba(232,168,32,1),0 0 11px rgba(232,168,32,.8); animation:tokTurnGlow 1.15s ease-in-out infinite; }
+@keyframes tokTurnGlow{ 0%,100%{ filter:brightness(1); } 50%{ filter:brightness(1.4); } }
 .cmap-cell.sel{ box-shadow:0 0 0 2px var(--am) inset,0 0 8px rgba(232,168,32,.7); }
 .cmap-cell.reach{ box-shadow:0 0 0 1px var(--g) inset,0 0 6px rgba(93,190,93,.5); animation:cmapReach 1.2s ease-in-out infinite; }
 @keyframes cmapReach{ 0%,100%{box-shadow:0 0 0 1px var(--g) inset,0 0 4px rgba(93,190,93,.35);} 50%{box-shadow:0 0 0 1px var(--g) inset,0 0 9px rgba(93,190,93,.7);} }
@@ -297,10 +301,10 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .cedge.e-doorOpen{ background:var(--am); opacity:.85; border-radius:2px; box-shadow:0 0 5px rgba(232,168,32,.7);
   transition:transform .25s ease; }
 /* Gonds — V : haut/bas ; H : gauche/droite. Deux portes adjacentes prennent des gonds opposés → ouverture large */
-.cedge-v.e-doorOpen.dh-top{ transform-origin:50% 0;    transform:rotate(-90deg); }
-.cedge-v.e-doorOpen.dh-bot{ transform-origin:50% 100%; transform:rotate(-90deg); }
-.cedge-h.e-doorOpen.dh-left{  transform-origin:0 50%;   transform:rotate(90deg); }
-.cedge-h.e-doorOpen.dh-right{ transform-origin:100% 50%; transform:rotate(90deg); }
+.cedge-v.e-doorOpen.dh-top{ transform-origin:50% 0;    transform:rotate(-90deg); }   /* ouvre vers la droite */
+.cedge-v.e-doorOpen.dh-bot{ transform-origin:50% 100%; transform:rotate(90deg); }    /* ouvre vers la droite (symétrie) */
+.cedge-h.e-doorOpen.dh-left{  transform-origin:0 50%;   transform:rotate(90deg); }   /* ouvre vers le bas */
+.cedge-h.e-doorOpen.dh-right{ transform-origin:100% 50%; transform:rotate(-90deg); } /* ouvre vers le bas (symétrie) */
 /* Zone cliquable pour ouvrir/fermer une porte adjacente */
 .cdoor-hot{ position:absolute; z-index:7; cursor:pointer; pointer-events:auto;
   background:rgba(232,168,32,.12); border:1px solid rgba(232,168,32,.5); border-radius:2px; }

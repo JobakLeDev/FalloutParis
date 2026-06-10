@@ -802,6 +802,8 @@ function renderCombatMap(){
   ensureMapPositions();
   const { w, h } = combatMap;
   const toks = _mapTokens();
+  const _act = ordreInitiative[tourActif];
+  const activeTok = !_act ? null : (_act.type==='joueur' ? _act.id : _act.type==='ennemi' ? ('E'+_act.eid) : _act.type==='allie' ? ('A'+_act.aid) : null);
   const byPos = {}; Object.keys(combatMap.pos).forEach(id => { const p=combatMap.pos[id]; byPos[p.x+','+p.y]=id; });
   // Palette MJ — deux catégories (blocs / arêtes) sur une seule ligne, chacune dans un cadre léger sans titre
   let pal = '<div class="cmap-palette">';
@@ -828,8 +830,9 @@ function renderCombatMap(){
     const bt = BLOCK_TYPES.find(b=>b.id===terr);
     let inner;
     if(t){
-      if(t.kind==='ennemi') inner = '<span class="cen'+(t.dead?' dead':'')+(t.hidden?' hidden':'')+'">'+(t.hidden?'🙈':'☠')+'</span>';
-      else inner = '<span class="ctok '+(t.kind==='joueur'?'ctok-j':'ctok-a')+(t.dead?' dead':'')+'">'+((t.nom||'?').charAt(0).toUpperCase())+'</span>';
+      const glow = (tid===activeTok && !t.dead) ? ' turn-glow' : '';
+      if(t.kind==='ennemi') inner = '<span class="cen'+(t.dead?' dead':'')+(t.hidden?' hidden':'')+glow+'">'+(t.hidden?'🙈':'☠')+'</span>';
+      else inner = '<span class="ctok '+(t.kind==='joueur'?'ctok-j':'ctok-a')+(t.dead?' dead':'')+glow+'">'+((t.nom||'?').charAt(0).toUpperCase())+'</span>';
     } else inner = (bt?bt.icon:'');
     const eAttr = (t && t.kind==='ennemi') ? ` data-eid="${t.id.slice(1)}"` : '';
     const onclick = t ? `mapPickToken('${tid}')` : `mapCellClick(${x},${y})`;
@@ -1536,6 +1539,8 @@ async function validerAction(jId, cat){
     await db.collection(COMBATS_COLL).doc(currentCombatId).update(upd);
     if(actionsState[jId]) actionsState[jId][cat] = Math.max(0, (actionsState[jId][cat]||1) - 1);   // miroir local pour le tracker
     renderTracker();
+    // Interaction porte : la valider ouvre/ferme effectivement la porte (le joueur ne peut pas le faire seul)
+    if(p.doorKey && typeof openDoorMJ === 'function') openDoorMJ(p.doorKey);
     addLog('✓ ' + nom + ' : ' + p.type + ' (' + cat + ') validée');
   } catch(e){ console.error(e); }
 }

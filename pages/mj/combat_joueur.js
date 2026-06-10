@@ -64,6 +64,7 @@ let useStackedDeck = false;
 let currentArmeInfo = null;  // {nom, skKey, persoBonus, dmg}
 let lastRollDice = [];       // [{val, rerolled}]
 let lastRollTN = 0;
+let lastRollDiff = 1;         // difficulté du dernier jet d'attaque (1 + pénalité de portée) — pour recalculer après relance
 let aimRerolled = false;      // true si le re-roll Aim a déjà été utilisé ce lancer
 let cibleAttaque = '';        // nom de l'ennemi ciblé (sélecteur)
 const AIM_ZONES = ['', 'Tête', 'Torse', 'Bras G.', 'Bras D.', 'Jambe G.', 'Jambe D.'];  // '' = zone non ciblée
@@ -315,6 +316,8 @@ function renderJMap(){
   const toks = _jMapToks();
   const byPos = {}; Object.keys(grid.pos||{}).forEach(id => { const p=grid.pos[id]; byPos[p.x+','+p.y]=id; });
   const myPos = grid.pos?.[joueurId];
+  const _act = combatState?.ordreInitiative?.[combatState.tourActif];
+  const activeTok = !_act ? null : (_act.type==='joueur' ? _act.id : _act.type==='ennemi' ? ('E'+_act.eid) : _act.type==='allie' ? ('A'+_act.aid) : null);
   // Cases atteignables (parcours qui contourne murs/fenêtres) quand on se déplace
   const reach = (_jMoveActive && myPos) ? reachableCells(grid, myPos, _jMoveRange) : null;
   let html = `<div class="cmap" style="grid-template-columns:repeat(${w},var(--cs,22px))">`;
@@ -329,29 +332,39 @@ function renderJMap(){
     if(reach && reach[key]!=null){ cls+=' reach'; onclick=`moveJSelf(${x},${y})`; }
     let inner;
     if(t){
-      if(t.kind==='ennemi') inner = '<span class="cen'+(t.dead?' dead':'')+'">☠</span>';
-      else inner = '<span class="ctok '+(t.kind==='joueur'?'ctok-j':'ctok-a')+(t.dead?' dead':'')+'">'+((t.nom||'?').charAt(0).toUpperCase())+'</span>';
+      const glow = (t.id===activeTok && !t.dead) ? ' turn-glow' : '';
+      if(t.kind==='ennemi') inner = '<span class="cen'+(t.dead?' dead':'')+glow+'">☠</span>';
+      else inner = '<span class="ctok '+(t.kind==='joueur'?'ctok-j':'ctok-a')+(t.dead?' dead':'')+glow+'">'+((t.nom||'?').charAt(0).toUpperCase())+'</span>';
     } else inner = (bt?bt.icon:'');
     const eAttr = (t && t.kind==='ennemi') ? ` data-eid="${t.id.slice(1)}"` : '';
     html += `<div class="${cls}"${onclick?` onclick="${onclick}"`:''}${eAttr} title="${t?t.nom:(bt?bt.label:'')}">${inner}</div>`;
   }
   html += '<div class="cmap-edges">' + (typeof gridEdgesHtml==='function' ? gridEdgesHtml(grid, 30) : '') + '</div>';
-  // Portes adjacentes à mon jeton → cliquables (ouvrir/fermer en pivotant 90°)
-  if(myPos && typeof gridDoorHotspots==='function')
+  // Portes adjacentes à mon jeton → cliquables (déclare une action mineure) — seulement à mon tour
+  const _isMoTour = _act?.type==='joueur' && _act.id===joueurId;
+  if(myPos && _isMoTour && !turnEnded && typeof gridDoorHotspots==='function')
     html += '<div class="cmap-edges">' + gridDoorHotspots(grid, myPos, 30, 'openDoorJ') + '</div>';
   html += '</div>';
   el.innerHTML = html;
 }
-// Ouvrir / fermer une porte adjacente (pivote de 90°) — écrit l'état dans le doc combat
+// Ouvrir / fermer une porte adjacente : le joueur DÉCLARE une action mineure (Interact) → le MJ valide → la porte pivote.
 async function openDoorJ(key){
   const grid = combatState?.grid; if(!grid || !db) return;
   const cur = (grid.edges||{})[key];
   if(cur !== 'door' && cur !== 'doorOpen') return;
-  const nv = cur === 'door' ? 'doorOpen' : 'door';
-  grid.edges[key] = nv;
-  renderJMap();   // retour visuel immédiat
-  try { await db.collection(COMBATS_COLL).doc(combatId).update({ ['grid.edges.'+key]: nv }); }
-  catch(e){ console.error(e); }
+  const hint = document.getElementById('j-map-hint');
+  const isMoTour = combatState?.ordreInitiative?.[combatState.tourActif]?.id === joueurId;
+  if(!isMoTour || turnEnded){ if(hint) hint.textContent = '— ce n\'est pas ton tour'; return; }
+  const pend = actionState?.mineure?.pending;
+  if(pend && pend.status === 'waiting'){ if(hint) hint.textContent = '— action mineure déjà en attente du MJ'; return; }
+  const verb = cur === 'door' ? 'Ouvrir' : 'Fermer';
+  const upd = {};
+  upd['actionsDeclarees.'+joueurId+'.mineure.pending'] =
+    { type:'Interact', details:'🚪 '+verb+' la porte', doorKey:key, requestedAt:Date.now(), status:'waiting' };
+  try {
+    await db.collection(COMBATS_COLL).doc(combatId).update(upd);
+    if(hint) hint.textContent = '— demande envoyée au MJ : '+verb+' la porte';
+  } catch(e){ console.error(e); }
 }
 // Ennemi visible depuis ma position (ligne de vue non coupée par un mur) — vrai si pas de grille/position
 function enemyVisible(e){
@@ -505,8 +518,8 @@ function aimRelancerDe(idx){
   const tn = lastRollTN;
   let succes = vals.filter(v=>v<=tn).length + vals.filter(v=>v===1).length;
   const crits = vals.filter(v=>v===1).length;
-  const echec = succes < 1;
-  const succesBonus = Math.max(0, succes-1);
+  const echec = succes < lastRollDiff;
+  const succesBonus = Math.max(0, succes-lastRollDiff);
   const dcTotal = echec ? 0 : nbDCActuel + succesBonus;
   if(!echec) { nbDCActuel = dcTotal; const _d=document.getElementById('j-nb-cd-disp'); if(_d) _d.textContent = dcTotal; }
 
@@ -542,8 +555,13 @@ function aimRelancerDe(idx){
       bdEl.style.display='block'; bdEl.innerHTML=btns;
     } else bdEl.style.display='none';
   }
+  // Si la relance Aim transforme l'échec en réussite, déverrouiller le jet de dégâts (comme Miss Fortune)
+  lastAttackMissed = echec;
+  const arEl0 = document.getElementById('j-attack-result');
+  if(!echec && arEl0){ arEl0.style.display='none'; arEl0.innerHTML=''; }
   renderAimReroll();
   renderMissFortune();
+  renderDiceAccess();
 }
 
 async function missFortuneJ(diceIdx){
@@ -558,8 +576,8 @@ async function missFortuneJ(diceIdx){
   const tn   = lastRollTN;
   let succes  = vals.filter(v=>v<=tn).length + vals.filter(v=>v===1).length;
   const crits = vals.filter(v=>v===1).length;
-  const echec = succes<1;
-  const dcTotal = echec?0:nbDCActuel+Math.max(0,succes-1);
+  const echec = succes<lastRollDiff;
+  const dcTotal = echec?0:nbDCActuel+Math.max(0,succes-lastRollDiff);
   if(!echec) { nbDCActuel = dcTotal; const _d=document.getElementById('j-nb-cd-disp'); if(_d) _d.textContent = dcTotal; }
   const col = succes===0?'var(--rd)':succes>1?'var(--g)':'var(--am)';
   let r = lastRollDice.map(d=>{
@@ -1001,13 +1019,14 @@ async function jLancer2D20(){
   else r+='→<b style="color:var(--am)">'+dcTotal+'DC</b>';
   document.getElementById('j-dice-result').innerHTML = r;
   twoD20Done = attacksDone;
+  lastRollDiff = diff;
   lastAttackMissed = echec;
   if(echec){
     // Échec : pas de dégâts pour l'instant. Le joueur peut relancer un dé (Miss Fortune) ou confirmer le ratage.
     const arEl = document.getElementById('j-attack-result');
     if(arEl){ arEl.style.display='block'; arEl.innerHTML =
       '<div style="font-size:9px;color:var(--rd);padding:4px 6px;border:1px solid var(--rd);background:var(--rdk)">'
-      + '✗ Échec — relance un dé (Miss Fortune) ou '
+      + '✗ Échec — relance un dé (🎯 Aim / 🍀 Miss Fortune ci-dessus) ou '
       + '<button onclick="resolveMissJ()" style="background:none;border:1px solid var(--rd);color:var(--rd);font-family:monospace;font-size:8px;padding:1px 6px;cursor:pointer;margin-left:4px">Confirmer le ratage</button></div>'; }
   }
   renderDiceAccess();   // verrouille le 2D20 (et le CD tant que l'attaque est ratée)
