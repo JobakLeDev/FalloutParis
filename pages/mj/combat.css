@@ -223,7 +223,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .cmap{
   position:relative; display:grid; gap:1px; padding:5px; margin:6px auto 0;
   width:max-content; max-width:100%; overflow:auto;
-  background:#04140a; border:1px solid var(--g);
+  background:#08140d; border:1px solid var(--g);
   box-shadow:inset 0 0 14px rgba(93,190,93,.18), 0 0 10px rgba(0,0,0,.6);
 }
 /* Scanlines CRT par-dessus la grille */
@@ -232,7 +232,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .cmap-cell{ width:var(--cs,22px); height:var(--cs,22px); display:flex; align-items:center; justify-content:center;
   font-size:11px; cursor:pointer; user-select:none; color:#3f6f4f; position:relative;
   background:#08140d;
-  border:1px solid rgba(93,190,93,.05); box-shadow:none; }
+  border:1px solid transparent; box-shadow:none; }
 .cmap-cell:hover{ border-color:rgba(93,190,93,.4); box-shadow:inset 0 0 6px rgba(93,190,93,.22); }
 .cmap-cell[data-eid]{ cursor:help; }
 /* Types de blocs */
