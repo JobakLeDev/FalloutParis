@@ -51,6 +51,16 @@
 /* Layout interne des dés — vertical et aéré */
 .bottom-des { border-color: var(--b2); }
 #j-dice-panel .pnl-title, #j-action-exec .pnl-title { color: var(--am); }
+/* Jets d'attaque : popup flottant par-dessus les actions, fond à peine assombri (box-shadow = backdrop) */
+#j-dice-panel{
+  position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+  width:min(430px,94vw); max-height:86vh; overflow:auto; z-index:140; margin:0;
+  border:1px solid var(--g); border-radius:6px; background:var(--p2);
+  box-shadow:0 0 0 100vmax rgba(4,9,5,.40), 0 12px 40px rgba(0,0,0,.65);
+  animation:jDicePop .14s ease-out;
+}
+@keyframes jDicePop{ from{ opacity:0; transform:translate(-50%,-46%) scale(.97); } to{ opacity:1; transform:translate(-50%,-50%) scale(1); } }
+#j-dice-panel .pnl-title{ position:sticky; top:0; background:var(--p2); padding-bottom:4px; }
 .des-inner { display: flex; flex-direction: column; gap: 8px; }
 .des-ctx   { width: 100%; padding: 5px 8px; background: #081308; border: 1px solid var(--b2); border-left: 3px solid var(--am); font-size: 9px; color: var(--tb); letter-spacing: .5px; }
 .des-cols  { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
