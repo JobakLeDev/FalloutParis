@@ -1232,9 +1232,11 @@ function bonusDmgMJ(n){
 
 function updateDicePanel(){
   const panel = document.getElementById('dice-context');
-  if(panel) panel._atkMode = null;   // attaque joueur : pas d'auto-dégâts ici
-  if(!joueurActif){ panel.innerHTML='<div class="empty">Sélectionne un joueur puis une arme</div>'; return; }
+  if(!joueurActif){ if(panel){ panel._atkMode=null; panel.innerHTML='<div class="empty">Sélectionne un joueur puis une arme</div>'; } return; }
   const d = combattants[joueurActif]?.data; if(!d) return;
+  panel._atkMode = 'player';          // attaque joueur : dégâts auto sur la cible choisie (si une cible est sélectionnée)
+  panel._ennemNom = (d.nom||joueurActif);
+  panel._lastHit = null;
   let html = `<div class="ctx-nom">${(d.nom||joueurActif).toUpperCase()}</div>`;
   if(armeActive){
     const dbw = WEAPONS_DB[armeActive];
@@ -1262,6 +1264,12 @@ function updateDicePanel(){
     document.getElementById('tn-val').value = tnUnarmed;
     panel._nbDC = 2;
   }
+  // Cible de l'attaque (ennemi) — si choisie, les dégâts s'appliquent automatiquement au jet de CD
+  const vivants = (ennemis||[]).filter(e => (e.pvCur||0) > 0);
+  html += '<div class="ctx-diff">🎯 Cible : <select id="cible-sel" style="background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:monospace;font-size:9px;padding:2px 4px;outline:none;max-width:100%">';
+  html += '<option value="">— aucune (manuel) —</option>';
+  vivants.forEach(e => { html += '<option value="'+e.id+'">'+e.nom+' ('+e.pvCur+'/'+e.pvMax+' · RD '+e.rd+')</option>'; });
+  html += '</select></div>';
   panel.innerHTML = html;
 }
 
@@ -1415,6 +1423,25 @@ function lancerCD(){
     addLog('🐾💥 '+(panel._ennemNom||'Compagnon')+' inflige '+net+' à '+e.nom+' ('+dmg+'dmg − RD '+rd+(ef?' · +'+ef+'⚡':'')+') · '+avant+'→'+e.pvCur+' PV'+(e.pvCur<=0?' 💀 éliminé !':''));
     fpBroadcastFx('A'+panel._allyId, 'E'+e.id, true);
     panel._atkMode = null;   // évite une 2e application sur re-clic
+    renderCombat(); renderTracker(); syncCombatToFirebase();
+    return;
+  }
+  // Attaque d'un joueur (MJ lance pour lui) → dégâts auto sur l'ennemi ciblé si une cible est choisie
+  if(panel && panel._atkMode === 'player'){
+    const nomJ = joueurActif ? (combattants[joueurActif]?.data?.nom||joueurActif) : '?';
+    const sel = document.getElementById('cible-sel');
+    const eid = sel ? sel.value : '';
+    const e = eid ? ennemis.find(x => x.id == eid) : null;
+    if(!e){ addLog('💥 '+nomJ+(armeActive?' ('+armeActive+')':'')+' '+nb+'DC: '+dmg+'dmg'+(ef?' +'+ef+'⚡':'')+' — applique les dégâts à la main (aucune cible)'); return; }
+    if(panel._lastHit === false){ addLog('✗ '+nomJ+' rate '+e.nom+' (pas de dégâts)'); fpBroadcastFx(joueurActif, 'E'+e.id, false); panel._lastHit = null; return; }
+    if(panel._lastHit == null){ addLog('💥 '+nomJ+' '+nb+'DC: '+dmg+'dmg — lance d\'abord le 2D20 (toucher)'); return; }
+    const rd = parseInt(e.rd)||0;
+    const net = Math.max(0, dmg - rd);
+    const avant = e.pvCur;
+    e.pvCur = Math.max(0, e.pvCur - net);
+    addLog('⚔💥 '+nomJ+' inflige '+net+' à '+e.nom+' ('+dmg+'dmg − RD '+rd+(ef?' · +'+ef+'⚡':'')+') · '+avant+'→'+e.pvCur+' PV'+(e.pvCur<=0?' 💀 éliminé !':''));
+    fpBroadcastFx(joueurActif, 'E'+e.id, true);
+    panel._lastHit = null;   // évite une 2e application sur re-clic
     renderCombat(); renderTracker(); syncCombatToFirebase();
     return;
   }
