@@ -217,8 +217,8 @@ function rEffects(){
     `<div class="eff-row"><span class="eff-n">${ef.src||ef.name||'Effet'}</span><span class="eff-d">${_effSummary(ef)}</span></div>`
   ).join('');
 }
-function rmEffect(id){ char.activeEffects=(char.activeEffects||[]).filter(e=>e.id!==id); rAll(); }
-function purgeEffects(){ if(!(char.activeEffects||[]).length) return; char.activeEffects=[]; rAll(); }
+function rmEffect(id){ char.activeEffects=(char.activeEffects||[]).filter(e=>e.id!==id); char.hp=Math.min(char.hp,hpMax()); rAll(); }
+function purgeEffects(){ if(!(char.activeEffects||[]).length) return; char.activeEffects=[]; char.hp=Math.min(char.hp,hpMax()); rAll(); }
 function rCaps(){const el=document.getElementById('caps-val');if(el)el.textContent=(char.caps||0).toLocaleString('fr-FR');}
 
 // ---- SURVIE : faim / soif / sommeil + Fatigue (lié à l'horloge) ----

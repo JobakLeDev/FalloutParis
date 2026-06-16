@@ -62,6 +62,11 @@ function appliquerDonnees(data) {
   if (data.survie       !== undefined) char.survie        = data.survie || {};
   if (data.companions   !== undefined) char.companions   = data.companions;
   if (data.activeEffects !== undefined) char.activeEffects = Array.isArray(data.activeEffects) ? data.activeEffects : [];
+  // Clamp PV au max courant : si un buff de PV max a été retiré (purge MJ/joueur), hp ne doit pas rester au-dessus du nouveau max
+  if (typeof hpMax === 'function') {
+    const mx = hpMax();
+    if (char.hp > mx) { char.hp = mx; if (typeof saveToFirebase === 'function') saveToFirebase(); }
+  }
 }
 
 // ---- Mettre à jour l'affichage du nom dans le bandeau ----
