@@ -307,10 +307,12 @@ function renderCrochAlert(d){
   const al = document.getElementById('croch-alert'); if(!al) return;
   const r = d && d[JOUEUR_ID];
   const open = !!(r && r.status === 'open');
-  _crochReq = open ? r : null;
+  if(open) _crochReq = r;
   al.style.display = open ? 'flex' : 'none';
   if(open && r.ts !== _crochSeenTs){ _crochSeenTs = r.ts; if(typeof fpSfx === 'function') fpSfx('shopAlert'); }
-  if(!open){ const mo = document.getElementById('mo-croch'); if(mo) mo.classList.remove('on'); }
+  // On NE ferme la modale QUE si la demande a été entièrement retirée par le MJ
+  // (pas quand on vient de la résoudre soi-même → le joueur valide avec OK).
+  if(!r){ _crochReq = null; const mo = document.getElementById('mo-croch'); if(mo) mo.classList.remove('on'); }
 }
 function openCroch(){
   if(!_crochReq) return;
@@ -319,37 +321,56 @@ function openCroch(){
   if(info) info.textContent = '« ' + (_crochReq.label || 'Serrure') +' » — Difficulté D' + (_crochReq.diff || 2);
   const lock = document.getElementById('croch-lock'); if(lock){ lock.textContent = '🔒'; lock.className = 'croch-lock'; }
   const res = document.getElementById('croch-result'); if(res){ res.textContent = ''; res.style.color = ''; }
-  const go = document.getElementById('croch-go'); if(go){ go.disabled = false; go.style.display = ''; }
+  const go = document.getElementById('croch-go');
+  if(go){ go.disabled = false; go.style.display = ''; go.textContent = '🔧 Crocheter'; go.onclick = function(){ crocheter(); }; }
   const mo = document.getElementById('mo-croch'); if(mo) mo.classList.add('on');
 }
 function crocheter(){
   if(_crochBusy || !_crochReq) return;
+  const res = document.getElementById('croch-result');
+  const go = document.getElementById('croch-go');
+  const c = window.char || {}; const inv = Array.isArray(c.inventory) ? c.inventory : [];
+  // Outil : un kit réutilisable n'use rien ; sinon il faut (et on consomme) une épingle « Bobby Pin »
+  const hasKit = inv.some(it => /lock ?pick set|electronic lockpicker|kit de crochet/i.test(it.name || ''));
+  let usedTool = 'kit';
+  if(!hasKit){
+    const pin = inv.find(it => /bobby ?pin|épingle|epingle/i.test(it.name || ''));
+    if(!pin || (pin.qty || 0) <= 0){
+      if(res){ res.style.color = 'var(--rd)'; res.textContent = '✗ Aucune épingle (Bobby Pin) ni kit de crochetage !'; }
+      return;
+    }
+    pin.qty = (pin.qty || 1) - 1;
+    if(pin.qty <= 0){ const idx = inv.indexOf(pin); if(idx >= 0) inv.splice(idx, 1); }
+    usedTool = 'épingle';
+    if(typeof rAll === 'function') rAll();
+    if(typeof saveToFirebase === 'function') saveToFirebase();
+  }
   _crochBusy = true;
   const diff = _crochReq.diff || 2, label = _crochReq.label || 'Serrure';
-  const c = window.char || {}; const sp = c.special || {};
+  const sp = c.special || {};
   const tn = (sp.P || 5) + ((c.skills && c.skills.lockpick) || 0) + ((c.taggedSkills || []).includes('lockpick') ? 2 : 0);
-  const go = document.getElementById('croch-go'); if(go) go.disabled = true;
+  if(go) go.disabled = true;
   const lock = document.getElementById('croch-lock'); if(lock) lock.classList.add('shaking');
-  const res = document.getElementById('croch-result'); if(res) res.textContent = '… crochetage en cours …';
+  if(res){ res.style.color = ''; res.textContent = '… crochetage en cours …'; }
   if(typeof fpSfx === 'function') fpSfx('bouton');
   setTimeout(() => {
     const dice = [Math.floor(Math.random()*20)+1, Math.floor(Math.random()*20)+1];
     const succ = dice.filter(v => v <= tn).length + dice.filter(v => v === 1).length;
     const ok = succ >= diff;
-    const broke = dice.includes(20);   // complication (20) = épingle cassée
+    const broke = (usedTool === 'épingle') && dice.includes(20);   // complication (20) → épingle cassée (le kit ne casse pas ici)
     if(lock){ lock.classList.remove('shaking'); lock.textContent = ok ? '🔓' : '🔒'; if(ok) lock.classList.add('open'); }
     if(res){
       res.style.color = ok ? 'var(--g)' : 'var(--rd)';
       res.textContent = 'Dés : ' + dice.join(' / ') + ' (TN ' + tn + ') → ' + succ + '/' + diff + '\n'
         + (ok ? '✓ OUVERT' : '✗ ÉCHEC') + (broke ? '\n🪛 Épingle cassée !' : '');
     }
-    if(go) go.style.display = 'none';
+    // Le bouton devient « OK » pour valider et fermer (le message reste affiché tant qu'on n'a pas cliqué)
+    if(go){ go.disabled = false; go.style.display = ''; go.textContent = '✓ OK'; go.onclick = function(){ closeMo('mo-croch'); }; }
     if(typeof fpSfx === 'function') fpSfx(ok ? 'general' : 'bouton');
-    // Résultat → Firebase (ferme la demande) + journal MJ
     try {
       db.collection('crochetage').doc('data').set({ [JOUEUR_ID]: { ...(_crochReq), status:'done', success:ok, broke, dice, doneTs:Date.now() } }, { merge:true });
       if(typeof fpLogAction === 'function') fpLogAction(db, c.name || JOUEUR_ID,
-        '🔓 Crochetage « ' + label + ' » (D' + diff + ') : ' + (ok ? 'RÉUSSI' : 'échoué') + (broke ? ' — épingle cassée' : '') + ' [' + dice.join('/') + ' vs TN' + tn + ']');
+        '🔓 Crochetage « ' + label + ' » (D' + diff + ') : ' + (ok ? 'RÉUSSI' : 'échoué') + (broke ? ' — épingle cassée' : '') + ' [' + dice.join('/') + ' vs TN' + tn + (hasKit ? ' · kit' : '') + ']');
     } catch(e){ console.error(e); }
   }, 950);
 }
