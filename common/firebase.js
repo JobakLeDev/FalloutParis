@@ -288,7 +288,7 @@ function renderTerminalAlert(d){
   if(!open){ const mo = document.getElementById('mo-terminal'); if(mo) mo.classList.remove('on'); const f = document.getElementById('terminal-frame'); if(f){ f.src='about:blank'; f.removeAttribute('data-t'); } }
 }
 function _sciTN(){
-  const c = window.char || {}; const sp = c.special || {};
+  const c = (typeof char !== 'undefined' && char) || {}; const sp = c.special || {};
   return (sp.I || 5) + ((c.skills && c.skills.science) || 0) + ((c.taggedSkills || []).includes('science') ? 2 : 0);
 }
 function openTerminal(){
@@ -329,7 +329,7 @@ function crocheter(){
   if(_crochBusy || !_crochReq) return;
   const res = document.getElementById('croch-result');
   const go = document.getElementById('croch-go');
-  const c = window.char || {}; const inv = Array.isArray(c.inventory) ? c.inventory : [];
+  const c = (typeof char !== 'undefined' && char) || {}; const inv = Array.isArray(c.inventory) ? c.inventory : [];
   // Outil : un kit réutilisable n'use rien ; sinon il faut (et on consomme) une épingle « Bobby Pin »
   const hasKit = inv.some(it => /lock ?pick set|electronic lockpicker|kit de crochet/i.test(it.name || ''));
   let usedTool = 'kit';
