@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bull Télématique — Minitel</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="terminal.css?v=5">
+  <link rel="stylesheet" href="terminal.css?v=6">
 </head>
 <body>
   <div class="term-room">
@@ -20,13 +20,13 @@
       <div class="crt-base">
         <span class="crt-brand">BULL TÉLÉMATIQUE · MINITEL 5000</span>
         <span class="crt-spacer"></span>
-        <span id="power-led" class="power-led"></span>
-        <button id="power-btn" class="power-btn" onclick="togglePower()" title="Marche / Arrêt">⏻</button>
+        <span class="power-lbl">POWER</span>
+        <button id="power-btn" class="power-btn" onclick="togglePower()" title="Marche / Arrêt"></button>
       </div>
     </div>
   </div>
 
-  <script src="terminal.js?v=5"></script>
+  <script src="terminal.js?v=6"></script>
   <script>document.addEventListener('DOMContentLoaded', initTerminal);</script>
 </body>
 </html>

@@ -7,17 +7,17 @@ body{ font-family:'Share Tech Mono', monospace; }
 .term-room{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; padding:3vh 3vw;
   background:radial-gradient(ellipse at center, #0a0f0c 0%, #050705 55%, #000 100%); }
 
-/* Boîtier du moniteur (plastique beige/gris vieilli) */
+/* Boîtier du moniteur (plastique vert-gris foncé, façon terminal Fallout) */
 .crt{ width:min(900px, 94vw); max-height:94vh; display:flex; flex-direction:column;
-  background:linear-gradient(160deg, #c9c2a8, #9c977f 55%, #837e69);
-  border-radius:18px 18px 14px 14px; padding:18px 18px 0;
-  box-shadow:0 26px 60px rgba(0,0,0,.8), inset 0 2px 0 rgba(255,255,255,.35), inset 0 -3px 8px rgba(0,0,0,.35);
-  border:1px solid #6e6a58; }
+  background:linear-gradient(160deg, #3f5044, #2c382f 55%, #202821);
+  border-radius:22px 22px 16px 16px; padding:20px 20px 0;
+  box-shadow:0 26px 60px rgba(0,0,0,.85), inset 0 2px 0 rgba(130,170,140,.25), inset 0 -3px 10px rgba(0,0,0,.5);
+  border:1px solid #16201a; }
 
-/* Écran (verre bombé) */
+/* Écran (verre bombé), cadre interne vert très foncé */
 .crt-screen{ position:relative; flex:1; min-height:0; border-radius:30px/22px; overflow:hidden;
   background:radial-gradient(ellipse at center, #04210d 0%, var(--tbg) 70%, #000 100%);
-  box-shadow:inset 0 0 8vh rgba(0,0,0,.9), 0 0 0 10px #2a281f, 0 0 0 12px #15140f;
+  box-shadow:inset 0 0 8vh rgba(0,0,0,.92), 0 0 0 10px #1a241c, 0 0 0 13px #0e150f;
   aspect-ratio:4 / 3; }
 
 .term-crt{ position:absolute; inset:0; padding:5% 6%; overflow-y:auto; overflow-x:hidden;
@@ -27,8 +27,8 @@ body{ font-family:'Share Tech Mono', monospace; }
 .term-out{ font-size:clamp(12px, 2.4vh, 19px); line-height:1.5; letter-spacing:1px; white-space:pre-wrap; }
 
 /* En-tête + menus + texte */
-.t-head{ border-bottom:1px solid var(--tgd); padding-bottom:6px; margin-bottom:14px; opacity:.92; }
-.t-title{ margin:10px 0 16px; opacity:.85; }
+.t-head{ text-align:center; padding-bottom:10px; margin-bottom:14px; opacity:.95; }
+.t-title{ text-align:center; margin:6px 0 18px; opacity:.85; }
 .t-menu{ margin-top:10px; }
 .t-entry{ display:block; width:100%; text-align:left; background:none; border:none; color:inherit;
   font:inherit; text-shadow:inherit; padding:3px 0 3px 1.4em; cursor:pointer; position:relative; letter-spacing:1px; }
@@ -52,7 +52,9 @@ body{ font-family:'Share Tech Mono', monospace; }
   background:linear-gradient(180deg, rgba(51,255,102,0), rgba(51,255,102,.06), rgba(51,255,102,0));
   animation:termSweep 7s linear infinite; }
 @keyframes termSweep{ 0%{ top:-15%; } 100%{ top:100%; } }
-.term-vignette{ position:absolute; inset:0; pointer-events:none; z-index:6; box-shadow:inset 0 0 12vh rgba(0,0,0,.85); }
+.term-vignette{ position:absolute; inset:0; pointer-events:none; z-index:6;
+  box-shadow:inset 0 0 16vh rgba(0,0,0,.95);
+  background:radial-gradient(ellipse at center, rgba(0,0,0,0) 42%, rgba(0,0,0,.55) 100%); }
 
 /* Écran ÉTEINT : voile noir + léger reflet, masque tout */
 .term-off{ position:absolute; inset:0; z-index:8; pointer-events:none; opacity:0; transition:opacity .25s;
@@ -62,14 +64,17 @@ body{ font-family:'Share Tech Mono', monospace; }
 .crt-screen.powering .term-crt{ animation:crtOn .45s ease-out; }
 @keyframes crtOn{ 0%{ transform:scaleY(.004); filter:brightness(3); } 45%{ transform:scaleY(.02); filter:brightness(2.2); } 100%{ transform:scaleY(1); filter:brightness(1); } }
 
-/* Socle : marque + LED + bouton marche/arrêt */
-.crt-base{ display:flex; align-items:center; gap:10px; padding:9px 6px 12px; }
-.crt-brand{ font-size:11px; letter-spacing:2px; color:#4a4636; font-weight:bold; text-shadow:0 1px 0 rgba(255,255,255,.3); }
+/* Socle : marque + label POWER + bouton ambre carré lumineux */
+.crt-base{ display:flex; align-items:center; gap:10px; padding:11px 8px 14px; }
+.crt-brand{ font-size:10px; letter-spacing:2px; color:#7e8a78; font-weight:bold; text-shadow:0 1px 0 rgba(0,0,0,.4); }
 .crt-spacer{ flex:1; }
-.power-led{ width:9px; height:9px; border-radius:50%; background:#3a1010; box-shadow:inset 0 0 2px rgba(0,0,0,.6); }
-.power-led.on{ background:#ff3b3b; box-shadow:0 0 8px rgba(255,60,60,.9); }
-.power-btn{ width:38px; height:38px; border-radius:50%; cursor:pointer; font-size:17px; color:#2a281f;
-  background:radial-gradient(circle at 38% 32%, #e9e3cc, #b3ad92 60%, #8e896f);
-  border:1px solid #6e6a58; box-shadow:0 3px 5px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.5); }
-.power-btn:hover{ filter:brightness(1.06); }
-.power-btn:active{ transform:translateY(1px); box-shadow:0 1px 3px rgba(0,0,0,.5), inset 0 2px 4px rgba(0,0,0,.4); }
+.power-lbl{ font-size:9px; letter-spacing:3px; color:#8e9a86; font-weight:bold; text-shadow:0 1px 0 rgba(0,0,0,.4); }
+.power-btn{ width:34px; height:30px; border-radius:4px; cursor:pointer; position:relative;
+  background:linear-gradient(180deg, #34423a, #1e2620); border:2px solid #111813;
+  box-shadow:inset 0 0 5px rgba(0,0,0,.7), 0 1px 0 rgba(130,170,140,.2); }
+.power-btn::after{ content:''; position:absolute; inset:5px; border-radius:2px; background:#5a4a1a;
+  box-shadow:inset 0 0 3px rgba(0,0,0,.5); transition:background .2s, box-shadow .2s; }
+.power-btn.on::after{ background:radial-gradient(circle at 40% 35%, #ffd27a, #ffaf2e 70%);
+  box-shadow:0 0 12px rgba(255,170,40,.95), inset 0 0 4px rgba(255,230,170,.9); }
+.power-btn:hover{ filter:brightness(1.08); }
+.power-btn:active{ transform:translateY(1px); }

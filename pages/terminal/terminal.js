@@ -54,10 +54,10 @@ function initTerminal(){
 function togglePower(){
   powered = !powered;
   const off = document.getElementById('term-off');
-  const led = document.getElementById('power-led');
+  const btn = document.getElementById('power-btn');
   const screen = document.getElementById('crt-screen');
   if(off) off.classList.toggle('on', !powered);
-  if(led) led.classList.toggle('on', powered);
+  if(btn) btn.classList.toggle('on', powered);
   if(powered){
     if(screen){ screen.classList.remove('powering'); void screen.offsetWidth; screen.classList.add('powering'); }
     pathStack = [];
