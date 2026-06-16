@@ -1,0 +1,27 @@
+{
+  "terminals": {
+    "term-demo": {
+      "titre": "TERMINAL DE DÉMONSTRATION",
+      "header": "ROBCO INDUSTRIES (TM) TERMLINK",
+      "nodes": [
+        {
+          "id": "journaux",
+          "label": "JOURNAUX DE SÉCURITÉ",
+          "body": "Accès autorisé. Sélectionnez une entrée.",
+          "children": [
+            { "id": "j1", "label": "Entrée 12.04.2287", "body": "Les goules ont franchi le périmètre nord.\nVerrouillage du niveau -2 enclenché." },
+            { "id": "j2", "label": "Entrée 15.04.2287", "body": "Plus de réponse de l'équipe de maintenance.\nRationnement des stimpaks ordonné." }
+          ]
+        },
+        { "id": "memo", "label": "NOTE DE SERVICE", "body": "À tout le personnel :\nle générateur de secours sera coupé à 22h00 pour maintenance." },
+        {
+          "id": "portes",
+          "label": "COMMANDES DES PORTES",
+          "children": [
+            { "id": "p1", "label": "Porte du laboratoire", "body": ">> VERROUILLÉE <<\nNiveau d'accréditation insuffisant." }
+          ]
+        }
+      ]
+    }
+  }
+}
