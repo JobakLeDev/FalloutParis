@@ -181,6 +181,13 @@ function startSync() {
       (err) => console.warn('terminaux indisponible:', err && err.code)
     );
   } catch(e){ console.warn('terminaux listener KO:', e); }
+  // Crochetage demandé par le MJ — bandeau + modale (jet de Crochetage)
+  try {
+    db.collection('crochetage').doc('data').onSnapshot(
+      (s) => { try { renderCrochAlert(s.exists ? s.data() : null); } catch(e){ console.error('crochetage:', e); } },
+      (err) => console.warn('crochetage indisponible:', err && err.code)
+    );
+  } catch(e){ console.warn('crochetage listener KO:', e); }
   // Radio — diffusion synchronisée pilotée par le MJ (le joueur suit ; couper + volume)
   try {
     radioInitFollower();
@@ -280,14 +287,71 @@ function renderTerminalAlert(d){
   _termAlertShown = open;
   if(!open){ const mo = document.getElementById('mo-terminal'); if(mo) mo.classList.remove('on'); const f = document.getElementById('terminal-frame'); if(f){ f.src='about:blank'; f.removeAttribute('data-t'); } }
 }
+function _sciTN(){
+  const c = window.char || {}; const sp = c.special || {};
+  return (sp.I || 5) + ((c.skills && c.skills.science) || 0) + ((c.taggedSkills || []).includes('science') ? 2 : 0);
+}
 function openTerminal(){
   if(!_activeTermId) return;
   const f = document.getElementById('terminal-frame');
   if(f && f.getAttribute('data-t') !== _activeTermId){
-    f.src = '../terminal/terminal.html?t=' + encodeURIComponent(_activeTermId);
+    f.src = '../terminal/terminal.html?t=' + encodeURIComponent(_activeTermId) + '&id=' + encodeURIComponent(JOUEUR_ID) + '&sci=' + _sciTN();
     f.setAttribute('data-t', _activeTermId);
   }
   const mo = document.getElementById('mo-terminal'); if(mo) mo.classList.add('on');
+}
+
+// Bandeau « crochetage demandé » → modale + jet de Crochetage (PER) vs difficulté
+let _crochReq = null, _crochSeenTs = 0, _crochBusy = false;
+function renderCrochAlert(d){
+  const al = document.getElementById('croch-alert'); if(!al) return;
+  const r = d && d[JOUEUR_ID];
+  const open = !!(r && r.status === 'open');
+  _crochReq = open ? r : null;
+  al.style.display = open ? 'flex' : 'none';
+  if(open && r.ts !== _crochSeenTs){ _crochSeenTs = r.ts; if(typeof fpSfx === 'function') fpSfx('shopAlert'); }
+  if(!open){ const mo = document.getElementById('mo-croch'); if(mo) mo.classList.remove('on'); }
+}
+function openCroch(){
+  if(!_crochReq) return;
+  _crochBusy = false;
+  const info = document.getElementById('croch-info');
+  if(info) info.textContent = '« ' + (_crochReq.label || 'Serrure') +' » — Difficulté D' + (_crochReq.diff || 2);
+  const lock = document.getElementById('croch-lock'); if(lock){ lock.textContent = '🔒'; lock.className = 'croch-lock'; }
+  const res = document.getElementById('croch-result'); if(res){ res.textContent = ''; res.style.color = ''; }
+  const go = document.getElementById('croch-go'); if(go){ go.disabled = false; go.style.display = ''; }
+  const mo = document.getElementById('mo-croch'); if(mo) mo.classList.add('on');
+}
+function crocheter(){
+  if(_crochBusy || !_crochReq) return;
+  _crochBusy = true;
+  const diff = _crochReq.diff || 2, label = _crochReq.label || 'Serrure';
+  const c = window.char || {}; const sp = c.special || {};
+  const tn = (sp.P || 5) + ((c.skills && c.skills.lockpick) || 0) + ((c.taggedSkills || []).includes('lockpick') ? 2 : 0);
+  const go = document.getElementById('croch-go'); if(go) go.disabled = true;
+  const lock = document.getElementById('croch-lock'); if(lock) lock.classList.add('shaking');
+  const res = document.getElementById('croch-result'); if(res) res.textContent = '… crochetage en cours …';
+  if(typeof fpSfx === 'function') fpSfx('bouton');
+  setTimeout(() => {
+    const dice = [Math.floor(Math.random()*20)+1, Math.floor(Math.random()*20)+1];
+    const succ = dice.filter(v => v <= tn).length + dice.filter(v => v === 1).length;
+    const ok = succ >= diff;
+    const broke = dice.includes(20);   // complication (20) = épingle cassée
+    if(lock){ lock.classList.remove('shaking'); lock.textContent = ok ? '🔓' : '🔒'; if(ok) lock.classList.add('open'); }
+    if(res){
+      res.style.color = ok ? 'var(--g)' : 'var(--rd)';
+      res.textContent = 'Dés : ' + dice.join(' / ') + ' (TN ' + tn + ') → ' + succ + '/' + diff + '\n'
+        + (ok ? '✓ OUVERT' : '✗ ÉCHEC') + (broke ? '\n🪛 Épingle cassée !' : '');
+    }
+    if(go) go.style.display = 'none';
+    if(typeof fpSfx === 'function') fpSfx(ok ? 'general' : 'bouton');
+    // Résultat → Firebase (ferme la demande) + journal MJ
+    try {
+      db.collection('crochetage').doc('data').set({ [JOUEUR_ID]: { ...(_crochReq), status:'done', success:ok, broke, dice, doneTs:Date.now() } }, { merge:true });
+      if(typeof fpLogAction === 'function') fpLogAction(db, c.name || JOUEUR_ID,
+        '🔓 Crochetage « ' + label + ' » (D' + diff + ') : ' + (ok ? 'RÉUSSI' : 'échoué') + (broke ? ' — épingle cassée' : '') + ' [' + dice.join('/') + ' vs TN' + tn + ']');
+    } catch(e){ console.error(e); }
+  }, 950);
 }
 
 // Bandeau « proposition d'un autre joueur » → ouvre l'onglet CARTE pour accepter/refuser

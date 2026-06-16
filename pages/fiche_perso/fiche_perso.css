@@ -179,7 +179,7 @@ html, body { height: 100%; overflow: hidden; }
 #prop-alert .prop-ico{ font-size:1.1rem; }
 #prop-alert b{ color:var(--am-br); }
 @keyframes proppulse{ 0%,100%{box-shadow:0 0 0 rgba(232,168,32,0);} 50%{box-shadow:0 0 14px rgba(232,168,32,0.45);} }
-#shop-alert, #terminal-alert{
+#shop-alert, #terminal-alert, #croch-alert{
   display:none; align-items:center; gap:0.6rem;
   margin:0.4rem 0; padding:0.55rem 0.9rem; cursor:pointer;
   background:linear-gradient(90deg, rgba(93,190,93,0.18), rgba(93,190,93,0.05));
@@ -187,8 +187,14 @@ html, body { height: 100%; overflow: hidden; }
   font-family:'Share Tech Mono',monospace; font-size:0.8rem; letter-spacing:1px;
   animation:lootpulse 1.5s ease-in-out infinite;
 }
-#shop-alert:hover, #terminal-alert:hover{ background:rgba(93,190,93,0.28); }
-#shop-alert .shop-ico, #terminal-alert .shop-ico{ font-size:1.1rem; }
+#shop-alert:hover, #terminal-alert:hover, #croch-alert:hover{ background:rgba(93,190,93,0.28); }
+#shop-alert .shop-ico, #terminal-alert .shop-ico, #croch-alert .shop-ico{ font-size:1.1rem; }
+/* Serrure (modale crochetage) */
+.croch-lock{ font-size:3.2rem; line-height:1; margin:0.4rem 0; display:inline-block; }
+.croch-lock.shaking{ animation:crochShake .12s linear infinite; }
+.croch-lock.open{ filter:drop-shadow(0 0 10px rgba(93,190,93,.9)); animation:crochPop .3s ease-out; }
+@keyframes crochShake{ 0%,100%{transform:translateX(-2px) rotate(-3deg);} 50%{transform:translateX(2px) rotate(3deg);} }
+@keyframes crochPop{ 0%{transform:scale(.7);} 60%{transform:scale(1.25);} 100%{transform:scale(1);} }
 #combat-banner{
   display:none; align-items:center; gap:0.6rem;
   margin:0.4rem 0; padding:0.55rem 0.9rem; cursor:pointer;

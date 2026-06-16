@@ -325,6 +325,29 @@
           <div id="term-summary" style="margin-top:6px"></div>
         </div>
 
+        <div class="rencontre-pnl" id="crochetage-pnl">
+          <div class="pnl-title pnl-head">
+            <button class="pnl-toggle" onclick="togglePanel('crochetage-pnl')">▾</button>
+            <span class="pnl-head-label">🔓 Crochetage</span>
+          </div>
+          <div class="ctrl-row">
+            <span class="ctrl-lbl">Serrure</span>
+            <input type="text" class="ctrl-sel" id="croch-label" placeholder="Porte du labo…" style="flex:1">
+          </div>
+          <div class="ctrl-row">
+            <span class="ctrl-lbl">Difficulté</span>
+            <select class="ctrl-sel" id="croch-diff" style="flex:1">
+              <option value="1">D1 — Novice</option>
+              <option value="2" selected>D2 — Avancée</option>
+              <option value="3">D3 — Experte</option>
+              <option value="4">D4 — Maître</option>
+            </select>
+          </div>
+          <div class="gen-btns" style="margin-top:6px">
+            <button class="gen-btn" style="grid-column:1/-1" onclick="declencherCrochetage()">🔓 Lancer le crochetage (sélectionnés)</button>
+          </div>
+        </div>
+
       </div>
 
     </div>
@@ -443,7 +466,7 @@
   <script src="../../common/survie.js?v=1"></script>
   <script src="mj_shared.js?v=11"></script>
   <script src="zones.js"></script>
-  <script src="mj.js?v=14"></script>
+  <script src="mj.js?v=15"></script>
   <script src="../../common/responsive.js?v=1"></script>
 </body>
 </html>

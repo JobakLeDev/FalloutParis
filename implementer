@@ -1,9 +1,9 @@
 Liste des truc à implémenter :
 
-implémenter la notion de hack pour les terminaux? comment c'est géré dans le pdf? propose moi des solutions
-l'encyclopédie joueur ne se met pas à jour quand je rend visible depuis la page mj
-comment on gère le crochetage dans le pdf? propose une adaptation (le mj lance une action de crochetage et ça gère la réussite avec une anim côté joueur)
 --- Fait ---
+-[OK] hack terminal : nœuds `locked:<diff>` → jet de Sciences (2D20) + anim ; réussite déverrouille, échec = verrouillage (reset à l'extinction). TN passé par la fiche (?sci)
+-[OK] crochetage : le MJ déclenche (serrure + difficulté) aux sélectionnés → alerte + modale anim serrure côté joueur → jet de Crochetage (PER) ; épingle cassée si 20 ; résultat journalisé pour le MJ
+-[OK] encyclopédie joueur : ids stables + (rappel) publier la règle Firestore /encyclopedie
 -[OK] terminal : boîtier écran CRT (CSS) sur fond assombri + bouton power on/off (allume = boot, éteint = ferme)
 -[OK] sons terminal : type_txt_sfx (frappe, en boucle) + auth_ok_terminal_sfx (fin de boot)
 -[OK] échec complet d'attaque : Aim + Miss Fortune peuvent relancer des d20 (et la relance qui réussit débloque les dégâts)

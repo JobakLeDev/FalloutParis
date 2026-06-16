@@ -7,7 +7,7 @@
   <title>Fallout Paris — Fiche Personnage</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css?v=80">
-  <link rel="stylesheet" href="fiche_perso.css?v=82">
+  <link rel="stylesheet" href="fiche_perso.css?v=83">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
@@ -74,6 +74,12 @@
 <div id="terminal-alert" onclick="openTerminal()">
   <span class="shop-ico">💻</span>
   <span>UN TERMINAL EST ACCESSIBLE — clique pour t'y connecter</span>
+</div>
+
+<!-- ALERTE CROCHETAGE -->
+<div id="croch-alert" onclick="openCroch()">
+  <span class="shop-ico">🔓</span>
+  <span>CROCHETAGE DEMANDÉ — clique pour t'y essayer</span>
 </div>
 
 <!-- BANDEAU COMBAT (rempli par firebase.js) -->
@@ -374,6 +380,20 @@
   </div>
 </div>
 
+<!-- MODALE CROCHETAGE -->
+<div class="mo" id="mo-croch">
+  <div class="mbox" style="width:24rem;max-width:94vw;text-align:center">
+    <div class="mtitle">🔓 CROCHETAGE</div>
+    <div id="croch-info" style="font-size:0.75rem;color:var(--td);margin-bottom:0.7rem"></div>
+    <div id="croch-lock" class="croch-lock">🔒</div>
+    <div id="croch-result" style="font-size:0.8rem;min-height:1.5rem;margin:0.6rem 0;letter-spacing:1px;white-space:pre-line"></div>
+    <div class="mbtns">
+      <button class="btn f1" id="croch-go" onclick="crocheter()">🔧 Crocheter</button>
+      <button class="btn" onclick="closeMo('mo-croch')">Fermer</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODALE TERMINAL -->
 <div class="mo" id="mo-terminal">
   <div class="mbox" style="width:46rem;max-width:96vw;padding:0;overflow:hidden;background:#000">
@@ -413,7 +433,7 @@
   <script src="../../common/db.js?v=79"></script>
   <script src="../../common/survie.js?v=76"></script>
   <script src="fiche_perso.js?v=89"></script>
-  <script src="../../common/firebase.js?v=78"></script>
+  <script src="../../common/firebase.js?v=79"></script>
   <script src="../../common/responsive.js?v=1"></script>
 </body>
 </html>

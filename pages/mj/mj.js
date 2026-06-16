@@ -144,7 +144,7 @@ function startSync(){
 let termCatalog = {};         // {id: {titre, ...}} depuis data/terminals.json
 let termOpen = {};            // {[joueurId]: termId} — terminaux ouverts
 function loadTerminauxList(){
-  fetch('../../data/terminals.json?v=2').then(r => r.json()).then(d => {
+  fetch('../../data/terminals.json?v=3').then(r => r.json()).then(d => {
     termCatalog = d.terminals || {};
     const sel = document.getElementById('term-sel'); if(!sel) return;
     sel.innerHTML = Object.keys(termCatalog).map(id =>
@@ -175,6 +175,19 @@ function renderTerminalMJ(){
   if(!entries.length){ el.innerHTML = '<span style="font-size:9px;color:var(--td)">Aucun terminal ouvert.</span>'; return; }
   el.innerHTML = '<div style="font-size:9px;color:var(--g);line-height:1.5">● ouvert : '
     + entries.map(([pid, t]) => (joueurs[pid]?.nom || pid) + ' → ' + (termCatalog[t]?.titre || t)).join('<br>') + '</div>';
+}
+
+// Crochetage — le MJ demande un crochetage aux joueurs sélectionnés (/crochetage/data {[id]:{diff,label,status}})
+function declencherCrochetage(){
+  if(!selected.size){ showMsg('Aucun joueur sélectionné !', true); return; }
+  const diff = parseInt(document.getElementById('croch-diff')?.value) || 2;
+  const label = (document.getElementById('croch-label')?.value || '').trim() || 'Serrure';
+  const upd = {};
+  [...selected].forEach(id => { upd[id] = { diff, label, ts: Date.now(), status: 'open' }; });
+  db.collection('crochetage').doc('data').set(upd, { merge: true }).catch(e => console.error(e));
+  const noms = [...selected].map(id => joueurs[id]?.nom || id).join(', ');
+  showMsg('🔓 Crochetage « ' + label + ' » (D' + diff + ') lancé à ' + selected.size + ' joueur(s)');
+  logAction('Crochetage « ' + label + ' » (D' + diff + ') demandé à ' + noms);
 }
 
 // ============================================================

@@ -20,6 +20,15 @@
           "children": [
             { "id": "p1", "label": "Porte du laboratoire", "body": ">> VERROUILLÉE <<\nNiveau d'accréditation insuffisant." }
           ]
+        },
+        {
+          "id": "classifie",
+          "label": "DOSSIER CLASSIFIÉ",
+          "locked": 2,
+          "body": "PROJET CERBÈRE — phase 3.\nLes sujets présentent une agressivité accrue. Confinement niveau 4 recommandé.",
+          "children": [
+            { "id": "c1", "label": "Code d'accès au bunker", "body": "Code porte bunker : 7-3-9-1" }
+          ]
         }
       ]
     }

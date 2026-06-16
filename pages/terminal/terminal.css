@@ -36,6 +36,9 @@ body{ font-family:'Share Tech Mono', monospace; }
 .t-entry:hover, .t-entry.sel{ background:var(--tg); color:var(--tbg); text-shadow:none; }
 .t-entry:hover::before, .t-entry.sel::before{ opacity:1; color:var(--tbg); }
 .t-body{ margin:6px 0 14px; opacity:.95; }
+.t-entry.locked{ color:#ffb454; }
+.t-entry.locked:hover, .t-entry.locked.sel{ background:#ffb454; color:var(--tbg); }
+.t-entry.locked:hover::before, .t-entry.locked.sel::before{ color:var(--tbg); }
 .t-back{ margin-top:18px; }
 .t-err{ color:#ff6a6a; text-shadow:0 0 6px rgba(255,80,80,.6); }
 
