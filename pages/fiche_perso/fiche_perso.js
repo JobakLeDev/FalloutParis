@@ -98,7 +98,7 @@ let curTab='general', curInv='all';
 
 function sw(tab){
   document.querySelectorAll('.tab').forEach((el,i)=>{
-    el.classList.toggle('on',['general','inventaire','perks','carte','quetes','journal','radio'][i]===tab);
+    el.classList.toggle('on',['general','inventaire','perks','carte','quetes','journal','encyclopedie','radio'][i]===tab);
   });
   document.querySelectorAll('.tc').forEach(el=>el.classList.remove('on'));
   const tc=document.getElementById('tc-'+tab);
@@ -129,6 +129,15 @@ function sw(tab){
       f.src='../journal/journal.html?id='+encodeURIComponent(id)+'&embed=1';
     } else if(f && f.contentWindow){
       f.contentWindow.postMessage('journal-refresh','*');
+    }
+  }
+  // Charger l'encyclopédie (iframe) ; sinon rafraîchir
+  if(tab==='encyclopedie'){
+    const f=document.getElementById('ency-frame');
+    if(f && !f.src){
+      f.src='../encyclopedie/encyclopedie.html?id='+encodeURIComponent(id)+'&embed=1';
+    } else if(f && f.contentWindow){
+      f.contentWindow.postMessage('ency-refresh','*');
     }
   }
   curTab=tab; rAll();

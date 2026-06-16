@@ -1,0 +1,43 @@
+{
+  "lieux": [
+    {
+      "id": "lieu-tour-eiffel",
+      "titre": "Tour Eiffel",
+      "img": "",
+      "poi": "Tour Eiffel",
+      "corps": "Ancienne merveille d'acier, désormais nid de Pillards perchés dans la ferraille. Visible depuis presque tout Paris.",
+      "liens": ["pnj-le-baron"]
+    }
+  ],
+  "personnages": [
+    {
+      "id": "pnj-le-baron",
+      "titre": "Le Baron",
+      "img": "",
+      "faction": "raiders",
+      "lieu": "lieu-tour-eiffel",
+      "corps": "Chef autoproclamé des Pillards de la Tour. Cruel mais étrangement cultivé.",
+      "liens": ["lieu-tour-eiffel"]
+    }
+  ],
+  "bestiaire": [
+    {
+      "id": "best-radroach",
+      "ref": "Radroach",
+      "img": "img/tokens/radroach.png",
+      "corps": "Cafard mutant de la taille d'un chat. Inoffensif seul, redoutable en nuée.",
+      "liens": []
+    }
+  ],
+  "evenements": [
+    {
+      "id": "evt-grande-guerre",
+      "titre": "La Grande Guerre",
+      "date": "23 octobre 2077",
+      "ordre": 1,
+      "img": "",
+      "corps": "Les bombes tombent. Paris bascule dans l'âge atomique en quelques heures.",
+      "liens": []
+    }
+  ]
+}

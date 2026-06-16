@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg?v=2">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fallout Paris — Encyclopédie</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../common/style.css?v=80">
+  <link rel="stylesheet" href="encyclopedie.css?v=1">
+  <link rel="stylesheet" href="../../common/zoom.css?v=2">
+</head>
+<body>
+
+<div id="app">
+  <!-- HEADER (masqué en iframe) -->
+  <div class="ehdr">
+    <div class="ehdr-title">📖 ENCYCLOPÉDIE<small id="ehdr-mode">Visiteur</small></div>
+    <div class="ehdr-btns">
+      <button class="hbtn" id="emj-btn" onclick="demanderMJ()">Mode MJ</button>
+      <a class="hbtn" href="../../index.html">Accueil</a>
+    </div>
+  </div>
+
+  <!-- BARRE : catégories + recherche -->
+  <div class="ecats">
+    <button class="ecat on" data-c="lieux"       onclick="setCat('lieux')">📍 Lieux</button>
+    <button class="ecat"     data-c="personnages" onclick="setCat('personnages')">👤 Personnages</button>
+    <button class="ecat"     data-c="bestiaire"   onclick="setCat('bestiaire')">🐾 Bestiaire</button>
+    <button class="ecat"     data-c="timeline"    onclick="setCat('timeline')">🕑 Timeline</button>
+    <input type="text" id="esearch" class="esearch" placeholder="Rechercher…" oninput="render()">
+  </div>
+
+  <div id="ency-list" class="ency-list"><div class="e-empty">Chargement…</div></div>
+</div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="../../common/shared.js?v=79"></script>
+  <script src="../../common/db.js?v=8"></script>
+  <script src="encyclopedie.js?v=1"></script>
+  <script>document.addEventListener('DOMContentLoaded', () => window.DB_READY.then(initEncy));</script>
+  <script src="../../common/responsive.js?v=1"></script>
+</body>
+</html>

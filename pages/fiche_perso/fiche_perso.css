@@ -10,14 +10,14 @@ html, body { height: 100%; overflow: hidden; }
 
 /* Onglets CARTE / QUÊTES / JOURNAL / BUTIN : l'iframe descend jusqu'en bas de l'écran (sans scroll).
    .pip étant en height:auto, on donne une hauteur EXPLICITE = hauteur d'écran restante. */
-#tc-carte, #tc-quetes, #tc-journal, #tc-butin {
+#tc-carte, #tc-quetes, #tc-journal, #tc-encyclopedie, #tc-butin {
   height: auto;
   margin: 0;
   padding: 0;
   overflow: hidden;
   text-align: center;
 }
-#tc-carte iframe, #tc-quetes iframe, #tc-journal iframe, #tc-butin iframe {
+#tc-carte iframe, #tc-quetes iframe, #tc-journal iframe, #tc-encyclopedie iframe, #tc-butin iframe {
   display: block;
   width: 100%;
   height: calc(100vh - 20rem);   /* descend jusqu'au bas de page (header+onglets ≈ 20rem) */

@@ -1,0 +1,52 @@
+#app{ max-width:1100px; margin:0 auto; padding:10px 14px 40px; }
+body.embed .ehdr{ display:none; }
+body.embed #app{ padding:6px 4px 24px; }
+
+.ehdr{ display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--b2); padding:8px 4px; margin-bottom:10px; }
+.ehdr-title{ font-family:'Oswald',sans-serif; font-size:18px; letter-spacing:3px; color:var(--g); }
+.ehdr-title small{ display:block; font-size:8px; color:var(--td); letter-spacing:2px; }
+.ehdr-btns{ display:flex; gap:6px; }
+.hbtn{ background:var(--gk); border:1px solid var(--b2); color:var(--t); font-family:'Share Tech Mono',monospace; font-size:9px; padding:5px 10px; cursor:pointer; text-decoration:none; }
+.hbtn:hover{ border-color:var(--g); }
+
+/* Catégories + recherche */
+.ecats{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
+.ecat{ background:#0a160d; border:1px solid var(--b); color:var(--td); font-family:'Share Tech Mono',monospace; font-size:10px; padding:6px 12px; cursor:pointer; border-radius:4px; letter-spacing:1px; }
+.ecat:hover{ border-color:var(--b2); color:var(--t); }
+.ecat.on{ border-color:var(--g); color:var(--tb); background:var(--gk); }
+.esearch{ flex:1; min-width:120px; background:#060d06; border:1px solid var(--b2); color:var(--t); font-family:'Share Tech Mono',monospace; font-size:10px; padding:6px 8px; outline:none; }
+.esearch:focus{ border-color:var(--g); }
+
+.e-empty{ color:var(--td); font-size:10px; letter-spacing:1px; text-align:center; padding:30px; }
+.e-muted{ color:var(--td); font-size:8px; }
+
+/* Cartes (grille) */
+.ecards{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:12px; }
+.ecard{ background:var(--p); border:1px solid var(--b2); border-radius:6px; overflow:hidden; display:flex; flex-direction:column; }
+.e-img{ width:100%; height:150px; background:#060d06; display:flex; align-items:center; justify-content:center; border-bottom:1px solid var(--b); }
+.e-img img{ width:100%; height:100%; object-fit:cover; }
+.e-img.sm{ height:110px; border:1px solid var(--b); border-radius:4px; margin:4px 0; }
+.e-img.sm img{ object-fit:contain; }
+.e-body{ padding:9px 11px; display:flex; flex-direction:column; gap:6px; }
+.e-title{ font-family:'Oswald',sans-serif; font-size:15px; letter-spacing:1px; color:var(--tb); }
+.e-metas{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+.e-badge{ font-size:8px; padding:1px 6px; border:1px solid; border-radius:3px; letter-spacing:1px; }
+.e-meta{ font-size:8px; color:var(--td); }
+.e-text{ font-size:10px; color:var(--t); line-height:1.5; white-space:pre-wrap; }
+.e-liens{ display:flex; flex-wrap:wrap; gap:4px; }
+.e-chip{ font-size:8px; color:var(--g); border:1px solid var(--b2); border-radius:10px; padding:1px 8px; }
+
+/* Révélation (MJ) */
+.e-reveal-row{ display:flex; flex-wrap:wrap; gap:4px; align-items:center; border-top:1px solid var(--b); padding-top:6px; margin-top:2px; }
+.e-reveal-lbl{ font-size:7px; color:var(--td); letter-spacing:1px; }
+.e-reveal{ background:#060d06; border:1px solid var(--b); color:var(--td); font-family:'Share Tech Mono',monospace; font-size:7px; padding:2px 6px; cursor:pointer; border-radius:3px; }
+.e-reveal.on{ border-color:var(--g); color:var(--g); background:var(--gk); }
+.e-reveal-all{ background:none; border:1px solid var(--b2); color:var(--td); font-size:7px; padding:2px 7px; cursor:pointer; border-radius:3px; }
+.e-reveal-all:hover{ border-color:var(--g); color:var(--t); }
+
+/* Timeline */
+.etl{ position:relative; margin-left:10px; padding-left:18px; border-left:2px solid var(--b2); }
+.etl-item{ position:relative; margin-bottom:16px; }
+.etl-dot{ position:absolute; left:-26px; top:4px; width:11px; height:11px; border-radius:50%; background:var(--g); box-shadow:0 0 7px rgba(93,190,93,.7); border:2px solid var(--bg); }
+.etl-card{ background:var(--p); border:1px solid var(--b2); border-radius:6px; padding:9px 11px; display:flex; flex-direction:column; gap:5px; }
+.etl-date{ font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--am); letter-spacing:1px; }

@@ -43,6 +43,7 @@ service cloud.firestore {
     match /butin/{doc}      { allow read, write: if true; }
     match /messagerie/{doc} { allow read, write: if true; }
     match /poolsEchange/{doc} { allow read, write: if true; }   // pools d'échange de groupe
+    match /encyclopedie/{doc} { allow read, write: if true; }   // état de découverte de l'encyclopédie
 
     // ---------- Messages (conversations) ----------
     // convId = [a,b].sort().join('__'). Historique dans {msgs:[{from,text,ts}]}.
