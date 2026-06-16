@@ -9,9 +9,31 @@ let termData = {}, term = null, pathStack = [], _children = [];
 let _type = null;   // { timer, el, full, cb }
 
 function esc(s){ return (s == null ? '' : '' + s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function muted(){ try{ return localStorage.getItem('fp_sfxMuted') === '1'; }catch(e){ return false; } }
 function beep(){
-  try{ if(localStorage.getItem('fp_sfxMuted') === '1') return;
+  try{ if(muted()) return;
     const a = new Audio('../../audio/sfx/bouton_sfx.mp3'); a.volume = 0.35; a.play().catch(()=>{}); }catch(e){}
+}
+// Son d'accès autorisé (fin de boot → vrai terminal)
+function authSfx(){
+  try{ if(muted()) return;
+    const a = new Audio('../../audio/sfx/auth_ok_terminal_sfx.mp3'); a.volume = 0.55; a.play().catch(()=>{}); }catch(e){}
+}
+// Son de frappe : boucle tant que du texte s'écrit (débounce pour rester continu entre les lignes)
+let _typeAudio = null, _typeStopTimer = null;
+function typeSfxOn(){
+  if(muted()) return;
+  if(_typeStopTimer){ clearTimeout(_typeStopTimer); _typeStopTimer = null; }
+  try{
+    if(!_typeAudio){ _typeAudio = new Audio('../../audio/sfx/type_txt_sfx.mp3'); _typeAudio.loop = true; _typeAudio.volume = 0.5; }
+    if(_typeAudio.paused) _typeAudio.play().catch(()=>{});
+  }catch(e){}
+}
+function typeSfxOff(now){
+  if(!_typeAudio) return;
+  if(_typeStopTimer) clearTimeout(_typeStopTimer);
+  const stop = () => { try{ _typeAudio.pause(); _typeAudio.currentTime = 0; }catch(e){} _typeStopTimer = null; };
+  if(now) stop(); else _typeStopTimer = setTimeout(stop, 160);
 }
 
 function initTerminal(){
@@ -52,7 +74,7 @@ function boot(){
     'ACCÈS AUTORISÉ.',
     ''
   ];
-  typeLines(el, lines, () => render());
+  typeLines(el, lines, () => { authSfx(); render(); });
 }
 function typeLines(el, lines, cb){
   let i = 0;
@@ -69,12 +91,12 @@ function typewriter(el, text, cb, speed){
   speed = speed || 12;
   let i = 0; el.textContent = '';
   _type = { el, full: text, cb };
+  if(text && text.length) typeSfxOn();
   const step = () => {
     if(!_type || _type.el !== el){ return; }
     el.textContent = text.slice(0, i);
-    if(i % 2 === 0) {} // (cadence)
     if(i++ <= text.length){ _type.timer = setTimeout(step, speed); }
-    else { _type = null; cb && cb(); }
+    else { _type = null; typeSfxOff(); cb && cb(); }
   };
   step();
 }
@@ -82,6 +104,7 @@ function skipType(){
   if(!_type) return;
   clearTimeout(_type.timer);
   const { el, full, cb } = _type; _type = null;
+  typeSfxOff(true);
   el.textContent = full; cb && cb();
 }
 

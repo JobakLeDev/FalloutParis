@@ -1,8 +1,11 @@
 Liste des truc à implémenter :
 
-(rien en attente — ajoute tes nouvelles idées ici)
-
+le terminal doit s'afficher dans un pop up (tout le reste est assombri à 80%), avec un cadre qui ressemble à un ecran crt (contour en image? génération svg? à toi de me dire)
+implémenter la notion de hack pour les terminaux? comment c'est géré dans le pdf? propose moi des solutions
+l'encyclopédie joueur ne se met pas à jour quand je rend visible depuis la page mj
+comment on gère le crochetage dans le pdf? propose une adaptation (le mj lance une action de crochetage et ça gère la réussite avec une anim côté joueur)
 --- Fait ---
+-[OK] sons terminal : type_txt_sfx (frappe, en boucle) + auth_ok_terminal_sfx (fin de boot)
 -[OK] échec complet d'attaque : Aim + Miss Fortune peuvent relancer des d20 (et la relance qui réussit débloque les dégâts)
 -[OK] halo lumineux sur le jeton dont c'est le tour (carte MJ + joueur ; ennemis non visibles non concernés côté joueur)
 -[OK] portes : le joueur déclare une action mineure (clic porte adjacente à son tour), le MJ valide pour ouvrir ; le MJ ouvre directement
