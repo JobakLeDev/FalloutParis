@@ -4,20 +4,29 @@
   <meta charset="UTF-8">
   <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg?v=2">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RobCo Termlink</title>
+  <title>Bull Télématique — Minitel</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="terminal.css?v=1">
+  <link rel="stylesheet" href="terminal.css?v=5">
 </head>
 <body>
-  <div id="term-screen" class="term-screen">
-    <div id="term-crt" class="term-crt">
-      <div id="term-out" class="term-out"></div>
+  <div class="term-room">
+    <div class="crt">
+      <div class="crt-screen" id="crt-screen">
+        <div id="term-crt" class="term-crt"><div id="term-out" class="term-out"></div></div>
+        <div class="term-scan"></div>
+        <div class="term-vignette"></div>
+        <div id="term-off" class="term-off on"></div>
+      </div>
+      <div class="crt-base">
+        <span class="crt-brand">BULL TÉLÉMATIQUE · MINITEL 5000</span>
+        <span class="crt-spacer"></span>
+        <span id="power-led" class="power-led"></span>
+        <button id="power-btn" class="power-btn" onclick="togglePower()" title="Marche / Arrêt">⏻</button>
+      </div>
     </div>
-    <div class="term-scan"></div>
-    <div class="term-vignette"></div>
   </div>
 
-  <script src="terminal.js?v=4"></script>
+  <script src="terminal.js?v=5"></script>
   <script>document.addEventListener('DOMContentLoaded', initTerminal);</script>
 </body>
 </html>

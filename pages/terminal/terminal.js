@@ -7,6 +7,7 @@
 const _tp = new URLSearchParams(location.search);
 let termData = {}, term = null, pathStack = [], _children = [];
 let _type = null;   // { timer, el, full, cb }
+let powered = false;   // état marche/arrêt du moniteur
 
 function esc(s){ return (s == null ? '' : '' + s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function muted(){ try{ return localStorage.getItem('fp_sfxMuted') === '1'; }catch(e){ return false; } }
@@ -39,15 +40,33 @@ function typeSfxOff(now){
 function initTerminal(){
   // Skip de la frappe au clic sur l'écran (hors entrées de menu)
   document.getElementById('term-crt').addEventListener('click', e => {
-    if(_type && !e.target.closest('.t-entry')) skipType();
+    if(powered && _type && !e.target.closest('.t-entry')) skipType();
   });
+  // On charge les données mais on reste ÉTEINT : le bouton power lance le terminal
   fetch('../../data/terminals.json?v=2').then(r => r.json()).then(d => {
     termData = d.terminals || {};
     const wanted = _tp.get('t');
     term = (wanted && termData[wanted]) || termData[Object.keys(termData)[0]] || null;
+  }).catch(() => { termData = {}; term = null; });
+}
+
+// Marche / Arrêt du moniteur
+function togglePower(){
+  powered = !powered;
+  const off = document.getElementById('term-off');
+  const led = document.getElementById('power-led');
+  const screen = document.getElementById('crt-screen');
+  if(off) off.classList.toggle('on', !powered);
+  if(led) led.classList.toggle('on', powered);
+  if(powered){
+    if(screen){ screen.classList.remove('powering'); void screen.offsetWidth; screen.classList.add('powering'); }
+    pathStack = [];
     if(!term){ showError('AUCUN TERMINAL CONFIGURÉ'); return; }
     boot();
-  }).catch(() => showError('ERREUR DE CHARGEMENT DES DONNÉES'));
+  } else {
+    typeSfxOff(true); _type = null; pathStack = [];
+    const out = document.getElementById('term-out'); if(out) out.innerHTML = '';
+  }
 }
 
 function showError(msg){

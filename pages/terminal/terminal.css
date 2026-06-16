@@ -3,30 +3,41 @@
 html,body{ margin:0; height:100%; background:#000; overflow:hidden; }
 body{ font-family:'Share Tech Mono', monospace; }
 
-.term-screen{ position:fixed; inset:0; background:radial-gradient(ellipse at center, #04210d 0%, var(--tbg) 70%, #000 100%); overflow:hidden; }
-/* Légère courbure + lueur du tube */
-.term-crt{ position:absolute; inset:0; padding:5vh 6vw; overflow-y:auto; overflow-x:hidden;
+/* La « pièce » : fond très assombri autour du moniteur */
+.term-room{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; padding:3vh 3vw;
+  background:radial-gradient(ellipse at center, #0a0f0c 0%, #050705 55%, #000 100%); }
+
+/* Boîtier du moniteur (plastique beige/gris vieilli) */
+.crt{ width:min(900px, 94vw); max-height:94vh; display:flex; flex-direction:column;
+  background:linear-gradient(160deg, #c9c2a8, #9c977f 55%, #837e69);
+  border-radius:18px 18px 14px 14px; padding:18px 18px 0;
+  box-shadow:0 26px 60px rgba(0,0,0,.8), inset 0 2px 0 rgba(255,255,255,.35), inset 0 -3px 8px rgba(0,0,0,.35);
+  border:1px solid #6e6a58; }
+
+/* Écran (verre bombé) */
+.crt-screen{ position:relative; flex:1; min-height:0; border-radius:30px/22px; overflow:hidden;
+  background:radial-gradient(ellipse at center, #04210d 0%, var(--tbg) 70%, #000 100%);
+  box-shadow:inset 0 0 8vh rgba(0,0,0,.9), 0 0 0 10px #2a281f, 0 0 0 12px #15140f;
+  aspect-ratio:4 / 3; }
+
+.term-crt{ position:absolute; inset:0; padding:5% 6%; overflow-y:auto; overflow-x:hidden;
   color:var(--tg); text-shadow:0 0 5px rgba(51,255,102,.7), 0 0 14px rgba(51,255,102,.35);
   animation:termFlicker 5s infinite; }
 .term-crt::-webkit-scrollbar{ width:8px; } .term-crt::-webkit-scrollbar-thumb{ background:rgba(51,255,102,.35); }
+.term-out{ font-size:clamp(12px, 2.4vh, 19px); line-height:1.5; letter-spacing:1px; white-space:pre-wrap; }
 
-.term-out{ font-size:clamp(13px, 2.1vh, 20px); line-height:1.5; letter-spacing:1px; white-space:pre-wrap; }
-
-/* En-tête ROBCO */
+/* En-tête + menus + texte */
 .t-head{ border-bottom:1px solid var(--tgd); padding-bottom:6px; margin-bottom:14px; opacity:.92; }
-.t-head .t-h1{ font-size:1em; }
 .t-title{ margin:10px 0 16px; opacity:.85; }
-
-/* Lignes de menu (drill-down) */
 .t-menu{ margin-top:10px; }
 .t-entry{ display:block; width:100%; text-align:left; background:none; border:none; color:inherit;
   font:inherit; text-shadow:inherit; padding:3px 0 3px 1.4em; cursor:pointer; position:relative; letter-spacing:1px; }
 .t-entry::before{ content:'>'; position:absolute; left:0; opacity:0; }
 .t-entry:hover, .t-entry.sel{ background:var(--tg); color:var(--tbg); text-shadow:none; }
 .t-entry:hover::before, .t-entry.sel::before{ opacity:1; color:var(--tbg); }
-
 .t-body{ margin:6px 0 14px; opacity:.95; }
 .t-back{ margin-top:18px; }
+.t-err{ color:#ff6a6a; text-shadow:0 0 6px rgba(255,80,80,.6); }
 
 /* Curseur clignotant */
 .t-cursor{ display:inline-block; width:.6em; height:1.05em; background:var(--tg); vertical-align:-2px;
@@ -34,15 +45,31 @@ body{ font-family:'Share Tech Mono', monospace; }
 @keyframes termBlink{ 50%{ opacity:0; } }
 @keyframes termFlicker{ 0%,100%{opacity:1;} 92%{opacity:1;} 93%{opacity:.82;} 94%{opacity:1;} 97%{opacity:.9;} 98%{opacity:1;} }
 
-/* Scanlines + balayage */
+/* Scanlines + balayage + vignette (par-dessus l'écran) */
 .term-scan{ position:absolute; inset:0; pointer-events:none; z-index:5;
   background:repeating-linear-gradient(0deg, rgba(0,0,0,0) 0 2px, rgba(0,0,0,.28) 2px 4px); }
-.term-scan::after{ content:''; position:absolute; left:0; right:0; height:14vh;
+.term-scan::after{ content:''; position:absolute; left:0; right:0; height:14%;
   background:linear-gradient(180deg, rgba(51,255,102,0), rgba(51,255,102,.06), rgba(51,255,102,0));
   animation:termSweep 7s linear infinite; }
-@keyframes termSweep{ 0%{ top:-15vh; } 100%{ top:100vh; } }
-/* Vignette + bords assombris */
-.term-vignette{ position:absolute; inset:0; pointer-events:none; z-index:6;
-  box-shadow:inset 0 0 18vh rgba(0,0,0,.85); border-radius:2vh; }
+@keyframes termSweep{ 0%{ top:-15%; } 100%{ top:100%; } }
+.term-vignette{ position:absolute; inset:0; pointer-events:none; z-index:6; box-shadow:inset 0 0 12vh rgba(0,0,0,.85); }
 
-.t-err{ color:#ff6a6a; text-shadow:0 0 6px rgba(255,80,80,.6); }
+/* Écran ÉTEINT : voile noir + léger reflet, masque tout */
+.term-off{ position:absolute; inset:0; z-index:8; pointer-events:none; opacity:0; transition:opacity .25s;
+  background:radial-gradient(ellipse at 38% 28%, rgba(40,44,40,.5), rgba(0,0,0,.96) 70%); }
+.term-off.on{ opacity:1; }
+/* Allumage CRT : flash + déploiement vertical */
+.crt-screen.powering .term-crt{ animation:crtOn .45s ease-out; }
+@keyframes crtOn{ 0%{ transform:scaleY(.004); filter:brightness(3); } 45%{ transform:scaleY(.02); filter:brightness(2.2); } 100%{ transform:scaleY(1); filter:brightness(1); } }
+
+/* Socle : marque + LED + bouton marche/arrêt */
+.crt-base{ display:flex; align-items:center; gap:10px; padding:9px 6px 12px; }
+.crt-brand{ font-size:11px; letter-spacing:2px; color:#4a4636; font-weight:bold; text-shadow:0 1px 0 rgba(255,255,255,.3); }
+.crt-spacer{ flex:1; }
+.power-led{ width:9px; height:9px; border-radius:50%; background:#3a1010; box-shadow:inset 0 0 2px rgba(0,0,0,.6); }
+.power-led.on{ background:#ff3b3b; box-shadow:0 0 8px rgba(255,60,60,.9); }
+.power-btn{ width:38px; height:38px; border-radius:50%; cursor:pointer; font-size:17px; color:#2a281f;
+  background:radial-gradient(circle at 38% 32%, #e9e3cc, #b3ad92 60%, #8e896f);
+  border:1px solid #6e6a58; box-shadow:0 3px 5px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.5); }
+.power-btn:hover{ filter:brightness(1.06); }
+.power-btn:active{ transform:translateY(1px); box-shadow:0 1px 3px rgba(0,0,0,.5), inset 0 2px 4px rgba(0,0,0,.4); }
