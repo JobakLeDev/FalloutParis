@@ -19,7 +19,7 @@ function initTerminal(){
   document.getElementById('term-crt').addEventListener('click', e => {
     if(_type && !e.target.closest('.t-entry')) skipType();
   });
-  fetch('../../data/terminals.json?v=1').then(r => r.json()).then(d => {
+  fetch('../../data/terminals.json?v=2').then(r => r.json()).then(d => {
     termData = d.terminals || {};
     const wanted = _tp.get('t');
     term = (wanted && termData[wanted]) || termData[Object.keys(termData)[0]] || null;
@@ -29,7 +29,7 @@ function initTerminal(){
 }
 
 function showError(msg){
-  document.getElementById('term-out').innerHTML = '<div class="t-head"><div class="t-h1">ROBCO INDUSTRIES (TM) TERMLINK</div></div><div class="t-err">! ' + esc(msg) + ' !</div>';
+  document.getElementById('term-out').innerHTML = '<div class="t-head"><div class="t-h1">BULL TÉLÉMATIQUE (MC) — SERVICE TÉLÉTEL</div></div><div class="t-err">! ' + esc(msg) + ' !</div>';
 }
 
 // ---- Boot ----
@@ -38,15 +38,15 @@ function boot(){
   out.innerHTML = '<div id="t-boot"></div>';
   const el = document.getElementById('t-boot');
   const lines = [
-    'ROBCO INDUSTRIES (TM) TERMLINK PROTOCOL',
+    'BULL TÉLÉMATIQUE (MC) — PROTOCOLE TÉLÉTEL',
     'INITIALISATION DU SYSTÈME...',
-    'COPYRIGHT 2075-2077 ROBCO INDUSTRIES',
-    'CHARGEMENT...',
+    'COPYRIGHT 2075-2077 BULL TÉLÉMATIQUE — D.G.T.',
+    'TERMINAL MINITEL 5000',
     '',
-    '>SET TERMINAL/INQUIRE',
-    'RIT-V300',
-    '>SET FILE/PROTECTION=OWNER:RWED ACCESS',
-    '>SET HALT RESTART/MAINT',
+    'CONNEXION AU RÉSEAU TÉLÉTEL...',
+    'NUMÉROTATION 3615...',
+    'PORTEUSE DÉTECTÉE — 1200/75 BAUDS',
+    '>CONNECT',
     '',
     'ACCÈS AUTORISÉ.',
     ''
@@ -93,7 +93,7 @@ function render(){
   const titre = node ? (node.label || '') : (term.titre || '');
 
   out.innerHTML =
-    '<div class="t-head"><div class="t-h1">' + esc(term.header || 'ROBCO INDUSTRIES (TM) TERMLINK') + '</div></div>'
+    '<div class="t-head"><div class="t-h1">' + esc(term.header || 'BULL TÉLÉMATIQUE (MC) — SERVICE TÉLÉTEL') + '</div></div>'
     + (titre ? '<div class="t-title">' + esc(titre) + '</div>' : '')
     + '<div class="t-body" id="t-body"></div>'
     + '<div class="t-menu" id="t-menu"></div>';
