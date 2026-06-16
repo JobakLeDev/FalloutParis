@@ -189,6 +189,18 @@ function declencherCrochetage(){
   showMsg('🔓 Crochetage « ' + label + ' » (D' + diff + ') lancé à ' + selected.size + ' joueur(s)');
   logAction('Crochetage « ' + label + ' » (D' + diff + ') demandé à ' + noms);
 }
+// Annule la demande (le bandeau/la modale disparaissent côté joueur). Sélectionnés → ceux-là ; sinon → tout le monde.
+function annulerCrochetage(){
+  if(selected.size){
+    const upd = {};
+    [...selected].forEach(id => { upd[id] = firebase.firestore.FieldValue.delete(); });
+    db.collection('crochetage').doc('data').set(upd, { merge: true }).catch(e => console.error(e));
+    showMsg('Crochetage annulé pour ' + selected.size + ' joueur(s)');
+  } else {
+    db.collection('crochetage').doc('data').set({}).catch(e => console.error(e));
+    showMsg('Crochetage annulé (tous)');
+  }
+}
 
 // ============================================================
 // RADIO — conducteur MJ : choisit station/piste, écrit /radio/current (les joueurs suivent)
