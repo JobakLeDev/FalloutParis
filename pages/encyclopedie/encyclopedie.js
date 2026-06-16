@@ -16,8 +16,19 @@ let joueurs = {};
 let state = { reveal: {}, lieuxPoi: {} };   // état de découverte (Firebase)
 let cat = 'lieux';
 
+// Garantit un id stable sur chaque entrée (clé de révélation) même si le JSON Notion l'omet
+function _slug(s){ return ('' + s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') || 'x'; }
+function ensureIds(){
+  const E = window.ENCY || {};
+  const pref = { lieux:'lieu', personnages:'pnj', bestiaire:'best', evenements:'evt' };
+  Object.keys(pref).forEach(k => (E[k] || []).forEach((e, i) => {
+    if(!e.id) e.id = pref[k] + '-' + _slug(e.titre || e.ref || ('x' + i));
+  }));
+}
+
 function initEncy(){
   if(embed) document.body.classList.add('embed');
+  ensureIds();
   fdb = firebase.initializeApp(firebaseConfig).firestore();
   updateModeUI();
   fdb.collection('joueurs').onSnapshot(s => {
