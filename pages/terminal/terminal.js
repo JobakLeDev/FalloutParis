@@ -15,10 +15,10 @@ function beep(){
   try{ if(muted()) return;
     const a = new Audio('../../audio/sfx/bouton_sfx.mp3'); a.volume = 0.35; a.play().catch(()=>{}); }catch(e){}
 }
-// Son d'accès autorisé (fin de boot → vrai terminal)
-function authSfx(){
+// Son d'allumage (clic sur ON) / extinction (clic sur OFF)
+function sfx(file, vol){
   try{ if(muted()) return;
-    const a = new Audio('../../audio/sfx/auth_ok_terminal_sfx.mp3'); a.volume = 0.55; a.play().catch(()=>{}); }catch(e){}
+    const a = new Audio('../../audio/sfx/' + file); a.volume = vol || 0.55; a.play().catch(()=>{}); }catch(e){}
 }
 // Son de frappe : boucle tant que du texte s'écrit (débounce pour rester continu entre les lignes)
 let _typeAudio = null, _typeStopTimer = null;
@@ -59,11 +59,13 @@ function togglePower(){
   if(off) off.classList.toggle('on', !powered);
   if(btn) btn.classList.toggle('on', powered);
   if(powered){
+    sfx('start_terminal_sfx.mp3');   // son d'allumage
     if(screen){ screen.classList.remove('powering'); void screen.offsetWidth; screen.classList.add('powering'); }
     pathStack = [];
     if(!term){ showError('AUCUN TERMINAL CONFIGURÉ'); return; }
     boot();
   } else {
+    sfx('end_terminal_sfx.mp3');      // son d'extinction
     typeSfxOff(true); _type = null; pathStack = [];
     const out = document.getElementById('term-out'); if(out) out.innerHTML = '';
   }
@@ -93,7 +95,7 @@ function boot(){
     'ACCÈS AUTORISÉ.',
     ''
   ];
-  typeLines(el, lines, () => { authSfx(); render(); });
+  typeLines(el, lines, () => render());
 }
 function typeLines(el, lines, cb){
   let i = 0;
