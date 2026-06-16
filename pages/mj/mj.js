@@ -129,7 +129,52 @@ function startSync(){
     boutiqueData = { shops: (d.shops && typeof d.shops === 'object') ? d.shops : {} };
     renderBoutiqueMJ();
   });
+  db.collection('terminaux').doc('data').onSnapshot(s => {
+    const d = s.exists ? s.data() : {};
+    termOpen = (d.open && typeof d.open === 'object') ? d.open : {};
+    renderTerminalMJ();
+  });
+  loadTerminauxList();
   mjRadioLoad();
+}
+
+// ============================================================
+// TERMINAL — le MJ déclenche un terminal pour les joueurs sélectionnés (/terminaux/data {open:{[id]:termId}})
+// ============================================================
+let termCatalog = {};         // {id: {titre, ...}} depuis data/terminals.json
+let termOpen = {};            // {[joueurId]: termId} — terminaux ouverts
+function loadTerminauxList(){
+  fetch('../../data/terminals.json?v=2').then(r => r.json()).then(d => {
+    termCatalog = d.terminals || {};
+    const sel = document.getElementById('term-sel'); if(!sel) return;
+    sel.innerHTML = Object.keys(termCatalog).map(id =>
+      '<option value="' + id + '">' + (termCatalog[id].titre || id) + '</option>').join('')
+      || '<option value="">(aucun terminal dans terminals.json)</option>';
+  }).catch(() => {});
+}
+function declencherTerminal(){
+  if(!selected.size){ showMsg('Aucun joueur sélectionné !', true); return; }
+  const tid = document.getElementById('term-sel')?.value;
+  if(!tid){ showMsg('Aucun terminal choisi', true); return; }
+  termOpen = termOpen || {};
+  [...selected].forEach(id => { termOpen[id] = tid; });
+  db.collection('terminaux').doc('data').set({ open: termOpen }, { merge:true }).catch(e => console.error(e));
+  const noms = [...selected].map(id => joueurs[id]?.nom || id).join(', ');
+  showMsg('💻 Terminal « ' + (termCatalog[tid]?.titre || tid) + ' » ouvert à ' + selected.size + ' joueur(s)');
+  logAction('Terminal « ' + (termCatalog[tid]?.titre || tid) + ' » ouvert à ' + noms);
+}
+function fermerTerminaux(){
+  termOpen = {};
+  db.collection('terminaux').doc('data').set({ open: {} }).catch(e => console.error(e));
+  showMsg('Terminaux fermés');
+  renderTerminalMJ();
+}
+function renderTerminalMJ(){
+  const el = document.getElementById('term-summary'); if(!el) return;
+  const entries = Object.entries(termOpen).filter(([,t]) => t);
+  if(!entries.length){ el.innerHTML = '<span style="font-size:9px;color:var(--td)">Aucun terminal ouvert.</span>'; return; }
+  el.innerHTML = '<div style="font-size:9px;color:var(--g);line-height:1.5">● ouvert : '
+    + entries.map(([pid, t]) => (joueurs[pid]?.nom || pid) + ' → ' + (termCatalog[t]?.titre || t)).join('<br>') + '</div>';
 }
 
 // ============================================================

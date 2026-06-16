@@ -174,6 +174,13 @@ function startSync() {
       (err) => console.warn('boutiques indisponible:', err && err.code)
     );
   } catch(e){ console.warn('boutiques listener KO:', e); }
+  // Terminal déclenché par le MJ — bandeau si un terminal est ouvert à ce joueur
+  try {
+    db.collection('terminaux').doc('data').onSnapshot(
+      (s) => { try { renderTerminalAlert(s.exists ? s.data() : null); } catch(e){ console.error('terminal:', e); } },
+      (err) => console.warn('terminaux indisponible:', err && err.code)
+    );
+  } catch(e){ console.warn('terminaux listener KO:', e); }
   // Radio — diffusion synchronisée pilotée par le MJ (le joueur suit ; couper + volume)
   try {
     radioInitFollower();
@@ -259,6 +266,28 @@ function renderShopAlert(d){
   if(open && !_shopAlertShown && typeof fpSfx === 'function') fpSfx('shopAlert');   // son à l'apparition
   _shopAlertShown = open;
   if(!open){ const mo = document.getElementById('mo-shop'); if(mo) mo.classList.remove('on'); }
+}
+
+// Bandeau « terminal accessible » → ouvre la modale terminal (iframe terminal.html?t=<id>)
+let _termAlertShown = false, _activeTermId = null;
+function renderTerminalAlert(d){
+  const al = document.getElementById('terminal-alert'); if(!al) return;
+  const tid = d && d.open && d.open[JOUEUR_ID];
+  _activeTermId = tid || null;
+  const open = !!tid;
+  al.style.display = open ? 'flex' : 'none';
+  if(open && !_termAlertShown && typeof fpSfx === 'function') fpSfx('shopAlert');   // son à l'apparition
+  _termAlertShown = open;
+  if(!open){ const mo = document.getElementById('mo-terminal'); if(mo) mo.classList.remove('on'); const f = document.getElementById('terminal-frame'); if(f){ f.src='about:blank'; f.removeAttribute('data-t'); } }
+}
+function openTerminal(){
+  if(!_activeTermId) return;
+  const f = document.getElementById('terminal-frame');
+  if(f && f.getAttribute('data-t') !== _activeTermId){
+    f.src = '../terminal/terminal.html?t=' + encodeURIComponent(_activeTermId);
+    f.setAttribute('data-t', _activeTermId);
+  }
+  const mo = document.getElementById('mo-terminal'); if(mo) mo.classList.add('on');
 }
 
 // Bandeau « proposition d'un autre joueur » → ouvre l'onglet CARTE pour accepter/refuser

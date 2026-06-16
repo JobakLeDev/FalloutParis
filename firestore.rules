@@ -44,6 +44,7 @@ service cloud.firestore {
     match /messagerie/{doc} { allow read, write: if true; }
     match /poolsEchange/{doc} { allow read, write: if true; }   // pools d'échange de groupe
     match /encyclopedie/{doc} { allow read, write: if true; }   // état de découverte de l'encyclopédie
+    match /terminaux/{doc}    { allow read, write: if true; }   // terminaux déclenchés par le MJ vers des joueurs
 
     // ---------- Messages (conversations) ----------
     // convId = [a,b].sort().join('__'). Historique dans {msgs:[{from,text,ts}]}.
