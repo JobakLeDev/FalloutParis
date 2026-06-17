@@ -114,5 +114,43 @@
     "units": ["Ultra Patrol"],
     "roles": ["gang_member", "enforcer", "officer", "veteran", "smuggler", "heavy"],
     "desc": "Violence organisée structurée en bandes mobiles disputant des territoires. Forte culture de bande."
+  },
+  "vault": {
+    "label": "Abri 74",
+    "tier": "mineure",
+    "category": "abri",
+    "color": "#3a78c2",
+    "structure": "communautaire fermée",
+    "militarized": "faible",
+    "presence": ["abri souterrain"],
+    "valeurs": ["sécurité", "ordre", "préparation"],
+    "traits": [
+      "Communauté d'abri préservée",
+      "Très organisée et hiérarchisée",
+      "Technologie d'avant-guerre conservée",
+      "Méfiance envers l'extérieur"
+    ],
+    "units": ["Vault Security"],
+    "roles": ["civilian", "militia", "technician", "medic", "scientist"],
+    "desc": "Communauté de l'Abri 74, préservée sous terre. Sûre, organisée, patiente : elle croit en la préparation et l'ordre."
+  },
+  "settlement": {
+    "label": "Bourg-de-Bois",
+    "tier": "mineure",
+    "category": "colonie",
+    "color": "#8a6d3b",
+    "structure": "colonie indépendante",
+    "militarized": "faible",
+    "presence": ["colonie de surface"],
+    "valeurs": ["solidarité", "discrétion", "débrouille"],
+    "traits": [
+      "Colonie indépendante de survivants",
+      "Communauté discrète et pratique",
+      "Entraide locale",
+      "Évite les conflits ouverts"
+    ],
+    "units": ["Settlement Guard"],
+    "roles": ["civilian", "militia", "merchant", "technician"],
+    "desc": "Colonie indépendante de Bourg-de-Bois. Discrète, attentive, pratique : elle croit en la communauté soudée et la débrouille."
   }
 }

@@ -101,7 +101,7 @@ async function charger(id){
   document.getElementById('e-code').value=d.code||'';
   document.getElementById('e-nom').value=d.nom||'';
   document.getElementById('e-faction').value=d.faction||'';
-  ['republique','reseau','commune','nnfp','zazous','ultras'].forEach(f=>{ const s=document.getElementById('e-rel-'+f); if(s) s.value=(d.factionRel&&d.factionRel[f])||'neutre'; });
+  ['republique','reseau','commune','nnfp','zazous','ultras','vault','settlement'].forEach(f=>{ const s=document.getElementById('e-rel-'+f); if(s) s.value=(d.factionRel&&d.factionRel[f])||'neutre'; });
   document.getElementById('e-niveau').value=d.niveau||1;
   document.getElementById('e-xp').value=d.xp||0;
   document.getElementById('e-hp').value=d.hp||0;
@@ -416,7 +416,7 @@ async function sauvegarder(){
   const data={
     nom:document.getElementById('e-nom').value.trim(),
     faction:document.getElementById('e-faction').value||'',
-    factionRel:['republique','reseau','commune','nnfp','zazous','ultras'].reduce((o,f)=>{ o[f]=document.getElementById('e-rel-'+f)?.value||'neutre'; return o; },{}),
+    factionRel:['republique','reseau','commune','nnfp','zazous','ultras','vault','settlement'].reduce((o,f)=>{ o[f]=document.getElementById('e-rel-'+f)?.value||'neutre'; return o; },{}),
     code:document.getElementById('e-code').value.trim()||editData.code||'0000',
     niveau,
     xp:parseInt(document.getElementById('e-xp').value)||0,
@@ -460,7 +460,7 @@ function nouveauPerso(){
   document.getElementById('e-code').value='';
   document.getElementById('e-nom').value='';
   document.getElementById('e-faction').value='';
-  ['republique','reseau','commune','nnfp','zazous','ultras'].forEach(f=>{ const s=document.getElementById('e-rel-'+f); if(s) s.value='neutre'; });
+  ['republique','reseau','commune','nnfp','zazous','ultras','vault','settlement'].forEach(f=>{ const s=document.getElementById('e-rel-'+f); if(s) s.value='neutre'; });
   document.getElementById('e-niveau').value=1;
   document.getElementById('e-xp').value=0;
   document.getElementById('e-hp').value=10;

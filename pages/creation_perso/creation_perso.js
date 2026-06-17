@@ -55,8 +55,8 @@ const Q = [
 ];
 
 const ORIGINS = {
-  vault:      {title:"Tu as grandi dans l'Abri 74.", desc:"Sûr, organisé, patient. Tu crois en la préparation et l'ordre.", faction:""},
-  settlement: {title:"Tu as grandi à Bourg-de-Bois.", desc:"Discret, attentif, pratique. Tu crois en la communauté discrète.", faction:""},
+  vault:      {title:"Tu as grandi dans l'Abri 74.", desc:"Sûr, organisé, patient. Tu crois en la préparation et l'ordre.", faction:"vault"},
+  settlement: {title:"Tu as grandi à Bourg-de-Bois.", desc:"Discret, attentif, pratique. Tu crois en la communauté discrète.", faction:"settlement"},
   zazous:     {title:"Tu es un Zazou !", desc:"Libre, expressif, créatif. Tu crois en la vie et l'amitié.", faction:"zazous"},
   ultras:     {title:"Tu es un Ultra !", desc:"Direct, loyal, courageux. Tu crois en la force et la fraternité.", faction:"ultras"}
 };
@@ -111,7 +111,7 @@ async function creer(){
   if(!questResult){showMsg('Réponds au questionnaire « Qui suis-je ? » d\'abord !','err');return;}
 
   const origine=questResult;
-  const faction=ORIGINS[origine].faction; // '' pour vault/settlement (sans faction politique)
+  const faction=ORIGINS[origine].faction; // chaque origine est une faction (Abri 74 / Bourg-de-Bois = factions mineures)
 
   // Vérifier que l'ID n'existe pas déjà
   const snap=await db.collection('joueurs').doc(id).get();

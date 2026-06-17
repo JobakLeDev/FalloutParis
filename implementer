@@ -1,6 +1,7 @@
 Liste des truc à implémenter :
 --- Fait ---
--[OK] création perso : questionnaire « Qui suis-je ? » (7 mises en situation, 4 origines : Abri 74/Bourg-de-Bois/Zazous/Ultras) → stocke origine ; faction='' pour Abri/Bourg (MJ définit), faction=zazous/ultras sinon. Style Fallout (creation_perso.js v4 / css v2)
+-[OK] création perso : questionnaire « Qui suis-je ? » (7 mises en situation, 4 origines : Abri 74/Bourg-de-Bois/Zazous/Ultras) → stocke origine + faction. Style Fallout (creation_perso.js v5 / css v2)
+-[OK] Abri 74 + Bourg-de-Bois = factions mineures à part entière (factions.json, encyclopedie.json, admin select + rapport, FACTION_LABELS). 8 factions au total.
 -[OK] encyclopédie Factions : catégorie Factions, base + sous-entrées indépendantes révélées manuellement par le MJ ; le joueur voit son rapport (neutre/allié/ennemi) ; base de sa faction auto-visible (membre) + révélée à la création
 
 -[OK] hack terminal : nœuds `locked:<diff>` → jet de Sciences (2D20) + anim ; réussite déverrouille, échec = verrouillage (reset à l'extinction). TN passé par la fiche (?sci)

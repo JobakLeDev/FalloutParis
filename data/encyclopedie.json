@@ -47,6 +47,8 @@
     { "id": "commune", "titre": "La Commune", "img": "", "corps": "Organisation populaire locale faite de communautés autonomes à structure horizontale. Très implantée dans certains quartiers.", "entries": [] },
     { "id": "nnfp", "titre": "Nouveau Nouveau Front Populaire", "img": "", "corps": "Coalition politique et militante post-apocalyptique, très idéologique, à fort ancrage populaire. Propagande importante, organisation de masse.", "entries": [] },
     { "id": "zazous", "titre": "Les Zazous", "img": "", "corps": "Mouvement de contre-culture autour du jazz, de la mode et des couleurs. Peu militarisé, ancré dans la vie nocturne et artistique.", "entries": [] },
-    { "id": "ultras", "titre": "Les Ultras", "img": "", "corps": "Violence organisée structurée en bandes mobiles disputant des territoires. Forte culture de bande.", "entries": [] }
+    { "id": "ultras", "titre": "Les Ultras", "img": "", "corps": "Violence organisée structurée en bandes mobiles disputant des territoires. Forte culture de bande.", "entries": [] },
+    { "id": "vault", "titre": "Abri 74", "img": "", "corps": "Communauté de l'Abri 74, préservée sous terre. Sûre, organisée, patiente : elle croit en la préparation et l'ordre.", "entries": [] },
+    { "id": "settlement", "titre": "Bourg-de-Bois", "img": "", "corps": "Colonie indépendante de survivants. Discrète, attentive, pratique : elle croit en la communauté soudée et la débrouille.", "entries": [] }
   ]
 }

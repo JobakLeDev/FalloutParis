@@ -3,7 +3,7 @@
 // CHAR — État du personnage
 // ============================================================
 
-const FACTION_LABELS = { republique:'République', reseau:'Réseau', commune:'Commune', nnfp:'NNFP', zazous:'Zazous', ultras:'Ultras' };
+const FACTION_LABELS = { republique:'République', reseau:'Réseau', commune:'Commune', nnfp:'NNFP', zazous:'Zazous', ultras:'Ultras', vault:'Abri 74', settlement:'Bourg-de-Bois' };
 function factionLabel(f){ return FACTION_LABELS[f] || (window.FACTIONS && window.FACTIONS[f] && window.FACTIONS[f].label) || '—'; }
 const char = {
   name:'',niveau:1,xp:0,origine:'',faction:'',factionRel:{},allocatedLevel:null,
