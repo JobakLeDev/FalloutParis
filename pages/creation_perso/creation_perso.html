@@ -39,8 +39,16 @@
       <input type="text" id="f-nom" placeholder="ex: Alice, Marcus Aurelius...">
     </div>
     <div class="field">
-      <label>Origine</label>
-      <input type="text" id="f-origine" placeholder="ex: Vault 74, Survivor...">
+      <label>Faction d'origine</label>
+      <select id="f-faction">
+        <option value="">— À définir avec le MJ —</option>
+        <option value="republique">République</option>
+        <option value="reseau">Réseau</option>
+        <option value="commune">Commune</option>
+        <option value="nnfp">NNFP</option>
+        <option value="zazous">Zazous</option>
+        <option value="ultras">Ultras</option>
+      </select>
       <div class="hint">Le MJ peut compléter le reste de ta fiche ensuite</div>
     </div>
   </div>
@@ -50,7 +58,7 @@
 </div>
   <script src="../../common/shared.js"></script>
   <script src="../../common/db.js"></script>
-  <script src="creation_perso.js"></script>
+  <script src="creation_perso.js?v=2"></script>
   <script src="../../common/theme.js?v=2"></script>
   <script src="../../common/responsive.js?v=1"></script>
 </body>

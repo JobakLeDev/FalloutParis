@@ -3,8 +3,10 @@
 // CHAR — État du personnage
 // ============================================================
 
+const FACTION_LABELS = { republique:'République', reseau:'Réseau', commune:'Commune', nnfp:'NNFP', zazous:'Zazous', ultras:'Ultras' };
+function factionLabel(f){ return FACTION_LABELS[f] || (window.FACTIONS && window.FACTIONS[f] && window.FACTIONS[f].label) || '—'; }
 const char = {
-  name:'',niveau:1,xp:0,origine:'',allocatedLevel:null,
+  name:'',niveau:1,xp:0,origine:'',faction:'',factionRel:{},allocatedLevel:null,
   hp:3,rad:0,momentum:0,powerArmor:false,
   special:{S:9,P:5,E:8,C:5,I:5,A:5,L:5},
   perks:{},
@@ -387,9 +389,9 @@ function rMeta(){
   const ni=document.getElementById('name-inp');
   if(ni && char.name) ni.textContent=char.name.toUpperCase();
   const m=document.getElementById('meta');
-  if(m) m.textContent=`LVL ${char.niveau} · ${char.origine||'—'} · ${char.xp}/${xpNext()} XP`;
+  if(m) m.textContent=`LVL ${char.niveau} · ${factionLabel(char.faction)} · ${char.xp}/${xpNext()} XP`;
   const ld=document.getElementById('lvl-display');
-  if(ld) ld.textContent=`Niveau ${char.niveau} · ${char.origine||'—'}`;
+  if(ld) ld.textContent=`Niveau ${char.niveau} · ${factionLabel(char.faction)}`;
 }
 
 function rMom(){

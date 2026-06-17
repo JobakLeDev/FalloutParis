@@ -5,7 +5,7 @@ async function creer(){
   const id=document.getElementById('f-id').value.trim();
   const code=document.getElementById('f-code').value.trim();
   const nom=document.getElementById('f-nom').value.trim();
-  const origine=document.getElementById('f-origine').value.trim();
+  const faction=document.getElementById('f-faction').value||'';
 
   if(!id){showMsg('Identifiant obligatoire !','err');return;}
   if(!code||code.length<4){showMsg('Code de 4 chiffres obligatoire !','err');return;}
@@ -16,7 +16,7 @@ async function creer(){
   if(snap.exists){showMsg('Cet identifiant est déjà pris !','err');return;}
 
   const data={
-    nom, origine:origine||'Inconnu', code,
+    nom, faction, factionRel:{}, code,
     niveau:1, xp:0, hp:10, rad:0, momentum:0, powerArmor:false,
     special:{S:5,P:5,E:5,C:5,I:5,A:5,L:5},
     perks:{}, skills:{en_weapon:0,cac_weapon:0,light_weapon:0,heavy_weapon:0,athletics:0,lockpick:0,speech:0,sneak:0,explosives:0,barehand:0,medicine:0,pilot:0,throwing:0,repair:0,science:0,survival:0,barter:0},

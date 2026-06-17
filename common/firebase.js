@@ -47,6 +47,8 @@ function appliquerDonnees(data) {
   if (!data) return;
   if (data.nom       !== undefined) char.name      = data.nom;
   if (data.origine   !== undefined) char.origine   = data.origine;
+  if (data.faction    !== undefined) char.faction    = data.faction;
+  if (data.factionRel !== undefined) char.factionRel = data.factionRel || {};
   // SFX : XP gagnée / niveau gagné (pas au 1er chargement) — le niveau prime sur l'XP
   if (typeof fpSfx === 'function'){
     if (_prevNiveau != null && data.niveau != null && data.niveau > _prevNiveau) fpSfx('lvlUp');
@@ -105,6 +107,8 @@ function saveToFirebase() {
       await db.collection('joueurs').doc(JOUEUR_ID).set({
         nom:          char.name,
         origine:      char.origine,
+        faction:      char.faction,
+        factionRel:   char.factionRel,
         niveau:       char.niveau,
         xp:           char.xp,
         allocatedLevel: char.allocatedLevel,
@@ -636,7 +640,8 @@ async function initFirebase() {
       const ni = document.getElementById('name-inp');
       if (ni && data.nom) ni.textContent = data.nom.toUpperCase();
       const mt = document.getElementById('meta');
-      if (mt && data.origine) mt.textContent = `LVL ${data.niveau||1} · ${data.origine} · ${data.xp||0}/${data.niveau>=20?21000:[0,100,300,600,1000,1500,2100,2800,3600,4500][Math.min(data.niveau||1,9)]} XP`;
+      const _facLbl = (typeof factionLabel === 'function') ? factionLabel(data.faction) : (data.faction || '—');
+      if (mt) mt.textContent = `LVL ${data.niveau||1} · ${_facLbl} · ${data.xp||0}/${data.niveau>=20?21000:[0,100,300,600,1000,1500,2100,2800,3600,4500][Math.min(data.niveau||1,9)]} XP`;
       try { appliquerDonnees(data); } catch (e) { console.error('appliquerDonnees:', e); }
     } else {
       // Nouveau joueur — créer le document avec les valeurs par défaut
