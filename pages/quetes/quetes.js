@@ -235,16 +235,17 @@ function render() {
 }
 
 // Vue joueur (lecture seule)
-// Texte affiché = version de la faction active si la quête en a (sinon desc simple)
-function questDisplay(q) {
-  if (q.versions_faction && q.factionActive && q.versions_faction[q.factionActive]) {
-    const v = q.versions_faction[q.factionActive];
-    return { desc: v.description || q.desc || '', objectif: v.objectif || '' };
+// Texte affiché = version de la faction DU JOUEUR si dispo, sinon faction par défaut (factionActive), sinon desc simple
+function questDisplay(q, faction) {
+  if (q.versions_faction) {
+    const f = (faction && q.versions_faction[faction]) ? faction : q.factionActive;
+    const v = q.versions_faction[f];
+    if (v) return { desc: v.description || q.desc || '', objectif: v.objectif || '' };
   }
   return { desc: q.desc || '', objectif: '' };
 }
 function renderQuestJoueur(q, st, objs, doneN) {
-  const disp = questDisplay(q);
+  const disp = questDisplay(q, (joueurs[viewerId] || {}).faction);
   const objHtml = objs.map(o => {
     const d = objDone(o);
     const counter = (o.target || 0) > 0 ? `<span class="q-count">${o.count || 0}/${o.target}</span>` : '';
@@ -280,7 +281,7 @@ function renderQuestMJ(q, i, st, objs, doneN) {
   // Bloc design (quêtes importées) : faction active, choix/conséquences, métadonnées
   const factionSel = q.versions_faction ? `<div class="q-field q-xp-row"><label>🎭 Faction</label>
       <select class="q-inp" onchange="setQMeta(${i},'factionActive',this.value)">${Object.keys(q.versions_faction).map(f => `<option value="${f}"${q.factionActive === f ? ' selected' : ''}>${esc(f)}</option>`).join('')}</select>
-      <span class="q-xp-note">version vue par les joueurs</span></div>` : '';
+      <span class="q-xp-note">défaut — chaque joueur voit SA faction si définie (admin perso)</span></div>` : '';
   const choixHtml = (q.choix && q.choix.length) ? `<div class="q-choix"><div class="q-choix-h">Choix & conséquences (réf. MJ)</div>${q.choix.map(c => `<div class="q-choix-i"><b>${esc(c.label)}</b> → ${esc(c.consequences || '')}</div>`).join('')}</div>` : '';
   const metaHtml = (q.trigger || q.prerequisite || q.chain_unlock) ? `<div class="q-meta">${q.trigger ? '⚑ ' + esc(q.trigger) + (q.trigger_cible ? ' (' + esc(q.trigger_cible) + ')' : '') : ''}${q.prerequisite ? ' · ⬅ requiert ' + esc(q.prerequisite) : ''}${q.chain_unlock ? ' · ➡ débloque ' + esc(q.chain_unlock) : ''}</div>` : '';
   const pids = Object.keys(joueurs);

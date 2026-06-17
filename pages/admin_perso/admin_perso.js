@@ -101,6 +101,7 @@ async function charger(id){
   document.getElementById('e-code').value=d.code||'';
   document.getElementById('e-nom').value=d.nom||'';
   document.getElementById('e-origine').value=d.origine||'';
+  document.getElementById('e-faction').value=d.faction||'';
   document.getElementById('e-niveau').value=d.niveau||1;
   document.getElementById('e-xp').value=d.xp||0;
   document.getElementById('e-hp').value=d.hp||0;
@@ -415,6 +416,7 @@ async function sauvegarder(){
   const data={
     nom:document.getElementById('e-nom').value.trim(),
     origine:document.getElementById('e-origine').value.trim(),
+    faction:document.getElementById('e-faction').value||editData.faction||'',
     code:document.getElementById('e-code').value.trim()||editData.code||'0000',
     niveau,
     xp:parseInt(document.getElementById('e-xp').value)||0,
