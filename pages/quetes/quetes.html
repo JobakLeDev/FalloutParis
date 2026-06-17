@@ -18,7 +18,7 @@
     <div class="qhdr-btns">
       <button class="qbtn" id="qmj-btn" onclick="demanderMJ()">🔑 Mode MJ</button>
       <button class="qbtn" id="qadd-btn" onclick="addQuete()" style="display:none">+ Nouvelle quête</button>
-      <button class="qbtn" id="qimport-btn" onclick="importDesignQuests()" style="display:none" title="Importe les quêtes de data/quetes.json (ignore celles déjà présentes)">⬇ Importer (quetes.json)</button>
+      <button class="qbtn" id="qimport-btn" onclick="importDesignQuests()" style="display:none" title="Importe/actualise les quêtes depuis data/quetes.json (met à jour le contenu des quêtes existantes, conserve révélations/XP/statut)">⬇ Importer / Actualiser (quetes.json)</button>
       <button class="qbtn" id="qcollapse-btn" onclick="collapseAllQuests()" style="display:none">▸ Tout réduire</button>
       <button class="qbtn" id="qexpand-btn" onclick="expandAllQuests()" style="display:none">▾ Tout développer</button>
       <a class="qbtn" href="../mj/mj.html">🎲 MJ</a>
@@ -50,7 +50,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="../../common/shared.js"></script>
-  <script src="quetes.js?v=8"></script>
+  <script src="quetes.js?v=9"></script>
   <script src="../../common/responsive.js?v=1"></script>
 </body>
 </html>

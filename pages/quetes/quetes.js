@@ -88,6 +88,35 @@ function _designToQuest(dq){
     pnj_return: !!dq.pnj_return,
   };
 }
+// Signature du contenu « design » (ce qui vient du JSON) → pour détecter un vrai changement
+function _designSig(q){
+  return JSON.stringify({
+    title:q.title, desc:q.desc, qtype:q.qtype, qtier:q.qtier,
+    versions_faction:q.versions_faction||null, choix:q.choix||null,
+    trigger:q.trigger||null, trigger_cible:q.trigger_cible||null,
+    chain_unlock:q.chain_unlock||null, prerequisite:q.prerequisite||null,
+    niveau:q.niveau||null, optional:!!q.optional, pnj_return:!!q.pnj_return,
+    objectives:(q.objectives||[]).map(o=>({id:o.id,text:o.text,note:o.note}))
+  });
+}
+// Réimporte le contenu du JSON sur une quête existante en conservant l'état runtime
+function _mergeDesignIntoQuest(old, dq){
+  const fresh = _designToQuest(dq);
+  fresh.status      = old.status || fresh.status;
+  fresh.revealedFor = Array.isArray(old.revealedFor) ? old.revealedFor : fresh.revealedFor;
+  fresh.reward      = old.reward || '';
+  if (Array.isArray(old.xpAwardedTo)) fresh.xpAwardedTo = old.xpAwardedTo;
+  // faction active choisie par le MJ, si elle existe toujours dans le JSON
+  if (old.factionActive && fresh.versions_faction && fresh.versions_faction[old.factionActive])
+    fresh.factionActive = old.factionActive;
+  // progression des objectifs préservée (apparié par id)
+  const oldObj = {}; (old.objectives||[]).forEach(o => { if(o.id) oldObj[o.id] = o; });
+  fresh.objectives = fresh.objectives.map(o => {
+    const prev = oldObj[o.id];
+    return prev ? { ...o, done:!!prev.done, count:prev.count||0, target:prev.target||o.target||0 } : o;
+  });
+  return fresh;
+}
 async function importDesignQuests(){
   if(!isMJ) return;
   let data;
@@ -95,15 +124,20 @@ async function importDesignQuests(){
   catch(e){ alert('Impossible de charger data/quetes.json'); return; }
   const list = (data && data.quetes) || [];
   if(!list.length){ alert('Aucune quête dans data/quetes.json'); return; }
-  const existing = new Set(qData.quests.map(q => q.id));
-  let added = 0, skipped = 0;
+  const idxById = {}; qData.quests.forEach((q,i) => { idxById[q.id] = i; });
+  let added = 0, updated = 0, unchanged = 0;
   list.forEach(dq => {
-    if(existing.has(dq.id)){ skipped++; return; }
-    qData.quests.push(_designToQuest(dq));
-    added++;
+    if(dq.id == null) return;
+    const i = idxById[dq.id];
+    if(i === undefined){ qData.quests.push(_designToQuest(dq)); added++; return; }
+    const merged = _mergeDesignIntoQuest(qData.quests[i], dq);
+    if(_designSig(qData.quests[i]) === _designSig(merged)){ unchanged++; return; }
+    qData.quests[i] = merged; updated++;
   });
   saveQuetes(); render();
-  alert('Import terminé : ' + added + ' quête(s) ajoutée(s)' + (skipped ? ', ' + skipped + ' déjà présente(s) ignorée(s)' : '') + '.\nRévèle-les aux joueurs et choisis la faction active.');
+  alert('Import terminé : ' + added + ' ajoutée(s), ' + updated + ' mise(s) à jour'
+        + (unchanged ? ', ' + unchanged + ' inchangée(s)' : '') + '.'
+        + (added ? '\nRévèle les nouvelles quêtes aux joueurs et choisis la faction active.' : ''));
 }
 
 function saveQuetes() { if (fdb) fdb.collection('quetes').doc('data').set(qData).catch(e => console.error('saveQuetes', e)); }
