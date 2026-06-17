@@ -47,6 +47,51 @@ function updateModeUI() {
   if (m) m.textContent = isMJ ? 'Vue MJ' : (viewerId ? 'Vue joueur' : 'Visiteur');
   const mb = document.getElementById('qmj-btn'); if (mb) mb.style.display = (isMJ || viewerId) ? 'none' : '';
   const ab = document.getElementById('qadd-btn'); if (ab) ab.style.display = isMJ ? '' : 'none';
+  const ib = document.getElementById('qimport-btn'); if (ib) ib.style.display = isMJ ? '' : 'none';
+}
+
+// ---- Import des quêtes de design (data/quetes.json) → format jouable ----
+function _normTier(t){ return ({ mineure:'mineure', standard:'standard', majeure:'majeure', moyenne:'standard' })[t] || 'standard'; }
+function _designToQuest(dq){
+  return {
+    id: dq.id || uid(),
+    title: dq.titre || dq.title || 'Quête',
+    desc: dq.description || '',
+    status: 'active',
+    objectives: (dq.objectifs || []).map(o => ({ id: o.id || uid(), text: o.titre || '', note: o.description || '', done: false, count: 0, target: 0 })),
+    revealedFor: [],
+    reward: '',
+    qtype: dq.qtype || dq.type || 'annexe',
+    qtier: _normTier(dq.qtier),
+    // métadonnées de design préservées
+    versions_faction: dq.versions_faction || null,
+    factionActive: dq.versions_faction ? Object.keys(dq.versions_faction)[0] : null,
+    choix: dq.choix || null,
+    trigger: dq.trigger || null,
+    trigger_cible: dq.trigger_cible || null,
+    chain_unlock: dq.chain_unlock || null,
+    prerequisite: dq.prerequisite || null,
+    niveau: dq.niveau || null,
+    optional: !!dq.optional,
+    pnj_return: !!dq.pnj_return,
+  };
+}
+async function importDesignQuests(){
+  if(!isMJ) return;
+  let data;
+  try { data = await (await fetch('../../data/quetes.json?v=' + Date.now())).json(); }
+  catch(e){ alert('Impossible de charger data/quetes.json'); return; }
+  const list = (data && data.quetes) || [];
+  if(!list.length){ alert('Aucune quête dans data/quetes.json'); return; }
+  const existing = new Set(qData.quests.map(q => q.id));
+  let added = 0, skipped = 0;
+  list.forEach(dq => {
+    if(existing.has(dq.id)){ skipped++; return; }
+    qData.quests.push(_designToQuest(dq));
+    added++;
+  });
+  saveQuetes(); render();
+  alert('Import terminé : ' + added + ' quête(s) ajoutée(s)' + (skipped ? ', ' + skipped + ' déjà présente(s) ignorée(s)' : '') + '.\nRévèle-les aux joueurs et choisis la faction active.');
 }
 
 function saveQuetes() { if (fdb) fdb.collection('quetes').doc('data').set(qData).catch(e => console.error('saveQuetes', e)); }
@@ -74,7 +119,7 @@ const QUEST_XP = {
   annexe:     { mineure: 15, standard: 30, majeure: 50 },
   principale: { mineure: 60, standard: 80, majeure: 150 },
 };
-function questXPFactor(q) { return (QUEST_XP[q.qtype || 'annexe'] || QUEST_XP.annexe)[q.qtier || 'standard'] || 30; }
+function questXPFactor(q) { return (QUEST_XP[q.qtype || 'annexe'] || QUEST_XP.annexe)[_normTier(q.qtier)] || 30; }
 // XP gagnée par un joueur si la quête est réussie maintenant = facteur × son niveau
 function questXPForPlayer(q, pid) { const j = joueurs[pid]; return questXPFactor(q) * ((j && j.niveau) || 1); }
 // Attribue l'XP de quête à tous les joueurs ayant la quête révélée (une seule fois par joueur)
@@ -98,8 +143,22 @@ function setStatut(i, v) {
   const q = qData.quests[i]; if (!q) return;
   const was = q.status;
   q.status = v;
-  if (v === 'done' && was !== 'done') awardQuestXP(q);   // réussie → XP auto aux joueurs sur la quête (une fois)
+  if (v === 'done' && was !== 'done') {
+    awardQuestXP(q);          // réussie → XP auto aux joueurs sur la quête (une fois)
+    chainUnlock(q);           // débloque la quête suivante (chain_unlock) pour les mêmes joueurs
+  }
   saveQuetes(); render();
+}
+// Chaînage : révèle la quête chain_unlock aux joueurs qui avaient celle-ci
+function chainUnlock(q){
+  if(!q.chain_unlock) return;
+  const next = qData.quests.find(x => x.id === q.chain_unlock);
+  if(!next){ return; }   // la quête suivante doit être importée
+  next.revealedFor = next.revealedFor || [];
+  (q.revealedFor || []).forEach(pid => {
+    if(!next.revealedFor.includes(pid)){ next.revealedFor.push(pid); logQuete(next, pid); }
+  });
+  next.revealed = false;
 }
 function addObj(i) { qData.quests[i].objectives = qData.quests[i].objectives || []; qData.quests[i].objectives.push({ id: uid(), text: '', done: false, count: 0, target: 0 }); saveQuetes(); render(); }
 function delObj(i, j) { qData.quests[i].objectives.splice(j, 1); saveQuetes(); render(); }
@@ -162,16 +221,27 @@ function render() {
 }
 
 // Vue joueur (lecture seule)
+// Texte affiché = version de la faction active si la quête en a (sinon desc simple)
+function questDisplay(q) {
+  if (q.versions_faction && q.factionActive && q.versions_faction[q.factionActive]) {
+    const v = q.versions_faction[q.factionActive];
+    return { desc: v.description || q.desc || '', objectif: v.objectif || '' };
+  }
+  return { desc: q.desc || '', objectif: '' };
+}
 function renderQuestJoueur(q, st, objs, doneN) {
+  const disp = questDisplay(q);
   const objHtml = objs.map(o => {
     const d = objDone(o);
     const counter = (o.target || 0) > 0 ? `<span class="q-count">${o.count || 0}/${o.target}</span>` : '';
     const mark = (o.target || 0) > 0 ? (d ? '☑' : '▸') : (d ? '☑' : '☐');
-    return `<div class="q-obj${d ? ' done' : ''}"><span class="q-check">${mark}</span><span class="q-obj-t">${esc(o.text)}</span>${counter}</div>`;
+    return `<div class="q-obj${d ? ' done' : ''}"><span class="q-check">${mark}</span><span class="q-obj-t">${esc(o.text)}</span>${counter}</div>`
+      + (o.note ? `<div class="q-obj-note">${esc(o.note)}</div>` : '');
   }).join('') || '<div class="q-obj-none">—</div>';
   return `<div class="q-card s-${q.status || 'active'}">
     <div class="q-head"><span class="q-title">${esc(q.title)}</span><span class="q-badge" style="color:${st.c};border-color:${st.c}">${st.l}</span></div>
-    ${q.desc ? `<div class="q-desc">${esc(q.desc)}</div>` : ''}
+    ${disp.objectif ? `<div class="q-objectif">🎯 ${esc(disp.objectif)}</div>` : ''}
+    ${disp.desc ? `<div class="q-desc">${esc(disp.desc)}</div>` : ''}
     ${objs.length ? `<div class="q-progress">Objectifs ${doneN}/${objs.length}</div>` : ''}
     <div class="q-objs">${objHtml}</div>
     ${q.reward ? `<div class="q-reward">🎁 ${esc(q.reward)}</div>` : ''}
@@ -191,8 +261,14 @@ function renderQuestMJ(q, i, st, objs, doneN) {
       <input class="q-inp" value="${escAttr(o.text)}" placeholder="objectif…" onfocus="_editing=true" onblur="_editing=false" onchange="setObj(${i},${j},this.value)">
       <input class="q-inp q-target" type="number" min="0" value="${o.target || 0}" title="Cible (0 = case à cocher)" onfocus="_editing=true" onblur="_editing=false" onchange="setObjTarget(${i},${j},this.value)">
       <button class="q-del" onclick="delObj(${i},${j})">✕</button>
-    </div>`;
+    </div>` + (o.note ? `<div class="q-obj-note">${esc(o.note)}</div>` : '');
   }).join('');
+  // Bloc design (quêtes importées) : faction active, choix/conséquences, métadonnées
+  const factionSel = q.versions_faction ? `<div class="q-field q-xp-row"><label>🎭 Faction</label>
+      <select class="q-inp" onchange="setQMeta(${i},'factionActive',this.value)">${Object.keys(q.versions_faction).map(f => `<option value="${f}"${q.factionActive === f ? ' selected' : ''}>${esc(f)}</option>`).join('')}</select>
+      <span class="q-xp-note">version vue par les joueurs</span></div>` : '';
+  const choixHtml = (q.choix && q.choix.length) ? `<div class="q-choix"><div class="q-choix-h">Choix & conséquences (réf. MJ)</div>${q.choix.map(c => `<div class="q-choix-i"><b>${esc(c.label)}</b> → ${esc(c.consequences || '')}</div>`).join('')}</div>` : '';
+  const metaHtml = (q.trigger || q.prerequisite || q.chain_unlock) ? `<div class="q-meta">${q.trigger ? '⚑ ' + esc(q.trigger) + (q.trigger_cible ? ' (' + esc(q.trigger_cible) + ')' : '') : ''}${q.prerequisite ? ' · ⬅ requiert ' + esc(q.prerequisite) : ''}${q.chain_unlock ? ' · ➡ débloque ' + esc(q.chain_unlock) : ''}</div>` : '';
   const pids = Object.keys(joueurs);
   const revealHtml = pids.map(pid => {
     const on = (q.revealedFor || []).includes(pid);
@@ -224,6 +300,9 @@ function renderQuestMJ(q, i, st, objs, doneN) {
       </select>
       <span class="q-xp-note">×${questXPFactor(q)} niveau ${q.xpAwardedTo&&q.xpAwardedTo.length?'· ✓ distribué à '+q.xpAwardedTo.length:'(à la réussite)'}</span>
     </div>
+    ${factionSel}
+    ${metaHtml}
+    ${choixHtml}
     <div class="q-reveal-row"><span class="q-reveal-lbl">Visible par :</span>${revealHtml || '<span class="q-empty-inline">aucun joueur</span>'}
       <button class="q-reveal-all" onclick="revealAllQ(${i})">Tous</button><button class="q-reveal-all" onclick="revealNoneQ(${i})">Aucun</button></div>
   </div>`;

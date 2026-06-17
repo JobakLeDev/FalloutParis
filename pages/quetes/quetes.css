@@ -75,3 +75,11 @@ body.embed .qhdr{display:none;}
 .q-xp-row{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
 .q-xp-row select.q-inp{ width:auto; flex:0 0 auto; }
 .q-xp-note{ font-size:8px; color:var(--td); letter-spacing:.5px; }
+/* Quêtes importées (design) : objectif faction, notes, choix, méta */
+.q-objectif{ font-size:0.72rem; color:var(--am); border-left:3px solid var(--am); padding:3px 8px; margin:4px 0; background:#1a1200; }
+.q-obj-note{ font-size:0.62rem; color:var(--td); margin:0 0 4px 1.6rem; line-height:1.4; }
+.q-meta{ font-size:0.6rem; color:var(--gd); letter-spacing:.5px; margin:4px 0; }
+.q-choix{ margin:6px 0; border:1px solid var(--b2); border-radius:4px; padding:5px 7px; background:#0a0f0a; }
+.q-choix-h{ font-size:0.6rem; color:var(--td); letter-spacing:1px; margin-bottom:3px; }
+.q-choix-i{ font-size:0.64rem; color:var(--t); line-height:1.5; }
+.q-choix-i b{ color:var(--tb); }
