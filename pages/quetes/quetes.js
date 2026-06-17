@@ -62,12 +62,45 @@ function questVisible(q) {
 // ---- MJ : édition ----
 function uid() { return 'q' + Date.now().toString(36) + Math.floor(Math.random() * 999); }
 function addQuete() {
-  qData.quests.unshift({ id: uid(), title: 'Nouvelle quête', desc: '', status: 'active', objectives: [], revealedFor: [], reward: '' });
+  qData.quests.unshift({ id: uid(), title: 'Nouvelle quête', desc: '', status: 'active', objectives: [], revealedFor: [], reward: '', qtype: 'annexe', qtier: 'standard' });
   saveQuetes(); render();
 }
 function delQuete(i) { if (confirm('Supprimer cette quête ?')) { qData.quests.splice(i, 1); saveQuetes(); render(); } }
 function setQ(i, k, v) { if (!qData.quests[i]) return; qData.quests[i][k] = v; saveQuetes(); }      // texte : pas de re-render (focus)
-function setStatut(i, v) { if (!qData.quests[i]) return; qData.quests[i].status = v; saveQuetes(); render(); }
+function setQMeta(i, k, v) { if (!qData.quests[i]) return; qData.quests[i][k] = v; saveQuetes(); render(); }   // type/tier : re-render (maj aperçu XP)
+
+// ---- XP de quête (proportionnel au niveau du joueur) ----
+const QUEST_XP = {
+  annexe:     { mineure: 15, standard: 30, majeure: 50 },
+  principale: { mineure: 60, standard: 80, majeure: 150 },
+};
+function questXPFactor(q) { return (QUEST_XP[q.qtype || 'annexe'] || QUEST_XP.annexe)[q.qtier || 'standard'] || 30; }
+// XP gagnée par un joueur si la quête est réussie maintenant = facteur × son niveau
+function questXPForPlayer(q, pid) { const j = joueurs[pid]; return questXPFactor(q) * ((j && j.niveau) || 1); }
+// Attribue l'XP de quête à tous les joueurs ayant la quête révélée (une seule fois par joueur)
+function awardQuestXP(q) {
+  if (!fdb) return;
+  const factor = questXPFactor(q);
+  q.xpAwardedTo = q.xpAwardedTo || [];
+  (q.revealedFor || []).forEach(pid => {
+    const j = joueurs[pid]; if (!j) return;
+    if (q.xpAwardedTo.includes(pid)) return;            // déjà récompensé
+    const lvl = j.niveau || 1;
+    const gain = factor * lvl;
+    let xp = (j.xp || 0) + gain, niveau = lvl;
+    while (niveau < 20 && xp >= (XP_TABLE[niveau] || 1e9)) niveau++;   // montée de niveau (même logique que la fiche)
+    fdb.collection('joueurs').doc(pid).update({ xp, niveau, lastUpdate: Date.now() }).catch(e => console.error('awardQuestXP', e));
+    q.xpAwardedTo.push(pid);
+    if (typeof fpLogAction === 'function') fpLogAction(fdb, 'MJ', '★ ' + (j.nom || pid) + ' gagne ' + gain + ' XP — quête « ' + q.title + ' » réussie' + (niveau > lvl ? ' (niv. ' + niveau + ' !)' : ''));
+  });
+}
+function setStatut(i, v) {
+  const q = qData.quests[i]; if (!q) return;
+  const was = q.status;
+  q.status = v;
+  if (v === 'done' && was !== 'done') awardQuestXP(q);   // réussie → XP auto aux joueurs sur la quête (une fois)
+  saveQuetes(); render();
+}
 function addObj(i) { qData.quests[i].objectives = qData.quests[i].objectives || []; qData.quests[i].objectives.push({ id: uid(), text: '', done: false, count: 0, target: 0 }); saveQuetes(); render(); }
 function delObj(i, j) { qData.quests[i].objectives.splice(j, 1); saveQuetes(); render(); }
 function setObj(i, j, v) { qData.quests[i].objectives[j].text = v; saveQuetes(); }
@@ -179,6 +212,18 @@ function renderQuestMJ(q, i, st, objs, doneN) {
     <div class="q-sub">Objectifs ${objs.length ? `(${doneN}/${objs.length})` : ''} <button class="q-addobj" onclick="addObj(${i})">+ objectif</button></div>
     ${objHtml}
     <div class="q-field"><label>🎁 Récompense</label><input class="q-inp" value="${escAttr(q.reward)}" placeholder="récompense (optionnel)" onfocus="_editing=true" onblur="_editing=false" onchange="setQ(${i},'reward',this.value)"></div>
+    <div class="q-field q-xp-row"><label>★ XP</label>
+      <select class="q-inp" onchange="setQMeta(${i},'qtype',this.value)">
+        <option value="annexe"${(q.qtype||'annexe')==='annexe'?' selected':''}>Annexe</option>
+        <option value="principale"${q.qtype==='principale'?' selected':''}>Principale</option>
+      </select>
+      <select class="q-inp" onchange="setQMeta(${i},'qtier',this.value)">
+        <option value="mineure"${q.qtier==='mineure'?' selected':''}>mineure</option>
+        <option value="standard"${(q.qtier||'standard')==='standard'?' selected':''}>standard</option>
+        <option value="majeure"${q.qtier==='majeure'?' selected':''}>majeure</option>
+      </select>
+      <span class="q-xp-note">×${questXPFactor(q)} niveau ${q.xpAwardedTo&&q.xpAwardedTo.length?'· ✓ distribué à '+q.xpAwardedTo.length:'(à la réussite)'}</span>
+    </div>
     <div class="q-reveal-row"><span class="q-reveal-lbl">Visible par :</span>${revealHtml || '<span class="q-empty-inline">aucun joueur</span>'}
       <button class="q-reveal-all" onclick="revealAllQ(${i})">Tous</button><button class="q-reveal-all" onclick="revealNoneQ(${i})">Aucun</button></div>
   </div>`;

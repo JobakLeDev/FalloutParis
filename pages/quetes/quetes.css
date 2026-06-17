@@ -71,3 +71,7 @@ body.embed .qhdr{display:none;}
 .q-cnt{font-family:'Oswald',sans-serif;font-size:12px;color:var(--am);min-width:34px;text-align:center;flex:none;}
 .q-obj-edit.done .q-cnt{color:var(--g);}
 .q-target{width:46px;flex:none;text-align:center;padding:5px 3px;}
+/* Ligne XP de quête (édition MJ) */
+.q-xp-row{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.q-xp-row select.q-inp{ width:auto; flex:0 0 auto; }
+.q-xp-note{ font-size:8px; color:var(--td); letter-spacing:.5px; }
