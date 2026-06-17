@@ -15,6 +15,14 @@ let fdb;
 let joueurs = {};
 let qData = { quests: [] };
 let filter = 'all';
+let typeFilter = 'all';   // MJ : 'all' | 'principale' | 'annexe'
+// Repli individuel des quêtes (mémorisé en localStorage)
+const collapsedQuests = new Set((()=>{ try{ return JSON.parse(localStorage.getItem('fp_collapsedQuests') || '[]'); }catch(e){ return []; } })());
+function toggleQuestCollapse(id){
+  if(collapsedQuests.has(id)) collapsedQuests.delete(id); else collapsedQuests.add(id);
+  try{ localStorage.setItem('fp_collapsedQuests', JSON.stringify([...collapsedQuests])); }catch(e){}
+  render();
+}
 let _editing = false;   // évite un re-render qui volerait le focus pendant la saisie
 
 document.addEventListener('DOMContentLoaded', init);
@@ -48,6 +56,7 @@ function updateModeUI() {
   const mb = document.getElementById('qmj-btn'); if (mb) mb.style.display = (isMJ || viewerId) ? 'none' : '';
   const ab = document.getElementById('qadd-btn'); if (ab) ab.style.display = isMJ ? '' : 'none';
   const ib = document.getElementById('qimport-btn'); if (ib) ib.style.display = isMJ ? '' : 'none';
+  const tf = document.getElementById('q-typefilters'); if (tf) tf.style.display = isMJ ? '' : 'none';
 }
 
 // ---- Import des quêtes de design (data/quetes.json) → format jouable ----
@@ -198,7 +207,8 @@ function logJournal(entry) {
 }
 function revealNoneQ(i) { qData.quests[i].revealedFor = []; qData.quests[i].revealed = false; saveQuetes(); render(); }
 
-function setFilter(f) { filter = f; document.querySelectorAll('.q-filter').forEach(b => b.classList.toggle('on', b.dataset.f === f)); render(); }
+function setFilter(f) { filter = f; document.querySelectorAll('#q-filters .q-filter').forEach(b => b.classList.toggle('on', b.dataset.f === f)); render(); }
+function setTypeFilter(t) { typeFilter = t; document.querySelectorAll('.q-tf').forEach(b => b.classList.toggle('on', b.dataset.tf === t)); render(); }
 
 // ---- Rendu ----
 const STATUTS = { active: { l: 'EN COURS', c: 'var(--am)' }, done: { l: 'TERMINÉE', c: 'var(--g)' }, failed: { l: 'ÉCHOUÉE', c: 'var(--rd)' } };
@@ -209,6 +219,7 @@ function render() {
   const el = document.getElementById('quetes-list'); if (!el) return;
   let quests = qData.quests.filter(questVisible);
   if (filter !== 'all') quests = quests.filter(q => (q.status || 'active') === filter);
+  if (isMJ && typeFilter !== 'all') quests = quests.filter(q => (q.qtype || 'annexe') === typeFilter);
   if (!quests.length) { el.innerHTML = `<div class="q-empty">${isMJ ? 'Aucune quête — clique « + Nouvelle quête ».' : 'Aucune quête pour l\'instant.'}</div>`; return; }
 
   el.innerHTML = quests.map(q => {
@@ -238,8 +249,8 @@ function renderQuestJoueur(q, st, objs, doneN) {
     return `<div class="q-obj${d ? ' done' : ''}"><span class="q-check">${mark}</span><span class="q-obj-t">${esc(o.text)}</span>${counter}</div>`
       + (o.note ? `<div class="q-obj-note">${esc(o.note)}</div>` : '');
   }).join('') || '<div class="q-obj-none">—</div>';
-  return `<div class="q-card s-${q.status || 'active'}">
-    <div class="q-head"><span class="q-title">${esc(q.title)}</span><span class="q-badge" style="color:${st.c};border-color:${st.c}">${st.l}</span></div>
+  return `<div class="q-card s-${q.status || 'active'}${collapsedQuests.has(q.id) ? ' collapsed' : ''}">
+    <div class="q-head"><button class="q-collapse" onclick="toggleQuestCollapse('${q.id}')">${collapsedQuests.has(q.id) ? '▸' : '▾'}</button><span class="q-title">${esc(q.title)}</span><span class="q-badge" style="color:${st.c};border-color:${st.c}">${st.l}</span></div>
     ${disp.objectif ? `<div class="q-objectif">🎯 ${esc(disp.objectif)}</div>` : ''}
     ${disp.desc ? `<div class="q-desc">${esc(disp.desc)}</div>` : ''}
     ${objs.length ? `<div class="q-progress">Objectifs ${doneN}/${objs.length}</div>` : ''}
@@ -274,8 +285,9 @@ function renderQuestMJ(q, i, st, objs, doneN) {
     const on = (q.revealedFor || []).includes(pid);
     return `<button class="q-reveal${on ? ' on' : ''}" onclick="toggleRevealQ(${i},'${pid}')">${on ? '👁' : '∅'} ${esc(joueurs[pid]?.nom || pid)}</button>`;
   }).join('');
-  return `<div class="q-card mj s-${q.status || 'active'}">
+  return `<div class="q-card mj s-${q.status || 'active'}${collapsedQuests.has(q.id) ? ' collapsed' : ''}">
     <div class="q-head">
+      <button class="q-collapse" onclick="toggleQuestCollapse('${q.id}')">${collapsedQuests.has(q.id) ? '▸' : '▾'}</button>
       <input class="q-inp q-title-inp" value="${escAttr(q.title)}" onfocus="_editing=true" onblur="_editing=false" onchange="setQ(${i},'title',this.value)">
       <select class="q-status-sel" onchange="setStatut(${i},this.value)">
         <option value="active"${q.status==='active'?' selected':''}>En cours</option>

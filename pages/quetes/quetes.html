@@ -7,7 +7,7 @@
   <title>Fallout Paris — Quêtes</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css">
-  <link rel="stylesheet" href="quetes.css?v=4">
+  <link rel="stylesheet" href="quetes.css?v=5">
   <link rel="stylesheet" href="../../common/zoom.css?v=2">
 </head>
 <body>
@@ -32,12 +32,19 @@
     <button class="q-filter" data-f="failed" onclick="setFilter('failed')">Échouées</button>
   </div>
 
+  <!-- FILTRE TYPE (MJ uniquement) -->
+  <div id="q-typefilters" style="display:none">
+    <button class="q-filter q-tf on" data-tf="all" onclick="setTypeFilter('all')">Tous types</button>
+    <button class="q-filter q-tf" data-tf="principale" onclick="setTypeFilter('principale')">Principales</button>
+    <button class="q-filter q-tf" data-tf="annexe" onclick="setTypeFilter('annexe')">Annexes</button>
+  </div>
+
   <div id="quetes-list"><div class="q-empty">Chargement…</div></div>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="../../common/shared.js"></script>
-  <script src="quetes.js?v=5"></script>
+  <script src="quetes.js?v=6"></script>
   <script src="../../common/responsive.js?v=1"></script>
 </body>
 </html>

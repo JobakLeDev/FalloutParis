@@ -83,3 +83,10 @@ body.embed .qhdr{display:none;}
 .q-choix-h{ font-size:0.6rem; color:var(--td); letter-spacing:1px; margin-bottom:3px; }
 .q-choix-i{ font-size:0.64rem; color:var(--t); line-height:1.5; }
 .q-choix-i b{ color:var(--tb); }
+/* Repli individuel des quêtes */
+.q-collapse{ background:none; border:none; color:var(--td); cursor:pointer; font-size:0.8rem; padding:0 6px 0 0; line-height:1; flex:0 0 auto; }
+.q-collapse:hover{ color:var(--t); }
+.q-card.collapsed > :not(.q-head){ display:none; }
+.q-card.collapsed .q-head{ margin-bottom:0; border-bottom:none; }
+/* Filtre type (MJ) */
+#q-typefilters{ display:flex; gap:6px; margin:0 0 8px; flex-wrap:wrap; }
