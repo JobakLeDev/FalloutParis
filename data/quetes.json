@@ -1,0 +1,893 @@
+{
+  "quetes": [
+    {
+      "id": "q_secret_bien_garde_001",
+      "titre": "Un secret bien gardé",
+      "type": "principale",
+      "qtype": "principale",
+      "qtier": "mineure",
+      "trigger": "MJ",
+      "trigger_cible": null,
+      "niveau": 1,
+      "chain_unlock": "q_bon_baisers_radio_france_001",
+      "versions_faction": {
+        "republique": {
+          "objectif": "Enquête sur archives gouvernementales. Discrétion requise.",
+          "description": "Les archives administratives pré-guerre pourraient contenir des infos d'État cruciales. On vous envoie enquêter discrètement à l'est. Personne ne doit le savoir."
+        },
+        "reseau": {
+          "objectif": "Signaux radio détectés à l'est. Possible technologie pré-guerre intacte.",
+          "description": "Nos détecteurs captent des transmissions anciennes. Technologie pré-guerre probablement intacte là-bas. Reconnaissance complète, rapportez tout ce que vous trouvez."
+        },
+        "nnfp": {
+          "objectif": "Trouver documentations pré-guerre pour archives communes",
+          "description": "On cherche des documents d'avant 2077. Ce bâtiment à l'est pourrait en contenir. Documentation historique pour la mémoire collective."
+        },
+        "zazous": {
+          "objectif": "Collection de disques rare repérée. À récupérer.",
+          "description": "Une vraie collection! Musique, jazz, vinyles intacts. On a entendu dire qu'il y en a plein à l'est. C'est pour nous ça, allez chercher!"
+        },
+        "ultras": {
+          "objectif": "Cache de valeur signalée à l'est. Check et on split.",
+          "description": "Rumeur: quelque chose de valeur là-bas à l'est. Vous y allez, vous rapportez. On fait 50/50 sur le butin."
+        },
+        "commune": {
+          "objectif": "Reconnaissance surface est. Infos sur dangers. Reviens vite.",
+          "description": "Surface = danger. Mais besoin d'infos. Tu enquêtes discrètement à l'est, tu documentes, tu reviens vite. Évite les risques inutiles."
+        }
+      },
+      "objectifs": [
+        {
+          "id": "obj1",
+          "titre": "Recevoir l'ordre de mission",
+          "description": "Votre chef de faction vous confie une mission à l'est."
+        },
+        {
+          "id": "obj2",
+          "titre": "Enquêter et suivre les pistes",
+          "description": "Rassembler indices, rencontrer des PNJs, suivre rumeurs. La Maison de la Radio existe."
+        },
+        {
+          "id": "obj3",
+          "titre": "Arriver au bâtiment",
+          "description": "Atteindre la Maison de la Radio à l'est."
+        }
+      ],
+      "choix": [
+        {
+          "id": "c1",
+          "label": "Accepter et partir immédiatement",
+          "consequences": "Quête activée, direction est. Allié avec faction."
+        },
+        {
+          "id": "c2",
+          "label": "Négocier pour plus d'infos/ressources",
+          "consequences": "Ressource supplémentaire, mais temps perdu."
+        },
+        {
+          "id": "c3",
+          "label": "Refuser ou repousser",
+          "consequences": "Faction suspicieuse, mission devient obligatoire plus tard."
+        }
+      ]
+    },
+    {
+      "id": "q_bon_baisers_radio_france_001",
+      "titre": "Bon baisers de Radio France",
+      "type": "principale",
+      "qtype": "principale",
+      "qtier": "majeure",
+      "trigger": "localisation",
+      "trigger_cible": "Maison_Radio",
+      "niveau": 1,
+      "prerequisite": "q_secret_bien_garde_001",
+      "chain_unlock": "q_retour_au_bercail_001",
+      "versions_faction": {
+        "republique": {
+          "objectif": "Accès au bunker sans trace. Archives gouvernementales à documenter.",
+          "description": "Vous êtes arrivés. La Maison de la Radio est occupée par des super mutants qui ne savent pas ce qu'ils gardent. Le bunker souterrain contient les archives d'État. Vous devez y accéder discrètement et documenter ce que vous trouvez."
+        },
+        "reseau": {
+          "objectif": "Accès au bunker. Technologie pré-guerre à inventorier.",
+          "description": "La Maison de la Radio est occupée par des super mutants. Le bunker souterrain pourrait contenir de la technologie intacte. Récupérez tout ce qui est exploitable."
+        },
+        "nnfp": {
+          "objectif": "Accès au bunker. Documentation pré-guerre à récupérer.",
+          "description": "La Maison de la Radio est occupée par des super mutants. Le bunker souterrain contient probablement des documents d'avant-guerre. Vous devez accéder au bunker et rapporter les archives."
+        },
+        "zazous": {
+          "objectif": "Accès au bunker. Collection de disques à récupérer.",
+          "description": "La Maison de la Radio — vous y êtes. Des super mutants squattent les étages. Mais le bunker pourrait contenir une collection de disques intacte. Allez chercher!"
+        },
+        "ultras": {
+          "objectif": "Accès au bunker. Butin à récupérer.",
+          "description": "La Maison de la Radio. Super mutants occupent le bâtiment. Le bunker souterrain devrait contenir quelque chose de valeur. Vous rentrez, vous cherchez, vous rapportez."
+        },
+        "commune": {
+          "objectif": "Reconnaissance bunker si possible. Retour rapide.",
+          "description": "Vous êtes face à la Maison de la Radio. Des super mutants l'occupent — c'est un vrai danger. Si vous pouvez accéder au bunker discrètement, faites-le. Sinon, ramenez ce que vous pouvez et revenez vite."
+        }
+      },
+      "objectifs": [
+        {
+          "id": "obj1",
+          "titre": "Infiltrer ou combattre",
+          "description": "Accéder au bunker souterrain. Combat, furtivité ou diversion."
+        },
+        {
+          "id": "obj2",
+          "titre": "Récupérer les ressources",
+          "description": "Trouver et récupérer: archives, disques, objets selon votre faction."
+        },
+        {
+          "id": "obj3",
+          "titre": "Révélation: le sabotage 2077",
+          "description": "Découvrir indices sabotage 2077, mention du Veilleur, allusion système de tir."
+        }
+      ],
+      "choix": [
+        {
+          "id": "c1",
+          "label": "Combat frontal",
+          "consequences": "Combat majeur (4-6 super mutants), ressource gagnée, archives potentiellement endommagées."
+        },
+        {
+          "id": "c2",
+          "label": "Infiltration furtive",
+          "consequences": "Difficile (PER checks), archives intactes, accès discrètement."
+        },
+        {
+          "id": "c3",
+          "label": "Diversion/manipulation",
+          "consequences": "Créatif, dépend du roleplay."
+        }
+      ]
+    },
+    {
+      "id": "q_retour_au_bercail_001",
+      "titre": "Retour au bercail",
+      "type": "principale",
+      "qtype": "principale",
+      "qtier": "mineure",
+      "trigger": "MJ",
+      "trigger_cible": null,
+      "niveau": 1,
+      "prerequisite": "q_bon_baisers_radio_france_001",
+      "versions_faction": {
+        "republique": {
+          "objectif": "Rapporter les archives gouvernementales à la République.",
+          "description": "Vous avez les archives. Retournez à la République et remettez-les. Votre chef attend des explications."
+        },
+        "reseau": {
+          "objectif": "Rapporter la technologie au Réseau.",
+          "description": "Vous avez la technologie. Retournez au Réseau et rapportez tout. Ils voudront savoir ce que vous avez trouvé."
+        },
+        "nnfp": {
+          "objectif": "Rapporter les documents à la NNFP.",
+          "description": "Vous avez les documents. Retournez à la NNFP et remettez-les aux archives communes."
+        },
+        "zazous": {
+          "objectif": "Ramener les disques aux Zazous.",
+          "description": "Vous avez les disques. Retournez aux Zazous et partagez cette belle collection!"
+        },
+        "ultras": {
+          "objectif": "Ramener le butin aux Ultras.",
+          "description": "Vous avez le butin. Retournez aux Ultras et splitez comme prévu."
+        },
+        "commune": {
+          "objectif": "Rapporter les infos à la Commune.",
+          "description": "Vous avez les infos. Retournez à la Commune et rapportez ce que vous avez découvert."
+        }
+      },
+      "objectifs": [
+        {
+          "id": "obj1",
+          "titre": "Retour au siège faction",
+          "description": "Revenir à votre chef de faction avec les ressources/infos."
+        },
+        {
+          "id": "obj2",
+          "titre": "Remettre les objets/infos",
+          "description": "Remettre complètement à votre faction les ressources récupérées."
+        }
+      ],
+      "choix": [
+        {
+          "id": "c1",
+          "label": "Remettre à votre faction",
+          "consequences": "Quête réussie. Relation faction ++, XP."
+        },
+        {
+          "id": "c2",
+          "label": "Vendre à une autre faction",
+          "consequences": "Quête échouée. Votre faction ennemie, autre faction allié temporaire."
+        },
+        {
+          "id": "c3",
+          "label": "Garder pour vous",
+          "consequences": "Quête échouée. Votre faction ennemie, ressources personnelles."
+        }
+      ]
+    },
+    {
+      "id": "q_ramener_goule_maison_001",
+      "titre": "Ramener la goule à la maison",
+      "type": "annexe",
+      "qtype": "annexe",
+      "qtier": "mineure",
+      "trigger": "MJ",
+      "trigger_cible": null,
+      "niveau": 1,
+      "description": "Enfant seul, confus, errant. Appartient à un settlement. Dilemme: le ramener ou l'abandonner?",
+      "objectifs": [
+        {
+          "id": "obj1",
+          "titre": "Trouver l'enfant",
+          "description": "L'enfant seul, perdu."
+        },
+        {
+          "id": "obj2",
+          "titre": "Identifier sa faction/famille",
+          "description": "Découvrir d'où vient l'enfant."
+        },
+        {
+          "id": "obj3",
+          "titre": "Le ramener ou prendre décision",
+          "description": "Ramener à sa famille ou faire autre choix."
+        }
+      ],
+      "choix": [
+        {
+          "id": "c1",
+          "label": "Ramener à sa famille/settlement",
+          "consequences": "Settlement allié, info locale, petite récompense."
+        },
+        {
+          "id": "c2",
+          "label": "Ignorer",
+          "consequences": "Aucun effet immédiat, perte alliance potentielle."
+        },
+        {
+          "id": "c3",
+          "label": "Découvrir enfant appartient faction ennemie",
+          "consequences": "Dilemme moral, faction devient ennemie ou allié selon choix."
+        }
+      ]
+    },
+    {
+      "id": "q_loin_yeux_pres_coeur_001",
+      "titre": "Loin des yeux, près du cœur",
+      "type": "annexe",
+      "qtype": "annexe",
+      "qtier": "mineure",
+      "trigger": "PNJ",
+      "trigger_cible": "Ghoul chercheur",
+      "niveau": 1,
+      "description": "PNJ cherche quelqu'un disparu à l'est depuis des mois. Enquête pour trouver traces.",
+      "objectifs": [
+        {
+          "id": "obj1",
+          "titre": "Rencontrer le chercheur",
+          "description": "Écouter histoire, accepter mission."
+        },
+        {
+          "id": "obj2",
+          "titre": "Enquêter à l'est",
+          "description": "Suivre pistes, trouver traces."
+        },
+        {
+          "id": "obj3",
+          "titre": "Découvrir le sort",
+          "description": "Mort, vivant, ou transformé?"
+        }
+      ],
+      "choix": [
+        {
+          "id": "c1",
+          "label": "Trouver survivant vivant",
+          "consequences": "Happy end, survivant allié, info bonus, PNJ heureux."
+        },
+        {
+          "id": "c2",
+          "label": "Trouver corps/restes",
+          "consequences": "Fin tragique, deuil PNJ, info dangers zone."
+        },
+        {
+          "id": "c3",
+          "label": "Survivant transformé en ghoul/mutant",
+          "consequences": "Dilemme moral, fin complexe."
+        }
+      ]
+    },
+    {
+      "id": "q_aiguilles_botte_foin_001",
+      "titre": "Des aiguilles dans une botte de foin",
+      "type": "annexe",
+      "qtype": "annexe",
+      "qtier": "mineure",
+      "trigger": "PNJ",
+      "trigger_cible": "Vieux survivant",
+      "niveau": 1,
+      "description": "Vieux PNJ a perdu quelque chose de pré-guerre (photo, journal, montre, instrument). Vous le trouvez dans ruines/marché noir.",
+      "objectifs": [
+        {
+          "id": "obj1",
+          "titre": "Entendre l'histoire",
+          "description": "Écouter PNJ parler de sa perte."
+        },
+        {
+          "id": "obj2",
+          "titre": "Chercher l'objet",
+          "description": "Fouiller ruines, marchés noirs, aventuriers."
+        },
+        {
+          "id": "obj3",
+          "titre": "Retrouver ou garder",
+          "description": "Restituer ou garder l'objet."
+        }
+      ],
+      "choix": [
+        {
+          "id": "c1",
+          "label": "Trouver et restituer",
+          "consequences": "PNJ heureux, histoire émouvante, info historique."
+        },
+        {
+          "id": "c2",
+          "label": "Garder l'objet",
+          "consequences": "Ressource personnelle, PNJ déprimé, relation gâchée."
+        },
+        {
+          "id": "c3",
+          "label": "Vendre",
+          "consequences": "Caps, PNJ ennemi si découvert."
+        }
+      ]
+    },
+    {
+      "id": "q_beau_gazon_saison_001",
+      "titre": "Du beau gazon toute la saison",
+      "type": "annexe",
+      "qtype": "annexe",
+      "qtier": "moyenne",
+      "trigger": "PNJ",
+      "trigger_cible": "Fermier NNFP",
+      "niveau": 1,
+      "description": "Apothicaire/fermier NNFP a perdu formule remède ou fertilisant. Fouiller archives/labo. Retrouver = alliance NNFP.",
+      "objectifs": [
+        {
+          "id": "obj1",
+          "titre": "Écouter le fermier",
+          "description": "Il explique ce qu'il cherche."
+        },
+        {
+          "id": "obj2",
+          "titre": "Fouiller labo/archives",
+          "description": "Chercher la formule perdue."
+        },
+        {
+          "id": "obj3",
+          "titre": "Ramener ou garder",
+          "description": "Restituer ou exploiter la formule."
+        }
+      ],
+      "choix": [
+        {
+          "id": "c1",
+          "label": "Trouver et aider NNFP",
+          "consequences": "NNFP allié, accès ressources agricoles."
+        },
+        {
+          "id": "c2",
+          "label": "Garder formule",
+          "consequences": "Avantage personnel, NNFP ennemi."
+        },
+        {
+          "id": "c3",
+          "label": "Vendre à rival",
+          "consequences": "Caps, NNFP ennemi, confiance détruite."
+        }
+      ]
+    },
+    {
+      "id": "q_ou_appris_negocier_001",
+      "titre": "Mais où a-t'il appris à négocier?",
+      "type": "annexe",
+      "qtype": "annexe",
+      "qtier": "moyenne",
+      "trigger": "PNJ",
+      "trigger_cible": "Commerçant NNFP",
+      "niveau": 1,
+      "pnj_return": true,
+      "description": "Commerçant doit aller quelque part mais c'est dangereux. Escortez-le. Après réussite, il revient dans le jeu avec tarif préférentiel.",
+      "objectifs": [
+        {
+          "id": "obj1",
+          "titre": "Accepter d'escorter",
+          "description": "Le commerçant demande protection."
+        },
+        {
+          "id": "obj2",
+          "titre": "Protéger en chemin",
+          "description": "Affronter obstacles (créatures/Ultras)."
+        },
+        {
+          "id": "obj3",
+          "titre": "Arriver à destination",
+          "description": "Le commerçant atteint son but."
+        }
+      ],
+      "choix": [
+        {
+          "id": "c1",
+          "label": "Escorte sécurisée",
+          "consequences": "Commerçant allié, route commerce établie, tarif préférentiel future."
+        },
+        {
+          "id": "c2",
+          "label": "Escorte partielle/risquée",
+          "consequences": "Commerçant blessé, relation tendue, tarif normal."
+        },
+        {
+          "id": "c3",
+          "label": "Voler le marchand",
+          "consequences": "Ressource immédiate, commerçant ennemi, tarif ennemi permanent."
+        }
+      ]
+    },
+    {
+      "id": "q_facteur_presse_pas_001",
+      "titre": "Facteur, presse le pas...",
+      "type": "annexe",
+      "qtype": "annexe",
+      "qtier": "mineure",
+      "trigger": "PNJ",
+      "trigger_cible": "Expéditeur",
+      "niveau": 1,
+      "description": "Livrer objet/message d'un point A à B. Simple mais chargé émotionnellement.",
+      "objectifs": [
+        {
+          "id": "obj1",
+          "titre": "Accepter la livraison",
+          "description": "Prendre l'objet/message."
+        },
+        {
+          "id": "obj2",
+          "titre": "Se rendre à destination",
+          "description": "Voyage vers le destinataire."
+        },
+        {
+          "id": "obj3",
+          "titre": "Livrer",
+          "description": "Remettre le message/objet."
+        }
+      ],
+      "choix": [
+        {
+          "id": "c1",
+          "label": "Livrer honnêtement",
+          "consequences": "Payé, info locale, petite réputation."
+        },
+        {
+          "id": "c2",
+          "label": "Vérifier contenu",
+          "consequences": "Info supplémentaire, risque découverte."
+        },
+        {
+          "id": "c3",
+          "label": "Garder/vendre",
+          "consequences": "Ressource, expéditeur ennemi."
+        }
+      ]
+    },
+    {
+      "id": "q_mal_ronge_001",
+      "titre": "Le mal qui les ronge",
+      "type": "annexe",
+      "qtype": "annexe",
+      "qtier": "mineure",
+      "trigger": "localisation",
+      "trigger_cible": "Flexible",
+      "niveau": 1,
+      "description": "Settlement affecté par maladie/poison. Enquêter (eau contaminée? créature? radiation?). Sauver = allié.",
+      "objectifs": [
+        {
+          "id": "obj1",
+          "titre": "Découvrir le problème",
+          "description": "Identifier cause maladie."
+        },
+        {
+          "id": "obj2",
+          "titre": "Chercher remède/solution",
+          "description": "Trouver ou fabriquer remède."
+        },
+        {
+          "id": "obj3",
+          "titre": "Soigner ou rapporter",
+          "description": "Aider settlement ou laisser."
+        }
+      ],
+      "choix": [
+        {
+          "id": "c1",
+          "label": "Trouver remède et soigner",
+          "consequences": "Settlement sauvé, allié, accès médical."
+        },
+        {
+          "id": "c2",
+          "label": "Trouver cause sans solution",
+          "consequences": "Info donnée, settlement se débrouille."
+        },
+        {
+          "id": "c3",
+          "label": "Ignorer",
+          "consequences": "Aucun effet."
+        }
+      ]
+    },
+    {
+      "id": "q_quand_jazz_la_001",
+      "titre": "Quand le jazz est là",
+      "type": "annexe",
+      "qtype": "annexe",
+      "qtier": "mineure",
+      "trigger": "PNJ",
+      "trigger_cible": "Zazous",
+      "niveau": 1,
+      "description": "Deux Zazous parient sur quelque chose absurde (lancer, danse, outfit, guitare). Participez ou arbitrez.",
+      "objectifs": [
+        {
+          "id": "obj1",
+          "titre": "Découvrir le pari",
+          "description": "Apprendre ce qu'ils parient."
+        },
+        {
+          "id": "obj2",
+          "titre": "Décider participation",
+          "description": "Participer ou arbitrer?"
+        },
+        {
+          "id": "obj3",
+          "titre": "Résultat",
+          "description": "Gagnant, perdant, arbitrage."
+        }
+      ],
+      "choix": [
+        {
+          "id": "c1",
+          "label": "Participer et gagner",
+          "consequences": "Zazous respectueux, allié, histoire drôle."
+        },
+        {
+          "id": "c2",
+          "label": "Participer et perdre",
+          "consequences": "Zazous amusés, amitié bon enfant."
+        },
+        {
+          "id": "c3",
+          "label": "Arbitrer",
+          "consequences": "Zazous vous croient impartial, neutre/respectable."
+        }
+      ]
+    },
+    {
+      "id": "q_razzia_chems_001",
+      "titre": "Razzia sur les chems",
+      "type": "annexe",
+      "qtype": "annexe",
+      "qtier": "mineure",
+      "trigger": "MJ",
+      "trigger_cible": null,
+      "niveau": 1,
+      "description": "Petite opération drogue locale (Ultras ou PNJs normaux). Participez, sabotez, ou tuez tout.",
+      "objectifs": [
+        {
+          "id": "obj1",
+          "titre": "Découvrir l'opération",
+          "description": "Apprendre qu'il y a traffic."
+        },
+        {
+          "id": "obj2",
+          "titre": "Décider action",
+          "description": "Participer, saboter, ignorer."
+        },
+        {
+          "id": "obj3",
+          "titre": "Conséquences",
+          "description": "Résultat selon choix."
+        }
+      ],
+      "choix": [
+        {
+          "id": "c1",
+          "label": "Participer et vendre",
+          "consequences": "Ressource rapide, faction confiance devient ennemie."
+        },
+        {
+          "id": "c2",
+          "label": "Saboter l'opération",
+          "consequences": "Trafiquants ennemis, allié auprès rivaux."
+        },
+        {
+          "id": "c3",
+          "label": "Tout tuer et prendre drogue",
+          "consequences": "Ressource max, réputation terrible."
+        }
+      ]
+    },
+    {
+      "id": "q_beaute_interieure_001",
+      "titre": "Beauté intérieure",
+      "type": "annexe",
+      "qtype": "annexe",
+      "qtier": "moyenne",
+      "trigger": "PNJ",
+      "trigger_cible": "Femme ghoulifiée",
+      "niveau": 1,
+      "chain_unlock": "q_vivre_heureux_001",
+      "description": "Femme ghoulifiée cherche mari disparu dans essais cosmétiques pré-guerre. Enquête labo, trouvez Laurent Connel (super mutant semi-conscient). Archives révèlent Projet Beauté.",
+      "objectifs": [
+        {
+          "id": "obj1",
+          "titre": "Rencontrer la femme",
+          "description": "Écouter son histoire."
+        },
+        {
+          "id": "obj2",
+          "titre": "Enquêter au labo",
+          "description": "Trouver Laurent Connel et archives."
+        },
+        {
+          "id": "obj3",
+          "titre": "Réunir ou documenter",
+          "description": "Couple se retrouve ou garder secret."
+        }
+      ],
+      "choix": [
+        {
+          "id": "c1",
+          "label": "Réunir couple et les escorter",
+          "consequences": "Couple sauvé, Cour des Miracles découverte, allié majeur, unlock 'Pour vivre heureux'."
+        },
+        {
+          "id": "c2",
+          "label": "Informer femme seulement",
+          "consequences": "Info partial, couple pas escorté."
+        },
+        {
+          "id": "c3",
+          "label": "Tuer super mutant/documenter",
+          "consequences": "Archives Projet Beauté, femme ennemi."
+        }
+      ]
+    },
+    {
+      "id": "q_vivre_heureux_001",
+      "titre": "Pour vivre heureux...",
+      "type": "annexe",
+      "qtype": "annexe",
+      "qtier": "mineure",
+      "trigger": "PNJ",
+      "trigger_cible": "Laurent Connel (couple)",
+      "niveau": 1,
+      "prerequisite": "q_beaute_interieure_001",
+      "optional": true,
+      "description": "Couple Laurent/femme ghoulifiée cherche refuge. Optionnel: les escorter à la Cour des Miracles.",
+      "objectifs": [
+        {
+          "id": "obj1",
+          "titre": "Couple demande refuge",
+          "description": "Laurent et femme cherchent endroit sûr."
+        },
+        {
+          "id": "obj2",
+          "titre": "Escorter à la Cour",
+          "description": "Chemin vers Notre-Dame, affrontements possibles."
+        },
+        {
+          "id": "obj3",
+          "titre": "Arriver à destination",
+          "description": "Couple accueilli à la Cour des Miracles."
+        }
+      ],
+      "choix": [
+        {
+          "id": "c1",
+          "label": "Escorter jusqu'à Cour",
+          "consequences": "Couple sauvé, Cour allié majeur, lore unlock."
+        },
+        {
+          "id": "c2",
+          "label": "Laisser se débrouiller",
+          "consequences": "Couple risque danger, quête échoue."
+        },
+        {
+          "id": "c3",
+          "label": "Les abandonner",
+          "consequences": "Couple ennemi, fin triste."
+        }
+      ]
+    },
+    {
+      "id": "q_sinon_jamel_pourrir_001",
+      "titre": "Sinon Jamel il va pourrir",
+      "type": "annexe",
+      "qtype": "annexe",
+      "qtier": "moyenne",
+      "trigger": "PNJ",
+      "trigger_cible": "Ami goule",
+      "niveau": 1,
+      "description": "PNJ ami se transforme en feral (perte conscience, agressivité). Cherche médecin sous Notre-Dame. Escortez groupe, affrontements. Cour découverte.",
+      "objectifs": [
+        {
+          "id": "obj1",
+          "titre": "Goule commence transformation",
+          "description": "Ami demande aide urgente."
+        },
+        {
+          "id": "obj2",
+          "titre": "Chercher le médecin",
+          "description": "Localiser Cour des Miracles."
+        },
+        {
+          "id": "obj3",
+          "titre": "Escorter et arriver",
+          "description": "Médecin prend en charge ou trop tard."
+        }
+      ],
+      "choix": [
+        {
+          "id": "c1",
+          "label": "Escorter jusqu'à Cour",
+          "consequences": "Goule sauvée/soignée, Cour découverte, allié majeur."
+        },
+        {
+          "id": "c2",
+          "label": "Arriver trop tard",
+          "consequences": "Goule devient feral, deuil, Cour découverte partiellement."
+        },
+        {
+          "id": "c3",
+          "label": "Mercy killing",
+          "consequences": "Fin tragique, Cour pas découverte."
+        }
+      ]
+    },
+    {
+      "id": "q_ultra_violence_001",
+      "titre": "Ultra violence",
+      "type": "annexe",
+      "qtype": "annexe",
+      "qtier": "mineure",
+      "trigger": "MJ",
+      "trigger_cible": null,
+      "niveau": 1,
+      "description": "Patrouille Ultras rackette petit commerce/voyageur. Intervenir, payer, ou éviter?",
+      "objectifs": [
+        {
+          "id": "obj1",
+          "titre": "Découvrir le racket",
+          "description": "Témoin Ultras menacer quelqu'un."
+        },
+        {
+          "id": "obj2",
+          "titre": "Décider intervention",
+          "description": "Combattre, payer, ou fuir."
+        },
+        {
+          "id": "obj3",
+          "titre": "Résultat",
+          "description": "Combat, transaction, ou évasion."
+        }
+      ],
+      "choix": [
+        {
+          "id": "c1",
+          "label": "Aider victime contre Ultras",
+          "consequences": "Combat modéré, Ultras ennemis, victime allié."
+        },
+        {
+          "id": "c2",
+          "label": "Payer/négocier passage",
+          "consequences": "Perte ressource, passage autorisé, neutre."
+        },
+        {
+          "id": "c3",
+          "label": "Éviter par furtivité/détour",
+          "consequences": "Route plus longue, temps perdu."
+        }
+      ]
+    },
+    {
+      "id": "q_gout_etrange_001",
+      "titre": "Un goût étrange",
+      "type": "annexe",
+      "qtype": "annexe",
+      "qtier": "moyenne",
+      "trigger": "localisation",
+      "trigger_cible": "Zone NNFP",
+      "niveau": 1,
+      "description": "Zone agricole NNFP sabotée (culture brûlée, puits empoisonné). Enquêter pour trouver coupables réels ou aider à réparer.",
+      "objectifs": [
+        {
+          "id": "obj1",
+          "titre": "Découvrir sabotage",
+          "description": "Zone détruite, NNFP accuse rivaux."
+        },
+        {
+          "id": "obj2",
+          "titre": "Enquêter ou aider",
+          "description": "Trouver coupables ou réparer dégâts."
+        },
+        {
+          "id": "obj3",
+          "titre": "Résolution",
+          "description": "Coupables découverts ou zone réparée."
+        }
+      ],
+      "choix": [
+        {
+          "id": "c1",
+          "label": "Enquêter complètement",
+          "consequences": "Découvrir Ultras responsables, tensions révélées, NNFP confiant."
+        },
+        {
+          "id": "c2",
+          "label": "Aider NNFP à réparer",
+          "consequences": "NNFP allié, aide pratique, coupables pas découverts."
+        },
+        {
+          "id": "c3",
+          "label": "Ignorer",
+          "consequences": "Aucun effet, tensions persistent."
+        }
+      ]
+    },
+    {
+      "id": "q_petite_entreprise_001",
+      "titre": "Ma petite entreprise",
+      "type": "annexe",
+      "qtype": "annexe",
+      "qtier": "mineure",
+      "trigger": "PNJ",
+      "trigger_cible": "Entrepreneur",
+      "niveau": 1,
+      "pnj_return": true,
+      "description": "PNJ cultivateur rêve ouvrir auberge/restaurant. Besoin local sain. Nettoyez bâtiment envahi créatures. Après réussite: lieu repos gratuit, possible recruter PNJs.",
+      "objectifs": [
+        {
+          "id": "obj1",
+          "titre": "Rencontrer l'entrepreneur",
+          "description": "Écouter son rêve d'auberge."
+        },
+        {
+          "id": "obj2",
+          "titre": "Nettoyer bâtiment",
+          "description": "Évacuer créatures/goules, rendre habitable."
+        },
+        {
+          "id": "obj3",
+          "titre": "Auberge établie",
+          "description": "PNJ s'installe, joueurs peuvent revenir se reposer."
+        }
+      ],
+      "choix": [
+        {
+          "id": "c1",
+          "label": "Investir et aider complet",
+          "consequences": "Auberge établie, lieu repos gratuit permanent, PNJ peut recruter autres, allié majeur."
+        },
+        {
+          "id": "c2",
+          "label": "Aider partiellement",
+          "consequences": "Auberge fragile, repos payant, relation mitigée."
+        },
+        {
+          "id": "c3",
+          "label": "Ignorer",
+          "consequences": "Aucun effet, auberge ne démarre pas."
+        }
+      ]
+    }
+  ]
+}

@@ -32,7 +32,7 @@ Le JDR tourne sur une web‑app (repo `JobakLeDev/FalloutParis`). Produire du co
   - événement `{id, titre, date, ordre, img?, corps}` — **timeline** triée par `ordre` puis `date`.
   - Découverte **progressive par joueur** : révélation manuelle MJ + auto via la carte. Donc penser le lore en « couches » révélables.
 - **Terminaux** — `data/terminals.json` = arborescence `{id, label, body?, children?, locked?}`. Excellent vecteur de **lore, notes, journaux, secrets**. Un nœud `locked:<1‑4>` exige un **hack** (jet de Sciences). Marque Bull Télématique / Minitel 5000.
-- **Quêtes** — type **Annexe / Principale** + sous‑niveau (mineure/standard/majeure) → **XP auto** à la réussite. Objectifs cochables. Révélées par joueur.
+- **Quêtes** — type **Annexe / Principale** + sous‑niveau (mineure/standard/majeure) → **XP auto** à la réussite. Objectifs cochables. Révélées par joueur. **Designs de quêtes** dans `data/quetes.json` (bible : versions_faction, objectifs, choix/conséquences, trigger, chain_unlock, prerequisite) — c'est du **design source**, pas le format runtime de l'app (qui stocke les quêtes jouables dans Firestore `/quetes/data`).
 - **Carte** — POI/zones (Paris + métro), fog of war par joueur ; les POI « lieu » se relient à l'encyclopédie via `poi`.
 - **Factions** — `data/factions.json` (Commune souterraine, Réseau de surface, République cachée, Gaziers, Ultras, Zazous, NNFP…).
 - **Crochetage** — serrures (jet de Crochetage, déclenché par le MJ) — hook narratif pour portes/coffres gardant du contenu.
