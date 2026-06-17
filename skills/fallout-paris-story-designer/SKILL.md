@@ -21,6 +21,26 @@ Gautier refuse inventions silencieuses. Tout canon neuf = validation requise.
 
 ---
 
+## L'app Fallout Paris — systèmes qui portent le contenu
+
+Le JDR tourne sur une web‑app (repo `JobakLeDev/FalloutParis`). Produire du contenu **compatible avec ces structures** :
+
+- **Encyclopédie** — `data/encyclopedie.json` = `{lieux[], personnages[], bestiaire[], evenements[]}` (**source de vérité** du lore découvrable). Schémas (ids globalement uniques) :
+  - lieu `{id, titre, img?, poi?, corps, liens?[]}` — `poi` = nom exact d'un point de la **carte** (révéler le POI débloque le lieu pour le joueur).
+  - personnage `{id, titre, img?, faction?, lieu?, corps, liens?[]}`.
+  - bestiaire `{id, ref, img?, corps}` — `ref` = clé d'`enemies.json` (stats auto), `corps` = lore.
+  - événement `{id, titre, date, ordre, img?, corps}` — **timeline** triée par `ordre` puis `date`.
+  - Découverte **progressive par joueur** : révélation manuelle MJ + auto via la carte. Donc penser le lore en « couches » révélables.
+- **Terminaux** — `data/terminals.json` = arborescence `{id, label, body?, children?, locked?}`. Excellent vecteur de **lore, notes, journaux, secrets**. Un nœud `locked:<1‑4>` exige un **hack** (jet de Sciences). Marque Bull Télématique / Minitel 5000.
+- **Quêtes** — type **Annexe / Principale** + sous‑niveau (mineure/standard/majeure) → **XP auto** à la réussite. Objectifs cochables. Révélées par joueur.
+- **Carte** — POI/zones (Paris + métro), fog of war par joueur ; les POI « lieu » se relient à l'encyclopédie via `poi`.
+- **Factions** — `data/factions.json` (Commune souterraine, Réseau de surface, République cachée, Gaziers, Ultras, Zazous, NNFP…).
+- **Crochetage** — serrures (jet de Crochetage, déclenché par le MJ) — hook narratif pour portes/coffres gardant du contenu.
+
+Quand tu conçois lieux/persos/événements, **rédige au format ci‑dessus** (Gautier exporte vers ces JSON) et exploite les vecteurs (terminaux pour les secrets, timeline pour la chronologie, POI carte pour ancrer un lieu).
+
+---
+
 ## Principes de cohérence
 
 - **Double ancrage:** chaque élément = plausible en Fallout ET en France.
