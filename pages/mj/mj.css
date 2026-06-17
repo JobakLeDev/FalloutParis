@@ -308,3 +308,7 @@ html, body { overflow-x: hidden !important; overflow-y: auto !important; height:
 #actions-pnl .action-group.collapsed .action-group-title::after{ content:'▸'; }
 #actions-pnl .action-group.collapsed .action-group-title{ margin-bottom:0; }
 #actions-pnl .action-group.collapsed > :not(.action-group-title){ display:none; }
+/* Rangée 2 colonnes : Terminal (gauche) + Crochetage (droite) */
+.pnl-row{ display:flex; gap:12px; align-items:flex-start; }
+.pnl-row > .rencontre-pnl{ flex:1 1 0; min-width:0; margin:0; }
+@media(max-width:680px){ .pnl-row{ flex-direction:column; } }

@@ -610,7 +610,7 @@ function togglePartyCollapse(id){ if(collapsedParties.has(id)) collapsedParties.
 
 // Réduction des panneaux de la colonne droite (mémorisé en localStorage)
 const collapsedPanels = new Set((()=>{ try{ return JSON.parse(localStorage.getItem('fp_collapsedPanels')||'[]'); }catch(e){ return []; } })());
-const PANEL_IDS = ['actions-pnl','actionlog-pnl','clock-pnl','rencontre-pnl-main','combats-actifs','butin-pnl','boutique-pnl','radio-pnl','contacts-pnl'];
+const PANEL_IDS = ['actions-pnl','actionlog-pnl','clock-pnl','rencontre-pnl-main','combats-actifs','butin-pnl','boutique-pnl','terminal-pnl','crochetage-pnl','radio-pnl','contacts-pnl'];
 function applyPanelState(id){
   const el = document.getElementById(id); if(!el) return;
   const col = collapsedPanels.has(id);
