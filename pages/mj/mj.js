@@ -136,6 +136,106 @@ function startSync(){
   });
   loadTerminauxList();
   mjRadioLoad();
+  db.collection('saves').orderBy('ts','desc').onSnapshot(s => {
+    savesList = []; s.forEach(doc => savesList.push({ id: doc.id, ...doc.data() }));
+    renderSauvegardes();
+  }, e => { console.warn('saves listener', e); });
+}
+
+// ============================================================
+// SAUVEGARDE / RESTAURATION de l'état du jeu (/saves/{id})
+//   Snapshot : toutes les fiches joueurs + quetes/journal/carte/temps/encyclopedie.
+//   Restauration : réécrit ces documents. Les persos créés APRÈS la sauvegarde
+//   sont conservés (la restauration n'efface pas, elle réapplique l'état sauvé).
+// ============================================================
+let savesList = [];
+const SAVE_DOCS = [['quetes','data'],['journal','data'],['carte','data'],['temps','data'],['encyclopedie','data']];
+function _escSv(s){ return (''+s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+async function _collectGameState(){
+  const data = { joueurs:{}, docs:{} };
+  const js = await db.collection('joueurs').get();
+  js.forEach(d => { data.joueurs[d.id] = d.data(); });
+  for(const [col, doc] of SAVE_DOCS){
+    try{ const s = await db.collection(col).doc(doc).get(); if(s.exists) data.docs[col] = s.data(); }catch(e){}
+  }
+  return data;
+}
+async function _applyGameState(d){
+  if(!d || !d.joueurs) throw new Error('Sauvegarde non reconnue');
+  for(const pid in d.joueurs){ await db.collection('joueurs').doc(pid).set(d.joueurs[pid]); }
+  for(const [col, doc] of SAVE_DOCS){ if(d.docs && d.docs[col]) await db.collection(col).doc(doc).set(d.docs[col]); }
+}
+
+async function creerSauvegarde(){
+  const raw = prompt('Nom de la sauvegarde :', 'Session ' + new Date().toLocaleDateString('fr-FR'));
+  if(raw === null) return;
+  const label = raw.trim() || ('Sauvegarde ' + new Date().toLocaleString('fr-FR'));
+  try{
+    const data = await _collectGameState();
+    await db.collection('saves').doc('save_' + Date.now()).set({ ts: Date.now(), label, data });
+    alert('💾 Sauvegarde « ' + label + ' » créée (' + Object.keys(data.joueurs).length + ' perso(s)).');
+  }catch(e){
+    alert('Échec de la sauvegarde : ' + e.message + (/maximum|1048|exceeds|size/i.test(e.message) ? '\n\nL\'état est trop volumineux pour Firestore — utilise plutôt « Exporter (fichier) ».' : ''));
+  }
+}
+
+async function restaurerSauvegarde(id){
+  const sv = savesList.find(s => s.id === id); if(!sv) return;
+  if(!confirm('Restaurer « ' + sv.label + ' » ?\n\nCela réécrit les fiches joueurs et l\'état (quêtes, journal, carte, temps, encyclopédie) tels qu\'ils étaient lors de cette sauvegarde.\nLes actions faites depuis seront perdues.')) return;
+  try{ await _applyGameState(sv.data || {}); alert('✓ État restauré à « ' + sv.label + ' ».'); }
+  catch(e){ alert('Échec de la restauration : ' + e.message); }
+}
+
+async function supprimerSauvegarde(id){
+  const sv = savesList.find(s => s.id === id); if(!sv) return;
+  if(!confirm('Supprimer la sauvegarde « ' + sv.label + ' » ?')) return;
+  try{ await db.collection('saves').doc(id).delete(); }catch(e){ alert('Échec : ' + e.message); }
+}
+
+async function exporterSauvegardeFichier(id){
+  let payload;
+  try{
+    if(id){ const sv = savesList.find(s => s.id === id); if(!sv) return; payload = { label: sv.label, ts: sv.ts, data: sv.data }; }
+    else   { payload = { label: 'Export ' + new Date().toLocaleString('fr-FR'), ts: Date.now(), data: await _collectGameState() }; }
+  }catch(e){ alert('Échec export : ' + e.message); return; }
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'fop_save_' + new Date(payload.ts || Date.now()).toISOString().slice(0,19).replace(/[:T]/g,'-') + '.json';
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+}
+
+function importerSauvegardeFichier(input){
+  const f = input.files && input.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = async () => {
+    let payload; try{ payload = JSON.parse(r.result); }catch(e){ alert('Fichier illisible (JSON invalide).'); input.value=''; return; }
+    const d = (payload && payload.data) ? payload.data : payload;
+    if(!d || !d.joueurs){ alert('Ce fichier n\'est pas une sauvegarde Fallout Paris.'); input.value=''; return; }
+    if(!confirm('Restaurer l\'état depuis ce fichier ?\n\nCela réécrit les fiches joueurs et l\'état actuel.')){ input.value=''; return; }
+    try{ await _applyGameState(d); alert('✓ État restauré depuis le fichier.'); }
+    catch(e){ alert('Échec : ' + e.message); }
+    input.value='';
+  };
+  r.readAsText(f);
+}
+
+function renderSauvegardes(){
+  const el = document.getElementById('saves-list'); if(!el) return;
+  if(!savesList.length){ el.innerHTML = '<div class="empty" style="font-size:8px;color:var(--td);padding:8px">Aucune sauvegarde.</div>'; return; }
+  el.innerHTML = savesList.map(sv => {
+    const dt = new Date(sv.ts || 0).toLocaleString('fr-FR');
+    const nb = (sv.data && sv.data.joueurs) ? Object.keys(sv.data.joueurs).length : 0;
+    return '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;padding:5px 6px;border:1px solid var(--b);margin-bottom:4px;background:#060d06">'
+      + '<div style="min-width:0;flex:1"><div style="font-size:10px;color:var(--tb);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + _escSv(sv.label || '—') + '</div>'
+      + '<div style="font-size:8px;color:var(--td)">' + dt + ' · ' + nb + ' perso(s)</div></div>'
+      + '<div style="display:flex;gap:3px;flex:none">'
+      + '<button class="bp-mini" onclick="restaurerSauvegarde(\'' + sv.id + '\')" title="Restaurer cet état">↺ Restaurer</button>'
+      + '<button class="bp-mini" onclick="exporterSauvegardeFichier(\'' + sv.id + '\')" title="Télécharger en fichier">⬇</button>'
+      + '<button class="bp-mini" onclick="supprimerSauvegarde(\'' + sv.id + '\')" title="Supprimer">🗑</button>'
+      + '</div></div>';
+  }).join('');
 }
 
 // ============================================================
@@ -610,7 +710,7 @@ function togglePartyCollapse(id){ if(collapsedParties.has(id)) collapsedParties.
 
 // Réduction des panneaux de la colonne droite (mémorisé en localStorage)
 const collapsedPanels = new Set((()=>{ try{ return JSON.parse(localStorage.getItem('fp_collapsedPanels')||'[]'); }catch(e){ return []; } })());
-const PANEL_IDS = ['actions-pnl','actionlog-pnl','clock-pnl','rencontre-pnl-main','combats-actifs','butin-pnl','boutique-pnl','terminal-pnl','crochetage-pnl','radio-pnl','contacts-pnl'];
+const PANEL_IDS = ['actions-pnl','actionlog-pnl','saves-pnl','clock-pnl','rencontre-pnl-main','combats-actifs','butin-pnl','boutique-pnl','terminal-pnl','crochetage-pnl','radio-pnl','contacts-pnl'];
 function applyPanelState(id){
   const el = document.getElementById(id); if(!el) return;
   const col = collapsedPanels.has(id);

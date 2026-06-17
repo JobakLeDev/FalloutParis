@@ -70,6 +70,10 @@ service cloud.firestore {
     // ---------- Radio (diffusion synchronisée MJ) ----------
     match /radio/{doc} { allow read, write: if true; }
 
+    // ---------- Sauvegardes de l'état du jeu (MJ) ----------
+    // Chaque doc = un snapshot {ts,label,data:{joueurs,docs}}.
+    match /saves/{id} { allow read, write: if true; }
+
     // ---------- Tout le reste : INTERDIT ----------
     // Empêche la création de collections/documents non prévus.
     match /{document=**} {

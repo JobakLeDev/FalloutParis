@@ -369,6 +369,24 @@
       <div id="actionlog-list"><div class="empty" style="font-size:8px;color:var(--td);padding:10px">Aucune action enregistrée.</div></div>
     </div>
 
+    <!-- SAUVEGARDES (état du jeu) -->
+    <div class="rencontre-pnl" id="saves-pnl" style="margin-bottom:10px">
+      <div class="pnl-title pnl-head">
+        <button class="pnl-toggle" onclick="togglePanel('saves-pnl')">▾</button>
+        <span class="pnl-head-label">💾 Sauvegardes</span>
+      </div>
+      <div style="font-size:8px;color:var(--td);margin-bottom:6px;letter-spacing:1px">Capture l'état du jeu (fiches joueurs + quêtes, journal, carte, temps, encyclopédie). Restaure le dernier état choisi.</div>
+      <div class="gen-btns">
+        <button class="gen-btn" onclick="creerSauvegarde()">💾 Sauvegarder l'état</button>
+        <button class="gen-btn" onclick="exporterSauvegardeFichier()">⬇ Exporter (fichier)</button>
+      </div>
+      <div class="gen-btns" style="margin-top:6px">
+        <button class="gen-btn" style="grid-column:1/-1;border-color:var(--b2);color:var(--td)" onclick="document.getElementById('save-file-inp').click()">⬆ Restaurer depuis un fichier…</button>
+        <input type="file" id="save-file-inp" accept="application/json,.json" style="display:none" onchange="importerSauvegardeFichier(this)">
+      </div>
+      <div id="saves-list" style="margin-top:8px"><div class="empty" style="font-size:8px;color:var(--td);padding:8px">Aucune sauvegarde.</div></div>
+    </div>
+
     <!-- CALENDRIER & GROUPES -->
     <div class="rencontre-pnl" id="clock-pnl">
       <div class="pnl-title pnl-head">
@@ -468,7 +486,7 @@
   <script src="../../common/survie.js?v=1"></script>
   <script src="mj_shared.js?v=11"></script>
   <script src="zones.js"></script>
-  <script src="mj.js?v=17"></script>
+  <script src="mj.js?v=18"></script>
   <script src="../../common/responsive.js?v=1"></script>
 </body>
 </html>
