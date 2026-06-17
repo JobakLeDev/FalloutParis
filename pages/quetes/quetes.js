@@ -18,11 +18,13 @@ let filter = 'all';
 let typeFilter = 'all';   // MJ : 'all' | 'principale' | 'annexe'
 // Repli individuel des quêtes (mémorisé en localStorage)
 const collapsedQuests = new Set((()=>{ try{ return JSON.parse(localStorage.getItem('fp_collapsedQuests') || '[]'); }catch(e){ return []; } })());
+function _saveCollapsedQ(){ try{ localStorage.setItem('fp_collapsedQuests', JSON.stringify([...collapsedQuests])); }catch(e){} }
 function toggleQuestCollapse(id){
   if(collapsedQuests.has(id)) collapsedQuests.delete(id); else collapsedQuests.add(id);
-  try{ localStorage.setItem('fp_collapsedQuests', JSON.stringify([...collapsedQuests])); }catch(e){}
-  render();
+  _saveCollapsedQ(); render();
 }
+function collapseAllQuests(){ qData.quests.forEach(q => collapsedQuests.add(q.id)); _saveCollapsedQ(); render(); }
+function expandAllQuests(){ collapsedQuests.clear(); _saveCollapsedQ(); render(); }
 let _editing = false;   // évite un re-render qui volerait le focus pendant la saisie
 
 document.addEventListener('DOMContentLoaded', init);
@@ -57,6 +59,7 @@ function updateModeUI() {
   const ab = document.getElementById('qadd-btn'); if (ab) ab.style.display = isMJ ? '' : 'none';
   const ib = document.getElementById('qimport-btn'); if (ib) ib.style.display = isMJ ? '' : 'none';
   const tf = document.getElementById('q-typefilters'); if (tf) tf.style.display = isMJ ? '' : 'none';
+  ['qcollapse-btn','qexpand-btn'].forEach(id => { const b = document.getElementById(id); if (b) b.style.display = isMJ ? '' : 'none'; });
 }
 
 // ---- Import des quêtes de design (data/quetes.json) → format jouable ----
