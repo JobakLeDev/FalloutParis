@@ -347,3 +347,25 @@ Puis produis JSON `q_survivant_multifins_001` avec structure complète.
 - Noms PNJs flavor.
 - Quêtes Niveau 2-3 détaillées.
 - Descriptions lieux mineurs.
+
+---
+
+## Secrets — Règles de confidentialité
+
+**JAMAIS mentionner publiquement:**
+- Implication des États-Unis (bombardement volontaire).
+- Contact Réseau ↔ US.
+- Plan de relancer missiles.
+- Complices gouvernement français 2077.
+
+**Qui sait quoi:**
+- **Chefs factions:** Secret complet.
+- **Gaziers/Ultras/Zazous/NNFP:** Aucune idée.
+- **Commune:** Ignore tout (peur viscérale, pas connaissance).
+
+**Langage PNJs:**
+- Jamais "technologie US" → "technologie pré-guerre."
+- Jamais "signaux US" → "signaux anciens/militaires."
+- Jamais "les Américains" publiquement.
+
+**Exception:** Si joueurs découvrent archives directement (terminaux, documents), ALORS peuvent apprendre la vérité. Mais c'est info rareté, pas connaissance commune.
