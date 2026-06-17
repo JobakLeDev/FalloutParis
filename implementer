@@ -1,6 +1,6 @@
 Liste des truc à implémenter :
--lors de la création d'un personnage, questionnaire qui décide la faction de départ. je te fournirai le questionnaire et l'interprétation des résultats (claude va m'aider). [EN ATTENTE du questionnaire]
 --- Fait ---
+-[OK] création perso : questionnaire « Qui suis-je ? » (7 mises en situation, 4 origines : Abri 74/Bourg-de-Bois/Zazous/Ultras) → stocke origine ; faction='' pour Abri/Bourg (MJ définit), faction=zazous/ultras sinon. Style Fallout (creation_perso.js v4 / css v2)
 -[OK] encyclopédie Factions : catégorie Factions, base + sous-entrées indépendantes révélées manuellement par le MJ ; le joueur voit son rapport (neutre/allié/ennemi) ; base de sa faction auto-visible (membre) + révélée à la création
 
 -[OK] hack terminal : nœuds `locked:<diff>` → jet de Sciences (2D20) + anim ; réussite déverrouille, échec = verrouillage (reset à l'extinction). TN passé par la fiche (?sci)

@@ -24,3 +24,20 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .msg{font-size:11px;padding:10px 14px;border:1px solid;margin-top:10px;letter-spacing:1px;display:none;text-align:center;}
 .msg.err{color:var(--rd);border-color:var(--rd);background:#1a0505;}
 .msg.ok{color:var(--g);border-color:var(--g);background:#051505;}
+
+/* ===== Questionnaire « Qui suis-je ? » ===== */
+.quest-progress{font-size:10px;letter-spacing:2px;color:var(--td);text-transform:uppercase;margin-bottom:14px;min-height:14px;}
+.quest-done{color:var(--g);}
+.quest-stage{min-height:260px;}
+.quest-q{font-size:14px;line-height:1.55;color:var(--tb);margin-bottom:16px;}
+.quest-answers{display:flex;flex-direction:column;gap:9px;}
+.quest-ans{text-align:left;padding:11px 14px;border:1px solid var(--b2);background:#060d06;color:var(--t);font-family:'Share Tech Mono',monospace;font-size:13px;line-height:1.45;cursor:pointer;transition:all 0.15s;}
+.quest-ans:hover{border-color:var(--g);background:#0e1c0e;color:var(--tb);box-shadow:0 0 10px #5dbe5d22;}
+.quest-ans:active{transform:scale(0.99);}
+.quest-result{text-align:center;padding:8px 4px;}
+.quest-result-lbl{font-size:10px;letter-spacing:3px;color:var(--td);text-transform:uppercase;margin-bottom:14px;}
+.quest-result-title{font-family:'Oswald',sans-serif;font-size:22px;letter-spacing:1px;color:var(--g);line-height:1.3;margin-bottom:10px;text-shadow:0 0 12px #5dbe5d44;}
+.quest-result-desc{font-size:13px;color:var(--tb);line-height:1.6;margin-bottom:18px;}
+.quest-tie{font-size:11px;color:var(--am);font-style:italic;margin-bottom:16px;}
+.quest-redo{background:transparent;border:1px solid var(--b2);color:var(--td);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:8px 16px;cursor:pointer;transition:all 0.15s;}
+.quest-redo:hover{border-color:var(--g);color:var(--t);}

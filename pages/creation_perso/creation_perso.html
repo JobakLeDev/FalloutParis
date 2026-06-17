@@ -9,7 +9,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <link rel="stylesheet" href="../../common/style.css">
-  <link rel="stylesheet" href="creation_perso.css">
+  <link rel="stylesheet" href="creation_perso.css?v=2">
   <link rel="stylesheet" href="../../common/zoom.css?v=2">
 </head>
 <body>
@@ -38,19 +38,11 @@
       <label>Nom du personnage</label>
       <input type="text" id="f-nom" placeholder="ex: Alice, Marcus Aurelius...">
     </div>
-    <div class="field">
-      <label>Faction d'origine</label>
-      <select id="f-faction">
-        <option value="">— À définir avec le MJ —</option>
-        <option value="republique">République</option>
-        <option value="reseau">Réseau</option>
-        <option value="commune">Commune</option>
-        <option value="nnfp">NNFP</option>
-        <option value="zazous">Zazous</option>
-        <option value="ultras">Ultras</option>
-      </select>
-      <div class="hint">Le MJ peut compléter le reste de ta fiche ensuite</div>
-    </div>
+  </div>
+  <div class="panel">
+    <div class="ptitle">Qui suis-je ?</div>
+    <div id="quest-progress" class="quest-progress"></div>
+    <div id="quest-stage" class="quest-stage"></div>
   </div>
   <button class="btn" onclick="creer()">⟶ Créer mon personnage</button>
   <button class="btn-back" onclick="window.location.href='../../index.html'">← Retour</button>
@@ -58,7 +50,7 @@
 </div>
   <script src="../../common/shared.js"></script>
   <script src="../../common/db.js"></script>
-  <script src="creation_perso.js?v=3"></script>
+  <script src="creation_perso.js?v=4"></script>
   <script src="../../common/theme.js?v=2"></script>
   <script src="../../common/responsive.js?v=1"></script>
 </body>
