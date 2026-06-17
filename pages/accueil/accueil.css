@@ -8,7 +8,7 @@
 body{
   background:var(--bg);color:var(--t);
   font-family:'Share Tech Mono',monospace;
-  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center;
   background-image:var(--scan);
 }
 body::before{
@@ -17,30 +17,30 @@ body::before{
   z-index:-1;
 }
 
-.container{width:100%;max-width:460px;padding:20px;}
+.container{width:100%;max-width:460px;max-height:100vh;padding:clamp(10px,2vh,20px);overflow:hidden;}
 
 /* HEADER */
-.header{text-align:center;margin-bottom:32px;isolation:auto;background:transparent;}
+.header{text-align:center;margin-bottom:clamp(8px,2.6vh,32px);isolation:auto;background:transparent;}
 .vaultboy-img{
-  width:140px;
+  width:clamp(72px,15vh,140px);
   opacity:0.88;
   filter:drop-shadow(0 0 18px #5dbe5d88);
-  margin-bottom:16px;
+  margin-bottom:clamp(6px,1.4vh,16px);
   animation:float 4s ease-in-out infinite;
 }
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 .title{
-  font-family:'Oswald',sans-serif;font-size:24px;font-weight:600;
+  font-family:'Oswald',sans-serif;font-size:clamp(18px,4.4vh,24px);font-weight:600;
   letter-spacing:5px;color:var(--g);
   text-shadow:0 0 20px #5dbe5d66;
 }
 .subtitle{font-size:8px;letter-spacing:4px;color:var(--td);margin-top:4px;opacity:0.6;}
-.tagline{font-size:12px;color:var(--t);margin-top:14px;letter-spacing:3px;opacity:0.85;font-style:italic;}
+.tagline{font-size:clamp(10px,2vh,12px);color:var(--t);margin-top:clamp(6px,1.4vh,14px);letter-spacing:3px;opacity:0.85;font-style:italic;}
 
 /* PANEL */
 .panel{
   background:var(--p2);border:1px solid var(--b2);
-  padding:20px;position:relative;
+  padding:clamp(12px,2vh,20px);position:relative;
 }
 .panel::before{
   content:'';position:absolute;top:0;left:0;right:0;height:1px;
@@ -48,11 +48,11 @@ body::before{
 }
 .ptitle{
   font-size:8px;letter-spacing:4px;color:var(--td);text-transform:uppercase;
-  border-bottom:1px solid var(--b);padding-bottom:6px;margin-bottom:16px;
+  border-bottom:1px solid var(--b);padding-bottom:6px;margin-bottom:clamp(8px,1.8vh,16px);
 }
 
 /* FORM */
-.field{margin-bottom:14px;}
+.field{margin-bottom:clamp(8px,1.5vh,14px);}
 .field label{font-size:8px;letter-spacing:3px;color:var(--td);display:block;margin-bottom:5px;text-transform:uppercase;}
 .field input{
   width:100%;background:#060d06;border:1px solid var(--b2);
@@ -113,4 +113,4 @@ body::before{
 }
 
 /* FOOTER */
-.footer{text-align:center;margin-top:20px;font-size:8px;color:var(--td);opacity:0.5;letter-spacing:2px;}
+.footer{text-align:center;margin-top:clamp(8px,1.6vh,20px);font-size:8px;color:var(--td);opacity:0.5;letter-spacing:2px;}
