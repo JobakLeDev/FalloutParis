@@ -24,6 +24,10 @@ function ensureIds(){
   Object.keys(pref).forEach(k => (E[k] || []).forEach((e, i) => {
     if(!e.id) e.id = pref[k] + '-' + _slug(e.titre || e.ref || ('x' + i));
   }));
+  (E.factions || []).forEach(f => {
+    if(!f.id) f.id = _slug(f.titre);
+    (f.entries || []).forEach((s, i) => { if(!s.id) s.id = 'fac-' + f.id + '-' + _slug(s.titre || ('x' + i)); });
+  });
 }
 
 function initEncy(){
@@ -59,9 +63,9 @@ function saveState(){ if(fdb) fdb.collection('encyclopedie').doc('data').set(sta
 function setCat(c){ cat = c; document.querySelectorAll('.ecat').forEach(b => b.classList.toggle('on', b.dataset.c === c)); render(); }
 
 // ---- Données ----
-const ENCY = () => window.ENCY || { lieux:[], personnages:[], bestiaire:[], evenements:[] };
+const ENCY = () => window.ENCY || { lieux:[], personnages:[], bestiaire:[], evenements:[], factions:[] };
 function catList(c){ const E = ENCY(); return c === 'timeline' ? (E.evenements||[]) : (E[c] || []); }
-function allEntries(){ const E = ENCY(); return [...(E.lieux||[]),...(E.personnages||[]),...(E.bestiaire||[]),...(E.evenements||[])]; }
+function allEntries(){ const E = ENCY(); const facs = (E.factions||[]); return [...(E.lieux||[]),...(E.personnages||[]),...(E.bestiaire||[]),...(E.evenements||[]),...facs,...facs.flatMap(f => f.entries||[])]; }
 function entryById(id){ return allEntries().find(e => e.id === id); }
 function titreOf(e){ return e.titre || (e.ref ? (window.ENNEMIS_DB?.[e.ref] ? e.ref : e.ref) : '') || e.id; }
 
@@ -97,6 +101,14 @@ function render(){
   let list = catList(cat).filter(visible);
   if(q) list = list.filter(e => (titreOf(e) + ' ' + (e.corps||'')).toLowerCase().includes(q));
 
+  if(cat === 'factions'){
+    let facs = (ENCY().factions || []);
+    if(q) facs = facs.filter(f => ((f.titre||'') + ' ' + (f.corps||'')).toLowerCase().includes(q));
+    const cards = facs.map(renderFactionCard).filter(Boolean);
+    el.innerHTML = cards.length ? '<div class="ecards">' + cards.join('') + '</div>'
+      : `<div class="e-empty">${isMJ ? 'Aucune faction dans encyclopedie.json.' : 'Aucune faction découverte.'}</div>`;
+    return;
+  }
   if(cat === 'timeline'){
     list = list.slice().sort((a,b) => (a.ordre||0) - (b.ordre||0) || ('' + (a.date||'')).localeCompare('' + (b.date||'')));
     el.innerHTML = list.length ? '<div class="etl">' + list.map(renderEvent).join('') + '</div>'
@@ -151,6 +163,48 @@ function renderCard(e){
       ${revealRow(e)}
     </div>
   </div>`;
+}
+
+// ---- Factions ----
+const REL_LBL = { allie:{t:'Allié',c:'var(--g)'}, ennemi:{t:'Ennemi',c:'var(--rd)'}, neutre:{t:'Neutre',c:'var(--td)'} };
+function factionBaseVisible(f){
+  if(isMJ) return true;
+  if(!viewerId) return false;
+  if((state.reveal[f.id] || []).includes(viewerId)) return true;
+  if((joueurs[viewerId] || {}).faction === f.id) return true;   // membre → voit sa faction (version de base)
+  return false;
+}
+function subVisible(id){ if(isMJ) return true; if(!viewerId) return false; return (state.reveal[id] || []).includes(viewerId); }
+function relBadge(fid){
+  if(!viewerId) return '';
+  const rel = (joueurs[viewerId]?.factionRel || {})[fid] || 'neutre';
+  const r = REL_LBL[rel] || REL_LBL.neutre;
+  return `<span class="e-badge" style="color:${r.c};border-color:${r.c}">Rapport : ${r.t}</span>`;
+}
+function renderFactionCard(f){
+  const baseVis = factionBaseVisible(f);
+  const subs = f.entries || [];
+  const visSubs = subs.filter(s => isMJ || subVisible(s.id));
+  if(!isMJ && !baseVis && !visSubs.length) return '';   // rien de découvert
+  const img = imgSrc(f.img);
+  const fac = window.FACTIONS?.[f.id];
+  const color = (fac && fac.color) || 'var(--am)';
+  let h = '<div class="ecard efac">';
+  if(img) h += `<div class="e-img"><img src="${esc(img)}" alt=""></div>`;
+  h += '<div class="e-body">';
+  h += `<div class="e-title" style="color:${color}">🚩 ${esc(f.titre || (fac && fac.label) || f.id)}</div>`;
+  const rb = relBadge(f.id); if(rb) h += `<div class="e-metas">${rb}</div>`;
+  if(baseVis && f.corps) h += `<div class="e-text">${esc(f.corps)}</div>`;
+  if(isMJ){ h += '<div class="e-sub-h">Entrée de base (auto-visible aux membres)</div>' + revealRow({ id:f.id }); }
+  (isMJ ? subs : visSubs).forEach(s => {
+    h += '<div class="e-fac-entry">';
+    h += `<div class="e-sub-h">${esc(s.titre || '(sans titre)')}</div>`;
+    if((isMJ || subVisible(s.id)) && s.corps) h += `<div class="e-text">${esc(s.corps)}</div>`;
+    if(isMJ) h += revealRow({ id:s.id });
+    h += '</div>';
+  });
+  h += '</div></div>';
+  return h;
 }
 
 function renderEvent(e){

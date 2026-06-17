@@ -1,6 +1,8 @@
 Liste des truc à implémenter :
-
+-lors de la création d'un personnage, questionnaire qui décide la faction de départ. je te fournirai le questionnaire et l'interprétation des résultats (claude va m'aider). [EN ATTENTE du questionnaire]
 --- Fait ---
+-[OK] encyclopédie Factions : catégorie Factions, base + sous-entrées indépendantes révélées manuellement par le MJ ; le joueur voit son rapport (neutre/allié/ennemi) ; base de sa faction auto-visible (membre) + révélée à la création
+
 -[OK] hack terminal : nœuds `locked:<diff>` → jet de Sciences (2D20) + anim ; réussite déverrouille, échec = verrouillage (reset à l'extinction). TN passé par la fiche (?sci)
 -[OK] crochetage : le MJ déclenche (serrure + difficulté) aux sélectionnés → alerte + modale anim serrure côté joueur → jet de Crochetage (PER) ; épingle cassée si 20 ; résultat journalisé pour le MJ
 -[OK] encyclopédie joueur : ids stables + (rappel) publier la règle Firestore /encyclopedie

@@ -50,3 +50,7 @@ body.embed #app{ padding:6px 4px 24px; }
 .etl-dot{ position:absolute; left:-26px; top:4px; width:11px; height:11px; border-radius:50%; background:var(--g); box-shadow:0 0 7px rgba(93,190,93,.7); border:2px solid var(--bg); }
 .etl-card{ background:var(--p); border:1px solid var(--b2); border-radius:6px; padding:9px 11px; display:flex; flex-direction:column; gap:5px; }
 .etl-date{ font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--am); letter-spacing:1px; }
+/* Factions */
+.efac .e-title{ letter-spacing:1px; }
+.e-sub-h{ font-size:8px; color:var(--td); letter-spacing:1.5px; text-transform:uppercase; margin:9px 0 3px; border-top:1px solid var(--b); padding-top:6px; }
+.e-fac-entry{ margin-top:2px; }
