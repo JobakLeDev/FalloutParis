@@ -9,6 +9,24 @@ const db = fbApp.firestore();
 // ID joueur depuis l'URL
 const JOUEUR_ID = new URLSearchParams(window.location.search).get('id') || 'joueur1';
 
+// ---- Notifs d'onglets (quêtes/journal/encyclopédie) : point lumineux tant que non ouvert ----
+const _tabCurrentIds = { quetes: [], journal: [], encyclopedie: [] };
+function _seenKey(tab){ return 'fp_seen_' + tab + '_' + JOUEUR_ID; }
+function _setTabDot(tab, on){ const el = document.getElementById('tabdot-' + tab); if(el) el.style.display = on ? '' : 'none'; }
+function _notifTab(tab, ids){
+  _tabCurrentIds[tab] = ids;
+  let seen; try { seen = JSON.parse(localStorage.getItem(_seenKey(tab)) || 'null'); } catch(e){ seen = null; }
+  if(seen === null){ try { localStorage.setItem(_seenKey(tab), JSON.stringify(ids)); } catch(e){}; _setTabDot(tab, false); return; }  // 1er passage : on mémorise sans notifier
+  const seenSet = new Set(seen);
+  _setTabDot(tab, ids.some(id => !seenSet.has(id)));   // du nouveau non vu → point
+}
+// Appelé par la fiche quand le joueur ouvre l'onglet → marque vu + éteint le point
+function markTabSeen(tab){
+  if(!(tab in _tabCurrentIds)) return;
+  try { localStorage.setItem(_seenKey(tab), JSON.stringify(_tabCurrentIds[tab])); } catch(e){}
+  _setTabDot(tab, false);
+}
+
 // ---- Indicateur de statut ----
 function setStatus(msg, color) {
   let el = document.getElementById('fb-status');
@@ -193,6 +211,26 @@ function startSync() {
       (err) => console.warn('crochetage indisponible:', err && err.code)
     );
   } catch(e){ console.warn('crochetage listener KO:', e); }
+  // Notifs d'onglets (quêtes / journal / encyclopédie) : point lumineux quand le MJ révèle du nouveau contenu
+  try {
+    db.collection('quetes').doc('data').onSnapshot(s => {
+      const d = s.exists ? s.data() : {};
+      const ids = (d.quests || []).filter(q => q.revealed === true || (Array.isArray(q.revealedFor) && q.revealedFor.includes(JOUEUR_ID))).map(q => q.id);
+      _notifTab('quetes', ids);
+    }, () => {});
+    db.collection('journal').doc('data').onSnapshot(s => {
+      const d = s.exists ? s.data() : {};
+      const ids = (d.entries || []).filter(e => Array.isArray(e.revealedFor) && e.revealedFor.includes(JOUEUR_ID)).map(e => e.id);
+      _notifTab('journal', ids);
+    }, () => {});
+    db.collection('encyclopedie').doc('data').onSnapshot(s => {
+      const d = s.exists ? s.data() : {};
+      const ids = [];
+      const rev = d.reveal || {};      Object.keys(rev).forEach(id => { if ((rev[id] || []).includes(JOUEUR_ID)) ids.push('e:' + id); });
+      const lp  = d.lieuxPoi || {};     Object.keys(lp).forEach(poi => { if ((lp[poi] || []).includes(JOUEUR_ID)) ids.push('p:' + poi); });
+      _notifTab('encyclopedie', ids);
+    }, () => {});
+  } catch(e){ console.warn('notif onglets KO:', e); }
   // Radio — diffusion synchronisée pilotée par le MJ (le joueur suit ; couper + volume)
   try {
     radioInitFollower();

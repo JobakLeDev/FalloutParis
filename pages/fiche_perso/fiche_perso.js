@@ -103,6 +103,8 @@ function sw(tab){
   document.querySelectorAll('.tc').forEach(el=>el.classList.remove('on'));
   const tc=document.getElementById('tc-'+tab);
   if(tc)tc.classList.add('on');
+  // Éteindre le point de notif quand on ouvre l'onglet correspondant
+  if(typeof markTabSeen==='function' && (tab==='quetes'||tab==='journal'||tab==='encyclopedie')) markTabSeen(tab);
   const id=new URLSearchParams(location.search).get('id')||'';
   // Charger la carte (iframe) à la première ouverture de l'onglet ; sinon recentrer sur le joueur
   if(tab==='carte'){

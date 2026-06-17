@@ -7,7 +7,7 @@
   <title>Fallout Paris — Fiche Personnage</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css?v=80">
-  <link rel="stylesheet" href="fiche_perso.css?v=83">
+  <link rel="stylesheet" href="fiche_perso.css?v=84">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
@@ -91,9 +91,9 @@
   <div class="tab" onclick="sw('inventaire')">INVENTAIRE</div>
   <div class="tab" onclick="sw('perks')">PERKS &amp; COMPÉT.</div>
   <div class="tab" onclick="sw('carte')">CARTE</div>
-  <div class="tab" onclick="sw('quetes')">QUÊTES</div>
-  <div class="tab" onclick="sw('journal')">JOURNAL</div>
-  <div class="tab" onclick="sw('encyclopedie')">ENCYCLO.</div>
+  <div class="tab" onclick="sw('quetes')">QUÊTES<span id="tabdot-quetes" class="tab-dot" style="display:none"></span></div>
+  <div class="tab" onclick="sw('journal')">JOURNAL<span id="tabdot-journal" class="tab-dot" style="display:none"></span></div>
+  <div class="tab" onclick="sw('encyclopedie')">ENCYCLO.<span id="tabdot-encyclopedie" class="tab-dot" style="display:none"></span></div>
 </div>
 
 <div class="body">
@@ -432,8 +432,8 @@
   <script src="../../common/shared.js?v=79"></script>
   <script src="../../common/db.js?v=79"></script>
   <script src="../../common/survie.js?v=76"></script>
-  <script src="fiche_perso.js?v=90"></script>
-  <script src="../../common/firebase.js?v=82"></script>
+  <script src="fiche_perso.js?v=91"></script>
+  <script src="../../common/firebase.js?v=83"></script>
   <script src="../../common/responsive.js?v=1"></script>
 </body>
 </html>
