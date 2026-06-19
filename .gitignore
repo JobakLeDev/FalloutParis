@@ -3,3 +3,6 @@ CLAUDE.md
 # Sources lourdes (gardées en local, pas dans le repo)
 img/*.pdf
 img/paris-fallout.wbm
+
+# MP3 radio téléchargés (droits d'auteur — ne pas publier)
+/radio/
