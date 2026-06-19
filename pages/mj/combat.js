@@ -353,6 +353,8 @@ function lancerInitiative(){
     adInit['actionsDeclarees.' + id] = { mineure:{used:[],pending:null}, majeure:{used:[],pending:null}, mouvement_used:false };
   });
   if(Object.keys(adInit).length) db.collection(COMBATS_COLL).doc(currentCombatId).update(adInit).catch(()=>{});
+  // RAZ des charges « Gros Sabots » (1×/combat) à chaque jet d'initiative
+  db.collection(COMBATS_COLL).doc(currentCombatId).update({ sabotsUsed: {} }).catch(()=>{});
 
   renderCombat();
   renderTracker();

@@ -188,6 +188,8 @@ function initJoueur(){
       return;
     }
     combatState = data;
+    // Gros Sabots : si le doc indique « non utilisé » (ex. nouvelle initiative), libérer la garde locale
+    if(!(combatState.sabotsUsed && combatState.sabotsUsed[joueurId])) sabotsRerolledLocal = false;
     _finSfxDone = false;   // un nouveau combat actif → rejouer les sons à la prochaine fin
     actionState = combatState?.actionsDeclarees?.[joueurId] || null;
     hide('attente'); show('combat-actif'); hide('combat-termine');
