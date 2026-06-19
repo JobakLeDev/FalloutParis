@@ -1,5 +1,6 @@
 Liste des truc à implémenter :
 --- Fait ---
+-[OK] musique de combat : station "combat" (radio/combat/*.mp3 + tracks.json) jouée en ALÉATOIRE en boucle sur les écrans de combat (combat.html + combat_joueur.html) via combat_radio.js ; bouton flottant 🎵 mute + volume (mémorisés) ; autoplay tenté, repris au 1er geste. radio/ dé-gitignoré (mp3 commités, assumé).
 -[OK] script dl_radio.sh : télécharge les 7 vidéos YouTube en MP3 dans ./radio/ (yt-dlp + ffmpeg installés via winget ; --no-check-certificates car TLS intercepté). 7 MP3 OST Fallout 4 récupérés. ./radio/ gitignoré (droits d'auteur).
 -[OK] système de campagnes/sessions : état cloisonné par campagne (doc id = campId), joueurs assignés (champ campaign), sélecteur + gestion MJ (créer/renommer/supprimer), défaut 'data' = Campagne 1 (zéro migration). Collection /campaigns (rule à republier).
 -[OK] Gros Sabots : mécanique combat câblée (combat_joueur.js) — si équipés + dernier en initiative → relance 1 dé (apparence type Aim, emoji 🥾), 1×/combat (flag combatState.sabotsUsed[joueurId]).
