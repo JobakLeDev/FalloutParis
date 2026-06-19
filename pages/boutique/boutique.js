@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
   (window.DB_READY || Promise.resolve()).then(start);
 });
 function start(){
-  fdb.collection('boutiques').doc('data').onSnapshot(s => {
+  fdb.collection('boutiques').doc(fpCampId()).onSnapshot(s => {
     const d = s.exists ? s.data() : {};
     shop = (d.shops && d.shops[shopId]) || null;
     render();
@@ -154,7 +154,7 @@ function renderSell(){
 async function buy(itemId){
   if (!viewerId || !shop) return;
   const pref = fdb.collection('joueurs').doc(viewerId);
-  const bref = fdb.collection('boutiques').doc('data');
+  const bref = fdb.collection('boutiques').doc(fpCampId());
   let ps, bs;
   try { [ps, bs] = await Promise.all([pref.get(), bref.get()]); } catch(e){ toast('Erreur réseau', true); return; }
   const pd = ps.exists ? ps.data() : {};
@@ -189,7 +189,7 @@ async function buy(itemId){
 async function sell(invIdx){
   if (!viewerId) return;
   const pref = fdb.collection('joueurs').doc(viewerId);
-  const bref = fdb.collection('boutiques').doc('data');
+  const bref = fdb.collection('boutiques').doc(fpCampId());
   let ps, bs;
   try { [ps, bs] = await Promise.all([pref.get(), bref.get()]); } catch(e){ toast('Erreur réseau', true); return; }
   const pd = ps.exists ? ps.data() : {};

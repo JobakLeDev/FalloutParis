@@ -31,7 +31,7 @@ async function syncCombatToFirebase(){
       lastUpdate: Date.now(),
     }, { merge: true });
     // Mise à jour du pointeur courant (utilisé par firebase.js côté joueur)
-    db.collection(COMBATS_COLL).doc('current').set({
+    db.collection(COMBATS_COLL).doc('current'+fpCampSuffix()).set({
       combatId: currentCombatId,
       lastUpdate: Date.now()
     }).catch(() => {});
@@ -60,5 +60,5 @@ async function stopCombat(){
     'meta.status': 'termine'
   }, { merge: true });
   // Effacer le pointeur courant
-  db.collection(COMBATS_COLL).doc('current').set({combatId: null, lastUpdate: Date.now()}).catch(() => {});
+  db.collection(COMBATS_COLL).doc('current'+fpCampSuffix()).set({combatId: null, lastUpdate: Date.now()}).catch(() => {});
 }

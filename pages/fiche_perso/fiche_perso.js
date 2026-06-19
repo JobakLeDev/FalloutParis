@@ -112,7 +112,7 @@ function sw(tab){
   if(tab==='carte'){
     const f=document.getElementById('carte-frame');
     if(f && !f.src){
-      f.src='../carte/carte.html?id='+encodeURIComponent(id)+'&embed=1';
+      f.src='../carte/carte.html?id='+encodeURIComponent(id)+'&embed=1&camp='+encodeURIComponent((char&&char.campaign)||'data');
     } else if(f && f.contentWindow){
       f.contentWindow.postMessage('carte-recenter','*');   // déjà chargée → recentrer
     }
@@ -121,7 +121,7 @@ function sw(tab){
   if(tab==='quetes'){
     const f=document.getElementById('quetes-frame');
     if(f && !f.src){
-      f.src='../quetes/quetes.html?id='+encodeURIComponent(id)+'&embed=1';
+      f.src='../quetes/quetes.html?id='+encodeURIComponent(id)+'&embed=1&camp='+encodeURIComponent((char&&char.campaign)||'data');
     } else if(f && f.contentWindow){
       f.contentWindow.postMessage('quetes-refresh','*');
     }
@@ -130,7 +130,7 @@ function sw(tab){
   if(tab==='journal'){
     const f=document.getElementById('journal-frame');
     if(f && !f.src){
-      f.src='../journal/journal.html?id='+encodeURIComponent(id)+'&embed=1';
+      f.src='../journal/journal.html?id='+encodeURIComponent(id)+'&embed=1&camp='+encodeURIComponent((char&&char.campaign)||'data');
     } else if(f && f.contentWindow){
       f.contentWindow.postMessage('journal-refresh','*');
     }
@@ -139,7 +139,7 @@ function sw(tab){
   if(tab==='encyclopedie'){
     const f=document.getElementById('ency-frame');
     if(f && !f.src){
-      f.src='../encyclopedie/encyclopedie.html?id='+encodeURIComponent(id)+'&embed=1';
+      f.src='../encyclopedie/encyclopedie.html?id='+encodeURIComponent(id)+'&embed=1&camp='+encodeURIComponent((char&&char.campaign)||'data');
     } else if(f && f.contentWindow){
       f.contentWindow.postMessage('ency-refresh','*');
     }
@@ -797,7 +797,7 @@ function openShop(shopId){
   const f=document.getElementById('shop-frame');
   const id=new URLSearchParams(location.search).get('id')||'';
   if(f && f.getAttribute('data-shop')!==shopId){
-    f.src='../boutique/boutique.html?id='+encodeURIComponent(id)+'&shop='+encodeURIComponent(shopId)+'&embed=1';
+    f.src='../boutique/boutique.html?id='+encodeURIComponent(id)+'&shop='+encodeURIComponent(shopId)+'&embed=1&camp='+encodeURIComponent((char&&char.campaign)||'data');
     f.setAttribute('data-shop',shopId);
   }
   document.getElementById('mo-shop').classList.add('on');
@@ -809,7 +809,7 @@ window.addEventListener('message', e=>{ const d=e.data; if(d && d.type==='open-s
 function openLoot(){
   const f=document.getElementById('loot-frame');
   const id=new URLSearchParams(location.search).get('id')||'';
-  if(f && !f.src) f.src='../butin/butin.html?id='+encodeURIComponent(id)+'&embed=1';
+  if(f && !f.src) f.src='../butin/butin.html?id='+encodeURIComponent(id)+'&embed=1&camp='+encodeURIComponent((char&&char.campaign)||'data');
   else if(f && f.contentWindow) f.contentWindow.postMessage('butin-refresh','*');
   document.getElementById('mo-loot').classList.add('on');
 }
@@ -818,7 +818,7 @@ function openLoot(){
 function openEchange(){
   const f=document.getElementById('echange-frame');
   const id=new URLSearchParams(location.search).get('id')||'';
-  if(f && !f.src) f.src='../echange/echange.html?id='+encodeURIComponent(id)+'&embed=1';
+  if(f && !f.src) f.src='../echange/echange.html?id='+encodeURIComponent(id)+'&embed=1&camp='+encodeURIComponent((char&&char.campaign)||'data');
   else if(f && f.contentWindow) f.contentWindow.postMessage('echange-refresh','*');
   document.getElementById('mo-echange').classList.add('on');
 }

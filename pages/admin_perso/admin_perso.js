@@ -7,9 +7,22 @@ const db=firebase.initializeApp(firebaseConfig).firestore();
 
 // ---- LOCK ----
 document.getElementById('lock-input').addEventListener('keydown',e=>{if(e.key==='Enter')unlock();});
+// ---- CAMPAGNES ----
+let adminCampaigns={};
+function populateCampSel(selected){
+  const sel=document.getElementById('e-campaign'); if(!sel) return;
+  const ids=['data', ...Object.keys(adminCampaigns).filter(id=>id!=='data').sort()];
+  const nm=id=>(adminCampaigns[id]&&adminCampaigns[id].name)||(id==='data'?'Campagne 1':id);
+  sel.innerHTML=ids.map(id=>`<option value="${id}">${nm(id)}</option>`).join('');
+  sel.value=selected||'data';
+}
+function loadAdminCampaigns(){
+  db.collection('campaigns').onSnapshot(s=>{ adminCampaigns={}; s.forEach(d=>adminCampaigns[d.id]=d.data()||{}); populateCampSel(document.getElementById('e-campaign')?.value); chargerListe(); }, ()=>{});
+}
 function enterApp(){
   document.getElementById('lock').style.display='none';
   document.getElementById('app').style.display='block';
+  loadAdminCampaigns();
   chargerListe().then(()=>{
     // Si un id est dans l'URL, charger ce perso automatiquement
     const urlId=new URLSearchParams(window.location.search).get('id');
@@ -75,9 +88,11 @@ async function chargerListe(){
       const d=doc.data();
       const hpMax=(d.special?.L||5)+(d.special?.E||5)+Math.max(0,(d.niveau||1)-1);
       const surnom=d.customTitle?` <span style="color:var(--am);font-size:9px">« ${d.customTitle} »</span>`:'';
+      const campId=d.campaign||'data';
+      const campNm=(adminCampaigns[campId]&&adminCampaigns[campId].name)||(campId==='data'?'Campagne 1':campId);
       el.innerHTML+=`<div class="perso-item${currentId===doc.id?' selected':''}" onclick="charger('${doc.id}')">
         <div class="pi-name">${d.nom||doc.id}${surnom}</div>
-        <div class="pi-info">${d.origine||'—'} · LVL ${d.niveau||1} · PV ${d.hp||0}/${hpMax}</div>
+        <div class="pi-info">🗂 ${campNm} · ${d.origine||'—'} · LVL ${d.niveau||1} · PV ${d.hp||0}/${hpMax}</div>
       </div>`;
     });
   }catch(e){el.innerHTML=`<div style="color:var(--rd);font-size:9px">${e.message}</div>`;}
@@ -102,6 +117,7 @@ async function charger(id){
   document.getElementById('e-code').value=d.code||'';
   document.getElementById('e-nom').value=d.nom||'';
   document.getElementById('e-faction').value=d.faction||'';
+  populateCampSel(d.campaign||'data');
   ['republique','reseau','commune','nnfp','zazous','ultras','vault','settlement'].forEach(f=>{ const s=document.getElementById('e-rel-'+f); if(s) s.value=(d.factionRel&&d.factionRel[f])||'neutre'; });
   document.getElementById('e-niveau').value=d.niveau||1;
   document.getElementById('e-xp').value=d.xp||0;
@@ -443,6 +459,7 @@ async function sauvegarder(){
   const data={
     nom:document.getElementById('e-nom').value.trim(),
     faction:document.getElementById('e-faction').value||'',
+    campaign:document.getElementById('e-campaign')?.value||'data',
     factionRel:['republique','reseau','commune','nnfp','zazous','ultras','vault','settlement'].reduce((o,f)=>{ o[f]=document.getElementById('e-rel-'+f)?.value||'neutre'; return o; },{}),
     code:document.getElementById('e-code').value.trim()||editData.code||'0000',
     niveau,
@@ -490,6 +507,7 @@ function nouveauPerso(){
   document.getElementById('e-code').value='';
   document.getElementById('e-nom').value='';
   document.getElementById('e-faction').value='';
+  populateCampSel('data');
   ['republique','reseau','commune','nnfp','zazous','ultras','vault','settlement'].forEach(f=>{ const s=document.getElementById('e-rel-'+f); if(s) s.value='neutre'; });
   document.getElementById('e-niveau').value=1;
   document.getElementById('e-xp').value=0;

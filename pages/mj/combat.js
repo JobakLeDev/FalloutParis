@@ -1498,7 +1498,7 @@ function partagerCombat(){
     ids.forEach(id => {
       const d = combattants[id]?.data;
       const nom = d?.nom || id;
-      const url = base + '?id=' + id + '&combat=' + currentCombatId;
+      const url = base + '?id=' + id + '&combat=' + currentCombatId + '&camp=' + fpCampId();
       html += '<div style="margin-bottom:8px"><div style="font-size:8px;color:var(--g);margin-bottom:2px">' + nom.toUpperCase() + '</div>' +
         '<div style="font-size:7px;color:var(--td);word-break:break-all;background:#060d06;padding:4px;border:1px solid var(--b)">' + url + '</div>' +
         '<button class="btn sm" style="margin-top:3px" onclick="navigator.clipboard.writeText(\'' + url + '\').then(()=>this.textContent=\'✓ Copié!\').catch(()=>{})">Copier</button>' +
@@ -1533,7 +1533,7 @@ async function attribuerXPFinCombat(){
   const ids = Object.keys(combattants);
   if(total <= 0 || !ids.length) return;
   let tdata = {};
-  try { const ts = await db.collection('temps').doc('data').get(); tdata = ts.exists ? ts.data() : {}; } catch(e){}
+  try { const ts = await db.collection('temps').doc(fpCampId()).get(); tdata = ts.exists ? ts.data() : {}; } catch(e){}
   const journalEntries = [];
   for(const id of ids){
     const d = combattants[id]?.data; if(!d) continue;
@@ -1549,10 +1549,10 @@ async function attribuerXPFinCombat(){
   // Un seul write journal (évite les courses read-modify-write)
   if(journalEntries.length){
     try {
-      const js = await db.collection('journal').doc('data').get();
+      const js = await db.collection('journal').doc(fpCampId()).get();
       const entries = (js.exists && Array.isArray(js.data().entries)) ? js.data().entries : [];
       entries.push(...journalEntries);
-      await db.collection('journal').doc('data').set({ entries });
+      await db.collection('journal').doc(fpCampId()).set({ entries });
     } catch(e){ console.warn('journal XP', e); }
   }
 }
@@ -1597,7 +1597,7 @@ async function genButinCombat(){
   const resume = items.map(it => `${it.qty}× ${it.name}`).join('\n') + (caps ? `\n${caps} caps` : '');
   if(!confirm(`Butin de ${defaits.length} ennemi(s) vaincu(s) :\n\n${resume}\n\nAjouter au pool de butin partagé ?`)) return;
   try{
-    const ref = db.collection('butin').doc('data');
+    const ref = db.collection('butin').doc(fpCampId());
     const snap = await ref.get();
     const data = snap.exists ? snap.data() : {};
     const pool = { items: Array.isArray(data.items) ? data.items : [], caps: data.caps || 0, players: Array.isArray(data.players) ? data.players : [] };

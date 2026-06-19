@@ -71,8 +71,15 @@ service cloud.firestore {
     match /radio/{doc} { allow read, write: if true; }
 
     // ---------- Sauvegardes de l'état du jeu (MJ) ----------
-    // Chaque doc = un snapshot {ts,label,data:{joueurs,docs}}.
+    // Chaque doc = un snapshot {ts,label,campaign,data:{joueurs,docs}}.
     match /saves/{id} { allow read, write: if true; }
+
+    // ---------- Campagnes (sessions) ----------
+    // {campId: {name, ts}}. La campagne 'data' est implicite (l'existant).
+    // Les docs d'état (quetes, journal, carte, temps, encyclopedie, butin,
+    // boutiques, radio, terminaux, crochetage, log, messagerie, rolls) sont
+    // scopés par doc id = campagne et passent déjà par les règles wildcard ci-dessus.
+    match /campaigns/{id} { allow read, write: if true; }
 
     // ---------- Tout le reste : INTERDIT ----------
     // Empêche la création de collections/documents non prévus.

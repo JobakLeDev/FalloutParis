@@ -88,9 +88,15 @@ function getRencontreOpts(){
 }
 
 function startSync(){
+  // Liste des campagnes (sélecteur) — 'data' = Campagne par défaut, toujours présente
+  db.collection('campaigns').onSnapshot(snap => {
+    campaigns = {}; snap.forEach(doc => { campaigns[doc.id] = doc.data() || {}; });
+    renderCampSel();
+  }, e => { console.warn('campaigns listener', e); renderCampSel(); });
   db.collection('joueurs').onSnapshot(snap => {
     joueurs = {};
-    snap.forEach(doc => { joueurs[doc.id] = {...doc.data(), _id: doc.id}; });
+    const cur = fpCampId();
+    snap.forEach(doc => { const d = doc.data(); if((d.campaign||'data') === cur) joueurs[doc.id] = {...d, _id: doc.id}; });
     renderJoueurs();
     if(typeof renderParties==='function') renderParties();
     if(typeof renderLootAccess==='function') renderLootAccess();
@@ -100,36 +106,36 @@ function startSync(){
   populateZoneSelectors();
   populatePublicSkillSel();
   renderCombatsActifs();
-  db.collection('rolls').doc('current').onSnapshot(s => renderPublicRoll(s.exists ? s.data() : null));
-  db.collection('temps').doc('data').onSnapshot(s => {
+  db.collection('rolls').doc('current'+fpCampSuffix()).onSnapshot(s => renderPublicRoll(s.exists ? s.data() : null));
+  db.collection('temps').doc(fpCampId()).onSnapshot(s => {
     const d = s.exists ? s.data() : {};
     tempsData = { parties: Array.isArray(d.parties) ? d.parties : [] };
     tempsLoaded = true;
     renderParties();
   });
   populateLootCats();
-  db.collection('butin').doc('data').onSnapshot(s => {
+  db.collection('butin').doc(fpCampId()).onSnapshot(s => {
     const d = s.exists ? s.data() : {};
     butinData = { items: Array.isArray(d.items) ? d.items : [], caps: d.caps || 0, players: Array.isArray(d.players) ? d.players : [] };
     renderButin();
     renderLootAccess();
   });
-  db.collection('messagerie').doc('data').onSnapshot(s => {
+  db.collection('messagerie').doc(fpCampId()).onSnapshot(s => {
     const d = s.exists ? s.data() : {};
     msgLinks = (d.links && typeof d.links === 'object') ? d.links : {};
     renderContactsList();
   });
-  db.collection('log').doc('data').onSnapshot(s => {
+  db.collection('log').doc(fpCampId()).onSnapshot(s => {
     const d = s.exists ? s.data() : {};
     actionLog = Array.isArray(d.entries) ? d.entries : [];
     renderActionLog();
   });
-  db.collection('boutiques').doc('data').onSnapshot(s => {
+  db.collection('boutiques').doc(fpCampId()).onSnapshot(s => {
     const d = s.exists ? s.data() : {};
     boutiqueData = { shops: (d.shops && typeof d.shops === 'object') ? d.shops : {} };
     renderBoutiqueMJ();
   });
-  db.collection('terminaux').doc('data').onSnapshot(s => {
+  db.collection('terminaux').doc(fpCampId()).onSnapshot(s => {
     const d = s.exists ? s.data() : {};
     termOpen = (d.open && typeof d.open === 'object') ? d.open : {};
     renderTerminalMJ();
@@ -143,37 +149,89 @@ function startSync(){
 }
 
 // ============================================================
+// CAMPAGNES (sessions) — sélecteur + gestion. Campagne active = localStorage fp_activeCampaign.
+//   'data' = Campagne par défaut (l'existant). Changer de campagne recharge la page.
+// ============================================================
+let campaigns = {};   // {campId: {name, ts}}
+function campName(id){ return (campaigns[id] && campaigns[id].name) || (id === 'data' ? 'Campagne 1' : id); }
+function renderCampSel(){
+  const sel = document.getElementById('camp-sel'); if(!sel) return;
+  const cur = fpCampId();
+  const ids = ['data', ...Object.keys(campaigns).filter(id => id !== 'data').sort()];
+  sel.innerHTML = ids.map(id => `<option value="${id}"${id===cur?' selected':''}>🗂 ${campName(id)}</option>`).join('')
+    + '<option value="__new">＋ Nouvelle campagne…</option>';
+}
+function switchCampaign(id){
+  if(id === '__new'){ renderCampSel(); creerCampagne(); return; }
+  if(id === fpCampId()){ return; }
+  try{ localStorage.setItem('fp_activeCampaign', id); }catch(e){}
+  location.reload();
+}
+async function creerCampagne(){
+  const name = (prompt('Nom de la nouvelle campagne :', 'Campagne ' + (Object.keys(campaigns).length + 2)) || '').trim();
+  if(!name) return;
+  const id = 'camp_' + Date.now();
+  try{
+    await db.collection('campaigns').doc(id).set({ name, ts: Date.now() });
+    try{ localStorage.setItem('fp_activeCampaign', id); }catch(e){}
+    alert('🗂 Campagne « ' + name + ' » créée. Assigne des joueurs via Admin persos (champ Campagne).');
+    location.reload();
+  }catch(e){ alert('Échec : ' + e.message); }
+}
+async function gererCampagnes(){
+  const cur = fpCampId();
+  const action = (prompt('Campagne active : « ' + campName(cur) + ' »\n\nTape :\n  R = renommer\n  N = nouvelle campagne\n  S = supprimer (de la liste)\n  (vide = annuler)', '') || '').trim().toUpperCase();
+  if(action === 'N'){ creerCampagne(); return; }
+  if(action === 'R'){
+    const name = (prompt('Nouveau nom :', campName(cur)) || '').trim(); if(!name) return;
+    try{ await db.collection('campaigns').doc(cur).set({ name, ts: (campaigns[cur]?.ts || Date.now()) }, { merge:true }); renderCampSel(); }
+    catch(e){ alert('Échec : ' + e.message); }
+    return;
+  }
+  if(action === 'S'){
+    if(cur === 'data'){ alert('La campagne par défaut ne peut pas être supprimée.'); return; }
+    if(!confirm('Retirer « ' + campName(cur) + ' » de la liste ?\n\nNote : cela ne supprime PAS les données (quêtes, persos…) — ça enlève juste l\'entrée du sélecteur. Bascule ensuite sur une autre campagne.')) return;
+    try{ await db.collection('campaigns').doc(cur).delete(); localStorage.setItem('fp_activeCampaign','data'); location.reload(); }
+    catch(e){ alert('Échec : ' + e.message); }
+    return;
+  }
+}
+
+// ============================================================
 // SAUVEGARDE / RESTAURATION de l'état du jeu (/saves/{id})
 //   Snapshot : toutes les fiches joueurs + quetes/journal/carte/temps/encyclopedie.
 //   Restauration : réécrit ces documents. Les persos créés APRÈS la sauvegarde
 //   sont conservés (la restauration n'efface pas, elle réapplique l'état sauvé).
 // ============================================================
 let savesList = [];
-const SAVE_DOCS = [['quetes','data'],['journal','data'],['carte','data'],['temps','data'],['encyclopedie','data']];
+const SAVE_DOCS = ['quetes','journal','carte','temps','encyclopedie'];   // docs scopés par campagne (doc id = campagne)
 function _escSv(s){ return (''+s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
+// Capture l'état de la CAMPAGNE ACTIVE : ses joueurs + ses docs (doc id = campagne)
 async function _collectGameState(){
-  const data = { joueurs:{}, docs:{} };
+  const camp = fpCampId();
+  const data = { campaign: camp, joueurs:{}, docs:{} };
   const js = await db.collection('joueurs').get();
-  js.forEach(d => { data.joueurs[d.id] = d.data(); });
-  for(const [col, doc] of SAVE_DOCS){
-    try{ const s = await db.collection(col).doc(doc).get(); if(s.exists) data.docs[col] = s.data(); }catch(e){}
+  js.forEach(d => { const v = d.data(); if((v.campaign||'data') === camp) data.joueurs[d.id] = v; });
+  for(const col of SAVE_DOCS){
+    try{ const s = await db.collection(col).doc(camp).get(); if(s.exists) data.docs[col] = s.data(); }catch(e){}
   }
   return data;
 }
 async function _applyGameState(d){
   if(!d || !d.joueurs) throw new Error('Sauvegarde non reconnue');
+  const camp = d.campaign || 'data';
   for(const pid in d.joueurs){ await db.collection('joueurs').doc(pid).set(d.joueurs[pid]); }
-  for(const [col, doc] of SAVE_DOCS){ if(d.docs && d.docs[col]) await db.collection(col).doc(doc).set(d.docs[col]); }
+  for(const col of SAVE_DOCS){ if(d.docs && d.docs[col]) await db.collection(col).doc(camp).set(d.docs[col]); }
 }
 
 async function creerSauvegarde(){
-  const raw = prompt('Nom de la sauvegarde :', 'Session ' + new Date().toLocaleDateString('fr-FR'));
+  const raw = prompt('Nom de la sauvegarde (campagne « ' + campName(fpCampId()) + ' ») :', 'Session ' + new Date().toLocaleDateString('fr-FR'));
   if(raw === null) return;
   const label = raw.trim() || ('Sauvegarde ' + new Date().toLocaleString('fr-FR'));
   try{
     const data = await _collectGameState();
-    await db.collection('saves').doc('save_' + Date.now()).set({ ts: Date.now(), label, data });
+    await db.collection('saves').doc('save_' + Date.now()).set({ ts: Date.now(), label, campaign: fpCampId(), data });
     alert('💾 Sauvegarde « ' + label + ' » créée (' + Object.keys(data.joueurs).length + ' perso(s)).');
   }catch(e){
     alert('Échec de la sauvegarde : ' + e.message + (/maximum|1048|exceeds|size/i.test(e.message) ? '\n\nL\'état est trop volumineux pour Firestore — utilise plutôt « Exporter (fichier) ».' : ''));
@@ -223,8 +281,10 @@ function importerSauvegardeFichier(input){
 
 function renderSauvegardes(){
   const el = document.getElementById('saves-list'); if(!el) return;
-  if(!savesList.length){ el.innerHTML = '<div class="empty" style="font-size:8px;color:var(--td);padding:8px">Aucune sauvegarde.</div>'; return; }
-  el.innerHTML = savesList.map(sv => {
+  const cur = fpCampId();
+  const list = savesList.filter(sv => (sv.campaign || 'data') === cur);   // sauvegardes de la campagne active
+  if(!list.length){ el.innerHTML = '<div class="empty" style="font-size:8px;color:var(--td);padding:8px">Aucune sauvegarde pour cette campagne.</div>'; return; }
+  el.innerHTML = list.map(sv => {
     const dt = new Date(sv.ts || 0).toLocaleString('fr-FR');
     const nb = (sv.data && sv.data.joueurs) ? Object.keys(sv.data.joueurs).length : 0;
     return '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;padding:5px 6px;border:1px solid var(--b);margin-bottom:4px;background:#060d06">'
@@ -258,14 +318,14 @@ function declencherTerminal(){
   if(!tid){ showMsg('Aucun terminal choisi', true); return; }
   termOpen = termOpen || {};
   [...selected].forEach(id => { termOpen[id] = tid; });
-  db.collection('terminaux').doc('data').set({ open: termOpen }, { merge:true }).catch(e => console.error(e));
+  db.collection('terminaux').doc(fpCampId()).set({ open: termOpen }, { merge:true }).catch(e => console.error(e));
   const noms = [...selected].map(id => joueurs[id]?.nom || id).join(', ');
   showMsg('💻 Terminal « ' + (termCatalog[tid]?.titre || tid) + ' » ouvert à ' + selected.size + ' joueur(s)');
   logAction('Terminal « ' + (termCatalog[tid]?.titre || tid) + ' » ouvert à ' + noms);
 }
 function fermerTerminaux(){
   termOpen = {};
-  db.collection('terminaux').doc('data').set({ open: {} }).catch(e => console.error(e));
+  db.collection('terminaux').doc(fpCampId()).set({ open: {} }).catch(e => console.error(e));
   showMsg('Terminaux fermés');
   renderTerminalMJ();
 }
@@ -284,7 +344,7 @@ function declencherCrochetage(){
   const label = (document.getElementById('croch-label')?.value || '').trim() || 'Serrure';
   const upd = {};
   [...selected].forEach(id => { upd[id] = { diff, label, ts: Date.now(), status: 'open' }; });
-  db.collection('crochetage').doc('data').set(upd, { merge: true }).catch(e => console.error(e));
+  db.collection('crochetage').doc(fpCampId()).set(upd, { merge: true }).catch(e => console.error(e));
   const noms = [...selected].map(id => joueurs[id]?.nom || id).join(', ');
   showMsg('🔓 Crochetage « ' + label + ' » (D' + diff + ') lancé à ' + selected.size + ' joueur(s)');
   logAction('Crochetage « ' + label + ' » (D' + diff + ') demandé à ' + noms);
@@ -294,10 +354,10 @@ function annulerCrochetage(){
   if(selected.size){
     const upd = {};
     [...selected].forEach(id => { upd[id] = firebase.firestore.FieldValue.delete(); });
-    db.collection('crochetage').doc('data').set(upd, { merge: true }).catch(e => console.error(e));
+    db.collection('crochetage').doc(fpCampId()).set(upd, { merge: true }).catch(e => console.error(e));
     showMsg('Crochetage annulé pour ' + selected.size + ' joueur(s)');
   } else {
-    db.collection('crochetage').doc('data').set({}).catch(e => console.error(e));
+    db.collection('crochetage').doc(fpCampId()).set({}).catch(e => console.error(e));
     showMsg('Crochetage annulé (tous)');
   }
 }
@@ -330,7 +390,7 @@ function mjRadioBroadcast(startedAt){
   const track = s.tracks[_mjRadio.idx % s.tracks.length];
   const label = String(track).replace(/^.*\//,'').replace(/\.(mp3|ogg|m4a|wav)$/i,'').replace(/[-_]/g,' ');
   _mjRadio.now = { name: s.name || s.id, label };   // ce qui est RÉELLEMENT diffusé (≠ sélection)
-  db.collection('radio').doc('current').set({ playing:true, station:s.id, name:s.name||s.id, folder:_stationFolder(s), track, trackLabel:label, startedAt: startedAt||Date.now(), ts:Date.now() }).catch(e=>console.error('radio',e));
+  db.collection('radio').doc('current'+fpCampSuffix()).set({ playing:true, station:s.id, name:s.name||s.id, folder:_stationFolder(s), track, trackLabel:label, startedAt: startedAt||Date.now(), ts:Date.now() }).catch(e=>console.error('radio',e));
 }
 function mjRadioPlayIdx(){
   const s = _mjRadio.station; if(!s || !(s.tracks||[]).length){ showMsg('Station vide', true); return; }
@@ -363,7 +423,7 @@ function mjRadioToggle(){
   if(!_mjRadio.station) _mjRadio.station = _mjStation();
   if(_mjRadio.playing){
     _mjRadio.audio.pause(); _mjRadio.playing = false;
-    db.collection('radio').doc('current').set({ playing:false, ts:Date.now() }, { merge:true });
+    db.collection('radio').doc('current'+fpCampSuffix()).set({ playing:false, ts:Date.now() }, { merge:true });
     renderMjRadio();
   } else {
     if(_mjRadio.audio.src && _mjRadio.audio.currentTime > 0){
@@ -379,7 +439,7 @@ function mjRadioStop(){
   if(_mjRadio.audio){ _mjRadio.audio.pause(); _mjRadio.audio.removeAttribute('src'); }
   _mjRadio.playing = false;
   _mjRadio.now = null;   // plus aucune diffusion
-  db.collection('radio').doc('current').set({ playing:false, track:null, ts:Date.now() });
+  db.collection('radio').doc('current'+fpCampSuffix()).set({ playing:false, track:null, ts:Date.now() });
   renderMjRadio(); logAction('Radio coupée');
 }
 function mjRadioVol(v){ if(_mjRadio.audio) _mjRadio.audio.volume = (parseInt(v)||0)/100; try{ localStorage.setItem('fp_mjRadioVol', v); }catch(e){} }
@@ -398,7 +458,7 @@ function renderMjRadio(){
 // BOUTIQUE / MARCHAND — /boutiques/data {shops:{[id]:shop}} ; itinérante = id 'mj'
 // ============================================================
 let boutiqueData = { shops: {} };
-function saveBoutique(){ if(db) db.collection('boutiques').doc('data').set(boutiqueData).catch(e=>console.error('saveBoutique',e)); }
+function saveBoutique(){ if(db) db.collection('boutiques').doc(fpCampId()).set(boutiqueData).catch(e=>console.error('saveBoutique',e)); }
 function _shopType(cat, it){ return cat==='weapons'?'WEAPON':cat==='armor'?(it.t||'ARMOR'):cat==='food'?'FOOD':cat==='drinks'?'DRINK':cat==='drugs'?'DRUGS':'STUFF'; }
 function genBoutique(){
   const name = (document.getElementById('shop-name').value||'').trim() || 'Marchand itinérant';
@@ -447,7 +507,7 @@ function renderBoutiqueMJ(){
 // ============================================================
 let actionLog = [];
 function logAction(text){ if(typeof fpLogAction === 'function') fpLogAction(db, 'MJ', text); }
-function clearActionLog(){ if(confirm('Vider le journal d\'actions ?')) db.collection('log').doc('data').set({ entries: [] }).catch(e=>console.error(e)); }
+function clearActionLog(){ if(confirm('Vider le journal d\'actions ?')) db.collection('log').doc(fpCampId()).set({ entries: [] }).catch(e=>console.error(e)); }
 function renderActionLog(){
   const el = document.getElementById('actionlog-list'); if(!el) return;
   if(!actionLog.length){ el.innerHTML = '<div class="empty" style="font-size:8px;color:var(--td);padding:10px">Aucune action enregistrée.</div>'; return; }
@@ -468,7 +528,7 @@ function populateContactSelects(){
   const opts = '<option value="">— joueur —</option>' + ids.map(id=>`<option value="${id}">${joueurs[id]?.nom||id}</option>`).join('');
   ['contact-a','contact-b'].forEach(s => { const el=document.getElementById(s); if(el) el.innerHTML = opts; });
 }
-function saveLinks(){ if(db) db.collection('messagerie').doc('data').set({links:msgLinks}).catch(e=>console.error('saveLinks',e)); }
+function saveLinks(){ if(db) db.collection('messagerie').doc(fpCampId()).set({links:msgLinks}).catch(e=>console.error('saveLinks',e)); }
 function _link(a,b){ msgLinks[a]=msgLinks[a]||[]; if(!msgLinks[a].includes(b)) msgLinks[a].push(b); }
 function lierContacts(){
   const a=document.getElementById('contact-a').value, b=document.getElementById('contact-b').value;
@@ -533,7 +593,7 @@ function addToPool(item){
   if(ex) ex.qty += item.qty;
   else { item.id = 'b'+Date.now().toString(36)+Math.floor(Math.random()*999); butinData.items.push(item); }
 }
-function saveButin(){ if(db) db.collection('butin').doc('data').set(butinData).catch(e=>console.error('saveButin',e)); }
+function saveButin(){ if(db) db.collection('butin').doc(fpCampId()).set(butinData).catch(e=>console.error('saveButin',e)); }
 function genButin(){
   const scale = parseInt(document.getElementById('loot-scale').value)||2;
   const ranges = {1:[1,2],2:[2,4],3:[4,6],4:[6,10]};
@@ -743,7 +803,7 @@ function initActGroupCollapse(){
 }
 window.addEventListener('DOMContentLoaded', initActGroupCollapse);
 function uidParty(){ return 'p' + Date.now().toString(36) + Math.floor(Math.random()*99); }
-function saveTemps(){ if(db) db.collection('temps').doc('data').set(tempsData).catch(e=>console.error('saveTemps',e)); }
+function saveTemps(){ if(db) db.collection('temps').doc(fpCampId()).set(tempsData).catch(e=>console.error('saveTemps',e)); }
 function findParty(id){ return (tempsData.parties||[]).find(p => p.id === id); }
 
 // Chaque joueur a une ligne de temps individuelle par défaut (groupe "solo" auto-créé).
@@ -903,12 +963,12 @@ function lancerPublic(mode){
     doc.skillKey = k;
     doc.label = (selEl.selectedOptions[0]?.textContent || k) + ' — test 2D20';
   }
-  db.collection('rolls').doc('current').set(doc);
+  db.collection('rolls').doc('current'+fpCampSuffix()).set(doc);
   showMsg(`📣 Lancer envoyé à ${selected.size} joueur(s)`);
   const noms = [...selected].map(id => joueurs[id]?.nom || id).join(', ');
   logAction(`Lancer public « ${doc.label} » → ${noms}`);
 }
-function cloreLancer(){ db.collection('rolls').doc('current').set({ open:false, ts: Date.now() }); }
+function cloreLancer(){ db.collection('rolls').doc('current'+fpCampSuffix()).set({ open:false, ts: Date.now() }); }
 
 function fmtRollMJ(res, r){
   if(r.mode === 'dice') return `[${res.dice.join(', ')}] = <b style="color:var(--am)">${res.total}</b>`;
@@ -1280,7 +1340,7 @@ async function createCombatSession(combatData, joueurIds, zone) {
     meta: { createdAt: Date.now(), status: 'active', joueurs: joueurIds, round: 0, zone: zone||'' },
     lastUpdate: Date.now(),
   });
-  await db.collection(COMBATS_COLL).doc('current').set({combatId, lastUpdate: Date.now()});
+  await db.collection(COMBATS_COLL).doc('current'+fpCampSuffix()).set({combatId, lastUpdate: Date.now()});
   sessionStorage.setItem('currentCombatId', combatId);
   return combatId;
 }
@@ -1294,9 +1354,9 @@ async function terminerCombatSession(combatId) {
   await db.collection(COMBATS_COLL).doc(combatId).update({
     actif: false, 'meta.status': 'termine', lastUpdate: Date.now()
   });
-  const cur = await db.collection(COMBATS_COLL).doc('current').get();
+  const cur = await db.collection(COMBATS_COLL).doc('current'+fpCampSuffix()).get();
   if(cur.exists && cur.data()?.combatId === combatId)
-    db.collection(COMBATS_COLL).doc('current').set({combatId: null, lastUpdate: Date.now()});
+    db.collection(COMBATS_COLL).doc('current'+fpCampSuffix()).set({combatId: null, lastUpdate: Date.now()});
   renderCombatsActifs();
 }
 

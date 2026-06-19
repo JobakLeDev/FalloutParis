@@ -28,6 +28,8 @@
   <div class="hdr">
     <div><div class="hdr-title">FALLOUT PARIS<small>ÉCRAN MAÎTRE DU JEU</small></div></div>
     <div class="hdr-btns">
+      <select id="camp-sel" class="hbtn" onchange="switchCampaign(this.value)" title="Campagne active" style="max-width:170px;cursor:pointer"></select>
+      <button class="hbtn" onclick="gererCampagnes()" title="Gérer les campagnes (renommer / nouvelle / supprimer)">🗂</button>
       <button class="hbtn mj-msg-btn" onclick="openMsgMJ()" title="Messagerie joueurs" style="position:relative">
         <img src="../../img/messagerie.png?v=3" class="mj-msg-ico" alt="">Messagerie
         <span id="mj-msg-dot" class="mj-msg-dot" style="display:none"></span>
@@ -481,12 +483,12 @@
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="../../common/shared.js?v=79"></script>
+  <script src="../../common/shared.js?v=82"></script>
   <script src="../../common/db.js"></script>
   <script src="../../common/survie.js?v=1"></script>
   <script src="mj_shared.js?v=11"></script>
   <script src="zones.js"></script>
-  <script src="mj.js?v=18"></script>
+  <script src="mj.js?v=19"></script>
   <script src="../../common/responsive.js?v=1"></script>
 </body>
 </html>

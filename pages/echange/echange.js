@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!viewerId) { render(); return; }
 
   // Mon groupe (temps/data)
-  fdb.collection('temps').doc('data').onSnapshot(s => {
+  fdb.collection('temps').doc(fpCampId()).onSnapshot(s => {
     const d = s.exists ? s.data() : {};
     const parties = Array.isArray(d.parties) ? d.parties : [];
     myParty = parties.find(p => !p.solo && (p.players||[]).includes(viewerId) && (p.players||[]).length >= 2) || null;

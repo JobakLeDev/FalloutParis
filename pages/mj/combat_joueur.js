@@ -155,7 +155,7 @@ function initJoueur(){
   });
 
   // Horloge de campagne (pour calculer la Fatigue de survie)
-  db.collection('temps').doc('data').onSnapshot(s => {
+  db.collection('temps').doc(fpCampId()).onSnapshot(s => {
     const d = s.exists ? s.data() : {};
     if(typeof partyMinutesFor === 'function') _campaignMinJ = partyMinutesFor(d, joueurId);
   });

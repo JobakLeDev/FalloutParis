@@ -118,7 +118,7 @@ async function creer(){
   if(snap.exists){showMsg('Cet identifiant est déjà pris !','err');return;}
 
   const data={
-    nom, origine, faction, factionRel:{}, code,
+    nom, origine, faction, factionRel:{}, campaign:fpCampId(), code,
     niveau:1, xp:0, hp:10, rad:0, momentum:0, powerArmor:false,
     special:{S:5,P:5,E:5,C:5,I:5,A:5,L:5},
     perks:{}, skills:{en_weapon:0,cac_weapon:0,light_weapon:0,heavy_weapon:0,athletics:0,lockpick:0,speech:0,sneak:0,explosives:0,barehand:0,medicine:0,pilot:0,throwing:0,repair:0,science:0,survival:0,barter:0},
@@ -135,7 +135,7 @@ async function creer(){
     await db.collection('joueurs').doc(id).set(data);
     // Rend visible l'entrée de base de la faction d'origine dans l'encyclopédie
     if(faction){
-      try{ await db.collection('encyclopedie').doc('data').set({ reveal: { [faction]: firebase.firestore.FieldValue.arrayUnion(id) } }, { merge:true }); }catch(e){}
+      try{ await db.collection('encyclopedie').doc(fpCampId()).set({ reveal: { [faction]: firebase.firestore.FieldValue.arrayUnion(id) } }, { merge:true }); }catch(e){}
     }
     showMsg(`✓ ${nom} créé ! Redirection vers la fiche...`,'ok');
     setTimeout(()=>window.location.href=`/FalloutParis/pages/setup_perso/setup_perso.html?id=${id}`,1500);

@@ -11,12 +11,31 @@ const firebaseConfig = {
   appId: "1:1063413308699:web:09e0e13c2200283b22c7be"
 };
 
-// Journal d'actions partagé (/log/data {entries:[{ts,who,text}]}) — appelable depuis n'importe quelle page.
+// ============================================================
+// CAMPAGNES (sessions) — cloisonnement de l'état par campagne.
+// Les docs d'état partagés (quetes, journal, carte, temps, encyclopedie,
+// butin, boutiques, radio, terminaux, crochetage, log, messagerie, rolls,
+// pointeur combats/current) sont scopés par doc id = campagne.
+//   - Campagne par défaut = 'data'/'current' (l'existant → zéro migration).
+//   - Nouvelle campagne → doc id = son <campId> ('current__<campId>' pour les pointeurs).
+// Résolution de la campagne active : ?camp dans l'URL (iframes joueur / liens combat)
+//   > campagne du joueur (fixée par la fiche) > localStorage fp_activeCampaign (MJ) > 'data'.
+// ============================================================
+window.FP_CAMP = (function(){ try{ return new URLSearchParams(location.search).get('camp') || null; }catch(e){ return null; } })();
+function fpSetCamp(id){ window.FP_CAMP = (id && id !== 'data') ? id : (id === 'data' ? 'data' : null); }
+function fpCampId(){
+  if(window.FP_CAMP) return window.FP_CAMP;
+  try{ const ls = localStorage.getItem('fp_activeCampaign'); if(ls) return ls; }catch(e){}
+  return 'data';
+}
+function fpCampSuffix(){ const c = fpCampId(); return c === 'data' ? '' : ('__' + c); }
+
+// Journal d'actions partagé (/log/<camp> {entries:[{ts,who,text}]}) — appelable depuis n'importe quelle page.
 // arrayUnion : sûr face aux écritures concurrentes (pas de read-modify-write).
 function fpLogAction(dbInst, who, text){
   if(!dbInst || !text) return;
   try {
-    dbInst.collection('log').doc('data').set({
+    dbInst.collection('log').doc(fpCampId()).set({
       entries: firebase.firestore.FieldValue.arrayUnion({ ts: Date.now(), who: who || '?', text: '' + text })
     }, { merge: true });
   } catch(e){ console.warn('fpLogAction', e); }

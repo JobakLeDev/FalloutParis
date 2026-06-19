@@ -49,6 +49,7 @@ function appliquerDonnees(data) {
   if (data.origine   !== undefined) char.origine   = data.origine;
   if (data.faction    !== undefined) char.faction    = data.faction;
   if (data.factionRel !== undefined) char.factionRel = data.factionRel || {};
+  if (data.campaign   !== undefined) char.campaign   = data.campaign;
   // SFX : XP gagnée / niveau gagné (pas au 1er chargement) — le niveau prime sur l'XP
   if (typeof fpSfx === 'function'){
     if (_prevNiveau != null && data.niveau != null && data.niveau > _prevNiveau) fpSfx('lvlUp');
@@ -148,6 +149,7 @@ window.rAll = function() {
 };
 
 // ---- Écoute temps réel ----
+let _campListenersStarted = false;
 function startSync() {
   db.collection('joueurs').doc(JOUEUR_ID).onSnapshot((snap) => {
     if (snap.exists) {
@@ -156,78 +158,87 @@ function startSync() {
       catch (e) { console.error('Erreur rendu/sync fiche :', e); }
       finally { _isRemote = false; }
       setStatus('✓ Synchronisé', '#5dbe5d');
+      // Une fois la campagne du joueur connue → brancher les écouteurs des docs scopés par campagne
+      if(!_campListenersStarted){ _campListenersStarted = true; fpSetCamp(char.campaign || 'data'); startCampaignListeners(); }
     }
   }, (err) => {
     setStatus('✗ Connexion perdue', '#e04040');
     console.error(err);
   });
-  // Lancer de dés public — isolé : une erreur ici ne doit jamais casser la fiche
-  try {
-    db.collection('rolls').doc('current').onSnapshot(
-      (snap) => { try { renderRollJoueur(snap.exists ? snap.data() : null); } catch(e){ console.error('roll:', e); } },
-      (err) => console.warn('rolls indisponible:', err && err.code)
-    );
-  } catch(e){ console.warn('rolls listener KO:', e); }
-  // Butin partagé — bandeau d'alerte si du butin est accessible à ce joueur
-  try {
-    db.collection('butin').doc('data').onSnapshot(
-      (snap) => { try { renderLootAlert(snap.exists ? snap.data() : null); } catch(e){ console.error('loot:', e); } },
-      (err) => console.warn('butin indisponible:', err && err.code)
-    );
-  } catch(e){ console.warn('butin listener KO:', e); }
-  // Calendrier — date/heure du groupe du joueur
-  try {
-    db.collection('temps').doc('data').onSnapshot(
-      (snap) => { try { renderFicheClock(snap.exists ? snap.data() : null); } catch(e){ console.error('temps:', e); } },
-      (err) => console.warn('temps indisponible:', err && err.code)
-    );
-  } catch(e){ console.warn('temps listener KO:', e); }
-  // Messagerie — noms des joueurs + contacts (numéros échangés)
+  // Noms des joueurs (campagne-agnostique)
   try {
     db.collection('joueurs').onSnapshot((s) => { _allJoueurs = {}; s.forEach(d => _allJoueurs[d.id] = d.data()); if (document.getElementById('mo-msg')?.classList.contains('on')) renderContacts(); renderFicheGroup(_tempsData); });
-    db.collection('messagerie').doc('data').onSnapshot((s) => { const d = s.exists ? s.data() : {}; _msgLinks = (d.links && typeof d.links === 'object') ? d.links : {}; _syncConvWatchers(); updateMsgIcon(); if (document.getElementById('mo-msg')?.classList.contains('on')) renderContacts(); });
-  } catch(e){ console.warn('messagerie listener KO:', e); }
-  // Échanges entre joueurs — bandeau d'alerte (la proposition s'accepte dans l'onglet CARTE)
+  } catch(e){ console.warn('joueurs listener KO:', e); }
+  // Échanges entre joueurs — bandeau d'alerte (par id, campagne-agnostique)
   try {
     db.collection('echanges').where('to','==',JOUEUR_ID).onSnapshot(
       (s) => { let n = 0; s.forEach(d => { if(d.data().status === 'pending') n++; }); renderPropAlert(n); },
       (err) => console.warn('echanges indisponible:', err && err.code)
     );
   } catch(e){ console.warn('echanges listener KO:', e); }
-  // Boutique itinérante — bandeau si le marchand est ouvert à ce joueur
+}
+
+// Écouteurs des documents scopés par campagne — démarrés une fois la campagne du joueur connue (fpCampId() à jour)
+function startCampaignListeners() {
+  // Lancer de dés public
   try {
-    db.collection('boutiques').doc('data').onSnapshot(
+    db.collection('rolls').doc('current'+fpCampSuffix()).onSnapshot(
+      (snap) => { try { renderRollJoueur(snap.exists ? snap.data() : null); } catch(e){ console.error('roll:', e); } },
+      (err) => console.warn('rolls indisponible:', err && err.code)
+    );
+  } catch(e){ console.warn('rolls listener KO:', e); }
+  // Butin partagé
+  try {
+    db.collection('butin').doc(fpCampId()).onSnapshot(
+      (snap) => { try { renderLootAlert(snap.exists ? snap.data() : null); } catch(e){ console.error('loot:', e); } },
+      (err) => console.warn('butin indisponible:', err && err.code)
+    );
+  } catch(e){ console.warn('butin listener KO:', e); }
+  // Calendrier — date/heure du groupe du joueur
+  try {
+    db.collection('temps').doc(fpCampId()).onSnapshot(
+      (snap) => { try { renderFicheClock(snap.exists ? snap.data() : null); } catch(e){ console.error('temps:', e); } },
+      (err) => console.warn('temps indisponible:', err && err.code)
+    );
+  } catch(e){ console.warn('temps listener KO:', e); }
+  // Messagerie — contacts (numéros échangés)
+  try {
+    db.collection('messagerie').doc(fpCampId()).onSnapshot((s) => { const d = s.exists ? s.data() : {}; _msgLinks = (d.links && typeof d.links === 'object') ? d.links : {}; _syncConvWatchers(); updateMsgIcon(); if (document.getElementById('mo-msg')?.classList.contains('on')) renderContacts(); });
+  } catch(e){ console.warn('messagerie listener KO:', e); }
+  // Boutique itinérante
+  try {
+    db.collection('boutiques').doc(fpCampId()).onSnapshot(
       (s) => { try { renderShopAlert(s.exists ? s.data() : null); } catch(e){ console.error('shop:', e); } },
       (err) => console.warn('boutiques indisponible:', err && err.code)
     );
   } catch(e){ console.warn('boutiques listener KO:', e); }
-  // Terminal déclenché par le MJ — bandeau si un terminal est ouvert à ce joueur
+  // Terminal déclenché par le MJ
   try {
-    db.collection('terminaux').doc('data').onSnapshot(
+    db.collection('terminaux').doc(fpCampId()).onSnapshot(
       (s) => { try { renderTerminalAlert(s.exists ? s.data() : null); } catch(e){ console.error('terminal:', e); } },
       (err) => console.warn('terminaux indisponible:', err && err.code)
     );
   } catch(e){ console.warn('terminaux listener KO:', e); }
-  // Crochetage demandé par le MJ — bandeau + modale (jet de Crochetage)
+  // Crochetage demandé par le MJ
   try {
-    db.collection('crochetage').doc('data').onSnapshot(
+    db.collection('crochetage').doc(fpCampId()).onSnapshot(
       (s) => { try { renderCrochAlert(s.exists ? s.data() : null); } catch(e){ console.error('crochetage:', e); } },
       (err) => console.warn('crochetage indisponible:', err && err.code)
     );
   } catch(e){ console.warn('crochetage listener KO:', e); }
-  // Notifs d'onglets (quêtes / journal / encyclopédie) : point lumineux quand le MJ révèle du nouveau contenu
+  // Notifs d'onglets (quêtes / journal / encyclopédie)
   try {
-    db.collection('quetes').doc('data').onSnapshot(s => {
+    db.collection('quetes').doc(fpCampId()).onSnapshot(s => {
       const d = s.exists ? s.data() : {};
       const ids = (d.quests || []).filter(q => q.revealed === true || (Array.isArray(q.revealedFor) && q.revealedFor.includes(JOUEUR_ID))).map(q => q.id);
       _notifTab('quetes', ids);
     }, () => {});
-    db.collection('journal').doc('data').onSnapshot(s => {
+    db.collection('journal').doc(fpCampId()).onSnapshot(s => {
       const d = s.exists ? s.data() : {};
       const ids = (d.entries || []).filter(e => Array.isArray(e.revealedFor) && e.revealedFor.includes(JOUEUR_ID)).map(e => e.id);
       _notifTab('journal', ids);
     }, () => {});
-    db.collection('encyclopedie').doc('data').onSnapshot(s => {
+    db.collection('encyclopedie').doc(fpCampId()).onSnapshot(s => {
       const d = s.exists ? s.data() : {};
       const ids = [];
       const rev = d.reveal || {};      Object.keys(rev).forEach(id => { if ((rev[id] || []).includes(JOUEUR_ID)) ids.push('e:' + id); });
@@ -235,10 +246,10 @@ function startSync() {
       _notifTab('encyclopedie', ids);
     }, () => {});
   } catch(e){ console.warn('notif onglets KO:', e); }
-  // Radio — diffusion synchronisée pilotée par le MJ (le joueur suit ; couper + volume)
+  // Radio — diffusion synchronisée pilotée par le MJ
   try {
     radioInitFollower();
-    db.collection('radio').doc('current').onSnapshot(
+    db.collection('radio').doc('current'+fpCampSuffix()).onSnapshot(
       (s) => { try { _radioState = s.exists ? s.data() : null; applyRadio(); } catch(e){ console.error('radio:', e); } },
       (err) => console.warn('radio indisponible:', err && err.code)
     );
@@ -415,7 +426,7 @@ function crocheter(){
     if(go){ go.disabled = false; go.style.display = ''; go.textContent = '✓ OK'; go.onclick = function(){ closeMo('mo-croch'); }; }
     if(typeof fpSfx === 'function') fpSfx(ok ? 'general' : 'bouton');
     try {
-      db.collection('crochetage').doc('data').set({ [JOUEUR_ID]: { ...(_crochReq), status:'done', success:ok, broke, dice, doneTs:Date.now() } }, { merge:true });
+      db.collection('crochetage').doc(fpCampId()).set({ [JOUEUR_ID]: { ...(_crochReq), status:'done', success:ok, broke, dice, doneTs:Date.now() } }, { merge:true });
       if(typeof fpLogAction === 'function') fpLogAction(db, c.name || JOUEUR_ID,
         '🔓 Crochetage « ' + label + ' » (D' + diff + ') : ' + (ok ? 'RÉUSSI' : 'échoué') + (broke ? ' — épingle cassée' : '') + ' [' + dice.join('/') + ' vs TN' + tn + (hasKit ? ' · kit' : '') + ']');
     } catch(e){ console.error(e); }
@@ -468,7 +479,7 @@ function lancerMonDe(){
   // petite animation de roulement avant d'envoyer le résultat
   const box = document.getElementById('roll-box');
   if(box){ box.classList.add('rolling'); setTimeout(()=>box.classList.remove('rolling'), 520); }
-  setTimeout(() => db.collection('rolls').doc('current').update({ ['results.' + JOUEUR_ID]: res }), 480);
+  setTimeout(() => db.collection('rolls').doc('current'+fpCampSuffix()).update({ ['results.' + JOUEUR_ID]: res }), 480);
   const detail = r.mode === 'dice' ? `${res.dice.join(', ')} = ${res.total}` : `${res.successes} succ.${res.crit?' ✦':''}${res.comp?' ⚠':''}`;
   if(typeof fpLogAction === 'function') fpLogAction(db, char.name || JOUEUR_ID, `a lancé « ${r.label||'dés'} » : ${detail}`);
 }
@@ -699,7 +710,7 @@ function initCombatListener() {
       if(!_combatBannerShown && typeof fpSfx === 'function') fpSfx('combatAlert');   // son à l'apparition du bandeau
       _combatBannerShown = true;
       banner.style.display = 'flex';
-      banner.onclick = () => { window.location.href = '../mj/combat_joueur.html?id=' + JOUEUR_ID + '&combat=' + combatId; };
+      banner.onclick = () => { window.location.href = '../mj/combat_joueur.html?id=' + JOUEUR_ID + '&combat=' + combatId + '&camp=' + encodeURIComponent((char&&char.campaign)||'data'); };
       banner.innerHTML = '<span class="loot-ico">⚔</span>'
         + '<span>COMBAT · Round ' + (data.numRound||1) + ' — <b>' + tourText + '</b> · clique pour rejoindre</span>';
     });

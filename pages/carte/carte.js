@@ -260,7 +260,7 @@ function buildMap() {
       joueurs = {}; s.forEach(d => joueurs[d.id] = { ...d.data(), _id: d.id });
       renderAll();
     });
-    fdb.collection('carte').doc('data').onSnapshot(s => {
+    fdb.collection('carte').doc(fpCampId()).onSnapshot(s => {
       const d = s.exists ? s.data() : {};
       mapData = { pois: d.pois || [], zones: normZones(d.zones), tokens: d.tokens || {}, fog: d.fog || {}, geoReveal: d.geoReveal || {}, geoVisited: d.geoVisited || {}, ping: d.ping || null, metroTokens: d.metroTokens || {}, metroFog: d.metroFog || {}, underground: d.underground || {}, beacons: d.beacons || {} };
       renderAll();
@@ -276,7 +276,7 @@ function buildMap() {
       if (currentTab === 'lieux') renderLieux();
     });
     // Groupes (temps/data) → fusion des jetons des membres en une seule icône de groupe
-    fdb.collection('temps').doc('data').onSnapshot(s => {
+    fdb.collection('temps').doc(fpCampId()).onSnapshot(s => {
       const d = s.exists ? s.data() : {};
       parties = Array.isArray(d.parties) ? d.parties : [];
       renderAll();
@@ -284,7 +284,7 @@ function buildMap() {
     // Échanges entre joueurs (proximité) — uniquement en vue joueur
     if (!isMJ && viewerId) watchEchanges();
     // Boutiques (POI marchands) — pour afficher le bon bouton dans les popups
-    fdb.collection('boutiques').doc('data').onSnapshot(s => {
+    fdb.collection('boutiques').doc(fpCampId()).onSnapshot(s => {
       const d = s.exists ? s.data() : {};
       shopsData = (d.shops && typeof d.shops === 'object') ? d.shops : {};
       if (currentTab === 'paris') renderPOIs();
@@ -443,11 +443,11 @@ function logLieu(nom, pid, baseSrc) { logJournal({ type: 'lieu', title: nom, tex
 // Déblocage auto du Lieu d'encyclopédie lié à ce POI (entry.poi === nom) pour le joueur
 function revealEncyLieu(nom, pid) {
   if (!fdb || !nom || !pid) return;
-  fdb.collection('encyclopedie').doc('data').set({ lieuxPoi: { [nom]: firebase.firestore.FieldValue.arrayUnion(pid) } }, { merge: true }).catch(() => {});
+  fdb.collection('encyclopedie').doc(fpCampId()).set({ lieuxPoi: { [nom]: firebase.firestore.FieldValue.arrayUnion(pid) } }, { merge: true }).catch(() => {});
 }
 function logJournal(entry) {
   if (!fdb) return;
-  Promise.all([fdb.collection('journal').doc('data').get(), fdb.collection('temps').doc('data').get()])
+  Promise.all([fdb.collection('journal').doc(fpCampId()).get(), fdb.collection('temps').doc(fpCampId()).get()])
     .then(([js, ts]) => {
       const data = js.exists ? js.data() : {};
       const entries = Array.isArray(data.entries) ? data.entries : [];
@@ -458,7 +458,7 @@ function logJournal(entry) {
         entry.time = (typeof partyMinutesFor === 'function') ? partyMinutesFor(ts.exists ? ts.data() : {}, pid) : 480;
       }
       entries.push(entry);
-      fdb.collection('journal').doc('data').set({ entries });
+      fdb.collection('journal').doc(fpCampId()).set({ entries });
     }).catch(e => console.warn('logJournal', e));
 }
 function toggleVisitGeo(nom, pid)  { _geoToggle('geoVisited', nom, pid); }
@@ -494,7 +494,7 @@ function isMajorRoad(f) {
 }
 
 async function saveData() {
-  try { await fdb.collection('carte').doc('data').set(mapData); }
+  try { await fdb.collection('carte').doc(fpCampId()).set(mapData); }
   catch (e) { console.error('saveData:', e); }
 }
 
@@ -1437,7 +1437,7 @@ function _genShopItems(n){
 async function genPoiShop(poiId){
   const poi = (mapData.pois||[]).find(x => x.id === poiId); if(!poi) return;
   const nb = parseInt(prompt('Nombre d\'articles dans la boutique :', '12')) || 12;
-  const ref = fdb.collection('boutiques').doc('data');
+  const ref = fdb.collection('boutiques').doc(fpCampId());
   let shops = {};
   try { const s = await ref.get(); shops = (s.exists && s.data().shops) || {}; } catch(e){}
   shops[poiId] = { id: poiId, name: poi.name || 'Marchand', markup: 1, items: _genShopItems(Math.min(40, Math.max(1, nb))), openFor: [] };
@@ -1977,7 +1977,7 @@ async function acceptProp(){
 }
 // ---- Effets ----
 async function _applyNumbers(p){
-  const ref = fdb.collection('messagerie').doc('data');
+  const ref = fdb.collection('messagerie').doc(fpCampId());
   const snap = await ref.get();
   const d = snap.exists ? snap.data() : {};
   const links = (d.links && typeof d.links === 'object') ? d.links : {};
@@ -1986,7 +1986,7 @@ async function _applyNumbers(p){
   await ref.set({ links });
 }
 async function _applyGroup(p){
-  const ref = fdb.collection('temps').doc('data');
+  const ref = fdb.collection('temps').doc(fpCampId());
   const snap = await ref.get();
   const data = snap.exists ? snap.data() : {};
   let parties = Array.isArray(data.parties) ? data.parties : [];
@@ -2010,7 +2010,7 @@ async function _applyGroup(p){
   await ref.set({ ...data, parties });
 }
 async function _applyBeacon(p){
-  const ref = fdb.collection('carte').doc('data');
+  const ref = fdb.collection('carte').doc(fpCampId());
   const snap = await ref.get();
   const beacons = (snap.exists && snap.data().beacons && typeof snap.data().beacons === 'object') ? snap.data().beacons : {};
   const add = (a,b) => { beacons[a] = Array.isArray(beacons[a]) ? beacons[a] : []; if(!beacons[a].includes(b)) beacons[a].push(b); };

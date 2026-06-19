@@ -37,7 +37,7 @@ function init() {
     joueurs = {}; s.forEach(d => joueurs[d.id] = { ...d.data(), _id: d.id });
     render();
   });
-  fdb.collection('quetes').doc('data').onSnapshot(s => {
+  fdb.collection('quetes').doc(fpCampId()).onSnapshot(s => {
     const d = s.exists ? s.data() : {};
     qData = { quests: Array.isArray(d.quests) ? d.quests : [] };
     if (!_editing) render();
@@ -140,7 +140,7 @@ async function importDesignQuests(){
         + (added ? '\nRévèle les nouvelles quêtes aux joueurs et choisis la faction active.' : ''));
 }
 
-function saveQuetes() { if (fdb) fdb.collection('quetes').doc('data').set(qData).catch(e => console.error('saveQuetes', e)); }
+function saveQuetes() { if (fdb) fdb.collection('quetes').doc(fpCampId()).set(qData).catch(e => console.error('saveQuetes', e)); }
 
 // ---- Visibilité ----
 function questVisible(q) {
@@ -228,7 +228,7 @@ function revealAllQ(i) { const q = qData.quests[i]; Object.keys(joueurs).forEach
 function logQuete(q, pid) { logJournal({ type: 'quete', title: q.title, text: 'Quête découverte', revealedFor: [pid], src: 'quete:' + q.id + ':' + pid }); }
 function logJournal(entry) {
   if (!fdb) return;
-  Promise.all([fdb.collection('journal').doc('data').get(), fdb.collection('temps').doc('data').get()])
+  Promise.all([fdb.collection('journal').doc(fpCampId()).get(), fdb.collection('temps').doc(fpCampId()).get()])
     .then(([js, ts]) => {
       const data = js.exists ? js.data() : {};
       const entries = Array.isArray(data.entries) ? data.entries : [];
@@ -239,7 +239,7 @@ function logJournal(entry) {
         entry.time = (typeof partyMinutesFor === 'function') ? partyMinutesFor(ts.exists ? ts.data() : {}, pid) : 480;
       }
       entries.push(entry);
-      fdb.collection('journal').doc('data').set({ entries });
+      fdb.collection('journal').doc(fpCampId()).set({ entries });
     }).catch(e => console.warn('logJournal', e));
 }
 function revealNoneQ(i) { qData.quests[i].revealedFor = []; qData.quests[i].revealed = false; saveQuetes(); render(); }

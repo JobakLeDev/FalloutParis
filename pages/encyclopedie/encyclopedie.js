@@ -39,7 +39,7 @@ function initEncy(){
     joueurs = {}; s.forEach(d => joueurs[d.id] = { ...d.data(), _id: d.id });
     render();
   });
-  fdb.collection('encyclopedie').doc('data').onSnapshot(s => {
+  fdb.collection('encyclopedie').doc(fpCampId()).onSnapshot(s => {
     const d = s.exists ? s.data() : {};
     state = { reveal: d.reveal || {}, lieuxPoi: d.lieuxPoi || {} };
     render();
@@ -58,7 +58,7 @@ function updateModeUI(){
   if(m) m.textContent = isMJ ? 'Vue MJ' : (viewerId ? 'Vue joueur' : 'Visiteur');
   const mb = document.getElementById('emj-btn'); if(mb) mb.style.display = (isMJ || viewerId) ? 'none' : '';
 }
-function saveState(){ if(fdb) fdb.collection('encyclopedie').doc('data').set(state, { merge:true }).catch(e => console.error('saveEncy', e)); }
+function saveState(){ if(fdb) fdb.collection('encyclopedie').doc(fpCampId()).set(state, { merge:true }).catch(e => console.error('saveEncy', e)); }
 
 function setCat(c){ cat = c; document.querySelectorAll('.ecat').forEach(b => b.classList.toggle('on', b.dataset.c === c)); render(); }
 

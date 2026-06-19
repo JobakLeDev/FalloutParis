@@ -33,12 +33,12 @@ function init(){
   updateModeUI();
   initFilterIcons();
   fdb.collection('joueurs').onSnapshot(s => { joueurs = {}; s.forEach(d => joueurs[d.id] = { ...d.data(), _id:d.id }); render(); renderNotes(); });
-  fdb.collection('journal').doc('data').onSnapshot(s => {
+  fdb.collection('journal').doc(fpCampId()).onSnapshot(s => {
     const d = s.exists ? s.data() : {};
     jData = { entries: Array.isArray(d.entries) ? d.entries : [] };
     if (!_editing) render();
   });
-  fdb.collection('temps').doc('data').onSnapshot(s => {
+  fdb.collection('temps').doc(fpCampId()).onSnapshot(s => {
     tempsData = { parties: s.exists && Array.isArray(s.data().parties) ? s.data().parties : [] };
     curMin = partyMinutesFor(tempsData, viewerId);
     renderClock(); if (!_editing) render();
@@ -82,7 +82,7 @@ function delNote(id){
   const notes = _myNotes().filter(n => n.id !== id);
   fdb.collection('joueurs').doc(viewerId).set({ notes }, { merge: true }).catch(e => console.error('delNote', e));
 }
-function saveJournal(){ if (fdb) fdb.collection('journal').doc('data').set(jData).catch(e => console.error('saveJournal', e)); }
+function saveJournal(){ if (fdb) fdb.collection('journal').doc(fpCampId()).set(jData).catch(e => console.error('saveJournal', e)); }
 
 // ---- Temps (helpers de date dans shared.js) ----
 const _JIC_CLOCK = _jic('<circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/>');

@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (embed) document.body.classList.add('embed');
   fdb = firebase.initializeApp(firebaseConfig).firestore();
   const m = document.getElementById('bhdr-mode'); if (m) m.textContent = viewerId ? 'Vue joueur' : 'Vue MJ (lecture)';
-  fdb.collection('butin').doc('data').onSnapshot(s => {
+  fdb.collection('butin').doc(fpCampId()).onSnapshot(s => {
     const d = s.exists ? s.data() : {};
     bData = { items: Array.isArray(d.items) ? d.items : [], caps: d.caps || 0, players: Array.isArray(d.players) ? d.players : [] };
     render();
@@ -80,7 +80,7 @@ async function prendre(i){
   }
   // retirer du pool
   bData.items.splice(i, 1);
-  await fdb.collection('butin').doc('data').set(bData);
+  await fdb.collection('butin').doc(fpCampId()).set(bData);
 }
 
 // Le joueur réclame la totalité des caps du pool
@@ -94,7 +94,7 @@ async function prendreCaps(){
   const gain = bData.caps||0;
   await ref.update({ caps: (d.caps||0) + gain, lastUpdate: Date.now() });
   bData.caps = 0;
-  await fdb.collection('butin').doc('data').set(bData);
+  await fdb.collection('butin').doc(fpCampId()).set(bData);
 }
 
 // Le joueur récupère TOUT le pool (objets + munitions + caps) en une fois
@@ -124,7 +124,7 @@ async function prendreTout(){
   });
   await ref.update({ ammo, inventory: inv, caps: (d.caps||0) + (bData.caps||0), lastUpdate: Date.now() });
   bData.items = []; bData.caps = 0;
-  await fdb.collection('butin').doc('data').set(bData);
+  await fdb.collection('butin').doc(fpCampId()).set(bData);
 }
 
 function render(){

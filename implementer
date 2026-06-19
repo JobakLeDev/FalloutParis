@@ -1,5 +1,6 @@
 Liste des truc à implémenter :
 --- Fait ---
+-[OK] système de campagnes/sessions : état cloisonné par campagne (doc id = campId), joueurs assignés (champ campaign), sélecteur + gestion MJ (créer/renommer/supprimer), défaut 'data' = Campagne 1 (zéro migration). Collection /campaigns (rule à republier).
 -[OK] Gros Sabots : mécanique combat câblée (combat_joueur.js) — si équipés + dernier en initiative → relance 1 dé (apparence type Aim, emoji 🥾), 1×/combat (flag combatState.sabotsUsed[joueurId]).
 -[OK] système de profils joueurs/PNJ : profiles.json (8 profils), scoring computeProfileScores/getPlayerProfile (shared.js), onglet PROFIL admin (barres top 3 + surnom customTitle, recalcul au save), generateNPCStats (inverse). Surnom affiché dans la liste persos.
 -[OK] création perso : questionnaire « Qui suis-je ? » (7 mises en situation, 4 origines : Abri 74/Bourg-de-Bois/Zazous/Ultras) → stocke origine + faction. Style Fallout (creation_perso.js v5 / css v2)
