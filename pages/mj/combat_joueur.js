@@ -66,6 +66,7 @@ let lastRollDice = [];       // [{val, rerolled}]
 let lastRollTN = 0;
 let lastRollDiff = 1;         // difficulté du dernier jet d'attaque (1 + pénalité de portée) — pour recalculer après relance
 let aimRerolled = false;      // true si le re-roll Aim a déjà été utilisé ce lancer
+let sabotsRerolledLocal = false; // garde locale : Gros Sabots déjà utilisés ce combat (source de vérité = combatState.sabotsUsed)
 let cibleAttaque = '';        // nom de l'ennemi ciblé (sélecteur)
 const AIM_ZONES = ['', 'Tête', 'Torse', 'Bras G.', 'Bras D.', 'Jambe G.', 'Jambe D.'];  // '' = zone non ciblée
 let lastAttackResultTs = 0;   // dédup notification résultat attaque
@@ -324,7 +325,7 @@ function renderCombatJoueur(){
     actionsExecuted = {};   // actions à effet déjà exécutées ce tour
     const dc = document.getElementById('mes-des-context'); if(dc) dc.textContent = 'Déclare une attaque pour viser';
     ['j-dice-result','j-cd-result'].forEach(id => { const e=document.getElementById(id); if(e) e.innerHTML='—'; });
-    ['j-attack-result','j-miss-fortune','j-aim-reroll','j-convert-ap','j-bonus-dmg'].forEach(id => { const e=document.getElementById(id); if(e){ e.innerHTML=''; e.style.display='none'; } });
+    ['j-attack-result','j-miss-fortune','j-aim-reroll','j-sabots-reroll','j-convert-ap','j-bonus-dmg'].forEach(id => { const e=document.getElementById(id); if(e){ e.innerHTML=''; e.style.display='none'; } });
   }
   document.getElementById('j-round').textContent = combatState.numRound||1;
   document.getElementById('hdr-round').textContent = 'Round ' + (combatState.numRound||1);
@@ -634,6 +635,91 @@ function aimRelancerDe(idx){
   if(!echec && arEl0){ arEl0.style.display='none'; arEl0.innerHTML=''; }
   renderAimReroll();
   renderMissFortune();
+  renderSabotsReroll();
+  renderDiceAccess();
+  if(typeof renderJMap==='function') renderJMap();
+}
+
+// ---- GROS SABOTS ----
+// Si Gros Sabots équipés ET dernier en initiative : relance 1 dé, une seule fois par combat.
+function hasGrosSabotsEquipped(){
+  return (joueurData?.inventory||[]).some(it => it && it.equipped && /gros\s*sabots/i.test(it.name||''));
+}
+function isLastInInitiative(){
+  const ordre = combatState?.ordreInitiative||[];
+  return ordre.length>0 && ordre[ordre.length-1]?.id === joueurId;
+}
+function sabotsUsedThisCombat(){
+  return sabotsRerolledLocal || !!(combatState?.sabotsUsed && combatState.sabotsUsed[joueurId]);
+}
+function renderSabotsReroll(){
+  const el = document.getElementById('j-sabots-reroll'); if(!el) return;
+  if(!hasGrosSabotsEquipped() || !isLastInInitiative() || lastRollDice.length === 0){ el.style.display='none'; el.innerHTML=''; return; }
+  if(sabotsUsedThisCombat()){
+    el.style.display='block';
+    el.innerHTML='<span style="font-size:7px;color:var(--gd)">🥾 Gros Sabots utilisés</span>';
+    return;
+  }
+  let html = '<span style="font-size:7px;color:var(--am)">🥾 Gros Sabots — relancer 1 dé (1×/combat) : </span>';
+  lastRollDice.forEach((die, i) => {
+    const col = die.val <= lastRollTN ? 'var(--g)' : 'var(--rd)';
+    html += '<button class="mf-die-btn" style="color:' + col + '" onclick="sabotsRelancerDe(' + i + ')">' + die.val + ' ↺</button>';
+  });
+  el.style.display='block'; el.innerHTML=html;
+}
+async function sabotsRelancerDe(idx){
+  if(sabotsUsedThisCombat() || !lastRollDice[idx]) return;
+  sabotsRerolledLocal = true;
+  if(db && combatId){ db.collection(COMBATS_COLL).doc(combatId).update({ ['sabotsUsed.'+joueurId]: true }).catch(()=>{}); }
+  lastRollDice[idx] = { val: Math.floor(Math.random()*20)+1, rerolled: false };
+
+  const vals = lastRollDice.map(d => d.val);
+  const tn = lastRollTN;
+  let succes = vals.filter(v=>v<=tn).length + vals.filter(v=>v===1).length;
+  const crits = vals.filter(v=>v===1).length;
+  const echec = succes < lastRollDiff;
+  const succesBonus = Math.max(0, succes-lastRollDiff);
+  const dcTotal = echec ? 0 : nbDCActuel + succesBonus;
+  if(!echec) { nbDCActuel = dcTotal; const _d=document.getElementById('j-nb-cd-disp'); if(_d) _d.textContent = dcTotal; }
+
+  const col = succes===0?'var(--rd)':succes>1?'var(--g)':'var(--am)';
+  let r = lastRollDice.map((d, i) => {
+    const c = d.val<=tn?'var(--g)':'var(--rd)';
+    const marker = i===idx ? '🥾' : (d.rerolled ? '↺' : '');
+    return '<span style="color:'+c+';font-size:16px;font-family:Oswald,sans-serif">'+d.val+marker+'</span>';
+  }).join('/');
+  r += ' <b style="color:'+col+'">'+succes+'s</b>';
+  if(crits) r += '<span style="color:var(--am)">+'+crits+'★</span>';
+  if(echec) r += ' <span style="color:var(--rd)">ÉCHEC</span>';
+  else r += '→<b style="color:var(--am)">'+dcTotal+'DC</b>';
+  document.getElementById('j-dice-result').innerHTML = r;
+
+  lastExcessJ = succesBonus;
+  const cvEl = document.getElementById('j-convert-ap');
+  if(cvEl){
+    const pool = combatState?.apPool||0;
+    const toAdd = Math.min(succesBonus, 6-pool);
+    if(!echec && toAdd>0){
+      cvEl.style.display='block';
+      cvEl.innerHTML='<button class="j-ap-convert-btn" onclick="convertExcessToAPJ()">+'+toAdd+' AP groupe</button>';
+    } else cvEl.style.display='none';
+  }
+  const bdEl = document.getElementById('j-bonus-dmg');
+  if(bdEl){
+    const isMeleeThrow = ['cac_weapon','barehand','throwing'].includes(lastSkKeyJ);
+    const pool = combatState?.apPool||0;
+    if(!echec && isMeleeThrow && pool>0){
+      let btns = '<span style="font-size:7px;color:var(--td)">Dégâts bonus: </span>';
+      for(let n=1;n<=Math.min(3,pool);n++) btns+='<button class="j-ap-dmg-btn" onclick="bonusDmgJ('+n+')">+'+n+'D (−'+n+'AP)</button>';
+      bdEl.style.display='block'; bdEl.innerHTML=btns;
+    } else bdEl.style.display='none';
+  }
+  lastAttackMissed = echec;
+  const arEl0 = document.getElementById('j-attack-result');
+  if(!echec && arEl0){ arEl0.style.display='none'; arEl0.innerHTML=''; }
+  renderAimReroll();
+  renderMissFortune();
+  renderSabotsReroll();
   renderDiceAccess();
   if(typeof renderJMap==='function') renderJMap();
 }
@@ -1149,6 +1235,7 @@ async function jLancer2D20(){
   setNbDiceJ(2);
   renderMissFortune();
   renderAimReroll();
+  renderSabotsReroll();
 
   // Proposer conversion succès → AP groupe
   lastExcessJ = succesBonus;

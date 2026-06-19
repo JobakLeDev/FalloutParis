@@ -1,6 +1,6 @@
 Liste des truc à implémenter :
--[PARTIEL] Gros Sabots : item ajouté (items.json/stuff, donné manuellement). Mécanique combat « si équipé + dernier en initiative → relance 1 attaque 1×/combat » PAS ENCORE câblée (descriptif only) — à faire dans un passage combat dédié.
 --- Fait ---
+-[OK] Gros Sabots : mécanique combat câblée (combat_joueur.js) — si équipés + dernier en initiative → relance 1 dé (apparence type Aim, emoji 🥾), 1×/combat (flag combatState.sabotsUsed[joueurId]).
 -[OK] système de profils joueurs/PNJ : profiles.json (8 profils), scoring computeProfileScores/getPlayerProfile (shared.js), onglet PROFIL admin (barres top 3 + surnom customTitle, recalcul au save), generateNPCStats (inverse). Surnom affiché dans la liste persos.
 -[OK] création perso : questionnaire « Qui suis-je ? » (7 mises en situation, 4 origines : Abri 74/Bourg-de-Bois/Zazous/Ultras) → stocke origine + faction. Style Fallout (creation_perso.js v5 / css v2)
 -[OK] Abri 74 + Bourg-de-Bois = factions mineures à part entière (factions.json, encyclopedie.json, admin select + rapport, FACTION_LABELS). 8 factions au total.
