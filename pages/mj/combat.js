@@ -47,6 +47,21 @@ let currentCombatId = sessionStorage.getItem('currentCombatId') || null;
 
 // ---- ACTIONS DÉCLARÉES (subcollection) ----
 let actionsJoueurs = {}; // {joueurId: {mineure:{used,pending}, majeure:{used,pending}, mouvement_used}}
+let _lastPendingCount = 0;   // nb de demandes de validation au dernier rendu (pour bip à l'arrivée)
+let _pendingSeeded = false;  // évite le bip au 1er rendu
+function playPendingPing(){
+  try{
+    const Ctx = window.AudioContext || window.webkitAudioContext; if(!Ctx) return;
+    const ctx = playPendingPing._ctx || (playPendingPing._ctx = new Ctx());
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'square'; o.frequency.value = 880;
+    g.gain.setValueAtTime(0.0001, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(); o.stop(ctx.currentTime + 0.2);
+  }catch(e){}
+}
 
 // ---- INIT ----
 function init(){
@@ -1614,6 +1629,15 @@ function renderActionsMJ(){
       }
     });
   });
+  // Indicateurs « demande de validation en attente » (en-tête + titre du panneau) + bip à l'arrivée
+  const cnt = pending.length;
+  const badge = document.getElementById('mj-pending-badge');
+  if(badge){ badge.style.display = cnt ? 'inline-flex' : 'none'; badge.textContent = '⚠ ' + cnt + ' action' + (cnt>1?'s':'') + ' à valider'; }
+  const cntBadge = document.getElementById('actions-joueurs-count');
+  if(cntBadge){ cntBadge.style.display = cnt ? 'inline-block' : 'none'; cntBadge.textContent = cnt; }
+  if(_pendingSeeded && cnt > _lastPendingCount) playPendingPing();
+  _lastPendingCount = cnt; _pendingSeeded = true;
+
   if(!pending.length){ el.innerHTML = '<span class="empty">Aucune action en attente</span>'; return; }
   el.innerHTML = pending.map(({jId, cat, p, nom}) => {
     const key = jId + '_' + cat;

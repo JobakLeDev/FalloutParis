@@ -376,3 +376,22 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   83%{ opacity:.12; filter:none; }
   100%{ opacity:1; filter:none; }
 }
+
+/* ---- Indicateur de validation d'action joueur en attente (MJ) ---- */
+.mj-pending-badge{
+  font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:1px;
+  color:#1a1200; background:var(--am); border:1px solid var(--am);
+  padding:5px 10px; cursor:pointer; align-items:center; gap:4px;
+  animation:mjPendingPulse 1s ease-in-out infinite; border-radius:2px;
+}
+.mj-pending-badge:hover{ filter:brightness(1.15); }
+@keyframes mjPendingPulse{
+  0%,100%{ box-shadow:0 0 0 0 rgba(232,168,32,.6); }
+  50%{ box-shadow:0 0 8px 3px rgba(232,168,32,.85); }
+}
+.aj-count{
+  font-family:'Oswald',sans-serif; font-size:10px; line-height:1;
+  color:#1a1200; background:var(--am); border-radius:8px;
+  padding:1px 7px; margin-left:4px; vertical-align:middle;
+  animation:mjPendingPulse 1s ease-in-out infinite;
+}

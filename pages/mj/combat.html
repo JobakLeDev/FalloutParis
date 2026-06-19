@@ -7,7 +7,7 @@
   <title>Fallout Paris — Combat</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css">
-  <link rel="stylesheet" href="combat.css?v=31">
+  <link rel="stylesheet" href="combat.css?v=32">
   <link rel="stylesheet" href="../../common/zoom.css?v=2">
 </head>
 <body>
@@ -19,6 +19,7 @@
   <div class="hdr">
     <div><div class="hdr-title">⚔ ÉCRAN DE COMBAT<small>Fallout Paris — MJ</small></div></div>
     <div class="hdr-btns">
+      <button id="mj-pending-badge" class="mj-pending-badge" style="display:none" onclick="document.getElementById('actions-joueurs-notif').scrollIntoView({behavior:'smooth',block:'center'})" title="Cliquer pour aller au panneau de validation">⚠ 0 à valider</button>
       <button class="hbtn" onclick="partagerCombat()" style="border-color:var(--g);color:var(--g)">🔗 Partager</button>
       <a class="hbtn" href="mj.html">← MJ</a>
       <a class="hbtn" href="../../index.html">Accueil</a>
@@ -118,7 +119,7 @@
       <!-- ACTIONS JOUEURS (sous la carte, même largeur) -->
       <div class="pnl">
         <div class="pnl-title" style="display:flex;justify-content:space-between;align-items:center">
-          Actions joueurs
+          <span>Actions joueurs <span id="actions-joueurs-count" class="aj-count" style="display:none">0</span></span>
           <span style="font-size:7px;color:var(--td);letter-spacing:1px">temps réel</span>
         </div>
         <div id="actions-joueurs-notif"><span class="empty">Aucune action en attente</span></div>
@@ -184,7 +185,7 @@
   <script src="../../common/db.js?v=6"></script>
   <script src="mj_shared.js?v=21"></script>
   <script src="combat_sync.js?v=2"></script>
-  <script src="combat.js?v=38"></script>
+  <script src="combat.js?v=39"></script>
   <script>document.addEventListener("DOMContentLoaded", () => window.DB_READY.then(init));</script>
   <script src="../../common/responsive.js?v=1"></script>
 </body>
