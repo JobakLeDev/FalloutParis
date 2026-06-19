@@ -70,6 +70,7 @@
           <div class="etab" onclick="swTab('special')">SPECIAL</div>
           <div class="etab" onclick="swTab('skills')">COMPÉT.</div>
           <div class="etab" onclick="swTab('perks')">PERKS</div>
+          <div class="etab" onclick="swTab('profil')">PROFIL</div>
           <div class="etab" onclick="swTab('inventaire')">INVENTAIRE</div>
           <div class="etab" onclick="swTab('compagnons')">COMPAGNONS</div>
         </div>
@@ -139,6 +140,18 @@
           <div class="scroll" id="pk-grid"></div>
         </div>
 
+        <!-- PROFIL -->
+        <div class="etcontent" id="et-profil">
+          <div class="ptitle" style="margin:0 0 8px;border:none">Profils dominants <span style="font-size:8px;color:var(--td)">— recalculé à l'enregistrement</span></div>
+          <div id="prof-bars"><div style="font-size:9px;color:var(--td)">—</div></div>
+          <hr class="fo">
+          <div class="field" style="margin-top:8px">
+            <label>Surnom personnalisé (assigné par le MJ)</label>
+            <input type="text" id="e-customtitle" placeholder="ex: le Subtil, Gros Bras…" maxlength="60">
+          </div>
+          <button class="btn" onclick="saveProfilTitle()">💾 Enregistrer le surnom &amp; les profils</button>
+        </div>
+
         <!-- INVENTAIRE -->
         <div class="etcontent" id="et-inventaire">
           <div class="scroll" id="inv-grid"></div>
@@ -181,9 +194,9 @@
 
   </div>
 </div>
-  <script src="../../common/shared.js?v=2"></script>
-  <script src="../../common/db.js?v=10"></script>
-  <script src="admin_perso.js?v=6"></script>
+  <script src="../../common/shared.js?v=81"></script>
+  <script src="../../common/db.js?v=11"></script>
+  <script src="admin_perso.js?v=7"></script>
   <script src="../../common/responsive.js?v=1"></script>
 </body>
 </html>

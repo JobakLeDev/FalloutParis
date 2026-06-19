@@ -154,6 +154,57 @@ const SKILLS_DEF = [
 ];
 
 // ============================================================
+// PROFILS — scoring stats/skills/perks → profils dominants (%)
+//   window.PROFILES est chargé par common/db.js depuis data/profiles.json.
+//   computeProfileScores → {id:%} (part relative) · getPlayerProfile → top N
+//   generateNPCStats(profileId) → SPECIAL cohérent (fonction inverse, PNJ)
+// ============================================================
+const _PROF_SP = ['S','P','E','C','I','A','L'];
+function _profList(){ return (typeof window!=='undefined' && Array.isArray(window.PROFILES)) ? window.PROFILES : []; }
+function computeProfileScores(special, skills, perks){
+  const profiles = _profList();
+  special = special || {}; skills = skills || {};
+  const perkSet = {};
+  if (Array.isArray(perks)) perks.forEach(p => { if(p) perkSet[p] = 1; });
+  else if (perks && typeof perks === 'object') Object.entries(perks).forEach(([k,v]) => { if(v) perkSet[k] = 1; });
+  const ratios = {};
+  profiles.forEach(p => {
+    const w = p.weights || {}; let num = 0, den = 0;
+    Object.entries(w).forEach(([key, weight]) => {
+      if (!(weight > 0)) return;
+      let nv = 0;
+      if (_PROF_SP.indexOf(key) >= 0)        nv = Math.min(1, (special[key] || 0) / 10);
+      else if (skills.hasOwnProperty(key))   nv = Math.min(1, (skills[key] || 0) / 6);
+      else if (perkSet.hasOwnProperty(key))  nv = 1;
+      num += weight * nv; den += weight;
+    });
+    ratios[p.id] = den > 0 ? num / den : 0;
+  });
+  const tot = Object.values(ratios).reduce((a, b) => a + b, 0);
+  const scores = {};
+  profiles.forEach(p => { scores[p.id] = tot > 0 ? Math.round(ratios[p.id] / tot * 100) : 0; });
+  return scores;
+}
+function getPlayerProfile(special, skills, perks, topN){
+  const profiles = _profList();
+  const scores = computeProfileScores(special, skills, perks);
+  return Object.entries(scores)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, topN || 3)
+    .map(([id, percentage]) => ({ id, name: (profiles.find(p => p.id === id) || {}).name || id, percentage }));
+}
+function generateNPCStats(profileId){
+  const p = _profList().find(x => x.id === profileId);
+  const stats = {};
+  _PROF_SP.forEach(k => {
+    const w = (p && p.weights && p.weights[k]) || 0;
+    const rnd = Math.floor(Math.random() * 3) - 1; // -1..+1
+    stats[k] = Math.max(1, Math.min(10, 5 + Math.round(w * 12) + rnd));
+  });
+  return stats;
+}
+
+// ============================================================
 // CALENDRIER DE CAMPAGNE
 // Époque (Jour 0 = minute 0) : 14 juillet 2189 00:00.
 // Le temps est stocké en MINUTES écoulées depuis l'époque, par GROUPE (party).

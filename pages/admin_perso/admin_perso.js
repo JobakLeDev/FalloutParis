@@ -74,8 +74,9 @@ async function chargerListe(){
     snap.forEach(doc=>{
       const d=doc.data();
       const hpMax=(d.special?.L||5)+(d.special?.E||5)+Math.max(0,(d.niveau||1)-1);
+      const surnom=d.customTitle?` <span style="color:var(--am);font-size:9px">« ${d.customTitle} »</span>`:'';
       el.innerHTML+=`<div class="perso-item${currentId===doc.id?' selected':''}" onclick="charger('${doc.id}')">
-        <div class="pi-name">${d.nom||doc.id}</div>
+        <div class="pi-name">${d.nom||doc.id}${surnom}</div>
         <div class="pi-info">${d.origine||'—'} · LVL ${d.niveau||1} · PV ${d.hp||0}/${hpMax}</div>
       </div>`;
     });
@@ -118,6 +119,8 @@ async function charger(id){
   populateInvSelect();
   populateCompBaseSel();
   renderCompanions();
+  document.getElementById('e-customtitle').value=d.customTitle||'';
+  renderProfil();
 
   document.getElementById('editor').style.display='block';
   document.getElementById('placeholder').style.display='none';
@@ -178,6 +181,30 @@ function renderPerks(){
   });
 }
 function chPerk(n,v){editPerks[n]=Math.max(0,Math.min(PERKS_DEF[n]?.max||1,(editPerks[n]||0)+v));renderPerks();}
+
+// ---- PROFIL (scoring stats/skills/perks → top 3) ----
+function _currentSpecial(){
+  const sp={}; ['S','P','E','C','I','A','L'].forEach(k=>{ const v=document.getElementById('sp-'+k); sp[k]=v?(parseInt(v.value)||0):((editData.special&&editData.special[k])||5); });
+  return sp;
+}
+function renderProfil(){
+  const el=document.getElementById('prof-bars'); if(!el) return;
+  const top=(typeof getPlayerProfile==='function')?getPlayerProfile(_currentSpecial(),editSkills,editPerks,3):[];
+  if(!top.length){ el.innerHTML='<div style="font-size:9px;color:var(--td)">Profils indisponibles (profiles.json non chargé).</div>'; return; }
+  el.innerHTML=top.map(t=>`<div style="margin-bottom:7px">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--tb);margin-bottom:2px"><span>${t.name}</span><span style="color:var(--am)">${t.percentage}%</span></div>
+      <div style="height:10px;background:#060d06;border:1px solid var(--b2)"><div style="height:100%;width:${t.percentage}%;background:linear-gradient(90deg,var(--gd),var(--g))"></div></div>
+    </div>`).join('');
+}
+async function saveProfilTitle(){
+  if(!currentId) return;
+  const customTitle=(document.getElementById('e-customtitle')?.value||'').trim();
+  const profileScores=(typeof computeProfileScores==='function')?computeProfileScores(_currentSpecial(),editSkills,editPerks):{};
+  try{
+    await db.collection('joueurs').doc(currentId).set({customTitle,profileScores,lastUpdate:Date.now()},{merge:true});
+    showMsg('✓ Surnom & profils enregistrés','ok'); renderProfil(); chargerListe();
+  }catch(e){ showMsg('Erreur : '+e.message,'err'); }
+}
 
 // ---- INVENTAIRE ----
 let _modsOpen = -1;
@@ -399,7 +426,7 @@ function renderCompanions(){
 // ---- TABS ----
 function swTab(tab){
   document.querySelectorAll('.etab').forEach((el,i)=>{
-    el.classList.toggle('on',['infos','special','skills','perks','inventaire','compagnons'][i]===tab);
+    el.classList.toggle('on',['infos','special','skills','perks','profil','inventaire','compagnons'][i]===tab);
   });
   document.querySelectorAll('.etcontent').forEach(el=>el.classList.remove('on'));
   document.getElementById('et-'+tab).classList.add('on');
@@ -431,12 +458,15 @@ async function sauvegarder(){
     ammo:editAmmo,
     companions:editCompanions,
     wounds:editData.wounds||{head:false,torso:false,armL:false,armR:false,legL:false,legR:false},
+    customTitle:(document.getElementById('e-customtitle')?.value||'').trim(),
+    profileScores:(typeof computeProfileScores==='function')?computeProfileScores(special,editSkills,editPerks):{},
     lastUpdate:Date.now(),
   };
   try{
     await db.collection('joueurs').doc(currentId).set(data,{merge:false});
     showMsg('✓ Sauvegardé !','ok');
     chargerListe();
+    renderProfil();
     document.getElementById('editor-title').textContent=`Édition — ${data.nom}`;
   }catch(e){showMsg('Erreur : '+e.message,'err');}
 }
@@ -470,6 +500,8 @@ function nouveauPerso(){
   document.getElementById('editor-title').textContent='Nouveau personnage';
   renderSpecial({S:5,P:5,E:5,C:5,I:5,A:5,L:5});
   renderSkills();renderPerks();renderInventory();renderAmmo();populateInvSelect();
+  document.getElementById('e-customtitle').value='';
+  renderProfil();
   document.getElementById('editor').style.display='block';
   document.getElementById('placeholder').style.display='none';
   // Laisser l'ID modifiable pour un nouveau perso

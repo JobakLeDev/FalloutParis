@@ -36,7 +36,8 @@ window.DB_READY = Promise.all([
   _fetch('weapon_mods.json'),
   _fetch('armor_mods.json'),
   _fetch('encyclopedie.json').catch(() => ({})),
-]).then(([weapons, armor, items, enemies, perks, npc, ammo, ammoLoot, npcXp, zones, zoneVariations, zoneOccupation, zoneThreat, factions, npcRoles, lootProfiles, weaponMods, armorMods, ency]) => {
+  _fetch('profiles.json').catch(() => ({})),
+]).then(([weapons, armor, items, enemies, perks, npc, ammo, ammoLoot, npcXp, zones, zoneVariations, zoneOccupation, zoneThreat, factions, npcRoles, lootProfiles, weaponMods, armorMods, ency, profiles]) => {
 
   window.DB = {
     weapons,
@@ -63,6 +64,7 @@ window.DB_READY = Promise.all([
   window.WEAPON_MODS     = weaponMods || {};
   window.ARMOR_MODS      = armorMods || {};
   window.ENCY            = { lieux:[], personnages:[], bestiaire:[], evenements:[], ...(ency||{}) };
+  window.PROFILES        = (profiles && Array.isArray(profiles.profiles)) ? profiles.profiles : [];
 
   // WEAPONS_DB : format objet keyed par nom (accès O(1) dans les pages combat)
   window.WEAPONS_DB = {};
@@ -80,4 +82,5 @@ window.DB_READY = Promise.all([
   window.NPC_XP = {perLevel:[], above20:{normal:7,mighty:14,legendary:21}};
   window.ZONES_DB = {}; window.ZONE_VARIATIONS = {}; window.ZONE_OCCUPATION = {}; window.ZONE_THREAT = {}; window.FACTIONS = {}; window.NPC_ROLES = {}; window.LOOT_PROFILES = {}; window.WEAPON_MODS = {}; window.ARMOR_MODS = {};
   window.ENCY = { lieux:[], personnages:[], bestiaire:[], evenements:[] };
+  window.PROFILES = [];
 });

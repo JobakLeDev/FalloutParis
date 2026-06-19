@@ -1,0 +1,70 @@
+{
+  "_comment": "Profils joueurs/PNJ — vecteurs de poids sur SPECIAL (S,P,E,C,I,A,L, valeur/10) + compétences (clés de SKILLS_DEF, rang/6) + perks (par nom, optionnel). Les poids n'ont pas besoin de sommer à 1 : le score d'un profil est normalisé par la somme de ses poids (taux de correspondance 0-1), puis converti en part relative (%) parmi tous les profils. Voir computeProfileScores() dans common/shared.js.",
+  "profiles": [
+    {
+      "id": "soldat",
+      "name": "Soldat",
+      "weights": {
+        "S": 0.25, "E": 0.18, "A": 0.07,
+        "cac_weapon": 0.15, "heavy_weapon": 0.15, "light_weapon": 0.10,
+        "athletics": 0.10, "barehand": 0.08
+      }
+    },
+    {
+      "id": "diplomate",
+      "name": "Diplomate",
+      "weights": {
+        "C": 0.30, "I": 0.10, "L": 0.10,
+        "speech": 0.30, "barter": 0.20
+      }
+    },
+    {
+      "id": "technicien",
+      "name": "Technicien",
+      "weights": {
+        "I": 0.30, "P": 0.08,
+        "science": 0.25, "repair": 0.22, "lockpick": 0.12, "pilot": 0.08
+      }
+    },
+    {
+      "id": "sniper",
+      "name": "Sniper",
+      "weights": {
+        "P": 0.28, "A": 0.15,
+        "en_weapon": 0.22, "light_weapon": 0.15, "sneak": 0.12, "throwing": 0.08
+      }
+    },
+    {
+      "id": "soigneur",
+      "name": "Soigneur",
+      "weights": {
+        "I": 0.25, "C": 0.15, "E": 0.08,
+        "medicine": 0.35, "survival": 0.12, "repair": 0.05
+      }
+    },
+    {
+      "id": "pillard",
+      "name": "Pillard",
+      "weights": {
+        "S": 0.18, "A": 0.12, "L": 0.08,
+        "explosives": 0.25, "cac_weapon": 0.15, "barter": 0.12, "athletics": 0.10
+      }
+    },
+    {
+      "id": "furtif",
+      "name": "Furtif",
+      "weights": {
+        "A": 0.25, "P": 0.18,
+        "sneak": 0.25, "lockpick": 0.15, "light_weapon": 0.07, "throwing": 0.05, "pilot": 0.05
+      }
+    },
+    {
+      "id": "survivaliste",
+      "name": "Survivaliste",
+      "weights": {
+        "E": 0.25, "P": 0.12, "L": 0.06,
+        "survival": 0.30, "medicine": 0.12, "repair": 0.10, "athletics": 0.05
+      }
+    }
+  ]
+}
