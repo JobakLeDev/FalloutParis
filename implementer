@@ -2,7 +2,7 @@ Liste des truc à implémenter :
 - dans l'inventaire joueur : les boutons récents et marquer comme vu sont moches, laisse la place pour le texte quelque part fais moi un truc un peu joli.
 - les munitions doivent apparaitre dans "tout" comme tous les objets et junk.
 - uniformise l'ensemble des fenetres pop up (les boites de saisie qui apparaissent ou les messages etc et qui ont un look windows) pour qu'elle s'intègrent dans le style visuel de l'app. 
-- perfectionner le système de création de refuges/settlements : un bloc pour une porte c'est bien, mais il me faut comme sur la battlemap la possibilité de dessiner des traits pour dessiner les contour
+- perfectionner le système de création de refuges/settlements : un bloc pour une porte c'est bien, mais il me faut comme sur la battlemap la possibilité de dessiner des traits pour dessiner les contours des batiments sans utiliser un bloc entier (principalement dans les settlements)
 - dans l'onglet lieux de la carte du mj, le bloc de ping est situé par dessus la barre de selection de lieux, mets tout ensemble.
 Pour les deux points suivants, vérifie dans le pdf si un systeme equivalent existe. le pdf se situe maintenant dans .Claude
 - ajouter des objets de junk type "bouteille vide" ou "gourde" pour que les joueurs puisse transporter de l'eau. une fois dans un refuge, si le refuge a un point d'eau ils peuvent remplir leur bouteille d'eau.
@@ -12,7 +12,9 @@ et ça rapporte des caps au settlement de manière aléatoire mais contrôlée p
 
 
 --- Fait ---
--[OK] inventaire : barre "récents" restylée (libellé + pastilles) + munitions affichées dans l'onglet TOUT (char.ammo). fiche css v85 / js v98.
+-[OK] refuges : murs/portes/fenetres sur la grille (modele battlemap : edges V|H, gridEdgesHtmlS + palette MJ Mur/Porte/Fenetre/Effacer + hotspots de bord). Grille passee en layout pixel. settlement v7.
+-[OK] refuges : le MJ construit GRATUITEMENT (pose directe sans consommer la Reserve) ; le cout materiaux ne s'applique qu'aux constructions proposees par les joueurs.
+
 -[OK] settlements Inc.3 (établis) : pose/retrait de mods sur armes (établi d'armes, Réparation/Sciences) et armures/tenues (établi d'armures, Réparation) au refuge, consomme la Réserve (matériaux par Complexité dérivée du perk requis du mod), gate rang≥complexité. Pas de réparation/durabilité (l'app ne modélise pas l'usure). settlement.js renderBench/installMod, v6.
 -[OK] settlements Inc.2b (repos) : bouton "Se reposer ici" au refuge (allié + couchage) → sleep=now + Bien reposé (PV au max), cuisine→faim, eau→soif, médical→rad soignée, porte→repos sûr (settlement.js reposRefuge, partyMinutesFor depuis temps). Pin 🛏 sur le POI de la carte (carte.js restRefugeAt).
 -[OK] settlements Inc.2a (scrap) : junk lootable (genButin + catalogue MJ, cat 'junk' → window.JUNK) ; au refuge, le joueur allié démonte son junk de l'inventaire → matériaux ajoutés à la Réserve (settlement.js scrapJunk/renderScrap, écrit joueurs/<id>+settlements). mj.js v20, settlement v4.

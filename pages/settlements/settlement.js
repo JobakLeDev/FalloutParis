@@ -17,6 +17,48 @@ let data = { sites: {} };           // /settlements/<camp>
 let joueursCamp = {};               // joueurs de la campagne (pour alliés)
 let selSite = null;                 // id du refuge sélectionné
 let selBlock = null;                // bloc choisi dans le catalogue (à poser)
+let _edgeBrush = null;              // MJ : pinceau d'arête ('wall'|'door'|'window'|'erase')
+
+// Rendu des arêtes (murs/portes/fenêtres) — porté de mj_shared.js (battlemap)
+function gridEdgesHtmlS(grid, cs){
+  const pad = 5, gap = 1, pitch = cs + gap; const E = grid.edges || {}; let h = '';
+  const isWall = (o,x,y) => E[o+','+x+','+y] === 'wall';
+  for(const key in E){
+    const p = key.split(','); const o = p[0], x = +p[1], y = +p[2], type = E[key];
+    if(o === 'V') h += '<div class="cedge cedge-v e-'+type+'" style="left:'+(pad+x*pitch-gap)+'px;top:'+(pad+y*pitch-gap)+'px;height:'+(cs+2*gap)+'px"></div>';
+    else          h += '<div class="cedge cedge-h e-'+type+'" style="top:'+(pad+y*pitch-gap)+'px;left:'+(pad+x*pitch-gap)+'px;width:'+(cs+2*gap)+'px"></div>';
+  }
+  for(let vx=0; vx<=grid.w; vx++) for(let vy=0; vy<=grid.h; vy++){
+    const nv = (isWall('V',vx,vy-1)?1:0) + (isWall('V',vx,vy)?1:0);
+    const nh = (isWall('H',vx-1,vy)?1:0) + (isWall('H',vx,vy)?1:0);
+    if(nv===1 && nh===1){ const cx = pad+vx*pitch-gap/2, cy = pad+vy*pitch-gap/2; h += '<div class="cedge-knee" style="left:'+(cx-2)+'px;top:'+(cy-2)+'px"></div>'; }
+  }
+  return h;
+}
+function sEdgeHotspots(site, cs){
+  const pad = 5, gap = 1, pitch = cs + gap; let h = '';
+  for(let y=0;y<site.h;y++) for(let x=0;x<=site.w;x++)
+    h += `<div class="cedge-hot" style="left:${pad+x*pitch-gap-2}px;top:${pad+y*pitch}px;width:6px;height:${cs}px" onclick="sEdgeClick('V,${x},${y}')"></div>`;
+  for(let y=0;y<=site.h;y++) for(let x=0;x<site.w;x++)
+    h += `<div class="cedge-hot" style="top:${pad+y*pitch-gap-2}px;left:${pad+x*pitch}px;height:6px;width:${cs}px" onclick="sEdgeClick('H,${x},${y}')"></div>`;
+  return h;
+}
+function sEdgeClick(key){
+  if(!isMJ || !_edgeBrush) return;
+  const site = data.sites[selSite]; if(!site) return;
+  site.edges = site.edges || {};
+  if(_edgeBrush === 'erase' || site.edges[key] === _edgeBrush) delete site.edges[key];
+  else site.edges[key] = _edgeBrush;
+  save();
+}
+function setEdgeBrush(t){ _edgeBrush = (_edgeBrush === t) ? null : t; render(); }
+function renderEdgePal(){
+  const el = document.getElementById('s-edge-pal'); if(!el) return;
+  if(!isMJ){ el.innerHTML = ''; return; }
+  const L = { wall:'▦ Mur', door:'╫ Porte', window:'┆ Fenêtre' };
+  el.innerHTML = Object.keys(L).map(t => `<button class="s-ebtn${_edgeBrush===t?' on':''}" onclick="setEdgeBrush('${t}')">${L[t]}</button>`).join('')
+    + `<button class="s-ebtn${_edgeBrush==='erase'?' on':''}" onclick="setEdgeBrush('erase')">✕ Effacer</button>`;
+}
 
 const TIERS = ['common', 'uncommon', 'rare'];
 function skillName(k){ const d = (typeof SKILLS_DEF !== 'undefined' ? SKILLS_DEF : []).find(s => s.key === k); return d ? d.name : k; }
@@ -114,10 +156,7 @@ function cellClick(id, x, y){
   const block = blockDef(selBlock); if (!block) return;
   if (!skillOk(block)) { alert('Compétence insuffisante pour ce bloc.'); return; }
   if (isMJ){
-    // Le MJ pose directement (vérifie le stock)
-    const need = matsFor(block);
-    if (!stockEnough(s, need)) { alert('Stock de matériaux insuffisant.'); return; }
-    TIERS.forEach(t => s.stock[t] -= (need[t] || 0));
+    // Le MJ pose directement et GRATUITEMENT (aucun matériau consommé)
     s.blocks.push({ type: selBlock, x, y });
     if (selBlock === 'bed') s.restPoint = true;
     save();
@@ -304,27 +343,29 @@ function render(){
   renderBench(site);
   renderScrap(site);
 
-  // grille
+  // grille — layout pixel (permet les arêtes murs/portes/fenêtres comme la battlemap)
+  const CS = 52, GP = 1, PAD = 5, PITCH = CS + GP;
   const gw = document.getElementById('s-grid');
-  gw.style.gridTemplateColumns = `repeat(${site.w}, 56px)`;
+  gw.style.display = 'block'; gw.style.position = 'relative'; gw.style.padding = '0'; gw.style.backgroundImage = 'none';
+  gw.style.width = (PAD*2 + site.w*PITCH) + 'px'; gw.style.height = (PAD*2 + site.h*PITCH) + 'px';
   let cells = '';
   for (let y = 0; y < site.h; y++) for (let x = 0; x < site.w; x++){
     const b = (site.blocks||[]).find(c => c.x===x && c.y===y);
     const pend = (site.pending||[]).find(c => c.x===x && c.y===y);
     const def = b ? blockDef(b.type) : null;
-    let cls = 's-cell', style = '', inner = '', title = 'Vide';
-    if (def){
-      cls += ' filled'; style = `style="--bc:${def.color || '#3a5c3a'}"`; title = def.name;
-      inner = `<span class="bk-ic">${def.icon}</span><span class="bk-lbl">${esc(def.name)}</span>`;
-    } else if (pend){
-      const pdef = blockDef(pend.type); cls += ' pending'; title = 'En attente : ' + (pdef?.name || '');
-      inner = `<span class="bk-ic dim">${pdef ? pdef.icon : '·'}</span><span class="pg">⏳</span>`;
-    }
+    let cls = 's-cell', bc = '', inner = '', title = 'Vide';
+    if (def){ cls += ' filled'; bc = '--bc:' + (def.color || '#3a5c3a') + ';'; title = def.name;
+      inner = `<span class="bk-ic">${def.icon}</span><span class="bk-lbl">${esc(def.name)}</span>`; }
+    else if (pend){ const pdef = blockDef(pend.type); cls += ' pending'; title = 'En attente : ' + (pdef?.name || '');
+      inner = `<span class="bk-ic dim">${pdef ? pdef.icon : '·'}</span><span class="pg">⏳</span>`; }
     const click = (isMJ && b) ? `onclick="removeBlock('${selSite}',${x},${y})" title="Retirer ${esc(def.name)}"` : `onclick="cellClick('${selSite}',${x},${y})" title="${esc(title)}"`;
-    cells += `<div class="${cls}" ${style} ${click}>${inner}</div>`;
+    cells += `<div class="${cls}" style="position:absolute;left:${PAD+x*PITCH}px;top:${PAD+y*PITCH}px;width:${CS}px;height:${CS}px;${bc}" ${click}>${inner}</div>`;
   }
+  cells += '<div class="s-edges">' + gridEdgesHtmlS({ w: site.w, h: site.h, edges: site.edges || {} }, CS) + '</div>';
+  if (isMJ && _edgeBrush) cells += sEdgeHotspots(site, CS);
   gw.innerHTML = cells;
-  document.getElementById('s-grid-hint').textContent = selBlock ? ('— clique une case pour poser : ' + (blockDef(selBlock)?.name||'')) : (isMJ ? '— clique un bloc du catalogue, puis une case (clic sur un bloc posé = retirer)' : '— choisis un bloc puis une case pour proposer');
+  renderEdgePal();
+  document.getElementById('s-grid-hint').textContent = _edgeBrush ? ('— clique les BORDS des cases pour poser : ' + ({wall:'Mur',door:'Porte',window:'Fenêtre',erase:'Effacer'}[_edgeBrush])) : selBlock ? ('— clique une case pour poser : ' + (blockDef(selBlock)?.name||'')) : (isMJ ? '— clique un bloc du catalogue puis une case · ou un pinceau Mur/Porte/Fenêtre puis les bords (clic sur bloc posé = retirer)' : '— choisis un bloc puis une case pour proposer');
 
   // catalogue
   document.getElementById('s-cat').innerHTML = (window.BUILD_BLOCKS || []).map(b => {
