@@ -68,3 +68,9 @@ body.embed .shdr-btns{display:none;}
 body.sitelock .shdr{ display:none; }
 body.sitelock #s-side{ display:none; }
 body.sitelock #s-layout{ grid-template-columns:1fr; padding:8px; }
+
+/* Récupération (scrap) */
+#s-scrap{margin:4px 0 12px;}
+.scrap-row{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--b);background:#060d06;padding:5px 8px;margin-bottom:4px;font-size:10px;}
+.scrap-row small{color:var(--gd);}
+.scrap-row button{margin-left:4px;}

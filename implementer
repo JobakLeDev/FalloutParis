@@ -1,9 +1,10 @@
 Liste des truc à implémenter :
-- settlements Inc.2 : repos bonifié (cuisine→faim, eau→soif, porte→sécurité, médical→PV/rad) + scrap du junk (loot → matériaux, dépôt joueur dans la Réserve) + pin "point de repos" sur la carte.
+- settlements Inc.2b : repos bonifié (cuisine→faim, eau→soif, porte→sécurité, médical→PV/rad) + pin "point de repos" sur la carte.
 - settlements Inc.3 : établis armes/armures utilisables sur place (réparation RAW + pose de mods).
 - dans l'inventaire joueur : les boutons récents et marquer comme vu sont moches, laisse la place pour le texte quelque part 
 - les munitions doivent apparaitre dans "tout" comme tous les objets et junk
 --- Fait ---
+-[OK] settlements Inc.2a (scrap) : junk lootable (genButin + catalogue MJ, cat 'junk' → window.JUNK) ; au refuge, le joueur allié démonte son junk de l'inventaire → matériaux ajoutés à la Réserve (settlement.js scrapJunk/renderScrap, écrit joueurs/<id>+settlements). mj.js v20, settlement v4.
 -[OK] son alerte butin : fpSfx('shopAlert') à l'apparition du bandeau butin (comme terminal/crochetage), flag _lootAlertShown (firebase.js).
 -[OK] bug son réception message : le son 'messagerie' existait mais n'était joué qu'au clic ; maintenant joué à la RÉCEPTION d'un nouveau message (conv non ouverte, après 1er snapshot) via _convSeeded (firebase.js).
 -[OK] filtre objets récents inventaire : badge 🆕 + filtre "Récents" + bouton "Marquer vus" (onglet TOUT). Set localStorage fp_invSeen_<id> ; tout nom absent = récent (fiche_perso.js rInvAll/markInvSeen/toggleRecent).

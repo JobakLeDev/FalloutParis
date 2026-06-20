@@ -560,9 +560,9 @@ let butinData = { items: [], caps: 0, players: [] };
 const LOOT_CATS = [
   {k:'weapons',l:'Armes'},{k:'armor',l:'Armure'},{k:'ammo',l:'Munitions'},
   {k:'food',l:'Nourriture'},{k:'drinks',l:'Boissons'},{k:'drugs',l:'Chems'},
-  {k:'stuff',l:'Divers'},{k:'caps',l:'Caps'},
+  {k:'stuff',l:'Divers'},{k:'junk',l:'Récup (junk)'},{k:'caps',l:'Caps'},
 ];
-const CAT_ICON = {weapons:'🔫',armor:'🛡',ammo:'▪',food:'🍖',drinks:'🥤',drugs:'💊',stuff:'🔧'};
+const CAT_ICON = {weapons:'🔫',armor:'🛡',ammo:'▪',food:'🍖',drinks:'🥤',drugs:'💊',stuff:'🔧',junk:'🔩'};
 
 function populateLootCats(){
   const el = document.getElementById('loot-cats'); if(!el) return;
@@ -570,7 +570,7 @@ function populateLootCats(){
     `<label class="loot-cat"><input type="checkbox" class="loot-cat-cb" value="${c.k}" checked> ${c.l}</label>`
   ).join('');
 }
-function lootSource(cat){ return ({weapons:DB.weapons,armor:DB.armor,food:DB.food,drinks:DB.drinks,drugs:DB.drugs,stuff:DB.stuff})[cat] || []; }
+function lootSource(cat){ return ({weapons:DB.weapons,armor:DB.armor,food:DB.food,drinks:DB.drinks,drugs:DB.drugs,stuff:DB.stuff,junk:(window.JUNK||[])})[cat] || []; }
 // Tirage pondéré par rareté (commun r1 = plus fréquent, légendaire r5 = rare)
 function weightedPick(list){
   let tot=0; const w=list.map(it=>{ const x=Math.max(1,6-(it.r||3)); tot+=x; return x; });
@@ -607,7 +607,7 @@ function genButin(){
     if(cat==='ammo'){ const a=rollAmmoLoot(); if(a){ addToPool({name:a.ammo,type:'AMMO',cat:'ammo',qty:a.qty}); added++; } continue; }
     const src = lootSource(cat); if(!src.length) continue;
     const it = weightedPick(src);
-    addToPool({name:it.n, type:it.t||cat, cat, qty:1, w:it.w||0, r:it.r||3});
+    addToPool({name:it.n, type:it.t||(cat==='junk'?'JUNK':cat), cat, qty:1, w:it.w||0, r:it.r||3});
     added++;
   }
   if(cats.includes('caps')){
@@ -630,12 +630,13 @@ const CATALOGUE_CATS = [
   {k:'weapons',l:'Armes',type:'WEAPON'},{k:'armor',l:'Armure',type:'ARMOR'},
   {k:'food',l:'Nourriture',type:'FOOD'},{k:'drinks',l:'Boissons',type:'DRINK'},
   {k:'drugs',l:'Chems',type:'DRUGS'},{k:'stuff',l:'Divers',type:'STUFF'},
-  {k:'ammo',l:'Munitions',type:'AMMO'},
+  {k:'junk',l:'Récup',type:'JUNK'},{k:'ammo',l:'Munitions',type:'AMMO'},
 ];
 let _catCat = 'weapons';
 const CAT_AMMO_QTY = 10;   // quantité de munitions ajoutée par clic
 function _catList(cat){
   if(cat==='ammo') return (DB.ammo||[]).map(n=>({n}));
+  if(cat==='junk') return (window.JUNK||[]);
   return ({weapons:DB.weapons,armor:DB.armor,food:DB.food,drinks:DB.drinks,drugs:DB.drugs,stuff:DB.stuff})[cat]||[];
 }
 function _catInfo(it,cat){
@@ -645,11 +646,12 @@ function _catInfo(it,cat){
   if(cat==='food'||cat==='drinks') return `+${it.hp||0}PV${fx(it.eff)?' · '+fx(it.eff):''}`;
   if(cat==='drugs')   return fx(it.eff);
   if(cat==='stuff')   return fx(it.eff);
+  if(cat==='junk'){ const y=it.yield||{}; return ['common','uncommon','rare'].filter(t=>y[t]).map(t=>y[t]+({common:'C',uncommon:'PC',rare:'R'}[t])).join(' '); }
   return '';
 }
 function _catBuildInv(name,cat){
   const def=_catList(cat).find(x=>x.n===name)||{};
-  let type=({weapons:'WEAPON',food:'FOOD',drinks:'DRINK',drugs:'DRUGS',stuff:'STUFF'})[cat]||'STUFF';
+  let type=({weapons:'WEAPON',food:'FOOD',drinks:'DRINK',drugs:'DRUGS',stuff:'STUFF',junk:'JUNK'})[cat]||'STUFF';
   if(cat==='armor') type=def.t||'ARMOR';
   const item={name, type, qty:1, w:def.w||0, equipped:false};
   if(type==='ARMOR'||type==='POWERARMOR') item.zone=def.z||'';

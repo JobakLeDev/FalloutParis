@@ -40,6 +40,7 @@ async function initSettlement(){
   fdb.collection('joueurs').onSnapshot(s => {
     joueursCamp = {}; const cur = fpCampId();
     s.forEach(d => { const v = d.data(); if ((v.campaign || 'data') === cur) joueursCamp[d.id] = v; });
+    if (viewerId && joueursCamp[viewerId]) me = { id: viewerId, ...joueursCamp[viewerId] };   // garde l'inventaire à jour (scrap)
     render();
   });
   fdb.collection('settlements').doc(fpCampId()).onSnapshot(s => {
@@ -129,6 +130,35 @@ function cellClick(id, x, y){
   }
   selBlock = null;
 }
+// ---- scrap : démonter du junk de son inventaire → Réserve du refuge ----
+function _matShort(t){ return ({ common:'communs', uncommon:'peu communs', rare:'rares' })[t] || t; }
+function yieldStr(def){ const y = def.yield || {}; return TIERS.filter(t => y[t]).map(t => y[t] + ' ' + _matShort(t)).join(' · ') || 'rien'; }
+async function scrapJunk(name, all){
+  const site = data.sites[selSite]; if (!site || !me) return;
+  if (!canAccess(site)) { alert('Tu dois être allié de ce refuge.'); return; }
+  const def = (window.JUNK || []).find(j => j.n === name); if (!def) return;
+  const inv = (me.inventory || []).map(x => ({ ...x }));
+  const it = inv.find(x => x.name === name); if (!it || !(it.qty > 0)) return;
+  const n = all ? it.qty : 1;
+  it.qty -= n; if (it.qty <= 0) inv.splice(inv.indexOf(it), 1);
+  site.stock = site.stock || { common:0, uncommon:0, rare:0 };
+  TIERS.forEach(t => site.stock[t] = (site.stock[t] || 0) + (def.yield?.[t] || 0) * n);
+  try { await fdb.collection('joueurs').doc(viewerId).update({ inventory: inv, lastUpdate: Date.now() }); me.inventory = inv; }
+  catch(e){ alert('Erreur : ' + e.message); return; }
+  save();
+}
+function renderScrap(site){
+  const el = document.getElementById('s-scrap'); if (!el) return;
+  if (isMJ || !me || !canAccess(site)) { el.innerHTML = ''; return; }
+  const junkInv = (me.inventory || []).filter(it => it && it.qty > 0 && (window.JUNK || []).some(j => j.n === it.name));
+  if (!junkInv.length){ el.innerHTML = '<div class="s-sub">🔩 Récupération</div><div class="s-note">Aucun objet de récup (junk) dans ton inventaire. Le junk looté se démonte ici pour remplir la Réserve.</div>'; return; }
+  el.innerHTML = '<div class="s-sub">🔩 Récupération — démonte ton junk dans la Réserve</div>' + junkInv.map(it => {
+    const def = (window.JUNK || []).find(j => j.n === it.name);
+    const safe = it.name.replace(/'/g, "\\'");
+    return `<div class="scrap-row"><span>🔩 <b>${esc(it.name)}</b> ×${it.qty} <small>→ ${yieldStr(def)}</small></span>
+      <span><button class="bp-mini" onclick="scrapJunk('${safe}',false)">Démonter</button>${it.qty>1?`<button class="bp-mini" onclick="scrapJunk('${safe}',true)">Tout (×${it.qty})</button>`:''}</span></div>`;
+  }).join('');
+}
 function removeBlock(id, x, y){
   if (!isMJ) return; const s = data.sites[id]; if (!s) return;
   s.blocks = (s.blocks || []).filter(b => !(b.x === x && b.y === y));
@@ -179,6 +209,7 @@ function render(){
     const cr = isMJ ? `<span class="cr"><button onclick="creditStock('${selSite}','${t}',-1)">−</button><button onclick="creditStock('${selSite}','${t}',1)">+</button><button onclick="creditStock('${selSite}','${t}',5)" title="+5">⏫</button></span>` : '';
     return `<div class="s-mat"><span class="mc">${matLabel(t)}</span><b>${site.stock?.[t]||0}</b>${cr}</div>`;
   }).join('');
+  renderScrap(site);
 
   // grille
   const gw = document.getElementById('s-grid');
