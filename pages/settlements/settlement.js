@@ -130,6 +130,42 @@ function cellClick(id, x, y){
   }
   selBlock = null;
 }
+// ---- repos au refuge : long repos bonifié par les blocs présents ----
+function _siteHas(site, type){ return (site.blocks || []).some(b => b.type === type); }
+function renderRest(site){
+  const el = document.getElementById('s-rest'); if (!el) return;
+  if (isMJ || !me || !canAccess(site) || !site.restPoint) { el.innerHTML = ''; return; }
+  const bonus = [];
+  if (_siteHas(site,'cooking')) bonus.push('🍖 faim'); if (_siteHas(site,'water')) bonus.push('🚰 soif');
+  if (_siteHas(site,'medical')) bonus.push('🩺 rad soignée'); if (_siteHas(site,'door')) bonus.push('🚪 repos sûr');
+  el.innerHTML = '<div class="s-sub">😴 Repos</div>'
+    + '<button class="sbtn add" style="max-width:340px" onclick="reposRefuge()">😴 Se reposer ici — PV au max · Bien reposé</button>'
+    + (bonus.length ? `<div class="s-note">Bonus de ce refuge : ${bonus.join(' · ')}</div>` : '<div class="s-note">Ajoute cuisine / eau / poste médical pour bonifier le repos.</div>');
+}
+async function reposRefuge(){
+  const site = data.sites[selSite]; if (!site || !me) return;
+  if (!canAccess(site)) { alert('Réservé aux alliés du refuge.'); return; }
+  if (!site.restPoint) { alert('Ce refuge n\'a pas de couchage.'); return; }
+  const gains = ['🛏 Bien reposé (PV au max)'];
+  if (_siteHas(site,'cooking')) gains.push('🍖 faim restaurée');
+  if (_siteHas(site,'water'))   gains.push('🚰 soif restaurée');
+  if (_siteHas(site,'medical')) gains.push('🩺 radiations soignées');
+  if (_siteHas(site,'door'))    gains.push('🚪 repos sécurisé');
+  if (!confirm('Se reposer ici ?\n\n' + gains.join('\n'))) return;
+  let nowMin = 0;
+  try { const ts = await fdb.collection('temps').doc(fpCampId()).get(); nowMin = (typeof partyMinutesFor === 'function') ? partyMinutesFor(ts.exists ? ts.data() : {}, me.id) : 0; } catch(e){}
+  const sp = me.special || {}, niv = me.niveau || 1;
+  const sv = { ...(me.survie || {}), sleep: nowMin, wellRested: true };   // lit confortable → Bien reposé
+  if (_siteHas(site,'cooking')) sv.eat = nowMin;
+  if (_siteHas(site,'water'))   sv.drink = nowMin;
+  const hpMax = (sp.L || 5) + (sp.E || 5) + Math.max(0, niv - 1) + 2;       // base RAW + 2 (bien reposé)
+  const upd = { survie: sv, hp: hpMax, lastUpdate: Date.now() };
+  if (_siteHas(site,'medical')) upd.rad = 0;
+  try { await fdb.collection('joueurs').doc(viewerId).update(upd); me.survie = sv; me.hp = hpMax; if (upd.rad != null) me.rad = 0; }
+  catch(e){ alert('Erreur : ' + e.message); return; }
+  alert('😴 Repos terminé.\n' + gains.join('\n'));
+}
+
 // ---- scrap : démonter du junk de son inventaire → Réserve du refuge ----
 function _matShort(t){ return ({ common:'communs', uncommon:'peu communs', rare:'rares' })[t] || t; }
 function yieldStr(def){ const y = def.yield || {}; return TIERS.filter(t => y[t]).map(t => y[t] + ' ' + _matShort(t)).join(' · ') || 'rien'; }
@@ -209,6 +245,7 @@ function render(){
     const cr = isMJ ? `<span class="cr"><button onclick="creditStock('${selSite}','${t}',-1)">−</button><button onclick="creditStock('${selSite}','${t}',1)">+</button><button onclick="creditStock('${selSite}','${t}',5)" title="+5">⏫</button></span>` : '';
     return `<div class="s-mat"><span class="mc">${matLabel(t)}</span><b>${site.stock?.[t]||0}</b>${cr}</div>`;
   }).join('');
+  renderRest(site);
   renderScrap(site);
 
   // grille

@@ -282,6 +282,7 @@ function buildMap() {
       const d = s.exists ? s.data() : {};
       settlementsData = { sites: (d.sites && typeof d.sites === 'object') ? d.sites : {} };
       if (currentTab === 'lieux') renderLieux();
+      if (currentTab === 'paris' && typeof renderPOIs === 'function') renderPOIs();   // rafraîchit les pins 🛏
     }, e => console.warn('settlements:', e && e.code));
     // Groupes (temps/data) → fusion des jetons des membres en une seule icône de groupe
     fdb.collection('temps').doc(fpCampId()).onSnapshot(s => {
@@ -920,6 +921,11 @@ function poiRevealedToViewer(name) {
   return false;
 }
 function settlementVisible(s) { return isMJ || poiRevealedToViewer(s.poi); }
+// Refuge "point de repos" visible lié à ce POI (pour le pin 🛏 sur la carte)
+function restRefugeAt(poiName) {
+  if (!poiName) return null;
+  return Object.values(settlementsData.sites || {}).find(s => s.poi === poiName && s.restPoint && settlementVisible(s)) || null;
+}
 
 function renderLieux() {
   const el = document.getElementById('lieux-list'); if (!el) return;
@@ -1074,7 +1080,7 @@ function renderPOIs() {
       icon: L.divIcon({ className: 'poi-pin', html: dotHtml,
         iconSize: [16, 16], iconAnchor: [8, 8] }),
     }).addTo(poiLayer);
-    m.bindTooltip(p.name + (dim ? ' 🔒' : ''), { className: 'map-tip', direction: 'top', offset: [0, -8] });
+    m.bindTooltip(p.name + (restRefugeAt(p.name) ? ' 🛏' : '') + (dim ? ' 🔒' : ''), { className: 'map-tip', direction: 'top', offset: [0, -8] });
     m.bindPopup(poiPopup(p, t));
     m.on('popupopen', () => { openItem = { kind: 'poi', id: p.id }; });
     poiMarkers[p.id] = m;
