@@ -1,18 +1,13 @@
 // Point d'entrée du bot Fallout Paris
 require('dotenv').config();
-const { Client, GatewayIntentBits, Partials, Events } = require('discord.js');
+const { Client, GatewayIntentBits, Events } = require('discord.js');
 const { getDb } = require('./firebase');
 const { execute } = require('./commands');
 const { startFicheWatcher } = require('./watchers');
 
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,   // privilégié : nécessaire pour lire le contenu (archive)
-  ],
-  partials: [Partials.Channel],
-});
+// Slash commands + envoi de messages → seul l'intent Guilds est nécessaire
+// (l'archive lit le journal Firestore, plus les messages Discord).
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 client.once(Events.ClientReady, (c) => {
   console.log(`✅ Connecté en tant que ${c.user.tag}`);

@@ -3,7 +3,16 @@ const { SlashCommandBuilder, EmbedBuilder, ChannelType } = require('discord.js')
 const { getDb } = require('./firebase');
 const { ficheEmbed } = require('./fiche');
 
-// ---- Définitions (pour l'enregistrement et le runtime) ----
+// Époque de campagne (CLAUDE.md) : 14 juillet 2189 00:00. time = minutes écoulées.
+const CAMP_EPOCH = Date.UTC(2189, 6, 14, 0, 0, 0);
+function igDate(min) {
+  const d = new Date(CAMP_EPOCH + (min || 0) * 60000);
+  const p = n => String(n).padStart(2, '0');
+  return `${p(d.getUTCDate())}/${p(d.getUTCMonth() + 1)}/${d.getUTCFullYear()} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}`;
+}
+const TYPE_EMO = { pnj: '👤', lieu: '📍', quete: '📜', info: 'ℹ️' };
+
+// ---- Définitions ----
 const definitions = [
   new SlashCommandBuilder()
     .setName('fiche')
@@ -12,8 +21,9 @@ const definitions = [
     .toJSON(),
   new SlashCommandBuilder()
     .setName('archive-session')
-    .setDescription("Archive les messages de la session en cours depuis la dernière archive")
-    .addStringOption(o => o.setName('nom').setDescription("Nom de la session (optionnel)").setRequired(false))
+    .setDescription("Archive dans Discord les nouvelles entrées du journal de l'app (depuis la dernière archive)")
+    .addStringOption(o => o.setName('nom').setDescription('Nom de la session (optionnel)').setRequired(false))
+    .addStringOption(o => o.setName('campagne').setDescription('Campagne (défaut : Campagne 1)').setRequired(false).setAutocomplete(true))
     .toJSON(),
 ];
 
@@ -23,7 +33,6 @@ async function handleFiche(interaction) {
   const key = interaction.options.getString('personnage');
   let doc = await db.collection('joueurs').doc(key).get();
   if (!doc.exists) {
-    // Recherche par nom (insensible à la casse)
     const all = await db.collection('joueurs').get();
     const match = all.docs.find(d => (d.data().nom || '').toLowerCase() === key.toLowerCase())
               || all.docs.find(d => (d.data().nom || '').toLowerCase().includes(key.toLowerCase()));
@@ -33,7 +42,6 @@ async function handleFiche(interaction) {
   await interaction.reply({ embeds: [ficheEmbed(doc.id, doc.data())] });
 }
 
-// Autocomplétion du nom de personnage
 async function handleFicheAutocomplete(interaction) {
   try {
     const db = getDb();
@@ -48,65 +56,68 @@ async function handleFicheAutocomplete(interaction) {
   } catch (e) { try { await interaction.respond([]); } catch (_) {} }
 }
 
-// ---- /archive-session ----
+async function handleCampAutocomplete(interaction) {
+  try {
+    const db = getDb();
+    const focused = (interaction.options.getFocused() || '').toLowerCase();
+    const snap = await db.collection('campaigns').get();
+    const list = [{ id: 'data', name: 'Campagne 1' }];
+    snap.docs.forEach(d => { if (d.id !== 'data') list.push({ id: d.id, name: (d.data().name || d.id) }); });
+    await interaction.respond(
+      list.filter(c => !focused || c.name.toLowerCase().includes(focused)).slice(0, 25)
+          .map(c => ({ name: c.name, value: c.id }))
+    );
+  } catch (e) { try { await interaction.respond([]); } catch (_) {} }
+}
+
+// ---- /archive-session : archive les NOUVELLES entrées du journal de la campagne ----
 async function handleArchive(interaction) {
   const db = getDb();
   const archivesId = process.env.ARCHIVES_CHANNEL_ID;
-  const sessionId = process.env.SESSION_CHANNEL_ID || interaction.channelId;
   if (!archivesId) { await interaction.reply({ content: 'ARCHIVES_CHANNEL_ID non configuré.', ephemeral: true }); return; }
-
   await interaction.deferReply({ ephemeral: true });
-  const nom = interaction.options.getString('nom') || ('Session ' + new Date().toLocaleDateString('fr-FR'));
 
-  const sessionChannel = await interaction.client.channels.fetch(sessionId);
+  const camp = interaction.options.getString('campagne') || 'data';
+  const nom = interaction.options.getString('nom') || ('Session ' + new Date().toLocaleDateString('fr-FR'));
   const archivesChannel = await interaction.client.channels.fetch(archivesId);
 
-  // Dernier point d'archive pour ce salon
+  // Entrées du journal
+  const jSnap = await db.collection('journal').doc(camp).get();
+  const entries = (jSnap.exists && Array.isArray(jSnap.data().entries)) ? jSnap.data().entries : [];
+
+  // Repère d'archivage (ids déjà archivés) par campagne
   const stateRef = db.collection('discordBot').doc('state');
   const stateSnap = await stateRef.get();
-  const lastArchive = (stateSnap.exists && stateSnap.data().lastArchive) || {};
-  const afterId = lastArchive[sessionId] || null;
+  const st = stateSnap.exists ? stateSnap.data() : {};
+  const archivedMap = st.journalArchived || {};
+  const archived = new Set(archivedMap[camp] || []);
 
-  // Récupération paginée des messages postérieurs à afterId (ordre chronologique)
-  const collected = [];
-  let after = afterId;
-  for (let i = 0; i < 20; i++) { // garde-fou : 20 × 100 = 2000 messages max
-    const batch = await sessionChannel.messages.fetch({ limit: 100, after: after || '0' });
-    if (!batch.size) break;
-    const arr = [...batch.values()].sort((a, b) => a.createdTimestamp - b.createdTimestamp);
-    collected.push(...arr);
-    after = arr[arr.length - 1].id;
-    if (batch.size < 100) break;
-  }
-  const msgs = collected.filter(m => !m.author.bot);
-  if (!msgs.length) { await interaction.editReply('Aucun nouveau message à archiver depuis la dernière archive.'); return; }
+  const fresh = entries.filter(e => e && e.id && !archived.has(e.id));
+  if (!fresh.length) { await interaction.editReply("Aucune nouvelle entrée de journal à archiver pour cette campagne."); return; }
+  fresh.sort((a, b) => (a.time || 0) - (b.time || 0));
 
-  // Transcript + participants
-  const participants = new Set();
-  const lines = msgs.map(m => {
-    participants.add(m.member?.displayName || m.author.username);
-    const t = new Date(m.createdTimestamp).toLocaleString('fr-FR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' });
-    let content = m.content || '';
-    if (m.attachments.size) content += (content ? ' ' : '') + [...m.attachments.values()].map(a => a.url).join(' ');
-    return `[${t}] ${m.member?.displayName || m.author.username}: ${content}`;
+  const lines = fresh.map(e => {
+    const emo = TYPE_EMO[e.type] || '•';
+    return `${emo} **${igDate(e.time || 0)}** — ${e.title || ''}${e.text ? `\n    ${e.text}` : ''}`;
   });
 
-  const first = msgs[0], last = msgs[msgs.length - 1];
+  // Comptage par type
+  const counts = fresh.reduce((o, e) => { o[e.type] = (o[e.type] || 0) + 1; return o; }, {});
+  const countStr = Object.entries(counts).map(([t, n]) => `${TYPE_EMO[t] || '•'} ${n}`).join('  ') || '—';
+
   const header = new EmbedBuilder()
     .setColor(0xe8a820)
     .setTitle('🗂 ' + nom)
-    .setDescription(`Archive de **#${sessionChannel.name}**`)
+    .setDescription(`Journal de campagne — **${camp === 'data' ? 'Campagne 1' : camp}**`)
     .addFields(
-      { name: 'Messages', value: '' + msgs.length, inline: true },
-      { name: 'Participants', value: '' + participants.size, inline: true },
-      { name: 'Période', value: `${new Date(first.createdTimestamp).toLocaleString('fr-FR')} → ${new Date(last.createdTimestamp).toLocaleString('fr-FR')}` },
-      { name: 'Présents', value: [...participants].join(', ').slice(0, 1024) },
+      { name: 'Entrées', value: '' + fresh.length, inline: true },
+      { name: 'Types', value: countStr, inline: true },
+      { name: 'Période (in-game)', value: `${igDate(fresh[0].time || 0)} → ${igDate(fresh[fresh.length - 1].time || 0)}` },
     )
     .setTimestamp(new Date());
 
-  // Thread dans #archives-sessions + transcript en morceaux
-  let target = archivesChannel;
-  let thread = null;
+  // En-tête + thread transcript dans #archives-sessions
+  let target = archivesChannel, thread = null;
   if (archivesChannel.type === ChannelType.GuildText) {
     const head = await archivesChannel.send({ embeds: [header] });
     thread = await head.startThread({ name: nom.slice(0, 90), autoArchiveDuration: 10080 }).catch(() => null);
@@ -114,23 +125,24 @@ async function handleArchive(interaction) {
   } else {
     await archivesChannel.send({ embeds: [header] });
   }
-  // Découpe le transcript en blocs < 1900 caractères
   let buf = '';
   for (const ln of lines) {
-    if ((buf + ln + '\n').length > 1900) { await target.send('```\n' + buf + '```'); buf = ''; }
+    if ((buf + ln + '\n').length > 1900) { await target.send(buf); buf = ''; }
     buf += ln + '\n';
   }
-  if (buf) await target.send('```\n' + buf + '```');
+  if (buf) await target.send(buf);
 
-  // Mémorise le nouveau point d'archive
-  await stateRef.set({ lastArchive: { ...lastArchive, [sessionId]: last.id } }, { merge: true });
+  // Mémorise les ids archivés
+  const newIds = [...(archivedMap[camp] || []), ...fresh.map(e => e.id)];
+  await stateRef.set({ journalArchived: { ...archivedMap, [camp]: newIds } }, { merge: true });
 
-  await interaction.editReply(`✅ ${msgs.length} message(s) archivé(s) dans <#${archivesId}>${thread ? ' (thread « ' + nom + ' »)' : ''}.`);
+  await interaction.editReply(`✅ ${fresh.length} entrée(s) de journal archivée(s) dans <#${archivesId}>${thread ? ' (thread « ' + nom + ' »)' : ''}.`);
 }
 
 async function execute(interaction) {
   if (interaction.isAutocomplete()) {
     if (interaction.commandName === 'fiche') return handleFicheAutocomplete(interaction);
+    if (interaction.commandName === 'archive-session') return handleCampAutocomplete(interaction);
     return;
   }
   if (!interaction.isChatInputCommand()) return;

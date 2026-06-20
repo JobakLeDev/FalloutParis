@@ -8,7 +8,7 @@ Bot Discord pour la campagne *Fallout 2d20 Paris*. Lit la base **Firestore** de 
 |---|---|
 | `/fiche personnage:<nom>` | Embed synthétique : faction, niveau/XP, PV, rad, caps, S.P.E.C.I.A.L, compétences taguées, armes/armure équipées, image (si `image`/`portrait`/`img`/`avatar` présent dans la fiche). Autocomplétion par nom. |
 | **#fiches-live** (auto) | À chaque modification d'une fiche, poste un message synthétique (seulement les champs qui changent — pas de spam). |
-| `/archive-session [nom]` | Récupère les messages de **#session-en-cours** depuis la dernière archive, crée un en-tête (période, participants, total) + un **thread** transcript dans **#archives-sessions**, et mémorise le point d'archive (dans Firestore `discordBot/state`). |
+| `/archive-session [nom] [campagne]` | Archive dans **#archives-sessions** les **nouvelles entrées du journal de l'app** (Firestore `journal/<campagne>`) depuis la dernière archive : en-tête (nb, types, période in-game) + **thread** listant les entrées. Mémorise les ids archivés dans `discordBot/state`. Idéal pour des parties en vocal : on note dans le journal de la webapp, le bot en fait l'archive Discord par session. |
 | Images | Embeds d'images/maps : upload Discord classique ; `/fiche` affiche le portrait stocké en base. |
 
 ## Prérequis
@@ -16,8 +16,8 @@ Bot Discord pour la campagne *Fallout 2d20 Paris*. Lit la base **Firestore** de 
 - **Node.js ≥ 18**
 - Une **application Discord** (bot) : https://discord.com/developers/applications
   - Onglet **Bot** → copier le **Token**.
-  - **Privileged Gateway Intents** → activer **MESSAGE CONTENT INTENT** (requis pour lire le texte lors de l'archivage).
-  - Inviter le bot avec les scopes `bot` + `applications.commands` et les permissions : *Lire les messages / historique*, *Envoyer des messages*, *Créer des fils publics*.
+  - Aucun intent privilégié requis (l'archive lit le journal Firestore, pas les messages Discord).
+  - Inviter le bot avec les scopes `bot` + `applications.commands` et les permissions : *Envoyer des messages*, *Créer des fils publics*.
 - Une **clé de service Firebase** (Admin SDK) : Console Firebase → Paramètres du projet → Comptes de service → *Générer une nouvelle clé privée* → enregistrer en `service-account.json` dans ce dossier.
 
 ## Installation
