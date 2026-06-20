@@ -13,6 +13,7 @@ const lockSite = _p.get('site') || null;   // ouvert depuis la carte sur UN refu
 
 let fdb, me = null;                 // me = fiche du joueur (?id)
 let cartePois = [];                 // noms des POI de la carte (lien settlement ↔ lieu)
+let carteData = { pois: [], geoReveal: {} };   // POI + révélations (présence du joueur sur le lieu)
 let data = { sites: {} };           // /settlements/<camp>
 let joueursCamp = {};               // joueurs de la campagne (pour alliés)
 let tempsData = null;               // /temps/<camp> (pour le tick éco/colons)
@@ -78,9 +79,14 @@ async function initSettlement(){
   }
   if (lockSite){ selSite = lockSite; document.body.classList.add('sitelock'); }
   updateModeUI();
-  // POI de la carte (lien settlement ↔ lieu) — pour le sélecteur de création MJ
-  try { const cs = await fdb.collection('carte').doc(fpCampId()).get(); cartePois = (cs.exists && Array.isArray(cs.data().pois)) ? cs.data().pois.map(p => p.name).filter(Boolean) : []; } catch(e){}
-  populatePoiSel();
+  // Carte (live) : POI (sélecteur MJ) + révélations (présence du joueur sur le lieu)
+  fdb.collection('carte').doc(fpCampId()).onSnapshot(cs => {
+    const d = cs.exists ? cs.data() : {};
+    carteData = { pois: Array.isArray(d.pois) ? d.pois : [], geoReveal: (d.geoReveal && typeof d.geoReveal === 'object') ? d.geoReveal : {} };
+    cartePois = carteData.pois.map(p => p.name).filter(Boolean);
+    populatePoiSel();
+    render();
+  });
   // Joueurs de la campagne (pour la gestion des alliés MJ)
   fdb.collection('joueurs').onSnapshot(s => {
     joueursCamp = {}; const cur = fpCampId();
@@ -116,6 +122,15 @@ function canAccess(site){
   if (!me) return false;
   if (site.faction) return me.faction === site.faction;
   return Array.isArray(site.allies) && site.allies.includes(me.id);
+}
+// Le joueur doit être PHYSIQUEMENT sur le lieu (POI révélé) pour agir dans le refuge
+function _onSite(site){
+  if (isMJ) return true;
+  if (!me || !site) return false;
+  if (!site.poi) return false;   // refuge non lié à un lieu → pas de présence joueur possible
+  const poi = (carteData.pois || []).find(p => p.name === site.poi);
+  if (poi && Array.isArray(poi.revealedFor) && poi.revealedFor.includes(me.id)) return true;
+  return (carteData.geoReveal?.[site.poi] || []).includes(me.id);
 }
 function skillOk(block){
   if (!block.skills || !block.skills.length) return true;
@@ -172,6 +187,7 @@ function cellClick(id, x, y){
     save();
   } else {
     if(!canAccess(s)){ alert('Tu n\'es pas allié de ce refuge — tu ne peux pas y construire.'); return; }
+    if(!_onSite(s)){ alert('Tu dois être sur place (' + (s.poi || 'le lieu') + ') pour proposer une construction.'); return; }
     // Le joueur propose → validation MJ
     s.pending = s.pending || [];
     s.pending.push({ pid: me.id, type: selBlock, x, y, ts: Date.now() });
@@ -192,6 +208,7 @@ function restBody(site){
 async function reposRefuge(){
   const site = data.sites[selSite]; if (!site || !me) return;
   if (!canAccess(site)) { alert('Réservé aux alliés du refuge.'); return; }
+  if (!_onSite(site)) { alert('Tu dois être sur place (' + (site.poi || 'le lieu') + ') pour te reposer ici.'); return; }
   if (!site.restPoint) { alert('Ce refuge n\'a pas de couchage.'); return; }
   const gains = ['🛏 Bien reposé (PV au max)'];
   if (_siteHas(site,'cooking')) gains.push('🍖 faim restaurée');
@@ -219,6 +236,7 @@ function yieldStr(def){ const y = def.yield || {}; return TIERS.filter(t => y[t]
 async function scrapJunk(name, all){
   const site = data.sites[selSite]; if (!site || !me) return;
   if (!canAccess(site)) { alert('Tu dois être allié de ce refuge.'); return; }
+  if (!_onSite(site)) { alert('Tu dois être sur place pour démonter ton matériel ici.'); return; }
   const def = (window.JUNK || []).find(j => j.n === name); if (!def) return;
   const inv = (me.inventory || []).map(x => ({ ...x }));
   const it = inv.find(x => x.name === name); if (!it || !(it.qty > 0)) return;
@@ -324,6 +342,7 @@ function renderActions(site){
   const box = document.getElementById('s-actions'), bar = document.getElementById('s-actbar');
   if(isMJ || !me || !canAccess(site)){ if(box){ box.innerHTML=''; box.style.display='none'; } if(bar) bar.style.display='none'; return; }   // le MJ construit via le catalogue
   if(bar) bar.style.display=''; box.style.display='';
+  if(!_onSite(site)){ box.innerHTML = '<div class="s-note">📍 Tu n\'es pas sur place. Rends-toi sur <b>' + esc(site.poi || 'le lieu') + '</b> pour utiliser ce refuge.</div>'; return; }
   const cards = [
     _card('rest','😴 Repos', restBody(site)),
     _card('water','💧 Eau', waterBody(site)),
@@ -357,6 +376,7 @@ function waterBody(site){
 async function fillContainers(){
   const site = data.sites[selSite]; if(!site || !me) return;
   if(!canAccess(site)){ alert('Réservé aux alliés du refuge.'); return; }
+  if(!_onSite(site)){ alert('Tu dois être sur place pour remplir tes contenants.'); return; }
   if(!_siteHas(site,'water')){ alert('Pas de point d\'eau ici.'); return; }
   const inv = (me.inventory || []).map(x => ({ ...x }));
   let n = 0;
@@ -372,7 +392,12 @@ function _perkComplexity(perk){ const m = (''+(perk||'')).match(/(\d+)/); const 
 function _modMats(mod){ return (window.BUILD_MATS && window.BUILD_MATS[_perkComplexity(mod.perk)]) || { common:0, uncommon:0, rare:0 }; }
 function _benchSkill(kind){ const s = me?.skills || {}; return kind === 'weapon' ? Math.max(s.repair||0, s.science||0) : (s.repair||0); }
 function _matCostShort(need){ const ab = { common:'C', uncommon:'PC', rare:'R' }; return TIERS.filter(t => need[t]).map(t => need[t]+ab[t]).join('·') || 'gratuit'; }
-// Drill-down d'un établi : choisir l'objet (pièce) → puis ses mods
+// Mods déjà débloqués (bricolés une fois) sur CETTE pièce → ré-équipables gratuitement
+function _unlockedList(it, slot){ return (it.unlocked && it.unlocked[slot]) || []; }
+let _benchDone = null;   // clé du dernier bouton validé (retour visuel : enfoncé + coche)
+function _benchFlash(key){ _benchDone = key; render(); setTimeout(() => { if(_benchDone === key){ _benchDone = null; render(); } }, 1600); }
+
+// Drill-down d'un établi : choisir l'objet (pièce) → puis ses mods (boutons Bricoler / Équiper)
 function benchBody(site, kind){
   const MODS = kind === 'weapon' ? window.WEAPON_MODS : window.ARMOR_MODS;
   const types = kind === 'weapon' ? ['WEAPON'] : ['ARMOR','CLOTHING'];
@@ -385,38 +410,81 @@ function benchBody(site, kind){
   if(sel != null && items.some(x => x.i === sel)){
     const it = me.inventory[sel];
     h += '<div class="bench-mods">' + (MODS.slots).map(slot => {
+      const list = MODS[slot] || []; if(!list.length) return '';
       const cur = (it.mods && it.mods[slot]) || '';
-      const opts = ['<option value="">— ' + esc(MODS.slotLabels?.[slot] || slot) + ' : aucun —</option>'].concat(
-        (MODS[slot] || []).map(m => { const c = _perkComplexity(m.perk); const ok = _benchSkill(kind) >= c;
-          return '<option value="' + m.id + '"' + (cur===m.id?' selected':'') + (ok?'':' disabled') + '>' + esc(m.name) + ' · ' + _matCostShort(_modMats(m)) + (ok?'':' 🔒 rang ' + c) + '</option>'; })
-      ).join('');
-      return '<select class="s-inp bench-sel" onchange="installMod(' + sel + ',\'' + slot + '\',this.value,\'' + kind + '\')">' + opts + '</select>';
+      const label = esc(MODS.slotLabels?.[slot] || slot);
+      let row = `<div class="bench-slot"><div class="bench-slot-t">${label}</div><div class="bench-opts">`;
+      // Option « Aucun » (retrait gratuit)
+      const noneDone = _benchDone === (sel+':'+slot+':');
+      row += `<button class="bench-opt${!cur?' equipped':''}${noneDone?' just-done':''}" onclick="benchEquip(${sel},'${slot}','','${kind}')">`
+        + `<span class="bo-n">Aucun</span>${(!cur||noneDone)?'<span class="bo-ok">✓</span>':''}</button>`;
+      list.forEach(m => {
+        const c = _perkComplexity(m.perk), need = _modMats(m);
+        const skOk = _benchSkill(kind) >= c, stOk = stockEnough(site, need);
+        const unlocked = _unlockedList(it, slot).includes(m.id);
+        const equipped = cur === m.id;
+        const done = _benchDone === (sel+':'+slot+':'+m.id);
+        let cls = 'bench-opt', act = '', tag, note = '';
+        if(equipped){ cls += ' equipped'; tag = 'Équipé'; act = `onclick="benchEquip(${sel},'${slot}','${m.id}','${kind}')"`; }
+        else if(unlocked){ cls += ' owned'; tag = '↺ Équiper'; act = `onclick="benchEquip(${sel},'${slot}','${m.id}','${kind}')"`; }
+        else if(!skOk){ cls += ' locked'; tag = '🔧 ' + _matCostShort(need); note = ' 🔒 rang ' + c; }
+        else if(!stOk){ cls += ' nostock'; tag = '🔧 ' + _matCostShort(need); note = ' ⚠ stock'; }
+        else { tag = '🔧 ' + _matCostShort(need); act = `onclick="benchCraft(${sel},'${slot}','${m.id}','${kind}')"`; }
+        if(done) cls += ' just-done';
+        const ok = (equipped || done) ? '<span class="bo-ok">✓</span>' : '';
+        row += `<button class="${cls}" ${act} title="${esc(m.name)} · ${esc(_matCostShort(need))}">`
+          + `<span class="bo-n">${esc(m.name)}</span><span class="bo-a">${tag}${note}</span>${ok}</button>`;
+      });
+      row += '</div></div>';
+      return row;
     }).join('') + '</div>';
   } else h += '<div class="s-note">Choisis un objet à modifier.</div>';
   return h;
 }
 function pickBenchItem(kind, i){ _benchPick[kind] = (_benchPick[kind] === i) ? null : i; render(); }
-async function installMod(idx, slot, modId, kind){
+
+// Équiper un mod DÉJÀ débloqué (ou « Aucun ») — gratuit
+async function benchEquip(idx, slot, modId, kind){
   const site = data.sites[selSite]; if(!site || !me) return;
-  if(!canAccess(site)){ alert('Réservé aux alliés du refuge.'); render(); return; }
+  if(!canAccess(site)){ alert('Réservé aux alliés du refuge.'); return; }
+  if(!_onSite(site)){ alert('Tu dois être sur place pour utiliser cet établi.'); return; }
   const benchType = kind === 'weapon' ? 'wbench_weapon' : 'wbench_armor';
   if(!_siteHas(site, benchType)){ alert('Établi absent.'); return; }
-  const inv = (me.inventory || []).map(x => ({ ...x, mods: x.mods ? { ...x.mods } : undefined }));
+  const inv = (me.inventory || []).map(x => ({ ...x, mods: x.mods ? { ...x.mods } : undefined, unlocked: x.unlocked ? { ...x.unlocked } : undefined }));
   const it = inv[idx]; if(!it) return;
-  if(!modId){ if(it.mods) it.mods[slot] = null; }   // retrait (gratuit)
+  if(!modId){ if(it.mods) it.mods[slot] = null; }
   else {
-    const MODS = kind === 'weapon' ? window.WEAPON_MODS : window.ARMOR_MODS;
-    const mod = (MODS[slot] || []).find(m => m.id === modId); if(!mod) return;
-    if(_benchSkill(kind) < _perkComplexity(mod.perk)){ alert('Compétence insuffisante pour ce mod.'); render(); return; }
-    const need = _modMats(mod);
-    if(!stockEnough(site, need)){ alert('Stock de matériaux insuffisant (' + costStr(need) + ').'); render(); return; }
-    site.stock = site.stock || { common:0, uncommon:0, rare:0 };
-    TIERS.forEach(t => site.stock[t] = Math.max(0, (site.stock[t]||0) - (need[t]||0)));
+    if(!_unlockedList(it, slot).includes(modId)){ alert('Ce mod n\'a pas encore été bricolé sur cette pièce.'); return; }
     it.mods = it.mods || {}; it.mods[slot] = modId;
   }
   try { await fdb.collection('joueurs').doc(viewerId).update({ inventory: inv, lastUpdate: Date.now() }); me.inventory = inv; }
   catch(e){ alert('Erreur : ' + e.message); return; }
+  _benchFlash(idx + ':' + slot + ':' + (modId || ''));
+}
+
+// Bricoler un mod NEUF : consomme la Réserve, le débloque sur la pièce, et l'équipe
+async function benchCraft(idx, slot, modId, kind){
+  const site = data.sites[selSite]; if(!site || !me) return;
+  if(!canAccess(site)){ alert('Réservé aux alliés du refuge.'); return; }
+  if(!_onSite(site)){ alert('Tu dois être sur place pour utiliser cet établi.'); return; }
+  const benchType = kind === 'weapon' ? 'wbench_weapon' : 'wbench_armor';
+  if(!_siteHas(site, benchType)){ alert('Établi absent.'); return; }
+  const MODS = kind === 'weapon' ? window.WEAPON_MODS : window.ARMOR_MODS;
+  const mod = (MODS[slot] || []).find(m => m.id === modId); if(!mod) return;
+  if(_benchSkill(kind) < _perkComplexity(mod.perk)){ alert('Compétence insuffisante pour ce mod.'); return; }
+  const need = _modMats(mod);
+  if(!stockEnough(site, need)){ alert('Stock de matériaux insuffisant (' + costStr(need) + ').'); return; }
+  const inv = (me.inventory || []).map(x => ({ ...x, mods: x.mods ? { ...x.mods } : undefined, unlocked: x.unlocked ? { ...x.unlocked } : undefined }));
+  const it = inv[idx]; if(!it) return;
+  site.stock = site.stock || { common:0, uncommon:0, rare:0 };
+  TIERS.forEach(t => site.stock[t] = Math.max(0, (site.stock[t]||0) - (need[t]||0)));
+  it.unlocked = it.unlocked || {}; it.unlocked[slot] = it.unlocked[slot] || [];
+  if(!it.unlocked[slot].includes(modId)) it.unlocked[slot].push(modId);
+  it.mods = it.mods || {}; it.mods[slot] = modId;   // bricoler équipe directement (comme FO4)
+  try { await fdb.collection('joueurs').doc(viewerId).update({ inventory: inv, lastUpdate: Date.now() }); me.inventory = inv; }
+  catch(e){ alert('Erreur : ' + e.message); return; }
   save();   // sauve la Réserve (matériaux déduits)
+  _benchFlash(idx + ':' + slot + ':' + modId);
 }
 
 function removeBlock(id, x, y){

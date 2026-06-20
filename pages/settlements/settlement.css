@@ -142,3 +142,23 @@ body.sitelock #s-layout{ grid-template-columns:1fr; padding:8px; }
 .bench-pick:hover{border-color:var(--g);}
 .bench-pick.on{background:var(--am);color:#1a1200;border-color:var(--am);}
 .bench-mods .bench-sel{width:100%;margin-bottom:4px;}
+/* Établi : mods en boutons Bricoler / Équiper par emplacement */
+.bench-slot{margin-bottom:9px;}
+.bench-slot-t{font-size:9px;color:var(--am);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+.bench-opts{display:flex;flex-wrap:wrap;gap:5px;}
+.bench-opt{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:88px;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;padding:5px 8px 4px;cursor:pointer;text-align:center;transition:transform .06s ease,box-shadow .12s ease,background .12s ease;}
+.bench-opt:hover{border-color:var(--g);}
+.bench-opt .bo-n{font-size:10px;color:var(--tb);line-height:1.15;}
+.bench-opt .bo-a{font-size:8px;color:var(--td);letter-spacing:.5px;}
+.bench-opt .bo-ok{display:block;font-size:11px;font-weight:bold;color:var(--g);line-height:1;margin-top:1px;}
+.bench-opt.owned{border-color:var(--gd);}
+.bench-opt.owned .bo-a{color:var(--g);}
+/* équipé / validé = bouton enfoncé + coche dessous */
+.bench-opt.equipped,.bench-opt.just-done{background:var(--gk);border-color:var(--g);box-shadow:inset 0 2px 5px rgba(0,0,0,.55);transform:translateY(2px);}
+.bench-opt.equipped .bo-a{color:var(--g);}
+.bench-opt.just-done{background:var(--g);}
+.bench-opt.just-done .bo-n,.bench-opt.just-done .bo-a,.bench-opt.just-done .bo-ok{color:#0a140a;}
+.bench-opt.just-done{animation:benchPulse .55s ease;}
+@keyframes benchPulse{0%{box-shadow:0 0 0 0 rgba(74,200,74,.8);}100%{box-shadow:inset 0 2px 5px rgba(0,0,0,.55),0 0 0 7px rgba(74,200,74,0);}}
+.bench-opt.locked,.bench-opt.nostock{opacity:.5;cursor:not-allowed;}
+.bench-opt.locked .bo-a,.bench-opt.nostock .bo-a{color:var(--rd);}
