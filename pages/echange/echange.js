@@ -70,6 +70,10 @@ async function fermerPool(){
       const inv = Array.isArray(cd.inventory) ? cd.inventory : [];
       const ammo = Array.isArray(cd.ammo) ? cd.ammo : [];
       (pool.items||[]).forEach(it => {
+        if (_isCont(it.name)) {
+          for(let k=0;k<(it.qty||0);k++) inv.push({ name:it.name, type:it.type, w:it.w||0, qty:1, water:it.water||0, equipped:false });
+          return;
+        }
         const ex = inv.find(x => x.name===it.name && x.type===it.type && !x.equipped);
         if (ex) ex.qty = (ex.qty||1) + (it.qty||0);
         else inv.push({ name:it.name, type:it.type, w:it.w||0, qty:it.qty||0, equipped:false });
@@ -92,6 +96,9 @@ function _leave(){
   if (embed && window.parent) window.parent.postMessage('echange-close','*');
 }
 
+// Contenant d'eau (a une capacité) : l'eau est portée par EXEMPLAIRE → ne pas fusionner les piles
+function _isCont(name){ return (window.DB?.stuff||[]).some(s => s.n === name && s.cap != null); }
+
 // ---- Dépôt (ma fiche → pool) ----
 async function deposerItem(invIdx, n){
   n = Math.max(0, parseInt(n)||0); if(!n) return;
@@ -105,8 +112,12 @@ async function deposerItem(invIdx, n){
       const give = Math.min(n, it.qty||1); if(give<=0) return;
       it.qty = (it.qty||1) - give;
       const items = pd.items||[];
-      const ex = items.find(x => x.name===it.name && x.type===it.type);
-      if (ex) ex.qty = (ex.qty||0) + give; else items.push({ name:it.name, type:it.type, w:it.w||0, qty:give });
+      if (_isCont(it.name)) {
+        for(let k=0;k<give;k++) items.push({ name:it.name, type:it.type, w:it.w||0, qty:1, water:it.water||0 });
+      } else {
+        const ex = items.find(x => x.name===it.name && x.type===it.type);
+        if (ex) ex.qty = (ex.qty||0) + give; else items.push({ name:it.name, type:it.type, w:it.w||0, qty:give });
+      }
       tx.update(_poolRef(), { items });
       tx.update(_charRef(), { inventory: inv.filter(x=>(x.qty||0)>0), lastUpdate: Date.now() });
     });
@@ -156,8 +167,12 @@ async function prendreItem(poolIdx, n){
       const take = Math.min(n, loot.qty||1); if(take<=0) return;
       loot.qty = (loot.qty||1) - take;
       const inv = cd.inventory||[];
-      const ex = inv.find(x => x.name===loot.name && x.type===loot.type && !x.equipped);
-      if (ex) ex.qty = (ex.qty||1) + take; else inv.push({ name:loot.name, type:loot.type, w:loot.w||0, qty:take, equipped:false });
+      if (_isCont(loot.name)) {
+        for(let k=0;k<take;k++) inv.push({ name:loot.name, type:loot.type, w:loot.w||0, qty:1, water:loot.water||0, equipped:false });
+      } else {
+        const ex = inv.find(x => x.name===loot.name && x.type===loot.type && !x.equipped);
+        if (ex) ex.qty = (ex.qty||1) + take; else inv.push({ name:loot.name, type:loot.type, w:loot.w||0, qty:take, equipped:false });
+      }
       tx.update(_poolRef(), { items: items.filter(x=>(x.qty||0)>0) });
       tx.update(_charRef(), { inventory: inv, lastUpdate: Date.now() });
     });
@@ -227,7 +242,8 @@ function render(){
   const pItems = pool.items||[], pAmmo = pool.ammo||[], pCaps = pool.caps||0;
   if (!pItems.length && !pAmmo.length && !pCaps){ h += '<div class="ex-mini">Vide — déposez du butin ➡</div>'; }
   pItems.forEach((it,i) => {
-    h += '<div class="ex-line"><span class="nm">'+esc(it.name)+'</span><span class="qt">x'+(it.qty||0)+'</span>'
+    const wc = _isCont(it.name) ? ' <span class="qt" style="color:#2a9d8f">💧'+(it.water||0)+'</span>' : '';
+    h += '<div class="ex-line"><span class="nm">'+esc(it.name)+wc+'</span><span class="qt">x'+(it.qty||0)+'</span>'
       + '<input type="number" min="1" max="'+(it.qty||1)+'" value="1" id="pi-'+i+'">'
       + '<button onclick="prendreItem('+i+',document.getElementById(\'pi-'+i+'\').value)">Prendre</button></div>';
   });
@@ -246,7 +262,8 @@ function render(){
   h += '<div class="ex-mine"><div class="ex-col-t">Mon inventaire</div>';
   if (!inv.length && !myAmmo.length && !myCaps){ h += '<div class="ex-mini">Rien à déposer</div>'; }
   inv.forEach(o => {
-    h += '<div class="ex-line"><span class="nm">'+esc(o.it.name)+'</span><span class="qt">x'+(o.it.qty||1)+'</span>'
+    const wc = _isCont(o.it.name) ? ' <span class="qt" style="color:#2a9d8f">💧'+(o.it.water||0)+'</span>' : '';
+    h += '<div class="ex-line"><span class="nm">'+esc(o.it.name)+wc+'</span><span class="qt">x'+(o.it.qty||1)+'</span>'
       + '<input type="number" min="1" max="'+(o.it.qty||1)+'" value="1" id="mi-'+o.idx+'">'
       + '<button onclick="deposerItem('+o.idx+',document.getElementById(\'mi-'+o.idx+'\').value)">Déposer</button></div>';
   });

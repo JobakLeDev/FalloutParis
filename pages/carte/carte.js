@@ -1929,7 +1929,9 @@ function openGive(to){
   if(giveable.length){
     h += giveable.map(it => {
       const i = myInv.indexOf(it);
-      return `<div class="ex-row"><span class="ex-name">${_exEsc(it.name)}</span><span class="ex-have">x${it.qty||1}</span>`
+      const isC = (window.DB?.stuff||[]).some(s => s.n === it.name && s.cap != null);
+      const wc = isC ? ` <span style="color:#2a9d8f">💧${it.water||0}</span>` : '';
+      return `<div class="ex-row"><span class="ex-name">${_exEsc(it.name)}${wc}</span><span class="ex-have">x${it.qty||1}</span>`
         + `<input type="number" min="0" max="${it.qty||1}" value="0" data-inv="${i}" data-max="${it.qty||1}"></div>`;
     }).join('');
   }
@@ -1957,7 +1959,7 @@ function confirmGive(){
       items.push({ ammo: true, cal: inp.dataset.ammo, n });
     } else {
       const it = myInv[parseInt(inp.dataset.inv)];
-      if(it) items.push({ name: it.name, type: it.type, w: it.w||0, n });
+      if(it) items.push({ name: it.name, type: it.type, w: it.w||0, n, water: it.water });
     }
   });
   if(!items.length){ carteToast('Sélectionne au moins 1 objet.'); return; }
@@ -1992,7 +1994,7 @@ function showProp(p){
   if(p.type === 'numbers') body = `<b>${_exEsc(p.fromNom)}</b> veut <b>échanger vos numéros</b> (vous pourrez vous envoyer des messages).`;
   if(p.type === 'beacon')  body = `<b>${_exEsc(p.fromNom)}</b> veut <b>échanger vos balises GPS</b> (vous vous verrez en permanence sur la carte, même à distance).`;
   if(p.type === 'give'){
-    const lst = (p.items||[]).map(it => `${it.n}× ${_exEsc(it.ammo ? ('▪ '+it.cal) : it.name)}`).join(', ');
+    const lst = (p.items||[]).map(it => `${it.n}× ${_exEsc(it.ammo ? ('▪ '+it.cal) : it.name)}${(it.water!=null) ? ' (💧'+it.water+')' : ''}`).join(', ');
     body = `<b>${_exEsc(p.fromNom)}</b> veut te <b>donner</b> : ${lst || '—'}.`;
   }
   document.getElementById('prop-title').textContent =
@@ -2088,13 +2090,20 @@ async function _applyGive(p){
       else toAmmo.push({ cal: gi.cal, qty: give });
       return;
     }
-    const src = fromInv.find(it => it.name === gi.name && it.type === gi.type);
+    const isCont = (window.DB?.stuff||[]).some(s => s.n === gi.name && s.cap != null);
+    // Contenant d'eau : on cible l'exemplaire ayant la bonne quantité d'eau, et on ne fusionne pas (eau par exemplaire)
+    const src = fromInv.find(it => it.name === gi.name && it.type === gi.type && (!isCont || (it.water||0) === (gi.water||0)))
+             || fromInv.find(it => it.name === gi.name && it.type === gi.type);
     if(!src) return;
     const give = Math.min(gi.n, src.qty || 1);
     src.qty = (src.qty || 1) - give;
-    const dst = toInv.find(it => it.name === gi.name && it.type === gi.type && !it.equipped);
-    if(dst) dst.qty = (dst.qty || 1) + give;
-    else toInv.push({ name: gi.name, type: gi.type, w: gi.w || 0, qty: give });
+    if(isCont){
+      for(let k=0;k<give;k++) toInv.push({ name: gi.name, type: gi.type, w: gi.w || 0, qty: 1, water: gi.water || 0 });
+    } else {
+      const dst = toInv.find(it => it.name === gi.name && it.type === gi.type && !it.equipped);
+      if(dst) dst.qty = (dst.qty || 1) + give;
+      else toInv.push({ name: gi.name, type: gi.type, w: gi.w || 0, qty: give });
+    }
   });
   const cleanFrom = fromInv.filter(it => (it.qty || 0) > 0);
   const cleanFromAmmo = fromAmmo.filter(a => (a.qty || 0) > 0);
