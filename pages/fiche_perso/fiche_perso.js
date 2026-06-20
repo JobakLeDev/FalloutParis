@@ -505,13 +505,41 @@ function qtyCtrl(i){
   return `<div class="iqty-ctrl"><button class="iqbtn" onclick="chQty(${i},-1)">−</button><span class="iqval">${char.inventory[i].qty}</span><button class="iqbtn" onclick="chQty(${i},1)">+</button></div>`;
 }
 
+// --- Objets acquis récemment : un objet est "récent" tant que son nom n'a pas été "marqué vu" ---
+let _invRecentOnly = false, _invSeen = null;
+function _invSeenKey(){ return 'fp_invSeen_' + (new URLSearchParams(location.search).get('id') || 'joueur1'); }
+function _loadInvSeen(){
+  if(_invSeen) return _invSeen;
+  let raw = null; try{ raw = localStorage.getItem(_invSeenKey()); }catch(e){}
+  if(raw){ try{ _invSeen = new Set(JSON.parse(raw)); }catch(e){ _invSeen = new Set(); } }
+  else { _invSeen = new Set((char.inventory||[]).map(x=>x.name)); _saveInvSeen(); }   // 1er passage : tout l'existant = déjà vu
+  return _invSeen;
+}
+function _saveInvSeen(){ try{ localStorage.setItem(_invSeenKey(), JSON.stringify([..._invSeen])); }catch(e){} }
+function isNewItem(it){ return !_loadInvSeen().has(it.name); }
+function markInvSeen(){ _invSeen = new Set((char.inventory||[]).map(x=>x.name)); _saveInvSeen(); _invRecentOnly=false; _updRecentBtn(); rInvAll(); }
+function toggleRecent(){ _invRecentOnly = !_invRecentOnly; _updRecentBtn(); rInvAll(); }
+function _countNew(){ return (char.inventory||[]).filter(isNewItem).length; }
+function _updRecentBtn(){
+  const b=document.getElementById('inv-recent-btn'); if(!b) return;
+  const n=_countNew();
+  b.classList.toggle('on', _invRecentOnly);
+  b.textContent = '🆕 Récents' + (n?(' ('+n+')'):'');
+  b.style.display = '';
+}
+
 function rInvAll(){
   const el=document.getElementById('inv-all-list');if(!el)return;
+  _updRecentBtn();
   el.innerHTML='';
-  char.inventory.forEach((it,i)=>{
+  let list=char.inventory.map((it,i)=>({it,i}));
+  if(_invRecentOnly) list=list.filter(x=>isNewItem(x.it));
+  if(!list.length){ el.innerHTML='<div style="font-size:9px;color:var(--td);padding:10px">'+(_invRecentOnly?'Aucun objet récemment acquis.':'Inventaire vide.')+'</div>'; return; }
+  list.forEach(({it,i})=>{
+    const isNew=isNewItem(it);
     el.innerHTML+=`<div class="irow" style="grid-template-columns:44px 1fr 40px 42px 20px;gap:4px;${it.equipped?'border-color:var(--gd);background:#0a140a;':''}">
       <span class="itag ${it.type}">${it.type}</span>
-      <span class="iname${it.equipped?' eq':''}">${it.name}${it.equipped?' ●':''}</span>
+      <span class="iname${it.equipped?' eq':''}">${isNew?'<span class="inew" title="Acquis récemment">🆕</span> ':''}${it.name}${it.equipped?' ●':''}</span>
       <span class="iqval">${it.qty}</span>
       <span class="ipw">${((it.qty||1)*(it.w||0)).toFixed(2)}kg</span>
       <span></span>

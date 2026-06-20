@@ -510,12 +510,15 @@ function renderRollJoueur(r){
 }
 
 // Bandeau butin : visible si le pool n'est pas vide ET ce joueur a l'accès (players)
+let _lootAlertShown = false;
 function renderLootAlert(d){
   const al = document.getElementById('loot-alert'); if(!al) return;
   const items = d && Array.isArray(d.items) ? d.items : [];
   const players = d && Array.isArray(d.players) ? d.players : [];
   const accessible = items.length > 0 && players.includes(JOUEUR_ID);
   al.style.display = accessible ? 'flex' : 'none';
+  if(accessible && !_lootAlertShown && typeof fpSfx === 'function') fpSfx('shopAlert');   // son à l'apparition (comme terminal/crochetage)
+  _lootAlertShown = accessible;
   if(accessible){ const c = document.getElementById('loot-count'); if(c) c.textContent = '(' + items.length + ')'; }
   else { const mo = document.getElementById('mo-loot'); if(mo) mo.classList.remove('on'); }   // accès retiré → ferme la modale
 }
@@ -551,6 +554,7 @@ let _activeConv = null;     // id du contact courant
 let _convUnsub = null;
 let _convLatest = {};       // convId -> ts du dernier message REÇU (from !== moi)
 let _convWatch = {};        // convId -> unsub (écoute non-lus)
+let _convSeeded = {};       // convId -> true une fois le 1er snapshot reçu (évite le son au chargement)
 let _msgRead = (()=>{ try{ return JSON.parse(localStorage.getItem('fp_msgRead_'+JOUEUR_ID)||'{}'); }catch(e){ return {}; } })();
 function _saveMsgRead(){ try{ localStorage.setItem('fp_msgRead_'+JOUEUR_ID, JSON.stringify(_msgRead)); }catch(e){} }
 function _convId(a, b){ return [a, b].sort().join('__'); }
@@ -566,14 +570,21 @@ function _hasUnread(){ return Object.keys(_convLatest).some(cid => (_convLatest[
 function _syncConvWatchers(){
   const wanted = {};
   _myContacts().forEach(id => { wanted[_convId(JOUEUR_ID, id)] = true; });
-  Object.keys(_convWatch).forEach(cid => { if(!wanted[cid]){ _convWatch[cid](); delete _convWatch[cid]; delete _convLatest[cid]; } });
+  Object.keys(_convWatch).forEach(cid => { if(!wanted[cid]){ _convWatch[cid](); delete _convWatch[cid]; delete _convLatest[cid]; delete _convSeeded[cid]; } });
   Object.keys(wanted).forEach(cid => {
     if(_convWatch[cid]) return;
     _convWatch[cid] = db.collection('messages').doc(cid).onSnapshot((s) => {
       const msgs = (s.exists && Array.isArray(s.data().msgs)) ? s.data().msgs : [];
+      const prev = _convLatest[cid] || 0;
       _convLatest[cid] = _latestIncoming(msgs);
+      const isOpen = _activeConv && _convId(JOUEUR_ID, _activeConv) === cid;
       // si la conversation est ouverte, on considère le contenu comme lu
-      if(_activeConv && _convId(JOUEUR_ID, _activeConv) === cid){ _msgRead[cid] = Math.max(_msgRead[cid]||0, _convLatest[cid]); _saveMsgRead(); }
+      if(isOpen){ _msgRead[cid] = Math.max(_msgRead[cid]||0, _convLatest[cid]); _saveMsgRead(); }
+      // Nouveau message REÇU (après le 1er snapshot, conv non ouverte) → son
+      else if(_convSeeded[cid] && _convLatest[cid] > prev && _convLatest[cid] > (_msgRead[cid]||0)){
+        if(typeof fpSfx === 'function') fpSfx('messagerie');
+      }
+      _convSeeded[cid] = true;
       updateMsgIcon();
       if(document.getElementById('mo-msg')?.classList.contains('on')) renderContacts();
     }, (e)=>console.warn('conv-watch:', e && e.code));

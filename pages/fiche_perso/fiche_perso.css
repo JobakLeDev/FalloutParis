@@ -345,3 +345,7 @@ html, body { height: 100%; overflow: hidden; }
 /* zoom piloté par common/responsive.js */
 html, body { overflow-x: hidden !important; overflow-y: auto !important; height: auto !important; min-height: 0 !important; }
 .pip { max-width: 1400px; margin: 0 auto; height: auto; }
+
+/* Filtre "objets récemment acquis" (inventaire) */
+#inv-recent-btn.on{ background:var(--am); color:#1a1200; border-color:var(--am); }
+.iname .inew{ font-size:10px; }

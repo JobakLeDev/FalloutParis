@@ -211,7 +211,10 @@
 
     <!-- TOUT -->
     <div class="inv-content on" id="inv-all">
-      
+      <div class="inv-recent-bar" style="display:flex;gap:6px;margin-bottom:6px">
+        <button id="inv-recent-btn" class="md" onclick="toggleRecent()">🆕 Récents</button>
+        <button class="md" onclick="markInvSeen()" title="Marquer tous les objets comme vus">✓ Marquer vus</button>
+      </div>
       <div class="scr" id="inv-all-list"></div>
     </div>
 
@@ -438,8 +441,8 @@
   <script src="../../common/shared.js?v=82"></script>
   <script src="../../common/db.js?v=80"></script>
   <script src="../../common/survie.js?v=76"></script>
-  <script src="fiche_perso.js?v=95"></script>
-  <script src="../../common/firebase.js?v=85"></script>
+  <script src="fiche_perso.js?v=96"></script>
+  <script src="../../common/firebase.js?v=86"></script>
   <script src="../../common/responsive.js?v=1"></script>
 </body>
 </html>
