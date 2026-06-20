@@ -34,11 +34,18 @@ body.embed .shdr-btns{display:none;}
 
 .s-cols{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:14px;align-items:start;}
 .s-sub{font-size:10px;letter-spacing:2px;color:var(--td);text-transform:uppercase;margin-bottom:6px;}
-#s-grid{display:grid;gap:3px;background:#0a140a;padding:6px;border:1px solid var(--b2);width:max-content;max-width:100%;}
-.s-cell{width:46px;height:46px;border:1px solid var(--b);background:#060d06;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;position:relative;}
-.s-cell:hover{border-color:var(--g);}
+#s-grid{display:grid;gap:3px;background:#0a140a;padding:6px;border:1px solid var(--b2);width:max-content;max-width:100%;
+  background-image:linear-gradient(#0e1c0e 1px,transparent 1px),linear-gradient(90deg,#0e1c0e 1px,transparent 1px);background-size:59px 59px;}
+.s-cell{width:56px;height:56px;border:1px solid var(--b);background:#060d06;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;border-radius:3px;}
+.s-cell:hover{border-color:var(--g);box-shadow:inset 0 0 0 1px var(--g);}
+/* case occupée : tuile pleine teintée par la couleur du bloc (--bc) */
+.s-cell.filled{background:#12200f;background:radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--bc) 55%, #060d06), #060d06 78%);border-color:var(--bc);}
+.s-cell .bk-ic{font-size:30px;line-height:1;filter:drop-shadow(0 1px 2px #000);}
+.s-cell .bk-ic.dim{opacity:.5;}
+.s-cell .bk-lbl{position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:6.5px;letter-spacing:.3px;color:var(--tb);background:rgba(0,0,0,.55);padding:1px 1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .s-cell.pending{border-color:var(--am);border-style:dashed;}
-.s-cell .pg{position:absolute;bottom:1px;right:2px;font-size:7px;color:var(--am);}
+.s-cell .pg{position:absolute;top:1px;right:2px;font-size:9px;color:var(--am);}
+.cat-item .ci-ic{display:inline-block;width:22px;height:22px;line-height:22px;text-align:center;border-radius:3px;margin-right:4px;vertical-align:middle;}
 .cat-item{display:block;width:100%;text-align:left;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:11px;padding:7px 8px;margin-bottom:5px;cursor:pointer;}
 .cat-item:hover{border-color:var(--g);}
 .cat-item.sel{border-color:var(--am);background:#161000;}

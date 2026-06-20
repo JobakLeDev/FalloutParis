@@ -172,17 +172,22 @@ function render(){
 
   // grille
   const gw = document.getElementById('s-grid');
-  gw.style.gridTemplateColumns = `repeat(${site.w}, 46px)`;
+  gw.style.gridTemplateColumns = `repeat(${site.w}, 56px)`;
   let cells = '';
   for (let y = 0; y < site.h; y++) for (let x = 0; x < site.w; x++){
     const b = (site.blocks||[]).find(c => c.x===x && c.y===y);
     const pend = (site.pending||[]).find(c => c.x===x && c.y===y);
     const def = b ? blockDef(b.type) : null;
-    const ic = def ? def.icon : (pend ? (blockDef(pend.type)?.icon || '·') : '');
-    const cls = 's-cell' + (pend && !b ? ' pending' : '');
-    const title = def ? def.name : (pend ? ('En attente : ' + (blockDef(pend.type)?.name||'') ) : 'Vide');
+    let cls = 's-cell', style = '', inner = '', title = 'Vide';
+    if (def){
+      cls += ' filled'; style = `style="--bc:${def.color || '#3a5c3a'}"`; title = def.name;
+      inner = `<span class="bk-ic">${def.icon}</span><span class="bk-lbl">${esc(def.name)}</span>`;
+    } else if (pend){
+      const pdef = blockDef(pend.type); cls += ' pending'; title = 'En attente : ' + (pdef?.name || '');
+      inner = `<span class="bk-ic dim">${pdef ? pdef.icon : '·'}</span><span class="pg">⏳</span>`;
+    }
     const click = (isMJ && b) ? `onclick="removeBlock('${selSite}',${x},${y})" title="Retirer ${esc(def.name)}"` : `onclick="cellClick('${selSite}',${x},${y})" title="${esc(title)}"`;
-    cells += `<div class="${cls}" ${click}>${ic}${pend && !b ? '<span class="pg">⏳</span>' : ''}</div>`;
+    cells += `<div class="${cls}" ${style} ${click}>${inner}</div>`;
   }
   gw.innerHTML = cells;
   document.getElementById('s-grid-hint').textContent = selBlock ? ('— clique une case pour poser : ' + (blockDef(selBlock)?.name||'')) : (isMJ ? '— clique un bloc du catalogue, puis une case (clic sur un bloc posé = retirer)' : '— choisis un bloc puis une case pour proposer');
@@ -192,8 +197,8 @@ function render(){
     const need = matsFor(b);
     const ok = skillOk(b);
     const skillsTxt = b.skills && b.skills.length ? (b.skills.map(skillName).join(' / ') + ' ' + b.complexity) : 'aucune comp.';
-    return `<button class="cat-item${selBlock===b.id?' sel':''}${ok?'':' locked'}" ${ok?`onclick="selectCat('${b.id}')"`:''} title="${esc(b.desc)}">
-      ${b.icon} ${esc(b.name)}
+    return `<button class="cat-item${selBlock===b.id?' sel':''}${ok?'':' locked'}" style="border-left:4px solid ${b.color||'#3a5c3a'}" ${ok?`onclick="selectCat('${b.id}')"`:''} title="${esc(b.desc)}">
+      <span class="ci-ic" style="background:${b.color||'#3a5c3a'}22">${b.icon}</span> ${esc(b.name)}
       <span class="ci-meta">Requis : ${skillsTxt} · <span class="ci-cost">${costStr(need)}</span></span>
     </button>`;
   }).join('');
