@@ -96,9 +96,19 @@ async function handleArchive(interaction) {
   if (!fresh.length) { await interaction.editReply("Aucune nouvelle entrée de journal à archiver pour cette campagne."); return; }
   fresh.sort((a, b) => (a.time || 0) - (b.time || 0));
 
+  // Noms des joueurs (pour afficher l'audience de chaque entrée)
+  const jAll = await db.collection('joueurs').get();
+  const nameOf = {}; jAll.forEach(d => { nameOf[d.id] = d.data().nom || d.id; });
+  const audience = (e) => {
+    if (e.revealed === true) return 'Tous';
+    const ids = Array.isArray(e.revealedFor) ? e.revealedFor : [];
+    if (!ids.length) return 'non révélé';
+    return ids.map(id => nameOf[id] || id).join(', ');
+  };
+
   const lines = fresh.map(e => {
     const emo = TYPE_EMO[e.type] || '•';
-    return `${emo} **${igDate(e.time || 0)}** — ${e.title || ''}${e.text ? `\n    ${e.text}` : ''}`;
+    return `${emo} **${igDate(e.time || 0)}** — ${e.title || ''}  · 👁 _${audience(e)}_${e.text ? `\n    ${e.text}` : ''}`;
   });
 
   // Comptage par type
