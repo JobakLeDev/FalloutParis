@@ -1,8 +1,17 @@
 Liste des truc à implémenter :
-- settlements Inc.3 : établis armes/armures utilisables sur place (réparation RAW + pose de mods).
-- dans l'inventaire joueur : les boutons récents et marquer comme vu sont moches, laisse la place pour le texte quelque part 
-- les munitions doivent apparaitre dans "tout" comme tous les objets et junk
+- dans l'inventaire joueur : les boutons récents et marquer comme vu sont moches, laisse la place pour le texte quelque part fais moi un truc un peu joli.
+- les munitions doivent apparaitre dans "tout" comme tous les objets et junk.
+- uniformise l'ensemble des fenetres pop up (les boites de saisie qui apparaissent ou les messages etc et qui ont un look windows) pour qu'elle s'intègrent dans le style visuel de l'app. 
+- perfectionner le système de création de refuges/settlements.
+Pour les deux points suivants, vérifie dans le pdf si un systeme equivalent existe. le pdf se situe maintenant dans .Claude
+- ajouter des objets de junk type "bouteille vide" ou "gourde" pour que les joueurs puisse transporter de l'eau. une fois dans un refuge, si le refuge a un point d'eau ils peuvent remplir leur bouteille d'eau.
+- à terme, développer un systeme de marchands : si mon settlement a au moins un point d'eau, je peux vendre de l'eau en creant un comptoir de vente et en y assignant un pnj. 
+et ça rapporte des caps au settlement de manière aléatoire mais contrôlée principalement par le nombre de points d'eau total (la quantité qu'on produit), les stats du pnj et le temps qui passe.
+- implémenter un système d'accueil de settlement : on peut accueillir des survivants qui participent à la communauté (différence entre settlement et refuge). dans un premier temps implémenter un systeme de beacon de recrutement (comme dans fallout 4) qui fait venir des settlers de manière aléatoire dans la limite de ce que le settlement peut accueillir (le nb de lits). à ce stade les settlers sont juste une stat-pas des pnj complets-.
+
+
 --- Fait ---
+-[OK] settlements Inc.3 (établis) : pose/retrait de mods sur armes (établi d'armes, Réparation/Sciences) et armures/tenues (établi d'armures, Réparation) au refuge, consomme la Réserve (matériaux par Complexité dérivée du perk requis du mod), gate rang≥complexité. Pas de réparation/durabilité (l'app ne modélise pas l'usure). settlement.js renderBench/installMod, v6.
 -[OK] settlements Inc.2b (repos) : bouton "Se reposer ici" au refuge (allié + couchage) → sleep=now + Bien reposé (PV au max), cuisine→faim, eau→soif, médical→rad soignée, porte→repos sûr (settlement.js reposRefuge, partyMinutesFor depuis temps). Pin 🛏 sur le POI de la carte (carte.js restRefugeAt).
 -[OK] settlements Inc.2a (scrap) : junk lootable (genButin + catalogue MJ, cat 'junk' → window.JUNK) ; au refuge, le joueur allié démonte son junk de l'inventaire → matériaux ajoutés à la Réserve (settlement.js scrapJunk/renderScrap, écrit joueurs/<id>+settlements). mj.js v20, settlement v4.
 -[OK] son alerte butin : fpSfx('shopAlert') à l'apparition du bandeau butin (comme terminal/crochetage), flag _lootAlertShown (firebase.js).

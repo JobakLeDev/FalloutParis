@@ -195,6 +195,61 @@ function renderScrap(site){
       <span><button class="bp-mini" onclick="scrapJunk('${safe}',false)">Démonter</button>${it.qty>1?`<button class="bp-mini" onclick="scrapJunk('${safe}',true)">Tout (×${it.qty})</button>`:''}</span></div>`;
   }).join('');
 }
+// ---- établis : pose / retrait de mods sur armes & armures (consomme la Réserve) ----
+function _perkComplexity(perk){ const m = (''+(perk||'')).match(/(\d+)/); const r = m ? parseInt(m[1]) : 0; return Math.min(6, Math.max(0, 2 + r)); }
+function _modMats(mod){ return (window.BUILD_MATS && window.BUILD_MATS[_perkComplexity(mod.perk)]) || { common:0, uncommon:0, rare:0 }; }
+function _benchSkill(kind){ const s = me?.skills || {}; return kind === 'weapon' ? Math.max(s.repair||0, s.science||0) : (s.repair||0); }
+function _matCostShort(need){ const ab = { common:'C', uncommon:'PC', rare:'R' }; return TIERS.filter(t => need[t]).map(t => need[t]+ab[t]).join('·') || 'gratuit'; }
+function _benchBlock(site, kind, title, types, MODS){
+  if(!MODS || !MODS.slots) return '';
+  const items = (me.inventory || []).map((it,i) => ({it,i})).filter(x => types.includes(x.it.type));
+  let h = '<div class="s-sub">' + title + ' — pose de mods (matériaux de la Réserve)</div>';
+  if(!items.length) return h + '<div class="s-note">Aucun objet compatible dans ton inventaire.</div>';
+  items.forEach(({it,i}) => {
+    h += '<div class="bench-item"><div class="bench-name">🔩 ' + esc(it.name) + '</div>';
+    (MODS.slots).forEach(slot => {
+      const cur = (it.mods && it.mods[slot]) || '';
+      const opts = ['<option value="">— ' + esc(MODS.slotLabels?.[slot] || slot) + ' : aucun —</option>'].concat(
+        (MODS[slot] || []).map(m => { const c = _perkComplexity(m.perk); const ok = _benchSkill(kind) >= c;
+          return '<option value="' + m.id + '"' + (cur===m.id?' selected':'') + (ok?'':' disabled') + '>' + esc(m.name) + ' · ' + _matCostShort(_modMats(m)) + (ok?'':' 🔒 rang ' + c) + '</option>'; })
+      ).join('');
+      h += '<select class="s-inp bench-sel" onchange="installMod(' + i + ',\'' + slot + '\',this.value,\'' + kind + '\')">' + opts + '</select>';
+    });
+    h += '</div>';
+  });
+  return h;
+}
+function renderBench(site){
+  const el = document.getElementById('s-bench'); if(!el) return;
+  if(isMJ || !me || !canAccess(site)){ el.innerHTML = ''; return; }
+  let html = '';
+  if(_siteHas(site,'wbench_weapon')) html += _benchBlock(site, 'weapon', '🔧 Établi d\'armes', ['WEAPON'], window.WEAPON_MODS);
+  if(_siteHas(site,'wbench_armor'))  html += _benchBlock(site, 'armor', '🛡️ Établi d\'armures', ['ARMOR','CLOTHING'], window.ARMOR_MODS);
+  el.innerHTML = html;
+}
+async function installMod(idx, slot, modId, kind){
+  const site = data.sites[selSite]; if(!site || !me) return;
+  if(!canAccess(site)){ alert('Réservé aux alliés du refuge.'); renderBench(site); return; }
+  const benchType = kind === 'weapon' ? 'wbench_weapon' : 'wbench_armor';
+  if(!_siteHas(site, benchType)){ alert('Établi absent.'); return; }
+  const inv = (me.inventory || []).map(x => ({ ...x, mods: x.mods ? { ...x.mods } : undefined }));
+  const it = inv[idx]; if(!it) return;
+  if(!modId){ if(it.mods) it.mods[slot] = null; }   // retrait (gratuit)
+  else {
+    const MODS = kind === 'weapon' ? window.WEAPON_MODS : window.ARMOR_MODS;
+    const mod = (MODS[slot] || []).find(m => m.id === modId); if(!mod) return;
+    if(_benchSkill(kind) < _perkComplexity(mod.perk)){ alert('Compétence insuffisante pour ce mod.'); renderBench(site); return; }
+    const need = _modMats(mod);
+    if(!stockEnough(site, need)){ alert('Stock de matériaux insuffisant (' + costStr(need) + ').'); renderBench(site); return; }
+    site.stock = site.stock || { common:0, uncommon:0, rare:0 };
+    TIERS.forEach(t => site.stock[t] = Math.max(0, (site.stock[t]||0) - (need[t]||0)));
+    it.mods = it.mods || {}; it.mods[slot] = modId;
+  }
+  try { await fdb.collection('joueurs').doc(viewerId).update({ inventory: inv, lastUpdate: Date.now() }); me.inventory = inv; }
+  catch(e){ alert('Erreur : ' + e.message); return; }
+  save();   // sauve la Réserve (matériaux déduits)
+}
+
 function removeBlock(id, x, y){
   if (!isMJ) return; const s = data.sites[id]; if (!s) return;
   s.blocks = (s.blocks || []).filter(b => !(b.x === x && b.y === y));
@@ -246,6 +301,7 @@ function render(){
     return `<div class="s-mat"><span class="mc">${matLabel(t)}</span><b>${site.stock?.[t]||0}</b>${cr}</div>`;
   }).join('');
   renderRest(site);
+  renderBench(site);
   renderScrap(site);
 
   // grille

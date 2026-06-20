@@ -74,3 +74,9 @@ body.sitelock #s-layout{ grid-template-columns:1fr; padding:8px; }
 .scrap-row{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--b);background:#060d06;padding:5px 8px;margin-bottom:4px;font-size:10px;}
 .scrap-row small{color:var(--gd);}
 .scrap-row button{margin-left:4px;}
+
+/* Établis (pose de mods) */
+#s-bench{margin:4px 0 12px;}
+.bench-item{border:1px solid var(--b);background:#060d06;padding:6px 8px;margin-bottom:5px;}
+.bench-name{font-size:11px;color:var(--tb);margin-bottom:4px;}
+.bench-sel{font-size:10px;padding:5px 6px;margin-bottom:4px;}
