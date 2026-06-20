@@ -314,6 +314,15 @@ async function withdrawCaps(){
   try { const ref = fdb.collection('joueurs').doc(to); const snap = await ref.get(); const cur = (snap.exists ? snap.data().caps : 0) || 0; await ref.update({ caps: cur + amt, lastUpdate: Date.now() }); alert('💰 ' + amt + ' caps versés à ' + (joueursCamp[to]?.nom || to) + '.'); }
   catch(e){ alert('Erreur : ' + e.message); }
 }
+let _actOpen = false;
+function toggleActions(){ _actOpen = !_actOpen; applyActions(); }
+function applyActions(){
+  const bar = document.getElementById('s-actbar'), box = document.getElementById('s-actions'), btn = document.getElementById('s-act-toggle');
+  if(isMJ){ if(bar) bar.style.display = 'none'; if(box) box.style.display = 'none'; return; }   // le MJ construit via le catalogue
+  if(bar) bar.style.display = '';
+  if(box) box.style.display = _actOpen ? '' : 'none';
+  if(btn) btn.textContent = '🛠 Actions du refuge ' + (_actOpen ? '▴' : '▾');
+}
 function selTok(pid){ if(!isMJ) return; _selTok = (_selTok === pid) ? null : pid; render(); }
 function _firstFreeCell(site){ for(let y=site.h-1;y>=0;y--) for(let x=0;x<site.w;x++){ if(!(site.blocks||[]).some(b=>b.x===x&&b.y===y) && !Object.values(site.pos||{}).some(p=>p&&p.x===x&&p.y===y)) return {x,y}; } return {x:0,y:0}; }
 function placeTok(pid){ if(!isMJ) return; const s = data.sites[selSite]; if(!s) return; s.pos = s.pos || {}; if(s.pos[pid]) delete s.pos[pid]; else s.pos[pid] = _firstFreeCell(s); save(); }
@@ -464,6 +473,7 @@ function render(){
   renderWater(site);
   renderBench(site);
   renderScrap(site);
+  applyActions();
 
   // grille — layout pixel (permet les arêtes murs/portes/fenêtres comme la battlemap)
   const CS = 52, GP = 1, PAD = 5, PITCH = CS + GP;

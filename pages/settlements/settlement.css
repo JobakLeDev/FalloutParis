@@ -118,3 +118,9 @@ body.sitelock #s-layout{ grid-template-columns:1fr; padding:8px; }
 .s-cols.s-cols-solo{grid-template-columns:1fr;}
 .s-stat-btn{background:var(--gk);border:1px solid var(--b2);color:var(--t);font-size:10px;width:18px;cursor:pointer;margin-left:2px;}
 .s-stat-btn:hover{border-color:var(--g);}
+
+/* Bandeau dépliant des actions (vue joueur) au-dessus de la map */
+#s-actbar{margin-bottom:6px;}
+#s-act-toggle{width:100%;text-align:left;letter-spacing:1px;}
+#s-actions{border:1px solid var(--b2);background:#0a140a;padding:8px;margin-bottom:8px;}
+#s-actions > div:empty{display:none;}
