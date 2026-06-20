@@ -181,15 +181,13 @@ function cellClick(id, x, y){
 }
 // ---- repos au refuge : long repos bonifié par les blocs présents ----
 function _siteHas(site, type){ return (site.blocks || []).some(b => b.type === type); }
-function renderRest(site){
-  const el = document.getElementById('s-rest'); if (!el) return;
-  if (isMJ || !me || !canAccess(site) || !site.restPoint) { el.innerHTML = ''; return; }
+function restBody(site){
+  if (isMJ || !me || !canAccess(site) || !site.restPoint) return '';
   const bonus = [];
   if (_siteHas(site,'cooking')) bonus.push('🍖 faim'); if (_siteHas(site,'water')) bonus.push('🚰 soif');
-  if (_siteHas(site,'medical')) bonus.push('🩺 rad soignée'); if (_siteHas(site,'door')) bonus.push('🚪 repos sûr');
-  el.innerHTML = '<div class="s-sub">😴 Repos</div>'
-    + '<button class="sbtn add" style="max-width:340px" onclick="reposRefuge()">😴 Se reposer ici — PV au max · Bien reposé</button>'
-    + (bonus.length ? `<div class="s-note">Bonus de ce refuge : ${bonus.join(' · ')}</div>` : '<div class="s-note">Ajoute cuisine / eau / poste médical pour bonifier le repos.</div>');
+  if (_siteHas(site,'medical')) bonus.push('🩺 rad'); if (_siteHas(site,'door')) bonus.push('🚪 sûr');
+  return '<button class="sbtn add" onclick="reposRefuge()">😴 Se reposer (PV max)</button>'
+    + (bonus.length ? `<div class="s-note">Bonus : ${bonus.join(' · ')}</div>` : '');
 }
 async function reposRefuge(){
   const site = data.sites[selSite]; if (!site || !me) return;
@@ -232,12 +230,11 @@ async function scrapJunk(name, all){
   catch(e){ alert('Erreur : ' + e.message); return; }
   save();
 }
-function renderScrap(site){
-  const el = document.getElementById('s-scrap'); if (!el) return;
-  if (isMJ || !me || !canAccess(site)) { el.innerHTML = ''; return; }
+function scrapBody(site){
+  if (isMJ || !me || !canAccess(site)) return '';
   const junkInv = (me.inventory || []).filter(it => it && it.qty > 0 && (window.JUNK || []).some(j => j.n === it.name));
-  if (!junkInv.length){ el.innerHTML = '<div class="s-sub">🔩 Récupération</div><div class="s-note">Aucun objet de récup (junk) dans ton inventaire. Le junk looté se démonte ici pour remplir la Réserve.</div>'; return; }
-  el.innerHTML = '<div class="s-sub">🔩 Récupération — démonte ton junk dans la Réserve</div>' + junkInv.map(it => {
+  if (!junkInv.length) return '';
+  return junkInv.map(it => {
     const def = (window.JUNK || []).find(j => j.n === it.name);
     const safe = it.name.replace(/'/g, "\\'");
     return `<div class="scrap-row"><span>🔩 <b>${esc(it.name)}</b> ×${it.qty} <small>→ ${yieldStr(def)}</small></span>
@@ -314,14 +311,27 @@ async function withdrawCaps(){
   try { const ref = fdb.collection('joueurs').doc(to); const snap = await ref.get(); const cur = (snap.exists ? snap.data().caps : 0) || 0; await ref.update({ caps: cur + amt, lastUpdate: Date.now() }); alert('💰 ' + amt + ' caps versés à ' + (joueursCamp[to]?.nom || to) + '.'); }
   catch(e){ alert('Erreur : ' + e.message); }
 }
-let _actOpen = false;
-function toggleActions(){ _actOpen = !_actOpen; applyActions(); }
-function applyActions(){
-  const bar = document.getElementById('s-actbar'), box = document.getElementById('s-actions'), btn = document.getElementById('s-act-toggle');
-  if(isMJ){ if(bar) bar.style.display = 'none'; if(box) box.style.display = 'none'; return; }   // le MJ construit via le catalogue
-  if(bar) bar.style.display = '';
-  if(box) box.style.display = _actOpen ? '' : 'none';
-  if(btn) btn.textContent = '🛠 Actions du refuge ' + (_actOpen ? '▴' : '▾');
+// Bandeau d'actions = cartes repliables individuelles (vue joueur)
+const _openCards = new Set();
+const _benchPick = { weapon: null, armor: null };
+function toggleCard(id){ if(_openCards.has(id)) _openCards.delete(id); else _openCards.add(id); render(); }
+function _card(id, title, body, wide){
+  if(!body) return '';
+  const open = _openCards.has(id);
+  return `<div class="act-card${wide?' wide':''}"><button class="act-head${open?' on':''}" onclick="toggleCard('${id}')">${title}<span class="act-chev">${open?'▴':'▾'}</span></button>${open?`<div class="act-body">${body}</div>`:''}</div>`;
+}
+function renderActions(site){
+  const box = document.getElementById('s-actions'), bar = document.getElementById('s-actbar');
+  if(isMJ || !me || !canAccess(site)){ if(box){ box.innerHTML=''; box.style.display='none'; } if(bar) bar.style.display='none'; return; }   // le MJ construit via le catalogue
+  if(bar) bar.style.display=''; box.style.display='';
+  const cards = [
+    _card('rest','😴 Repos', restBody(site)),
+    _card('water','💧 Eau', waterBody(site)),
+    _siteHas(site,'wbench_weapon') ? _card('bw','🔧 Armes', benchBody(site,'weapon')) : '',
+    _siteHas(site,'wbench_armor') ? _card('ba','🛡️ Armures', benchBody(site,'armor')) : '',
+    _card('scrap','🔩 Récup', scrapBody(site), true),
+  ].filter(Boolean).join('');
+  box.innerHTML = cards ? '<div class="act-grid">' + cards + '</div>' : '<div class="s-note">Aucune action disponible ici.</div>';
 }
 function selTok(pid){ if(!isMJ) return; _selTok = (_selTok === pid) ? null : pid; render(); }
 function _firstFreeCell(site){ for(let y=site.h-1;y>=0;y--) for(let x=0;x<site.w;x++){ if(!(site.blocks||[]).some(b=>b.x===x&&b.y===y) && !Object.values(site.pos||{}).some(p=>p&&p.x===x&&p.y===y)) return {x,y}; } return {x:0,y:0}; }
@@ -337,13 +347,12 @@ function renderTokens(site){
 
 // ---- point d'eau : remplir ses contenants ----
 function _containers(){ return (me?.inventory || []).filter(it => { const d = (window.DB?.stuff||[]).find(s => s.n === it.name); return d && d.cap != null; }); }
-function renderWater(site){
-  const el = document.getElementById('s-water'); if(!el) return;
-  if(isMJ || !me || !canAccess(site) || !_siteHas(site,'water')){ el.innerHTML = ''; return; }
+function waterBody(site){
+  if(isMJ || !me || !canAccess(site) || !_siteHas(site,'water')) return '';
   const conts = _containers();
-  if(!conts.length){ el.innerHTML = '<div class="s-sub">🚰 Point d\'eau</div><div class="s-note">Apporte une gourde / un bidon / un jerrican pour faire le plein.</div>'; return; }
+  if(!conts.length) return '<div class="s-note">Apporte une gourde / un bidon / un jerrican.</div>';
   const lines = conts.map(it => { const d = (window.DB.stuff).find(s => s.n === it.name); return `${esc(it.name)} ${(it.water||0)}/${d.cap}`; }).join(' · ');
-  el.innerHTML = '<div class="s-sub">🚰 Point d\'eau</div><button class="sbtn add" style="max-width:320px" onclick="fillContainers()">💧 Remplir mes contenants</button><div class="s-note">' + lines + '</div>';
+  return '<button class="sbtn add" onclick="fillContainers()">💧 Remplir</button><div class="s-note">' + lines + '</div>';
 }
 async function fillContainers(){
   const site = data.sites[selSite]; if(!site || !me) return;
@@ -363,36 +372,33 @@ function _perkComplexity(perk){ const m = (''+(perk||'')).match(/(\d+)/); const 
 function _modMats(mod){ return (window.BUILD_MATS && window.BUILD_MATS[_perkComplexity(mod.perk)]) || { common:0, uncommon:0, rare:0 }; }
 function _benchSkill(kind){ const s = me?.skills || {}; return kind === 'weapon' ? Math.max(s.repair||0, s.science||0) : (s.repair||0); }
 function _matCostShort(need){ const ab = { common:'C', uncommon:'PC', rare:'R' }; return TIERS.filter(t => need[t]).map(t => need[t]+ab[t]).join('·') || 'gratuit'; }
-function _benchBlock(site, kind, title, types, MODS){
+// Drill-down d'un établi : choisir l'objet (pièce) → puis ses mods
+function benchBody(site, kind){
+  const MODS = kind === 'weapon' ? window.WEAPON_MODS : window.ARMOR_MODS;
+  const types = kind === 'weapon' ? ['WEAPON'] : ['ARMOR','CLOTHING'];
   if(!MODS || !MODS.slots) return '';
   const items = (me.inventory || []).map((it,i) => ({it,i})).filter(x => types.includes(x.it.type));
-  let h = '<div class="s-sub">' + title + ' — pose de mods (matériaux de la Réserve)</div>';
-  if(!items.length) return h + '<div class="s-note">Aucun objet compatible dans ton inventaire.</div>';
-  items.forEach(({it,i}) => {
-    h += '<div class="bench-item"><div class="bench-name">🔩 ' + esc(it.name) + '</div>';
-    (MODS.slots).forEach(slot => {
+  if(!items.length) return '<div class="s-note">Aucun objet compatible.</div>';
+  const sel = _benchPick[kind];
+  let h = '<div class="bench-items">' + items.map(({it,i}) =>
+    `<button class="bench-pick${sel===i?' on':''}" onclick="pickBenchItem('${kind}',${i})">${esc(it.name)}</button>`).join('') + '</div>';
+  if(sel != null && items.some(x => x.i === sel)){
+    const it = me.inventory[sel];
+    h += '<div class="bench-mods">' + (MODS.slots).map(slot => {
       const cur = (it.mods && it.mods[slot]) || '';
       const opts = ['<option value="">— ' + esc(MODS.slotLabels?.[slot] || slot) + ' : aucun —</option>'].concat(
         (MODS[slot] || []).map(m => { const c = _perkComplexity(m.perk); const ok = _benchSkill(kind) >= c;
           return '<option value="' + m.id + '"' + (cur===m.id?' selected':'') + (ok?'':' disabled') + '>' + esc(m.name) + ' · ' + _matCostShort(_modMats(m)) + (ok?'':' 🔒 rang ' + c) + '</option>'; })
       ).join('');
-      h += '<select class="s-inp bench-sel" onchange="installMod(' + i + ',\'' + slot + '\',this.value,\'' + kind + '\')">' + opts + '</select>';
-    });
-    h += '</div>';
-  });
+      return '<select class="s-inp bench-sel" onchange="installMod(' + sel + ',\'' + slot + '\',this.value,\'' + kind + '\')">' + opts + '</select>';
+    }).join('') + '</div>';
+  } else h += '<div class="s-note">Choisis un objet à modifier.</div>';
   return h;
 }
-function renderBench(site){
-  const el = document.getElementById('s-bench'); if(!el) return;
-  if(isMJ || !me || !canAccess(site)){ el.innerHTML = ''; return; }
-  let html = '';
-  if(_siteHas(site,'wbench_weapon')) html += _benchBlock(site, 'weapon', '🔧 Établi d\'armes', ['WEAPON'], window.WEAPON_MODS);
-  if(_siteHas(site,'wbench_armor'))  html += _benchBlock(site, 'armor', '🛡️ Établi d\'armures', ['ARMOR','CLOTHING'], window.ARMOR_MODS);
-  el.innerHTML = html;
-}
+function pickBenchItem(kind, i){ _benchPick[kind] = (_benchPick[kind] === i) ? null : i; render(); }
 async function installMod(idx, slot, modId, kind){
   const site = data.sites[selSite]; if(!site || !me) return;
-  if(!canAccess(site)){ alert('Réservé aux alliés du refuge.'); renderBench(site); return; }
+  if(!canAccess(site)){ alert('Réservé aux alliés du refuge.'); render(); return; }
   const benchType = kind === 'weapon' ? 'wbench_weapon' : 'wbench_armor';
   if(!_siteHas(site, benchType)){ alert('Établi absent.'); return; }
   const inv = (me.inventory || []).map(x => ({ ...x, mods: x.mods ? { ...x.mods } : undefined }));
@@ -401,9 +407,9 @@ async function installMod(idx, slot, modId, kind){
   else {
     const MODS = kind === 'weapon' ? window.WEAPON_MODS : window.ARMOR_MODS;
     const mod = (MODS[slot] || []).find(m => m.id === modId); if(!mod) return;
-    if(_benchSkill(kind) < _perkComplexity(mod.perk)){ alert('Compétence insuffisante pour ce mod.'); renderBench(site); return; }
+    if(_benchSkill(kind) < _perkComplexity(mod.perk)){ alert('Compétence insuffisante pour ce mod.'); render(); return; }
     const need = _modMats(mod);
-    if(!stockEnough(site, need)){ alert('Stock de matériaux insuffisant (' + costStr(need) + ').'); renderBench(site); return; }
+    if(!stockEnough(site, need)){ alert('Stock de matériaux insuffisant (' + costStr(need) + ').'); render(); return; }
     site.stock = site.stock || { common:0, uncommon:0, rare:0 };
     TIERS.forEach(t => site.stock[t] = Math.max(0, (site.stock[t]||0) - (need[t]||0)));
     it.mods = it.mods || {}; it.mods[slot] = modId;
@@ -469,11 +475,7 @@ function render(){
   renderStats(site);
   renderTokens(site);
   renderEco(site);
-  renderRest(site);
-  renderWater(site);
-  renderBench(site);
-  renderScrap(site);
-  applyActions();
+  renderActions(site);
 
   // grille — layout pixel (permet les arêtes murs/portes/fenêtres comme la battlemap)
   const CS = 52, GP = 1, PAD = 5, PITCH = CS + GP;

@@ -7,7 +7,7 @@
   <title>Fallout Paris — Refuges</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css?v=83">
-  <link rel="stylesheet" href="settlement.css?v=8">
+  <link rel="stylesheet" href="settlement.css?v=9">
   <link rel="stylesheet" href="../../common/zoom.css?v=2">
 </head>
 <body>
@@ -62,13 +62,8 @@
         <div id="s-eco"></div>
         <div class="s-cols">
           <div class="s-grid-wrap">
-            <div id="s-actbar"><button class="sbtn" id="s-act-toggle" onclick="toggleActions()">🛠 Actions du refuge ▾</button></div>
-            <div id="s-actions" style="display:none">
-              <div id="s-rest"></div>
-              <div id="s-water"></div>
-              <div id="s-bench"></div>
-              <div id="s-scrap"></div>
-            </div>
+            <div id="s-actbar" class="s-sub" style="display:none">🛠 Actions du refuge</div>
+            <div id="s-actions" style="display:none"></div>
             <div class="s-sub">Plan du refuge <small id="s-grid-hint"></small></div>
             <div id="s-edge-pal" class="s-edge-pal"></div>
             <div id="s-grid"></div>
@@ -89,7 +84,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="../../common/shared.js?v=83"></script>
   <script src="../../common/db.js?v=16"></script>
-  <script src="settlement.js?v=12"></script>
+  <script src="settlement.js?v=13"></script>
   <script>document.addEventListener('DOMContentLoaded', () => window.DB_READY.then(initSettlement));</script>
   <script src="../../common/responsive.js?v=1"></script>
 </body>

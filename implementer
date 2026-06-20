@@ -16,6 +16,8 @@ et ça rapporte des caps au settlement de manière aléatoire mais contrôlée p
 - un joueur qui visite un settlement/refuge doit voir son personnage sur la map lieux. juste visuellement et côté mj je peux le déplacer. 
 
 --- Fait ---
+-[OK] bandeau actions refuge (joueur) : cartes repliables individuelles (Repos+Eau cote a cote resserres, Etablis Armes/Armures cote a cote en drill-down piece->mods, Recup pleine largeur), tout replie par defaut. renderActions/_card/toggleCard/benchBody/pickBenchItem. settlement v13/css v9.
+
 -[OK] vue joueur refuge : repos/eau/etablis/recup regroupes dans un bandeau depliant "Actions du refuge" au-dessus de la grille (toggleActions/applyActions ; masque cote MJ). settlement v12/css v8.
 
 -[OK] refuges : catalogue de blocs masqué côté joueur (grille pleine largeur) ; type Refuge/Settlement (creation + bascule MJ en-tete ; blocs communautaires farm/comptoirs/diner/tourelle/beacon = settlementOnly) ; MJ place/retire/deplace les jetons joueurs (#s-tokens + selTok) ; MJ regle le nb de colons a la main (chSettlers +/-). settlement v11, db v16.

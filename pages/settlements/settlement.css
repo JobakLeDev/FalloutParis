@@ -124,3 +124,21 @@ body.sitelock #s-layout{ grid-template-columns:1fr; padding:8px; }
 #s-act-toggle{width:100%;text-align:left;letter-spacing:1px;}
 #s-actions{border:1px solid var(--b2);background:#0a140a;padding:8px;margin-bottom:8px;}
 #s-actions > div:empty{display:none;}
+
+/* Bandeau d'actions = cartes repliables (vue joueur) */
+.act-grid{display:flex;flex-wrap:wrap;gap:6px;}
+.act-card{flex:1 1 calc(50% - 6px);min-width:180px;border:1px solid var(--b2);background:#0a140a;}
+.act-card.wide{flex-basis:100%;}
+.act-head{width:100%;display:flex;justify-content:space-between;align-items:center;gap:6px;background:var(--gk);border:none;border-bottom:1px solid var(--b);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;padding:6px 9px;cursor:pointer;}
+.act-head.on{color:var(--tb);}
+.act-head:hover{background:#1e4a1e;}
+.act-chev{color:var(--td);}
+.act-body{padding:7px 9px;}
+.act-body .sbtn.add{width:auto;margin-top:0;}
+.act-body .s-note{margin-top:5px;}
+/* Établi : drill-down pièce → mods */
+.bench-items{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;}
+.bench-pick{background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 8px;cursor:pointer;}
+.bench-pick:hover{border-color:var(--g);}
+.bench-pick.on{background:var(--am);color:#1a1200;border-color:var(--am);}
+.bench-mods .bench-sel{width:100%;margin-bottom:4px;}
