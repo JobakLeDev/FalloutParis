@@ -9,8 +9,10 @@ const _p = new URLSearchParams(location.search);
 const viewerId = _p.get('id');
 const embed = _p.get('embed') === '1';
 let isMJ = !viewerId && sessionStorage.getItem('mj_auth') === '1';
+const lockSite = _p.get('site') || null;   // ouvert depuis la carte sur UN refuge précis
 
 let fdb, me = null;                 // me = fiche du joueur (?id)
+let cartePois = [];                 // noms des POI de la carte (lien settlement ↔ lieu)
 let data = { sites: {} };           // /settlements/<camp>
 let joueursCamp = {};               // joueurs de la campagne (pour alliés)
 let selSite = null;                 // id du refuge sélectionné
@@ -29,7 +31,11 @@ async function initSettlement(){
     try { const s = await fdb.collection('joueurs').doc(viewerId).get(); if (s.exists) me = { id: viewerId, ...s.data() }; } catch(e){}
     if (me && !_p.get('camp')) fpSetCamp(me.campaign || 'data');
   }
+  if (lockSite){ selSite = lockSite; document.body.classList.add('sitelock'); }
   updateModeUI();
+  // POI de la carte (lien settlement ↔ lieu) — pour le sélecteur de création MJ
+  try { const cs = await fdb.collection('carte').doc(fpCampId()).get(); cartePois = (cs.exists && Array.isArray(cs.data().pois)) ? cs.data().pois.map(p => p.name).filter(Boolean) : []; } catch(e){}
+  populatePoiSel();
   // Joueurs de la campagne (pour la gestion des alliés MJ)
   fdb.collection('joueurs').onSnapshot(s => {
     joueursCamp = {}; const cur = fpCampId();
@@ -55,6 +61,7 @@ function updateModeUI(){
 }
 
 function save(){ fdb.collection('settlements').doc(fpCampId()).set({ sites: data.sites }).catch(e => console.error('save settlement', e)); }
+function populatePoiSel(){ const sel = document.getElementById('ns-poi'); if(!sel) return; sel.innerHTML = '<option value="">— Lieu lié (POI carte) —</option>' + cartePois.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join(''); }
 
 // ---- accès ----
 function canAccess(site){
@@ -78,8 +85,9 @@ function creerSite(){
   const w = Math.max(2, Math.min(12, parseInt(document.getElementById('ns-w').value) || 4));
   const h = Math.max(2, Math.min(12, parseInt(document.getElementById('ns-h').value) || 4));
   const faction = document.getElementById('ns-fac').value || '';
+  const poi = document.getElementById('ns-poi')?.value || '';
   const id = 's' + Date.now().toString(36);
-  data.sites[id] = { name, w, h, faction, allies: [], stock: { common:0, uncommon:0, rare:0 }, blocks: [], pending: [], restPoint: false };
+  data.sites[id] = { name, w, h, faction, poi, allies: [], stock: { common:0, uncommon:0, rare:0 }, blocks: [], pending: [], restPoint: false };
   selSite = id; save();
   document.getElementById('ns-name').value = '';
 }
@@ -113,6 +121,7 @@ function cellClick(id, x, y){
     if (selBlock === 'bed') s.restPoint = true;
     save();
   } else {
+    if(!canAccess(s)){ alert('Tu n\'es pas allié de ce refuge — tu ne peux pas y construire.'); return; }
     // Le joueur propose → validation MJ
     s.pending = s.pending || [];
     s.pending.push({ pid: me.id, type: selBlock, x, y, ts: Date.now() });
@@ -156,13 +165,14 @@ function render(){
   document.getElementById('s-empty').style.display = site ? 'none' : 'block';
   document.getElementById('s-site').style.display = site ? 'block' : 'none';
   if (!site) return;
-  if (!canAccess(site)) { selSite = null; render(); return; }
+  if (!isMJ && !lockSite && !canAccess(site)) { selSite = null; render(); return; }
 
   // en-tête
   const facTag = site.faction ? `<span class="tag">${site.faction}</span>` : `<span class="tag">Indépendant</span>`;
+  const poiTag = site.poi ? `<span class="tag">📍 ${esc(site.poi)}</span>` : (isMJ ? `<span class="tag" style="color:var(--rd)">⚠ non lié à un lieu</span>` : '');
   const restTag = site.restPoint ? `<span class="tag rest">🛏 Point de repos</span>` : '';
   const mjTools = isMJ ? `<span class="s-mj-tools"><button class="sbtn" onclick="supprimerSite('${selSite}')">✕ Supprimer</button></span>` : '';
-  document.getElementById('s-site-head').innerHTML = mjTools + esc(site.name) + facTag + restTag;
+  document.getElementById('s-site-head').innerHTML = mjTools + esc(site.name) + facTag + poiTag + restTag;
 
   // stock (Réserve)
   document.getElementById('s-stock').innerHTML = TIERS.map(t => {

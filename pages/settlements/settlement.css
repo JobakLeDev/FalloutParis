@@ -63,3 +63,8 @@ body.embed .shdr-btns{display:none;}
 .ally-chip.on{border-color:var(--g);color:var(--tb);background:#0e1c0e;}
 .s-note{font-size:9px;color:var(--td);margin-top:6px;line-height:1.5;}
 @media(max-width:720px){#s-layout{grid-template-columns:1fr;}.s-cols{grid-template-columns:1fr;}}
+
+/* Ouvert depuis la carte sur un seul refuge : masque l'en-tête et la liste */
+body.sitelock .shdr{ display:none; }
+body.sitelock #s-side{ display:none; }
+body.sitelock #s-layout{ grid-template-columns:1fr; padding:8px; }

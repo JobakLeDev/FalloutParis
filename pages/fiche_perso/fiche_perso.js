@@ -100,7 +100,7 @@ let curTab='general', curInv='all';
 
 function sw(tab){
   document.querySelectorAll('.tab').forEach((el,i)=>{
-    el.classList.toggle('on',['general','inventaire','perks','carte','quetes','journal','encyclopedie','settlements','radio'][i]===tab);
+    el.classList.toggle('on',['general','inventaire','perks','carte','quetes','journal','encyclopedie','radio'][i]===tab);
   });
   document.querySelectorAll('.tc').forEach(el=>el.classList.remove('on'));
   const tc=document.getElementById('tc-'+tab);
@@ -142,13 +142,6 @@ function sw(tab){
       f.src='../encyclopedie/encyclopedie.html?id='+encodeURIComponent(id)+'&embed=1&camp='+encodeURIComponent((char&&char.campaign)||'data');
     } else if(f && f.contentWindow){
       f.contentWindow.postMessage('ency-refresh','*');
-    }
-  }
-  // Charger les refuges/settlements (iframe)
-  if(tab==='settlements'){
-    const f=document.getElementById('settlements-frame');
-    if(f && !f.src){
-      f.src='../settlements/settlement.html?id='+encodeURIComponent(id)+'&embed=1&camp='+encodeURIComponent((char&&char.campaign)||'data');
     }
   }
   curTab=tab; rAll();

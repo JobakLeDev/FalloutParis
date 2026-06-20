@@ -69,6 +69,8 @@ const geoMarkerRefs = {};                          // nom → layer (pour réouv
 let lieux = [];            // [{id, name, image, pois:[]}] — plans de bâtiments
 let lieuActif = null;      // lieu sélectionné dans l'onglet LIEUX
 let mapLieu = null;        // instance Leaflet pour les lieux
+let settlementsData = { sites: {} };   // refuges (/settlements/<camp>) — affichés dans LIEUX selon la position
+let _openRefuge = null;    // id du refuge ouvert dans l'onglet LIEUX
 let joueurs = {};
 let zoneLayer, poiLayer, tokenLayer;
 const poiMarkers = {}, zonePolys = {};
@@ -275,6 +277,12 @@ function buildMap() {
       lieux = (s.exists ? s.data().lieux : null) || [];
       if (currentTab === 'lieux') renderLieux();
     });
+    // Refuges (settlements) — apparaissent dans LIEUX quand le joueur est sur le lieu (POI révélé)
+    fdb.collection('settlements').doc(fpCampId()).onSnapshot(s => {
+      const d = s.exists ? s.data() : {};
+      settlementsData = { sites: (d.sites && typeof d.sites === 'object') ? d.sites : {} };
+      if (currentTab === 'lieux') renderLieux();
+    }, e => console.warn('settlements:', e && e.code));
     // Groupes (temps/data) → fusion des jetons des membres en une seule icône de groupe
     fdb.collection('temps').doc(fpCampId()).onSnapshot(s => {
       const d = s.exists ? s.data() : {};
@@ -901,19 +909,55 @@ function ajouterLieu() {
   switchMapTab('lieux');
 }
 
+// Un POI/lieu est "atteint" par le joueur s'il lui est révélé (revealedFor) ou géo-révélé
+function poiRevealedToViewer(name) {
+  if (!name) return false;
+  if (isMJ) return true;
+  if (!viewerId) return false;
+  const poi = (mapData.pois || []).find(p => p.name === name);
+  if (poi && Array.isArray(poi.revealedFor) && poi.revealedFor.includes(viewerId)) return true;
+  if ((mapData.geoReveal?.[name] || []).includes(viewerId)) return true;
+  return false;
+}
+function settlementVisible(s) { return isMJ || poiRevealedToViewer(s.poi); }
+
 function renderLieux() {
   const el = document.getElementById('lieux-list'); if (!el) return;
-  if (!lieux.length) { el.innerHTML = '<span class="empty">Aucun lieu configuré</span>'; return; }
-  el.innerHTML = lieux.map(l =>
+  let html = '';
+  if (lieux.length) html += lieux.map(l =>
     `<button class="lieu-btn${lieuActif?.id === l.id ? ' on' : ''}" onclick="ouvrirLieu('${l.id}')">${l.name}</button>`
   ).join('');
+  // Refuges visibles (le joueur est sur le lieu) — MJ voit tout
+  const sites = Object.entries(settlementsData.sites || {}).filter(([id, s]) => settlementVisible(s));
+  if (sites.length) {
+    html += '<div class="lieux-sub">🏚 Refuges</div>' + sites.map(([id, s]) =>
+      `<button class="lieu-btn refuge${_openRefuge === id ? ' on' : ''}" onclick="ouvrirRefuge('${id}')">🏚 ${s.name}${s.restPoint ? ' 🛏' : ''}${isMJ && !s.poi ? ' ⚠' : ''}</button>`
+    ).join('');
+  }
+  el.innerHTML = html || '<span class="empty">Aucun lieu accessible.</span>';
+}
+
+// Ouvre le constructeur de refuge (iframe) dans la zone des lieux
+function ouvrirRefuge(id) {
+  _openRefuge = id; lieuActif = null;
+  const ph = document.getElementById('lieux-placeholder'); if (ph) ph.style.display = 'none';
+  const mapDiv = document.getElementById('map-lieux'); if (mapDiv) mapDiv.style.display = 'none';
+  if (mapLieu) { mapLieu.remove(); mapLieu = null; }
+  const fr = document.getElementById('lieux-settlement-frame'); if (!fr) return;
+  const camp = (typeof fpCampId === 'function') ? fpCampId() : 'data';
+  let src = '../settlements/settlement.html?embed=1&site=' + encodeURIComponent(id) + '&camp=' + encodeURIComponent(camp);
+  if (viewerId) src += '&id=' + encodeURIComponent(viewerId);
+  fr.src = src; fr.style.display = 'block';
+  renderLieux();
 }
 
 function ouvrirLieu(id) {
   const l = lieux.find(x => x.id === id); if (!l) return;
-  lieuActif = l;
+  lieuActif = l; _openRefuge = null;
+  const fr = document.getElementById('lieux-settlement-frame'); if (fr) { fr.style.display = 'none'; fr.src = ''; }
   const ph = document.getElementById('lieux-placeholder');
   const mapDiv = document.getElementById('map-lieux');
+  if (mapDiv) mapDiv.style.display = '';
   if (!l.image) { if (ph) ph.style.display = 'flex'; renderLieux(); return; }
   if (ph) ph.style.display = 'none';
   if (mapLieu) { mapLieu.remove(); mapLieu = null; }
