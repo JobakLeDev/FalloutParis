@@ -12,6 +12,8 @@ et ça rapporte des caps au settlement de manière aléatoire mais contrôlée p
 
 
 --- Fait ---
+-[OK] eau (feature 1) : contenants Gourde(1)/Bidon(3)/Jerrican(5) dans items.json (cap+poids vide ; eau = 0.5kg/charge → poids dynamique). Remplissage au Point d'eau du refuge (settlement fillContainers) ; "Boire" sur la fiche (boireEau → desaltere + allege). _DATA_VER 12, fiche v99, settlement v8, mj db v12.
+
 -[OK] pop-ups : alert() natif (look OS) remplace globalement par une modale stylee app (shared.js override window.alert + CSS style.css). confirm/prompt restent natifs (synchrones) — migration async a faire si voulu.
 -[OK] carte MJ onglet Lieux : bandeau ping/edition masque sur Lieux (ne chevauche plus la barre des lieux) ; bouton "Ajouter un lieu" deplace DANS la barre des lieux (MJ). carte v15.
 -[OK] refuges : trait de contour sans bloc entier = arretes murs/portes/fenetres (deja livre).

@@ -87,6 +87,9 @@
     {"n":"Radio",                 "t":"STUFF","eff":"Capte et diffuse transmissions radio","w":null,"r":2},
     {"n":"Holotags",              "t":"STUFF","eff":"Identifie les morts","w":null,"r":1},
     {"n":"Pip-Boy",               "t":"STUFF","eff":"Voir description","w":null,"r":5},
-    {"n":"Gros Sabots",           "t":"STUFF","eff":"Si équipés et dernier en initiative : relance 1 attaque (1×/combat). On te voit venir de loin.","w":2.0,"r":1}
+    {"n":"Gros Sabots",           "t":"STUFF","eff":"Si équipés et dernier en initiative : relance 1 attaque (1×/combat). On te voit venir de loin.","w":2.0,"r":1},
+    {"n":"Gourde",                "t":"STUFF","eff":"Contenant d'eau (1). Se remplit à un point d'eau ; « Boire » désaltère.","w":0.2,"cap":1,"r":1},
+    {"n":"Bidon militaire",       "t":"STUFF","eff":"Contenant d'eau (3). Se remplit à un point d'eau.","w":0.5,"cap":3,"r":2},
+    {"n":"Jerrican",              "t":"STUFF","eff":"Contenant d'eau (5). Lourd une fois plein.","w":1.5,"cap":5,"r":3}
   ]
 }

@@ -39,7 +39,18 @@ const BACKPACK_BONUS={'Backpack Small':5,'Backpack Large':10};
 function isBackpack(it){return !!it && BACKPACK_BONUS[it.name]!=null;}
 function backpackMult(){const bp=char.inventory.find(it=>isBackpack(it)&&it.equipped);return bp?BACKPACK_BONUS[bp.name]:0;}
 function chargeMax(){const f=forEff(),b=(150+f*10)/2.2046;const base=b*(char.powerArmor?1.5:1)+(char.powerArmor?200:0);return Math.round((base+backpackMult()*f+effSum('charge'))*10)/10;}
+const WATER_KG=0.5;   // poids d'1 charge d'eau (contenants)
 function chargeActuelle(){let t=0;char.inventory.forEach(it=>t+=(it.qty||1)*(it.w||0));char.ammo.forEach(a=>t+=a.qty*0.02);return Math.round(t*100)/100;}
+// Boire 1 charge d'un contenant d'eau → désaltère + allège le contenant
+function boireEau(i){
+  const it=char.inventory[i]; if(!it) return;
+  const d=DB.stuff.find(s=>s.n===it.name); if(!d || d.cap==null) return;
+  if(!(it.water>0)) return;
+  it.water--; it.w=Math.round((d.w + it.water*WATER_KG)*100)/100;
+  char.survie=char.survie||{}; if(window._fpCampaignMin!=null) char.survie.drink=window._fpCampaignMin;
+  if(typeof fpLogAction==='function' && typeof db!=='undefined') fpLogAction(db, char.name||'Joueur', 'boit de l\'eau');
+  rAll();
+}
 // Résumé court des mods d'un objet (préfixes), kind='weapon'|'armor'
 function modSummary(it, kind){
   if(!it||!it.mods) return '';
@@ -625,8 +636,11 @@ function rInvMisc(){
     const db=DB.stuff.find(d=>d.n===it.name)||{};
     const bp=isBackpack(it);
     // Sac à dos : bouton Équiper (un seul à la fois) à la place de la colonne effet
+    const isCont = db.cap != null;
     const effCell=bp
       ? `<button class="ieq-btn ${it.equipped?'on':'off'}" onclick="tEquip(${i})">${it.equipped?'● ÉQUIPÉ':'○ Équiper'}</button>`
+      : isCont
+      ? `<span class="ieff">💧 ${(it.water||0)}/${db.cap}${(it.water>0)?` <button class="qu-btn" style="flex:none;padding:1px 6px;font-size:8px" onclick="boireEau(${i})">Boire</button>`:''}</span>`
       : `<span class="ieff" title="${db.eff||''}">${db.eff||'—'}</span>`;
     el.innerHTML+=`<div class="irow stuff-cols">
       <span class="itag STUFF">DIVERS</span>

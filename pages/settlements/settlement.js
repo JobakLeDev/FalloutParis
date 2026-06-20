@@ -234,6 +234,29 @@ function renderScrap(site){
       <span><button class="bp-mini" onclick="scrapJunk('${safe}',false)">Démonter</button>${it.qty>1?`<button class="bp-mini" onclick="scrapJunk('${safe}',true)">Tout (×${it.qty})</button>`:''}</span></div>`;
   }).join('');
 }
+// ---- point d'eau : remplir ses contenants ----
+function _containers(){ return (me?.inventory || []).filter(it => { const d = (window.DB?.stuff||[]).find(s => s.n === it.name); return d && d.cap != null; }); }
+function renderWater(site){
+  const el = document.getElementById('s-water'); if(!el) return;
+  if(isMJ || !me || !canAccess(site) || !_siteHas(site,'water')){ el.innerHTML = ''; return; }
+  const conts = _containers();
+  if(!conts.length){ el.innerHTML = '<div class="s-sub">🚰 Point d\'eau</div><div class="s-note">Apporte une gourde / un bidon / un jerrican pour faire le plein.</div>'; return; }
+  const lines = conts.map(it => { const d = (window.DB.stuff).find(s => s.n === it.name); return `${esc(it.name)} ${(it.water||0)}/${d.cap}`; }).join(' · ');
+  el.innerHTML = '<div class="s-sub">🚰 Point d\'eau</div><button class="sbtn add" style="max-width:320px" onclick="fillContainers()">💧 Remplir mes contenants</button><div class="s-note">' + lines + '</div>';
+}
+async function fillContainers(){
+  const site = data.sites[selSite]; if(!site || !me) return;
+  if(!canAccess(site)){ alert('Réservé aux alliés du refuge.'); return; }
+  if(!_siteHas(site,'water')){ alert('Pas de point d\'eau ici.'); return; }
+  const inv = (me.inventory || []).map(x => ({ ...x }));
+  let n = 0;
+  inv.forEach(it => { const d = (window.DB?.stuff||[]).find(s => s.n === it.name); if(d && d.cap != null && (it.water||0) < d.cap){ it.water = d.cap; it.w = Math.round((d.w + d.cap*0.5)*100)/100; n++; } });
+  if(!n){ alert('Tes contenants sont déjà pleins.'); return; }
+  try { await fdb.collection('joueurs').doc(viewerId).update({ inventory: inv, lastUpdate: Date.now() }); me.inventory = inv; }
+  catch(e){ alert('Erreur : ' + e.message); return; }
+  alert('💧 Contenant(s) rempli(s) : ' + n + '.');
+}
+
 // ---- établis : pose / retrait de mods sur armes & armures (consomme la Réserve) ----
 function _perkComplexity(perk){ const m = (''+(perk||'')).match(/(\d+)/); const r = m ? parseInt(m[1]) : 0; return Math.min(6, Math.max(0, 2 + r)); }
 function _modMats(mod){ return (window.BUILD_MATS && window.BUILD_MATS[_perkComplexity(mod.perk)]) || { common:0, uncommon:0, rare:0 }; }
@@ -340,6 +363,7 @@ function render(){
     return `<div class="s-mat"><span class="mc">${matLabel(t)}</span><b>${site.stock?.[t]||0}</b>${cr}</div>`;
   }).join('');
   renderRest(site);
+  renderWater(site);
   renderBench(site);
   renderScrap(site);
 
