@@ -15,6 +15,7 @@ let fdb, me = null;                 // me = fiche du joueur (?id)
 let cartePois = [];                 // noms des POI de la carte (lien settlement ↔ lieu)
 let data = { sites: {} };           // /settlements/<camp>
 let joueursCamp = {};               // joueurs de la campagne (pour alliés)
+let tempsData = null;               // /temps/<camp> (pour le tick éco/colons)
 let selSite = null;                 // id du refuge sélectionné
 let selBlock = null;                // bloc choisi dans le catalogue (à poser)
 let _edgeBrush = null;              // MJ : pinceau d'arête ('wall'|'door'|'window'|'erase')
@@ -90,6 +91,7 @@ async function initSettlement(){
     data = { sites: (d.sites && typeof d.sites === 'object') ? d.sites : {} };
     render();
   });
+  fdb.collection('temps').doc(fpCampId()).onSnapshot(s => { tempsData = s.exists ? s.data() : {}; render(); });
 }
 
 function demanderMJ(){
@@ -154,6 +156,7 @@ function cellClick(id, x, y){
   if ((s.blocks || []).some(b => b.x === x && b.y === y)) { alert('Case déjà occupée.'); return; }
   if ((s.pending || []).some(b => b.x === x && b.y === y)) { alert('Une demande est déjà en attente sur cette case.'); return; }
   const block = blockDef(selBlock); if (!block) return;
+  if (block.requires && !_siteHas(s, block.requires)) { alert('Nécessite d\'abord : ' + (blockDef(block.requires)?.name || block.requires) + '.'); return; }
   if (!skillOk(block)) { alert('Compétence insuffisante pour ce bloc.'); return; }
   if (isMJ){
     // Le MJ pose directement et GRATUITEMENT (aucun matériau consommé)
@@ -234,6 +237,67 @@ function renderScrap(site){
       <span><button class="bp-mini" onclick="scrapJunk('${safe}',false)">Démonter</button>${it.qty>1?`<button class="bp-mini" onclick="scrapJunk('${safe}',true)">Tout (×${it.qty})</button>`:''}</span></div>`;
   }).join('');
 }
+// ---- économie & colons (comptoir + beacon), avancée par le temps (MJ) ----
+function waterPoints(site){ return (site.blocks||[]).filter(b => b.type === 'water').length; }
+function bedCount(site){ return (site.blocks||[]).filter(b => b.type === 'bed').length; }
+function sCampNow(){ let mx = 0; (tempsData?.parties || []).forEach(p => { mx = Math.max(mx, p.minutes || 0); }); return mx; }
+function sTick(site){
+  if(!isMJ || !site) return;
+  const now = sCampNow();
+  if(site.lastTick == null){ site.lastTick = now; save(); return; }
+  const days = (now - site.lastTick) / 1440;
+  if(days <= 0) return;
+  const hasShop = (site.blocks||[]).some(b => b.type === 'shop_water');
+  const hasBeacon = (site.blocks||[]).some(b => b.type === 'beacon');
+  if(hasShop && site.vendor && waterPoints(site) > 0){
+    const talent = Math.max(1, Math.min(5, site.vendor.talent || 1));
+    const gain = Math.round(waterPoints(site) * talent * days * (0.6 + Math.random() * 0.8));
+    if(gain > 0) site.caps = (site.caps || 0) + gain;
+  }
+  if(hasBeacon){
+    const cap = bedCount(site); let s = site.settlers || 0;
+    if(s < cap){ let arr = 0; const tries = Math.max(1, Math.floor(days));
+      for(let i = 0; i < tries && (s + arr) < cap; i++){ if(Math.random() < 0.5) arr++; }
+      if(arr > 0) site.settlers = Math.min(cap, s + arr); }
+  }
+  site.lastTick = now;
+  save();
+}
+function renderEco(site){
+  const el = document.getElementById('s-eco'); if(!el) return;
+  const hasShop = (site.blocks||[]).some(b => b.type === 'shop_water');
+  const hasBeacon = (site.blocks||[]).some(b => b.type === 'beacon');
+  if(!hasShop && !hasBeacon){ el.innerHTML = ''; return; }
+  let h = '<div class="s-sub">🏪 Économie & colons</div>';
+  if(hasBeacon) h += `<div class="s-eco-row">📡 Colons : <b>${site.settlers||0}</b> / ${bedCount(site)} <small>(lits)</small></div>`;
+  if(hasShop){
+    h += `<div class="s-eco-row">🪧 Cagnotte : <b style="color:var(--am)">${site.caps||0}</b> caps · vendeur : ${site.vendor ? esc(site.vendor.name)+' (talent '+site.vendor.talent+')' : '<i>aucun</i>'}</div>`;
+    if(isMJ){
+      h += `<div class="s-eco-ctrl"><input id="eco-vname" class="s-inp" style="width:130px;display:inline-block" placeholder="Nom du vendeur"><select id="eco-vtal" class="s-inp" style="width:64px;display:inline-block"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select><button class="sbtn" onclick="assignVendor()">Assigner</button></div>`;
+      const opts = Object.keys(joueursCamp).map(pid => `<option value="${pid}">${esc(joueursCamp[pid].nom||pid)}</option>`).join('') || '<option value="">—</option>';
+      h += `<div class="s-eco-ctrl">Verser <input id="eco-amt" type="number" class="s-inp" style="width:64px;display:inline-block" value="50" min="1"> caps → <select id="eco-to" class="s-inp" style="width:130px;display:inline-block">${opts}</select><button class="sbtn" onclick="withdrawCaps()">→ joueur</button></div>`;
+    } else h += '<div class="s-note">La cagnotte se remplit au fil du temps ; le MJ la redistribue.</div>';
+  }
+  el.innerHTML = h;
+}
+function assignVendor(){
+  if(!isMJ) return; const site = data.sites[selSite]; if(!site) return;
+  const name = (document.getElementById('eco-vname')?.value || '').trim();
+  const tal = Math.max(1, Math.min(5, parseInt(document.getElementById('eco-vtal')?.value) || 1));
+  if(!name){ alert('Nom du vendeur requis.'); return; }
+  site.vendor = { name, talent: tal }; if(site.lastTick == null) site.lastTick = sCampNow(); save();
+}
+async function withdrawCaps(){
+  if(!isMJ) return; const site = data.sites[selSite]; if(!site) return;
+  const amt = parseInt(document.getElementById('eco-amt')?.value) || 0;
+  const to = document.getElementById('eco-to')?.value;
+  if(amt <= 0 || !to) return;
+  if((site.caps || 0) < amt){ alert('Cagnotte insuffisante.'); return; }
+  site.caps -= amt; save();
+  try { const ref = fdb.collection('joueurs').doc(to); const snap = await ref.get(); const cur = (snap.exists ? snap.data().caps : 0) || 0; await ref.update({ caps: cur + amt, lastUpdate: Date.now() }); alert('💰 ' + amt + ' caps versés à ' + (joueursCamp[to]?.nom || to) + '.'); }
+  catch(e){ alert('Erreur : ' + e.message); }
+}
+
 // ---- point d'eau : remplir ses contenants ----
 function _containers(){ return (me?.inventory || []).filter(it => { const d = (window.DB?.stuff||[]).find(s => s.n === it.name); return d && d.cap != null; }); }
 function renderWater(site){
@@ -362,6 +426,8 @@ function render(){
     const cr = isMJ ? `<span class="cr"><button onclick="creditStock('${selSite}','${t}',-1)">−</button><button onclick="creditStock('${selSite}','${t}',1)">+</button><button onclick="creditStock('${selSite}','${t}',5)" title="+5">⏫</button></span>` : '';
     return `<div class="s-mat"><span class="mc">${matLabel(t)}</span><b>${site.stock?.[t]||0}</b>${cr}</div>`;
   }).join('');
+  if(isMJ) sTick(site);
+  renderEco(site);
   renderRest(site);
   renderWater(site);
   renderBench(site);

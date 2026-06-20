@@ -9,9 +9,14 @@ Pour les deux points suivants, vérifie dans le pdf si un systeme equivalent exi
 - à terme, développer un systeme de marchands : si mon settlement a au moins un point d'eau, je peux vendre de l'eau en creant un comptoir de vente et en y assignant un pnj. 
 et ça rapporte des caps au settlement de manière aléatoire mais contrôlée principalement par le nombre de points d'eau total (la quantité qu'on produit), les stats du pnj et le temps qui passe.
 - implémenter un système d'accueil de settlement : on peut accueillir des survivants qui participent à la communauté (différence entre settlement et refuge). dans un premier temps implémenter un systeme de beacon de recrutement (comme dans fallout 4) qui fait venir des settlers de manière aléatoire dans la limite de ce que le settlement peut accueillir (le nb de lits). à ce stade les settlers sont juste une stat-pas des pnj complets-.
-
+- ajouter des blocs pour les settlements : cultures de fruits légumes (en fonction de ce qui existe dans les objets si on a deja des fruits et légumes)
+-sur le modele du marchand d'eau ajouter les marchands de nourriture: "vendeur de nourriture"(vends les fruits et légumes cultivés, ou de la viande s'il y en a dans l'inventaire du settlement) et "restaurateur" (lié à la capacité de cuisine du settlement) 
+- ajouter un bloc tourelle pour la défense dans la map settlements.
+- en lien avec tout ça on peut faiore des stats de settlement sur la sécurité, le nombre de lits/lits disponibles, et des jauges de production food et eau.
 
 --- Fait ---
+-[OK] settlements feature 2 (comptoir) + 3 (beacon/colons) : blocs shop_water (requiert point d'eau) + beacon (build_blocks). Tick temporel MJ (sCampNow = max minutes parties) → comptoir : caps passifs = points d'eau x talent vendeur x jours x alea ; beacon : colons arrivent au fil du temps, plafonnes par le nb de lits. UI #s-eco (cagnotte, assigner vendeur, verser caps a un joueur, compteur colons). settlement v9, _DATA_VER 13.
+
 -[OK] eau (feature 1) : contenants Gourde(1)/Bidon(3)/Jerrican(5) dans items.json (cap+poids vide ; eau = 0.5kg/charge → poids dynamique). Remplissage au Point d'eau du refuge (settlement fillContainers) ; "Boire" sur la fiche (boireEau → desaltere + allege). _DATA_VER 12, fiche v99, settlement v8, mj db v12.
 
 -[OK] pop-ups : alert() natif (look OS) remplace globalement par une modale stylee app (shared.js override window.alert + CSS style.css). confirm/prompt restent natifs (synchrones) — migration async a faire si voulu.

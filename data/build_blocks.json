@@ -18,6 +18,8 @@
     { "id": "wbench_weapon", "name": "Établi d'armes",   "icon": "🔧", "color": "#6b7280", "tier": 2, "skills": ["repair","science"], "complexity": 5, "effect": "weapon_bench", "desc": "Réparer et modifier les armes sur place (RAW : Réparation + Sciences)." },
     { "id": "wbench_armor",  "name": "Établi d'armures", "icon": "🛡️", "color": "#3a7a3a", "tier": 2, "skills": ["repair"],          "complexity": 4, "effect": "armor_bench",  "desc": "Réparer et modifier les armures sur place (RAW : Réparation)." },
     { "id": "chem_station",  "name": "Station de chimie","icon": "⚗️", "color": "#7d3c98", "tier": 2, "skills": ["science","explosives"], "complexity": 5, "effect": "chem_bench", "desc": "Crafter chems / explosifs (RAW : Sciences + Explosifs)." },
-    { "id": "medical",       "name": "Poste médical",    "icon": "🩺", "color": "#b03a3a", "tier": 2, "skills": ["medicine"],         "complexity": 4, "effect": "medbay",       "desc": "Soigne PV et radiations au repos (RAW : Médecine)." }
+    { "id": "medical",       "name": "Poste médical",    "icon": "🩺", "color": "#b03a3a", "tier": 2, "skills": ["medicine"],         "complexity": 4, "effect": "medbay",       "desc": "Soigne PV et radiations au repos (RAW : Médecine)." },
+    { "id": "shop_water",    "name": "Comptoir de vente", "icon": "🪧", "color": "#caa23a", "tier": 2, "skills": ["barter"],          "complexity": 3, "effect": "water_shop", "requires": "water", "desc": "Vend l'eau du refuge. Nécessite un point d'eau. Assigne un vendeur → caps passifs au fil du temps." },
+    { "id": "beacon",        "name": "Beacon de recrutement", "icon": "📡", "color": "#7a9a3a", "tier": 2, "skills": ["repair","science"], "complexity": 4, "effect": "beacon", "desc": "Attire des colons (settlers) au fil du temps, dans la limite des couchages. Fait du refuge un settlement habité." }
   ]
 }

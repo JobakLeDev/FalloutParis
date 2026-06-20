@@ -97,3 +97,9 @@ body.sitelock #s-layout{ grid-template-columns:1fr; padding:8px; }
 .s-ebtn{background:var(--gk);border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 9px;cursor:pointer;}
 .s-ebtn:hover{border-color:var(--g);}
 .s-ebtn.on{background:var(--am);color:#1a1200;border-color:var(--am);}
+
+/* Économie & colons */
+#s-eco{margin:4px 0 12px;border:1px solid var(--b);background:#0a140a;padding:8px;}
+.s-eco-row{font-size:11px;color:var(--tb);margin-bottom:5px;}
+.s-eco-ctrl{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-top:5px;font-size:10px;color:var(--td);}
+.s-eco-ctrl .s-inp{margin-bottom:0;}
