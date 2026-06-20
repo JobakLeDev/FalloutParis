@@ -103,3 +103,13 @@ body.sitelock #s-layout{ grid-template-columns:1fr; padding:8px; }
 .s-eco-row{font-size:11px;color:var(--tb);margin-bottom:5px;}
 .s-eco-ctrl{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-top:5px;font-size:10px;color:var(--td);}
 .s-eco-ctrl .s-inp{margin-bottom:0;}
+
+/* Stats settlement */
+#s-stats{margin:6px 0;}
+.s-statbar{display:flex;gap:6px;flex-wrap:wrap;}
+.s-stat{font-size:10px;color:var(--td);background:#0a140a;border:1px solid var(--b);padding:4px 8px;}
+.s-stat b{color:var(--tb);font-family:'Oswald',sans-serif;}
+/* Jeton joueur sur la grille du refuge */
+.s-tok{position:absolute;width:26px;height:26px;border-radius:50%;background:#0c150c;border:2px solid var(--td);color:var(--tb);font-family:'Oswald',sans-serif;font-size:11px;display:flex;align-items:center;justify-content:center;z-index:7;box-shadow:0 0 6px rgba(0,0,0,.6);}
+.s-tok-me{border-color:var(--g);box-shadow:0 0 8px rgba(93,190,93,.7);}
+.s-tok-sel{border-color:var(--am);box-shadow:0 0 10px rgba(232,168,32,.9);cursor:pointer;}

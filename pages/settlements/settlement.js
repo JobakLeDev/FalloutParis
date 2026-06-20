@@ -19,6 +19,8 @@ let tempsData = null;               // /temps/<camp> (pour le tick éco/colons)
 let selSite = null;                 // id du refuge sélectionné
 let selBlock = null;                // bloc choisi dans le catalogue (à poser)
 let _edgeBrush = null;              // MJ : pinceau d'arête ('wall'|'door'|'window'|'erase')
+let _selTok = null;                 // MJ : jeton joueur sélectionné (à déplacer)
+let _autoPlaced = false;            // joueur : jeton auto-placé une fois
 
 // Rendu des arêtes (murs/portes/fenêtres) — porté de mj_shared.js (battlemap)
 function gridEdgesHtmlS(grid, cs){
@@ -152,6 +154,7 @@ function toggleAlly(id, pid){
 function selectCat(type){ selBlock = (selBlock === type) ? null : type; render(); }
 function cellClick(id, x, y){
   const s = data.sites[id]; if (!s) return;
+  if (isMJ && _selTok){ s.pos = s.pos || {}; s.pos[_selTok] = { x, y }; _selTok = null; save(); return; }   // déplacer un jeton
   if (!selBlock) return;
   if ((s.blocks || []).some(b => b.x === x && b.y === y)) { alert('Case déjà occupée.'); return; }
   if ((s.pending || []).some(b => b.x === x && b.y === y)) { alert('Une demande est déjà en attente sur cette case.'); return; }
@@ -237,55 +240,64 @@ function renderScrap(site){
       <span><button class="bp-mini" onclick="scrapJunk('${safe}',false)">Démonter</button>${it.qty>1?`<button class="bp-mini" onclick="scrapJunk('${safe}',true)">Tout (×${it.qty})</button>`:''}</span></div>`;
   }).join('');
 }
-// ---- économie & colons (comptoir + beacon), avancée par le temps (MJ) ----
-function waterPoints(site){ return (site.blocks||[]).filter(b => b.type === 'water').length; }
-function bedCount(site){ return (site.blocks||[]).filter(b => b.type === 'bed').length; }
+
+// ---- économie, production, défense & colons ----
+function countBlk(site, t){ return (site.blocks || []).filter(b => b.type === t).length; }
+function waterPoints(site){ return countBlk(site,'water'); }
+function bedCount(site){ return countBlk(site,'bed'); }
+function security(site){ return countBlk(site,'turret') * 2; }
 function sCampNow(){ let mx = 0; (tempsData?.parties || []).forEach(p => { mx = Math.max(mx, p.minutes || 0); }); return mx; }
+function vendorFor(site, key){ return (site.vendors && site.vendors[key]) || (key === 'shop_water' ? site.vendor : null) || null; }
+const _RND = () => 0.6 + Math.random() * 0.8;
 function sTick(site){
   if(!isMJ || !site) return;
   const now = sCampNow();
   if(site.lastTick == null){ site.lastTick = now; save(); return; }
   const days = (now - site.lastTick) / 1440;
   if(days <= 0) return;
-  const hasShop = (site.blocks||[]).some(b => b.type === 'shop_water');
-  const hasBeacon = (site.blocks||[]).some(b => b.type === 'beacon');
-  if(hasShop && site.vendor && waterPoints(site) > 0){
-    const talent = Math.max(1, Math.min(5, site.vendor.talent || 1));
-    const gain = Math.round(waterPoints(site) * talent * days * (0.6 + Math.random() * 0.8));
-    if(gain > 0) site.caps = (site.caps || 0) + gain;
-  }
-  if(hasBeacon){
-    const cap = bedCount(site); let s = site.settlers || 0;
-    if(s < cap){ let arr = 0; const tries = Math.max(1, Math.floor(days));
-      for(let i = 0; i < tries && (s + arr) < cap; i++){ if(Math.random() < 0.5) arr++; }
-      if(arr > 0) site.settlers = Math.min(cap, s + arr); }
-  }
-  site.lastTick = now;
-  save();
+  const farms = countBlk(site,'farm');
+  if(farms > 0) site.food = Math.round(((site.food||0) + farms * days * _RND()) * 10) / 10;
+  const vW = vendorFor(site,'shop_water');
+  if(countBlk(site,'shop_water') && vW && waterPoints(site) > 0) site.caps = (site.caps||0) + Math.round(waterPoints(site) * (vW.talent||1) * days * _RND());
+  const vF = vendorFor(site,'shop_food');
+  if(countBlk(site,'shop_food') && vF && (site.food||0) > 0){ const sold = Math.min(site.food, (vF.talent||1) * days * _RND()); if(sold > 0){ site.food = Math.round((site.food - sold) * 10) / 10; site.caps = (site.caps||0) + Math.round(sold * 2); } }
+  const vD = vendorFor(site,'diner');
+  if(countBlk(site,'diner') && vD && countBlk(site,'cooking') && (site.food||0) > 0){ const meals = Math.min(site.food, (vD.talent||1) * days * _RND()); if(meals > 0){ site.food = Math.round((site.food - meals) * 10) / 10; site.caps = (site.caps||0) + Math.round(meals * 4); } }
+  if(countBlk(site,'beacon')){ const cap = bedCount(site); let s = site.settlers||0; if(s < cap){ let arr = 0; const tries = Math.max(1, Math.floor(days)); for(let i=0;i<tries && (s+arr)<cap;i++){ if(Math.random()<0.5) arr++; } if(arr>0) site.settlers = Math.min(cap, s+arr); } }
+  site.lastTick = now; save();
+}
+function renderStats(site){
+  const el = document.getElementById('s-stats'); if(!el) return;
+  const parts = [
+    `🛡 Sécurité <b>${security(site)}</b>`,
+    `🛏 Colons <b>${site.settlers||0}</b>/<b>${bedCount(site)}</b>`,
+    `🚰 Eau <b>${waterPoints(site)}</b>/j`,
+    `🌱 Food <b>${countBlk(site,'farm')}</b>/j · stock <b>${Math.floor(site.food||0)}</b>`,
+    `◉ Caps <b style="color:var(--am)">${site.caps||0}</b>`,
+  ];
+  el.innerHTML = '<div class="s-statbar">' + parts.map(p => `<span class="s-stat">${p}</span>`).join('') + '</div>';
 }
 function renderEco(site){
   const el = document.getElementById('s-eco'); if(!el) return;
-  const hasShop = (site.blocks||[]).some(b => b.type === 'shop_water');
-  const hasBeacon = (site.blocks||[]).some(b => b.type === 'beacon');
-  if(!hasShop && !hasBeacon){ el.innerHTML = ''; return; }
-  let h = '<div class="s-sub">🏪 Économie & colons</div>';
-  if(hasBeacon) h += `<div class="s-eco-row">📡 Colons : <b>${site.settlers||0}</b> / ${bedCount(site)} <small>(lits)</small></div>`;
-  if(hasShop){
-    h += `<div class="s-eco-row">🪧 Cagnotte : <b style="color:var(--am)">${site.caps||0}</b> caps · vendeur : ${site.vendor ? esc(site.vendor.name)+' (talent '+site.vendor.talent+')' : '<i>aucun</i>'}</div>`;
-    if(isMJ){
-      h += `<div class="s-eco-ctrl"><input id="eco-vname" class="s-inp" style="width:130px;display:inline-block" placeholder="Nom du vendeur"><select id="eco-vtal" class="s-inp" style="width:64px;display:inline-block"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select><button class="sbtn" onclick="assignVendor()">Assigner</button></div>`;
-      const opts = Object.keys(joueursCamp).map(pid => `<option value="${pid}">${esc(joueursCamp[pid].nom||pid)}</option>`).join('') || '<option value="">—</option>';
-      h += `<div class="s-eco-ctrl">Verser <input id="eco-amt" type="number" class="s-inp" style="width:64px;display:inline-block" value="50" min="1"> caps → <select id="eco-to" class="s-inp" style="width:130px;display:inline-block">${opts}</select><button class="sbtn" onclick="withdrawCaps()">→ joueur</button></div>`;
-    } else h += '<div class="s-note">La cagnotte se remplit au fil du temps ; le MJ la redistribue.</div>';
-  }
+  const shops = [['shop_water','🪧 Eau'],['shop_food','🍲 Nourriture'],['diner','🍳 Restaurant']].filter(([k]) => countBlk(site,k));
+  if(!shops.length){ el.innerHTML = ''; return; }
+  let h = '<div class="s-sub">🏪 Comptoirs</div>';
+  shops.forEach(([k,lbl]) => { const v = vendorFor(site,k);
+    h += `<div class="s-eco-row">${lbl} — vendeur : ${v ? esc(v.name)+' (talent '+v.talent+')' : '<i>aucun</i>'}</div>`;
+    if(isMJ) h += `<div class="s-eco-ctrl"><input id="ev-${k}" class="s-inp" style="width:130px;display:inline-block" placeholder="Nom vendeur"><select id="et-${k}" class="s-inp" style="width:60px;display:inline-block"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select><button class="sbtn" onclick="assignVendor('${k}')">Assigner</button></div>`;
+  });
+  if(isMJ){ const opts = Object.keys(joueursCamp).map(pid => `<option value="${pid}">${esc(joueursCamp[pid].nom||pid)}</option>`).join('') || '<option value="">—</option>';
+    h += `<div class="s-eco-ctrl">Verser <input id="eco-amt" type="number" class="s-inp" style="width:64px;display:inline-block" value="50" min="1"> caps → <select id="eco-to" class="s-inp" style="width:130px;display:inline-block">${opts}</select><button class="sbtn" onclick="withdrawCaps()">→ joueur</button></div>`;
+  } else h += '<div class="s-note">La cagnotte se remplit au fil du temps ; le MJ la redistribue.</div>';
   el.innerHTML = h;
 }
-function assignVendor(){
+function assignVendor(key){
   if(!isMJ) return; const site = data.sites[selSite]; if(!site) return;
-  const name = (document.getElementById('eco-vname')?.value || '').trim();
-  const tal = Math.max(1, Math.min(5, parseInt(document.getElementById('eco-vtal')?.value) || 1));
+  const name = (document.getElementById('ev-'+key)?.value || '').trim();
+  const tal = Math.max(1, Math.min(5, parseInt(document.getElementById('et-'+key)?.value) || 1));
   if(!name){ alert('Nom du vendeur requis.'); return; }
-  site.vendor = { name, talent: tal }; if(site.lastTick == null) site.lastTick = sCampNow(); save();
+  site.vendors = site.vendors || {}; site.vendors[key] = { name, talent: tal };
+  if(site.lastTick == null) site.lastTick = sCampNow(); save();
 }
 async function withdrawCaps(){
   if(!isMJ) return; const site = data.sites[selSite]; if(!site) return;
@@ -297,6 +309,8 @@ async function withdrawCaps(){
   try { const ref = fdb.collection('joueurs').doc(to); const snap = await ref.get(); const cur = (snap.exists ? snap.data().caps : 0) || 0; await ref.update({ caps: cur + amt, lastUpdate: Date.now() }); alert('💰 ' + amt + ' caps versés à ' + (joueursCamp[to]?.nom || to) + '.'); }
   catch(e){ alert('Erreur : ' + e.message); }
 }
+function selTok(pid){ if(!isMJ) return; _selTok = (_selTok === pid) ? null : pid; render(); }
+function _firstFreeCell(site){ for(let y=site.h-1;y>=0;y--) for(let x=0;x<site.w;x++){ if(!(site.blocks||[]).some(b=>b.x===x&&b.y===y) && !Object.values(site.pos||{}).some(p=>p&&p.x===x&&p.y===y)) return {x,y}; } return {x:0,y:0}; }
 
 // ---- point d'eau : remplir ses contenants ----
 function _containers(){ return (me?.inventory || []).filter(it => { const d = (window.DB?.stuff||[]).find(s => s.n === it.name); return d && d.cap != null; }); }
@@ -427,6 +441,7 @@ function render(){
     return `<div class="s-mat"><span class="mc">${matLabel(t)}</span><b>${site.stock?.[t]||0}</b>${cr}</div>`;
   }).join('');
   if(isMJ) sTick(site);
+  renderStats(site);
   renderEco(site);
   renderRest(site);
   renderWater(site);
@@ -453,9 +468,20 @@ function render(){
   }
   cells += '<div class="s-edges">' + gridEdgesHtmlS({ w: site.w, h: site.h, edges: site.edges || {} }, CS) + '</div>';
   if (isMJ && _edgeBrush) cells += sEdgeHotspots(site, CS);
+  // Jeton du joueur visiteur : auto-placement à la 1re visite (joueur allié)
+  if (!isMJ && me && canAccess(site) && !(site.pos && site.pos[me.id]) && !_autoPlaced){
+    _autoPlaced = true; site.pos = site.pos || {}; site.pos[me.id] = _firstFreeCell(site); save();
+  }
+  // Jetons (tous les joueurs présents sur ce refuge)
+  const pos = site.pos || {};
+  Object.keys(pos).forEach(pid => { const p = pos[pid]; if(!p) return;
+    const nom = (joueursCamp[pid]?.nom || pid);
+    const cls = 's-tok' + (pid === viewerId ? ' s-tok-me' : '') + (isMJ && _selTok === pid ? ' s-tok-sel' : '');
+    cells += `<div class="${cls}" style="left:${PAD + p.x*PITCH + (CS-26)/2}px;top:${PAD + p.y*PITCH + (CS-26)/2}px" ${isMJ?`onclick="selTok('${pid}')"`:''} title="${esc(nom)}">${esc(nom).slice(0,2).toUpperCase()}</div>`;
+  });
   gw.innerHTML = cells;
   renderEdgePal();
-  document.getElementById('s-grid-hint').textContent = _edgeBrush ? ('— clique les BORDS des cases pour poser : ' + ({wall:'Mur',door:'Porte',window:'Fenêtre',erase:'Effacer'}[_edgeBrush])) : selBlock ? ('— clique une case pour poser : ' + (blockDef(selBlock)?.name||'')) : (isMJ ? '— clique un bloc du catalogue puis une case · ou un pinceau Mur/Porte/Fenêtre puis les bords (clic sur bloc posé = retirer)' : '— choisis un bloc puis une case pour proposer');
+  document.getElementById('s-grid-hint').textContent = _selTok ? '— clique une case pour déplacer le jeton' : _edgeBrush ? ('— clique les BORDS des cases pour poser : ' + ({wall:'Mur',door:'Porte',window:'Fenêtre',erase:'Effacer'}[_edgeBrush])) : selBlock ? ('— clique une case pour poser : ' + (blockDef(selBlock)?.name||'')) : (isMJ ? '— bloc du catalogue + case · pinceau Mur/Porte/Fenêtre + bords · clic jeton = déplacer · clic bloc posé = retirer' : '— choisis un bloc puis une case pour proposer');
 
   // catalogue
   document.getElementById('s-cat').innerHTML = (window.BUILD_BLOCKS || []).map(b => {
