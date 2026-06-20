@@ -1,5 +1,11 @@
 Liste des truc à implémenter :
+ajouter bruit lors de l'alerte joueur pour le butin. mùême bruit que terminal et crochetage
+ajouter un filtre sur les objets acquis récemment dans l'inventaire joueur
+ça fait pas de bruit quand un joueur reçoit un message, investiguer.
+- settlements Inc.2 : repos bonifié (cuisine→faim, eau→soif, porte→sécurité, médical→PV/rad) + scrap du junk (loot → matériaux, dépôt joueur dans la Réserve) + pin "point de repos" sur la carte.
+- settlements Inc.3 : établis armes/armures utilisables sur place (réparation RAW + pose de mods).
 --- Fait ---
+-[OK] settlements Inc.1 : module pages/settlements/ (collection /settlements/<campId>), MJ crée refuge (nom/taille/faction|indépendant)+crédite Réserve (3 paliers)+gère alliés+valide les poses ; joueur propose un bloc si rang de compétence ≥ Complexité (RAW, sans jet) ; déduction auto du stock ; couchage→point de repos. Catalogue data/build_blocks.json + junk data/junk.json (66 objets, 0.5-5kg). Onglet REFUGES dans la fiche + lien MJ. Rule /settlements (republier).
 -[OK] bot Discord (discord-bot/) : Node.js + discord.js v14 + firebase-admin. /fiche (embed synthétique + autocomplete + image), notifications #fiches-live (listener Firestore /joueurs, diff sans spam), /archive-session (transcript #session-en-cours → thread #archives-sessions, point d'archive dans discordBot/state), README + .env.example. Code livré (Node non exécutable ici → npm install/deploy/start à faire par l'équipe).
 -[OK] musique de combat : station "combat" (radio/combat/*.mp3 + tracks.json) jouée en ALÉATOIRE en boucle sur les écrans de combat (combat.html + combat_joueur.html) via combat_radio.js ; bouton flottant 🎵 mute + volume (mémorisés) ; autoplay tenté, repris au 1er geste. radio/ dé-gitignoré (mp3 commités, assumé).
 -[OK] script dl_radio.sh : télécharge les 7 vidéos YouTube en MP3 dans ./radio/ (yt-dlp + ffmpeg installés via winget ; --no-check-certificates car TLS intercepté). 7 MP3 OST Fallout 4 récupérés. ./radio/ gitignoré (droits d'auteur).

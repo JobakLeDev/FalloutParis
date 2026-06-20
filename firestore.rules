@@ -81,6 +81,10 @@ service cloud.firestore {
     // scopés par doc id = campagne et passent déjà par les règles wildcard ci-dessus.
     match /campaigns/{id} { allow read, write: if true; }
 
+    // ---------- Refuges / settlements (par campagne) ----------
+    // /settlements/<campId> = { sites:{ <id>:{name,w,h,faction,allies,stock,blocks,pending,restPoint} } }
+    match /settlements/{doc} { allow read, write: if true; }
+
     // ---------- Tout le reste : INTERDIT ----------
     // Empêche la création de collections/documents non prévus.
     match /{document=**} {

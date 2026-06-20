@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg?v=2">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fallout Paris — Refuges</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../common/style.css?v=82">
+  <link rel="stylesheet" href="settlement.css?v=1">
+  <link rel="stylesheet" href="../../common/zoom.css?v=2">
+</head>
+<body>
+
+  <div class="shdr">
+    <div class="shdr-title">🏚 REFUGES &amp; SETTLEMENTS<small id="shdr-mode">Vue joueur</small></div>
+    <div class="shdr-btns">
+      <button class="sbtn" id="smj-btn" onclick="demanderMJ()">🔑 Mode MJ</button>
+      <a class="sbtn" href="../mj/mj.html">🎲 MJ</a>
+      <a class="sbtn" href="../carte/carte.html">🗺 Carte</a>
+      <a class="sbtn" href="../../index.html">Accueil</a>
+    </div>
+  </div>
+
+  <div id="s-layout">
+    <!-- GAUCHE : liste des sites + création (MJ) -->
+    <aside id="s-side">
+      <div class="s-side-title">Refuges</div>
+      <div id="s-list"><span class="empty">Chargement…</span></div>
+      <div id="s-create" style="display:none">
+        <div class="s-side-title" style="margin-top:10px">Nouveau refuge (MJ)</div>
+        <input id="ns-name" class="s-inp" placeholder="Nom (ex: La Cave de Lila)">
+        <div class="s-row">
+          <input id="ns-w" class="s-inp s-num" type="number" min="2" max="12" value="4" title="Largeur">
+          <span class="s-x">×</span>
+          <input id="ns-h" class="s-inp s-num" type="number" min="2" max="12" value="4" title="Hauteur">
+        </div>
+        <select id="ns-fac" class="s-inp">
+          <option value="">Indépendant (liste d'alliés)</option>
+          <option value="republique">République</option>
+          <option value="reseau">Réseau</option>
+          <option value="commune">Commune</option>
+          <option value="nnfp">NNFP</option>
+          <option value="zazous">Zazous</option>
+          <option value="ultras">Ultras</option>
+          <option value="vault">Abri 74</option>
+          <option value="settlement">Bourg-de-Bois</option>
+        </select>
+        <button class="sbtn add" onclick="creerSite()">+ Créer le refuge</button>
+      </div>
+    </aside>
+
+    <!-- DROITE : refuge sélectionné -->
+    <main id="s-main">
+      <div id="s-empty" class="s-big-empty">Sélectionne un refuge à gauche.</div>
+      <div id="s-site" style="display:none">
+        <div id="s-site-head"></div>
+        <div id="s-stock"></div>
+        <div class="s-cols">
+          <div class="s-grid-wrap">
+            <div class="s-sub">Plan du refuge <small id="s-grid-hint"></small></div>
+            <div id="s-grid"></div>
+          </div>
+          <div class="s-cat-wrap">
+            <div class="s-sub">Catalogue de blocs</div>
+            <div id="s-cat"></div>
+          </div>
+        </div>
+        <div id="s-pending"></div>
+        <div id="s-allies"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="../../common/shared.js?v=82"></script>
+  <script src="../../common/db.js?v=11"></script>
+  <script src="settlement.js?v=1"></script>
+  <script>document.addEventListener('DOMContentLoaded', () => window.DB_READY.then(initSettlement));</script>
+  <script src="../../common/responsive.js?v=1"></script>
+</body>
+</html>

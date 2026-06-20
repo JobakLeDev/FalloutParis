@@ -17,7 +17,7 @@ html, body { height: 100%; overflow: hidden; }
   overflow: hidden;
   text-align: center;
 }
-#tc-carte iframe, #tc-quetes iframe, #tc-journal iframe, #tc-encyclopedie iframe, #tc-butin iframe {
+#tc-carte iframe, #tc-quetes iframe, #tc-journal iframe, #tc-encyclopedie iframe, #tc-settlements iframe, #tc-butin iframe {
   display: block;
   width: 100%;
   height: calc(100vh - 20rem);   /* descend jusqu'au bas de page (header+onglets ≈ 20rem) */
