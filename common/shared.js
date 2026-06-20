@@ -245,3 +245,25 @@ function partyMinutesFor(tempsData, pid){
   const p = parties.find(x => (x.players || []).includes(pid));
   return p ? (p.minutes || 0) : TEMPS_DEFAUT;   // non groupé → son propre temps par défaut
 }
+
+// ============================================================
+// POP-UPS STYLÉES — remplace alert() natif (look OS) par une modale aux couleurs de l'app.
+// (prompt/confirm restent natifs : synchrones, non remplaçables sans réécriture asynchrone.)
+// ============================================================
+(function(){
+  if(typeof window === 'undefined' || window.__fpAlertHooked) return;
+  window.__fpAlertHooked = true;
+  function fpShowAlert(msg){
+    if(!document.body){ document.addEventListener('DOMContentLoaded', () => fpShowAlert(msg)); return; }
+    let o = document.getElementById('fp-alert');
+    if(!o){ o = document.createElement('div'); o.id = 'fp-alert'; document.body.appendChild(o); }
+    const m = document.createElement('div'); m.className = 'fp-alert-box';
+    const t = document.createElement('div'); t.className = 'fp-alert-msg'; t.textContent = (msg == null ? '' : '' + msg);
+    const b = document.createElement('button'); b.className = 'fp-alert-ok'; b.textContent = 'OK';
+    const close = () => { m.remove(); if(!o.children.length) o.style.display = 'none'; };
+    b.onclick = close;
+    m.appendChild(t); m.appendChild(b); o.appendChild(m); o.style.display = 'flex';
+    try { b.focus(); } catch(e){}
+  }
+  window.alert = fpShowAlert;
+})();

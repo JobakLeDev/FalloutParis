@@ -12,6 +12,10 @@ et ça rapporte des caps au settlement de manière aléatoire mais contrôlée p
 
 
 --- Fait ---
+-[OK] pop-ups : alert() natif (look OS) remplace globalement par une modale stylee app (shared.js override window.alert + CSS style.css). confirm/prompt restent natifs (synchrones) — migration async a faire si voulu.
+-[OK] carte MJ onglet Lieux : bandeau ping/edition masque sur Lieux (ne chevauche plus la barre des lieux) ; bouton "Ajouter un lieu" deplace DANS la barre des lieux (MJ). carte v15.
+-[OK] refuges : trait de contour sans bloc entier = arretes murs/portes/fenetres (deja livre).
+
 -[OK] refuges : murs/portes/fenetres sur la grille (modele battlemap : edges V|H, gridEdgesHtmlS + palette MJ Mur/Porte/Fenetre/Effacer + hotspots de bord). Grille passee en layout pixel. settlement v7.
 -[OK] refuges : le MJ construit GRATUITEMENT (pose directe sans consommer la Reserve) ; le cout materiaux ne s'applique qu'aux constructions proposees par les joueurs.
 

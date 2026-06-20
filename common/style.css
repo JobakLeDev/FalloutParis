@@ -305,3 +305,10 @@ hr.fo{border:none;border-top:1px solid var(--b);margin:0.5rem 0;}
 *::-webkit-scrollbar-thumb{ background:var(--gd); border:0; border-radius:0; }
 *::-webkit-scrollbar-thumb:hover{ background:var(--g); }
 *::-webkit-scrollbar-corner{ background:transparent; }
+
+/* Pop-up stylée (remplace alert natif) — voir shared.js */
+#fp-alert{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);}
+.fp-alert-box{background:var(--p2,#162016);border:1px solid var(--g,#5dbe5d);box-shadow:0 0 22px rgba(93,190,93,.3);padding:18px 20px;width:340px;max-width:90vw;font-family:'Share Tech Mono',monospace;margin:6px;}
+.fp-alert-msg{color:var(--tb,#b0f0b0);font-size:12px;line-height:1.55;white-space:pre-line;margin-bottom:14px;}
+.fp-alert-ok{display:block;margin-left:auto;background:var(--gk,#1a3a1a);border:1px solid var(--g,#5dbe5d);color:var(--tb,#b0f0b0);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:3px;padding:7px 20px;cursor:pointer;}
+.fp-alert-ok:hover{background:#1e4a1e;box-shadow:0 0 10px rgba(93,190,93,.3);}

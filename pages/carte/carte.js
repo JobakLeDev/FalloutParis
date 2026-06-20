@@ -539,8 +539,8 @@ function switchMapTab(tab) {
   if (pt) pt.style.display = tab === 'paris' ? 'block' : 'none';
   if (lt) lt.style.display = tab === 'lieux' ? 'block' : 'none';
   if (da) da.style.display = 'none';
-  // Bandeaux MJ : outils sur Paris/Lieux ; positions joueurs sur Paris + Métro
-  if (ml) ml.style.display = (isMJ && tab !== 'metro') ? 'block' : 'none';
+  // Bandeau MJ gauche (ping/édition) : sur PARIS uniquement (sur Lieux, les outils sont DANS la barre des lieux)
+  if (ml) ml.style.display = (isMJ && tab === 'paris') ? 'block' : 'none';
   if (mr) mr.style.display = (isMJ && tab !== 'lieux') ? 'block' : 'none';
   if (tab !== 'paris') { addingPOI = false; cancelDrawZone(); }
   if (tab === 'paris') {
@@ -930,6 +930,7 @@ function restRefugeAt(poiName) {
 function renderLieux() {
   const el = document.getElementById('lieux-list'); if (!el) return;
   let html = '';
+  if (isMJ) html += '<button class="lieu-btn" style="border-color:var(--g);color:var(--g)" onclick="ajouterLieu()">🏛 + Ajouter un lieu</button>';
   if (lieux.length) html += lieux.map(l =>
     `<button class="lieu-btn${lieuActif?.id === l.id ? ' on' : ''}" onclick="ouvrirLieu('${l.id}')">${l.name}</button>`
   ).join('');
