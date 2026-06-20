@@ -1,0 +1,17 @@
+{
+  "name": "fallout-paris-discord-bot",
+  "version": "1.0.0",
+  "description": "Bot Discord pour la campagne Fallout Paris (2d20) — fiches, notifications, archives de sessions. Lit Firestore.",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "deploy": "node src/deploy-commands.js"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "discord.js": "^14.16.3",
+    "firebase-admin": "^12.7.0",
+    "dotenv": "^16.4.5"
+  }
+}
