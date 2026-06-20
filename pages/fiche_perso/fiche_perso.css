@@ -349,3 +349,11 @@ html, body { overflow-x: hidden !important; overflow-y: auto !important; height:
 /* Filtre "objets récemment acquis" (inventaire) */
 #inv-recent-btn.on{ background:var(--am); color:#1a1200; border-color:var(--am); }
 .iname .inew{ font-size:10px; }
+
+/* Barre "objets récents" (inventaire) — version intégrée */
+.inv-recent-bar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;padding:4px 8px;border:1px solid var(--b);background:#0a140a;border-radius:3px;}
+.inv-recent-hint{font-size:8px;letter-spacing:1px;color:var(--td);}
+.inv-recent-actions{display:flex;gap:6px;}
+.inv-pill{background:var(--gk);border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;padding:4px 11px;border-radius:11px;cursor:pointer;transition:all .12s;white-space:nowrap;}
+.inv-pill:hover{border-color:var(--g);color:var(--tb);}
+.itag.AMMO{background:#3a2a0a;color:var(--am);}

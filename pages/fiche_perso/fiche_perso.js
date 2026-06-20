@@ -524,13 +524,12 @@ function _updRecentBtn(){
 function rInvAll(){
   const el=document.getElementById('inv-all-list');if(!el)return;
   _updRecentBtn();
-  el.innerHTML='';
   let list=char.inventory.map((it,i)=>({it,i}));
   if(_invRecentOnly) list=list.filter(x=>isNewItem(x.it));
-  if(!list.length){ el.innerHTML='<div style="font-size:9px;color:var(--td);padding:10px">'+(_invRecentOnly?'Aucun objet récemment acquis.':'Inventaire vide.')+'</div>'; return; }
+  let html='';
   list.forEach(({it,i})=>{
     const isNew=isNewItem(it);
-    el.innerHTML+=`<div class="irow" style="grid-template-columns:44px 1fr 40px 42px 20px;gap:4px;${it.equipped?'border-color:var(--gd);background:#0a140a;':''}">
+    html+=`<div class="irow" style="grid-template-columns:44px 1fr 40px 42px 20px;gap:4px;${it.equipped?'border-color:var(--gd);background:#0a140a;':''}">
       <span class="itag ${it.type}">${it.type}</span>
       <span class="iname${it.equipped?' eq':''}">${isNew?'<span class="inew" title="Acquis récemment">🆕</span> ':''}${it.name}${it.equipped?' ●':''}</span>
       <span class="iqval">${it.qty}</span>
@@ -538,6 +537,19 @@ function rInvAll(){
       <span></span>
     </div>`;
   });
+  // Munitions (char.ammo) — affichées dans TOUT comme les autres objets (hors filtre "récents")
+  if(!_invRecentOnly){
+    (char.ammo||[]).filter(a=>a&&(a.qty>0)).forEach(a=>{
+      html+=`<div class="irow" style="grid-template-columns:44px 1fr 40px 42px 20px;gap:4px">
+        <span class="itag AMMO">MUN.</span>
+        <span class="iname">${a.cal}</span>
+        <span class="iqval" style="color:var(--am)">${a.qty}</span>
+        <span class="ipw">—</span>
+        <span></span>
+      </div>`;
+    });
+  }
+  el.innerHTML = html || '<div style="font-size:9px;color:var(--td);padding:10px">'+(_invRecentOnly?'Aucun objet récemment acquis.':'Inventaire vide.')+'</div>';
 }
 
 function rInvWeap(){
