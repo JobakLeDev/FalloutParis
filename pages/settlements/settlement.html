@@ -7,7 +7,7 @@
   <title>Fallout Paris — Refuges</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css?v=83">
-  <link rel="stylesheet" href="settlement.css?v=6">
+  <link rel="stylesheet" href="settlement.css?v=7">
   <link rel="stylesheet" href="../../common/zoom.css?v=2">
 </head>
 <body>
@@ -46,8 +46,9 @@
           <option value="vault">Abri 74</option>
           <option value="settlement">Bourg-de-Bois</option>
         </select>
+        <select id="ns-type" class="s-inp"><option value="refuge">🏚 Refuge (perso)</option><option value="settlement">🏘️ Settlement (communauté)</option></select>
         <select id="ns-poi" class="s-inp"><option value="">— Lieu lié (POI carte) —</option></select>
-        <button class="sbtn add" onclick="creerSite()">+ Créer le refuge</button>
+        <button class="sbtn add" onclick="creerSite()">+ Créer</button>
       </div>
     </aside>
 
@@ -75,6 +76,7 @@
           </div>
         </div>
         <div id="s-pending"></div>
+        <div id="s-tokens"></div>
         <div id="s-allies"></div>
       </div>
     </main>
@@ -83,8 +85,8 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="../../common/shared.js?v=83"></script>
-  <script src="../../common/db.js?v=15"></script>
-  <script src="settlement.js?v=10"></script>
+  <script src="../../common/db.js?v=16"></script>
+  <script src="settlement.js?v=11"></script>
   <script>document.addEventListener('DOMContentLoaded', () => window.DB_READY.then(initSettlement));</script>
   <script src="../../common/responsive.js?v=1"></script>
 </body>

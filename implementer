@@ -16,6 +16,8 @@ et ça rapporte des caps au settlement de manière aléatoire mais contrôlée p
 - un joueur qui visite un settlement/refuge doit voir son personnage sur la map lieux. juste visuellement et côté mj je peux le déplacer. 
 
 --- Fait ---
+-[OK] refuges : catalogue de blocs masqué côté joueur (grille pleine largeur) ; type Refuge/Settlement (creation + bascule MJ en-tete ; blocs communautaires farm/comptoirs/diner/tourelle/beacon = settlementOnly) ; MJ place/retire/deplace les jetons joueurs (#s-tokens + selTok) ; MJ regle le nb de colons a la main (chSettlers +/-). settlement v11, db v16.
+
 -[OK] settlements (lot prod/defense/stats/jeton) : blocs Potager(farm→stock food via tick), Vendeur de nourriture (food→caps, requiert potager), Restaurateur (requiert cuisine, +caps -food), Tourelle (securite). Panneau stats #s-stats (securite/colons/eau/food/caps). Vendeurs par comptoir (site.vendors). Jeton du joueur visiteur sur la grille (auto-place, MJ deplace via selTok/clic case). settlement v10, db v15, _DATA_VER 14.
 
 -[OK] settlements feature 2 (comptoir) + 3 (beacon/colons) : blocs shop_water (requiert point d'eau) + beacon (build_blocks). Tick temporel MJ (sCampNow = max minutes parties) → comptoir : caps passifs = points d'eau x talent vendeur x jours x alea ; beacon : colons arrivent au fil du temps, plafonnes par le nb de lits. UI #s-eco (cagnotte, assigner vendeur, verser caps a un joueur, compteur colons). settlement v9, _DATA_VER 13.

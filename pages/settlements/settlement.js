@@ -133,12 +133,15 @@ function creerSite(){
   const h = Math.max(2, Math.min(12, parseInt(document.getElementById('ns-h').value) || 4));
   const faction = document.getElementById('ns-fac').value || '';
   const poi = document.getElementById('ns-poi')?.value || '';
+  const type = document.getElementById('ns-type')?.value || 'refuge';
   const id = 's' + Date.now().toString(36);
-  data.sites[id] = { name, w, h, faction, poi, allies: [], stock: { common:0, uncommon:0, rare:0 }, blocks: [], pending: [], restPoint: false };
+  data.sites[id] = { name, w, h, type, faction, poi, allies: [], stock: { common:0, uncommon:0, rare:0 }, blocks: [], pending: [], restPoint: false };
   selSite = id; save();
   document.getElementById('ns-name').value = '';
 }
 function supprimerSite(id){ if (!isMJ) return; if (!confirm('Supprimer ce refuge ?')) return; delete data.sites[id]; if (selSite === id) selSite = null; save(); }
+function setType(id){ if(!isMJ) return; const s = data.sites[id]; if(!s) return; s.type = (s.type === 'settlement') ? 'refuge' : 'settlement'; save(); }
+function chSettlers(id, d){ if(!isMJ) return; const s = data.sites[id]; if(!s) return; s.settlers = Math.max(0, (s.settlers||0) + d); save(); }
 function creditStock(id, tier, delta){
   if (!isMJ) return; const s = data.sites[id]; if (!s) return;
   s.stock = s.stock || { common:0, uncommon:0, rare:0 };
@@ -160,6 +163,7 @@ function cellClick(id, x, y){
   if ((s.pending || []).some(b => b.x === x && b.y === y)) { alert('Une demande est déjà en attente sur cette case.'); return; }
   const block = blockDef(selBlock); if (!block) return;
   if (block.requires && !_siteHas(s, block.requires)) { alert('Nécessite d\'abord : ' + (blockDef(block.requires)?.name || block.requires) + '.'); return; }
+  if (block.settlementOnly && s.type !== 'settlement') { alert('Bloc réservé aux settlements. Change le type du refuge (en-tête).'); return; }
   if (!skillOk(block)) { alert('Compétence insuffisante pour ce bloc.'); return; }
   if (isMJ){
     // Le MJ pose directement et GRATUITEMENT (aucun matériau consommé)
@@ -268,9 +272,10 @@ function sTick(site){
 }
 function renderStats(site){
   const el = document.getElementById('s-stats'); if(!el) return;
+  const colonsCtrl = isMJ ? ` <button class="s-stat-btn" onclick="chSettlers('${selSite}',-1)">−</button><button class="s-stat-btn" onclick="chSettlers('${selSite}',1)">+</button>` : '';
   const parts = [
     `🛡 Sécurité <b>${security(site)}</b>`,
-    `🛏 Colons <b>${site.settlers||0}</b>/<b>${bedCount(site)}</b>`,
+    `🛏 Colons <b>${site.settlers||0}</b>/<b>${bedCount(site)}</b>${colonsCtrl}`,
     `🚰 Eau <b>${waterPoints(site)}</b>/j`,
     `🌱 Food <b>${countBlk(site,'farm')}</b>/j · stock <b>${Math.floor(site.food||0)}</b>`,
     `◉ Caps <b style="color:var(--am)">${site.caps||0}</b>`,
@@ -311,6 +316,15 @@ async function withdrawCaps(){
 }
 function selTok(pid){ if(!isMJ) return; _selTok = (_selTok === pid) ? null : pid; render(); }
 function _firstFreeCell(site){ for(let y=site.h-1;y>=0;y--) for(let x=0;x<site.w;x++){ if(!(site.blocks||[]).some(b=>b.x===x&&b.y===y) && !Object.values(site.pos||{}).some(p=>p&&p.x===x&&p.y===y)) return {x,y}; } return {x:0,y:0}; }
+function placeTok(pid){ if(!isMJ) return; const s = data.sites[selSite]; if(!s) return; s.pos = s.pos || {}; if(s.pos[pid]) delete s.pos[pid]; else s.pos[pid] = _firstFreeCell(s); save(); }
+function renderTokens(site){
+  const el = document.getElementById('s-tokens'); if(!el) return;
+  if(!isMJ){ el.innerHTML = ''; return; }
+  const ids = Object.keys(joueursCamp);
+  if(!ids.length){ el.innerHTML = ''; return; }
+  el.innerHTML = '<div class="s-sub">🧍 Jetons joueurs <small style="color:var(--td)">(placer/retirer · clic jeton puis case = déplacer)</small></div>'
+    + ids.map(pid => { const on = !!(site.pos && site.pos[pid]); return `<span class="ally-chip${on?' on':''}" onclick="placeTok('${pid}')">${on?'📍':'+'} ${esc(joueursCamp[pid].nom||pid)}</span>`; }).join('');
+}
 
 // ---- point d'eau : remplir ses contenants ----
 function _containers(){ return (me?.inventory || []).filter(it => { const d = (window.DB?.stuff||[]).find(s => s.n === it.name); return d && d.cap != null; }); }
@@ -429,11 +443,13 @@ function render(){
   if (!isMJ && !lockSite && !canAccess(site)) { selSite = null; render(); return; }
 
   // en-tête
+  const isSet = site.type === 'settlement';
+  const typeTag = `<span class="tag" style="${isSet?'color:#1a1200;background:var(--g);border-color:var(--g)':''}">${isSet?'🏘️ Settlement':'🏚 Refuge'}</span>${isMJ?`<button class="sbtn" style="font-size:9px;padding:2px 6px;margin-left:4px" onclick="setType('${selSite}')">⇄ type</button>`:''}`;
   const facTag = site.faction ? `<span class="tag">${site.faction}</span>` : `<span class="tag">Indépendant</span>`;
   const poiTag = site.poi ? `<span class="tag">📍 ${esc(site.poi)}</span>` : (isMJ ? `<span class="tag" style="color:var(--rd)">⚠ non lié à un lieu</span>` : '');
   const restTag = site.restPoint ? `<span class="tag rest">🛏 Point de repos</span>` : '';
   const mjTools = isMJ ? `<span class="s-mj-tools"><button class="sbtn" onclick="supprimerSite('${selSite}')">✕ Supprimer</button></span>` : '';
-  document.getElementById('s-site-head').innerHTML = mjTools + esc(site.name) + facTag + poiTag + restTag;
+  document.getElementById('s-site-head').innerHTML = mjTools + esc(site.name) + typeTag + facTag + poiTag + restTag;
 
   // stock (Réserve)
   document.getElementById('s-stock').innerHTML = TIERS.map(t => {
@@ -442,6 +458,7 @@ function render(){
   }).join('');
   if(isMJ) sTick(site);
   renderStats(site);
+  renderTokens(site);
   renderEco(site);
   renderRest(site);
   renderWater(site);
@@ -483,16 +500,28 @@ function render(){
   renderEdgePal();
   document.getElementById('s-grid-hint').textContent = _selTok ? '— clique une case pour déplacer le jeton' : _edgeBrush ? ('— clique les BORDS des cases pour poser : ' + ({wall:'Mur',door:'Porte',window:'Fenêtre',erase:'Effacer'}[_edgeBrush])) : selBlock ? ('— clique une case pour poser : ' + (blockDef(selBlock)?.name||'')) : (isMJ ? '— bloc du catalogue + case · pinceau Mur/Porte/Fenêtre + bords · clic jeton = déplacer · clic bloc posé = retirer' : '— choisis un bloc puis une case pour proposer');
 
-  // catalogue
-  document.getElementById('s-cat').innerHTML = (window.BUILD_BLOCKS || []).map(b => {
-    const need = matsFor(b);
-    const ok = skillOk(b);
-    const skillsTxt = b.skills && b.skills.length ? (b.skills.map(skillName).join(' / ') + ' ' + b.complexity) : 'aucune comp.';
-    return `<button class="cat-item${selBlock===b.id?' sel':''}${ok?'':' locked'}" style="border-left:4px solid ${b.color||'#3a5c3a'}" ${ok?`onclick="selectCat('${b.id}')"`:''} title="${esc(b.desc)}">
-      <span class="ci-ic" style="background:${b.color||'#3a5c3a'}22">${b.icon}</span> ${esc(b.name)}
-      <span class="ci-meta">Requis : ${skillsTxt} · <span class="ci-cost">${costStr(need)}</span></span>
-    </button>`;
-  }).join('');
+  // catalogue — MJ uniquement (côté joueur, la liste de blocs est masquée)
+  const catWrap = document.querySelector('.s-cat-wrap');
+  const cols = document.querySelector('.s-cols');
+  if(!isMJ){
+    if(catWrap) catWrap.style.display = 'none';
+    if(cols) cols.classList.add('s-cols-solo');
+    document.getElementById('s-cat').innerHTML = '';
+  } else {
+    if(catWrap) catWrap.style.display = '';
+    if(cols) cols.classList.remove('s-cols-solo');
+    const isSettlement = site.type === 'settlement';
+    document.getElementById('s-cat').innerHTML = (window.BUILD_BLOCKS || []).map(b => {
+      const need = matsFor(b);
+      const blocked = b.settlementOnly && !isSettlement;
+      const ok = skillOk(b) && !blocked;
+      const skillsTxt = b.skills && b.skills.length ? (b.skills.map(skillName).join(' / ') + ' ' + b.complexity) : 'aucune comp.';
+      return `<button class="cat-item${selBlock===b.id?' sel':''}${ok?'':' locked'}" style="border-left:4px solid ${b.color||'#3a5c3a'}" ${ok?`onclick="selectCat('${b.id}')"`:''} title="${esc(b.desc)}${blocked?' — réservé aux settlements':''}">
+        <span class="ci-ic" style="background:${b.color||'#3a5c3a'}22">${b.icon}</span> ${esc(b.name)}${blocked?' 🏘️':''}
+        <span class="ci-meta">Requis : ${skillsTxt} · <span class="ci-cost">${costStr(need)}</span>${blocked?' · settlement':''}</span>
+      </button>`;
+    }).join('');
+  }
 
   // demandes en attente (MJ)
   const pend = document.getElementById('s-pending');
