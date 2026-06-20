@@ -172,7 +172,18 @@ function toggleAlly(id, pid){
 function selectCat(type){ selBlock = (selBlock === type) ? null : type; render(); }
 function cellClick(id, x, y){
   const s = data.sites[id]; if (!s) return;
-  if (isMJ && _selTok){ s.pos = s.pos || {}; s.pos[_selTok] = { x, y }; _selTok = null; save(); return; }   // déplacer un jeton
+  if (isMJ && _selTok){ s.pos = s.pos || {}; s.pos[_selTok] = { x, y }; _selTok = null; save(); return; }   // MJ déplace un jeton
+  // Joueur en mode déplacement de SON jeton → bouge vers une case libre (pas sur un bloc)
+  if (!isMJ && _selTok && _selTok === me?.id){
+    if ((s.blocks || []).some(b => b.x === x && b.y === y)){ return; }   // pas sur un bloc
+    s.pos = s.pos || {}; s.pos[me.id] = { x, y }; _selTok = null; save(); return;
+  }
+  // Joueur : clic sur l'icône d'un bloc → pop-up d'action
+  if (!isMJ && !selBlock){
+    const b = (s.blocks || []).find(c => c.x === x && c.y === y);
+    if (b){ if(!_onSite(s)){ alert('Tu dois être sur place (' + (s.poi || 'le lieu') + ').'); return; } openBlockPop(b.type); }
+    return;
+  }
   if (!selBlock) return;
   if ((s.blocks || []).some(b => b.x === x && b.y === y)) { alert('Case déjà occupée.'); return; }
   if ((s.pending || []).some(b => b.x === x && b.y === y)) { alert('Une demande est déjà en attente sur cette case.'); return; }
@@ -338,21 +349,41 @@ function _card(id, title, body, wide){
   const open = _openCards.has(id);
   return `<div class="act-card${wide?' wide':''}"><button class="act-head${open?' on':''}" onclick="toggleCard('${id}')">${title}<span class="act-chev">${open?'▴':'▾'}</span></button>${open?`<div class="act-body">${body}</div>`:''}</div>`;
 }
+// Le bandeau ne sert plus qu'à signaler l'absence sur le lieu ; les actions passent par les icônes de la map (pop-up).
 function renderActions(site){
   const box = document.getElementById('s-actions'), bar = document.getElementById('s-actbar');
-  if(isMJ || !me || !canAccess(site)){ if(box){ box.innerHTML=''; box.style.display='none'; } if(bar) bar.style.display='none'; return; }   // le MJ construit via le catalogue
-  if(bar) bar.style.display=''; box.style.display='';
-  if(!_onSite(site)){ box.innerHTML = '<div class="s-note">📍 Tu n\'es pas sur place. Rends-toi sur <b>' + esc(site.poi || 'le lieu') + '</b> pour utiliser ce refuge.</div>'; return; }
-  const cards = [
-    _card('rest','😴 Repos', restBody(site)),
-    _card('water','💧 Eau', waterBody(site)),
-    _siteHas(site,'wbench_weapon') ? _card('bw','🔧 Armes', benchBody(site,'weapon')) : '',
-    _siteHas(site,'wbench_armor') ? _card('ba','🛡️ Armures', benchBody(site,'armor')) : '',
-    _card('scrap','🔩 Récup', scrapBody(site), true),
-  ].filter(Boolean).join('');
-  box.innerHTML = cards ? '<div class="act-grid">' + cards + '</div>' : '<div class="s-note">Aucune action disponible ici.</div>';
+  if(bar) bar.style.display='none';
+  if(isMJ || !me || !canAccess(site)){ if(box){ box.innerHTML=''; box.style.display='none'; } return; }
+  if(!_onSite(site)){ box.style.display=''; box.innerHTML = '<div class="s-note">📍 Tu n\'es pas sur place. Rends-toi sur <b>' + esc(site.poi || 'le lieu') + '</b> pour utiliser ce refuge.</div>'; return; }
+  box.style.display='none'; box.innerHTML='';
 }
-function selTok(pid){ if(!isMJ) return; _selTok = (_selTok === pid) ? null : pid; render(); }
+
+// ---- Pop-up d'action : déclenché en cliquant l'icône d'un bloc sur la grille ----
+let _popBlock = null;   // type de bloc dont le pop-up est ouvert (vue joueur)
+const _POP_ACTION = {
+  bed:           s => restBody(s),
+  water:         s => waterBody(s),
+  wbench_weapon: s => benchBody(s, 'weapon'),
+  wbench_armor:  s => benchBody(s, 'armor'),
+  storage:       s => scrapBody(s),
+};
+function openBlockPop(type){ _popBlock = type; render(); }
+function closeBlockPop(){ _popBlock = null; render(); }
+function renderPop(site){
+  const ov = document.getElementById('s-pop'); if(!ov) return;
+  if(isMJ || !_popBlock || !me || !canAccess(site) || !_onSite(site) || !_siteHas(site, _popBlock)){ ov.style.display='none'; return; }
+  const def = blockDef(_popBlock);
+  let body = (_POP_ACTION[_popBlock] ? _POP_ACTION[_popBlock](site) : '') || '';
+  if(!body) body = `<div class="s-note">${esc(def?.desc || 'Aucune action directe ici.')}</div>`;
+  document.getElementById('s-pop-t').innerHTML = def ? (def.icon + ' ' + esc(def.name)) : '';
+  document.getElementById('s-pop-b').innerHTML = body;
+  ov.style.display = 'flex';
+}
+function selTok(pid){
+  if(isMJ){ _selTok = (_selTok === pid) ? null : pid; render(); return; }
+  // Joueur : ne peut sélectionner que SON jeton, et seulement sur place
+  if(pid === me?.id && _onSite(data.sites[selSite])){ _selTok = (_selTok === pid) ? null : pid; render(); }
+}
 function _firstFreeCell(site){ for(let y=site.h-1;y>=0;y--) for(let x=0;x<site.w;x++){ if(!(site.blocks||[]).some(b=>b.x===x&&b.y===y) && !Object.values(site.pos||{}).some(p=>p&&p.x===x&&p.y===y)) return {x,y}; } return {x:0,y:0}; }
 function placeTok(pid){ if(!isMJ) return; const s = data.sites[selSite]; if(!s) return; s.pos = s.pos || {}; if(s.pos[pid]) delete s.pos[pid]; else s.pos[pid] = _firstFreeCell(s); save(); }
 function renderTokens(site){
@@ -557,6 +588,7 @@ function render(){
     const def = b ? blockDef(b.type) : null;
     let cls = 's-cell', bc = '', inner = '', title = 'Vide';
     if (def){ cls += ' filled'; bc = '--bc:' + (def.color || '#3a5c3a') + ';'; title = def.name;
+      if(!isMJ && me && canAccess(site) && _onSite(site) && _POP_ACTION[b.type]) cls += ' s-cell-act';   // bloc utilisable → halo
       inner = `<span class="bk-ic">${def.icon}</span><span class="bk-lbl">${esc(def.name)}</span>`; }
     else if (pend){ const pdef = blockDef(pend.type); cls += ' pending'; title = 'En attente : ' + (pdef?.name || '');
       inner = `<span class="bk-ic dim">${pdef ? pdef.icon : '·'}</span><span class="pg">⏳</span>`; }
@@ -565,20 +597,24 @@ function render(){
   }
   cells += '<div class="s-edges">' + gridEdgesHtmlS({ w: site.w, h: site.h, edges: site.edges || {} }, CS) + '</div>';
   if (isMJ && _edgeBrush) cells += sEdgeHotspots(site, CS);
-  // Jeton du joueur visiteur : auto-placement à la 1re visite (joueur allié)
-  if (!isMJ && me && canAccess(site) && !(site.pos && site.pos[me.id]) && !_autoPlaced){
+  // Jeton du joueur visiteur : auto-placement à la 1re visite (joueur allié, présent sur le lieu)
+  if (!isMJ && me && canAccess(site) && _onSite(site) && !(site.pos && site.pos[me.id]) && !_autoPlaced){
     _autoPlaced = true; site.pos = site.pos || {}; site.pos[me.id] = _firstFreeCell(site); save();
   }
   // Jetons (tous les joueurs présents sur ce refuge)
   const pos = site.pos || {};
+  const canMoveOwn = !isMJ && me && canAccess(site) && _onSite(site);
   Object.keys(pos).forEach(pid => { const p = pos[pid]; if(!p) return;
     const nom = (joueursCamp[pid]?.nom || pid);
-    const cls = 's-tok' + (pid === viewerId ? ' s-tok-me' : '') + (isMJ && _selTok === pid ? ' s-tok-sel' : '');
-    cells += `<div class="${cls}" style="left:${PAD + p.x*PITCH + (CS-26)/2}px;top:${PAD + p.y*PITCH + (CS-26)/2}px" ${isMJ?`onclick="selTok('${pid}')"`:''} title="${esc(nom)}">${esc(nom).slice(0,2).toUpperCase()}</div>`;
+    const mine = pid === viewerId;
+    const cls = 's-tok' + (mine ? ' s-tok-me' : '') + ((isMJ && _selTok === pid) || (mine && _selTok === pid) ? ' s-tok-sel' : '');
+    const click = (isMJ || (mine && canMoveOwn)) ? `onclick="selTok('${pid}')"` : '';
+    cells += `<div class="${cls}" style="left:${PAD + p.x*PITCH + (CS-26)/2}px;top:${PAD + p.y*PITCH + (CS-26)/2}px" ${click} title="${esc(nom)}${mine&&canMoveOwn?' — clique pour te déplacer':''}">${esc(nom).slice(0,2).toUpperCase()}</div>`;
   });
   gw.innerHTML = cells;
   renderEdgePal();
-  document.getElementById('s-grid-hint').textContent = _selTok ? '— clique une case pour déplacer le jeton' : _edgeBrush ? ('— clique les BORDS des cases pour poser : ' + ({wall:'Mur',door:'Porte',window:'Fenêtre',erase:'Effacer'}[_edgeBrush])) : selBlock ? ('— clique une case pour poser : ' + (blockDef(selBlock)?.name||'')) : (isMJ ? '— bloc du catalogue + case · pinceau Mur/Porte/Fenêtre + bords · clic jeton = déplacer · clic bloc posé = retirer' : '— choisis un bloc puis une case pour proposer');
+  renderPop(site);
+  document.getElementById('s-grid-hint').textContent = _selTok ? '— clique une case libre pour déplacer le jeton' : _edgeBrush ? ('— clique les BORDS des cases pour poser : ' + ({wall:'Mur',door:'Porte',window:'Fenêtre',erase:'Effacer'}[_edgeBrush])) : selBlock ? ('— clique une case pour poser : ' + (blockDef(selBlock)?.name||'')) : (isMJ ? '— bloc du catalogue + case · pinceau Mur/Porte/Fenêtre + bords · clic jeton = déplacer · clic bloc posé = retirer' : '— clique une icône pour l\'utiliser · clique ton jeton puis une case pour te déplacer');
 
   // catalogue — MJ uniquement (côté joueur, la liste de blocs est masquée)
   const catWrap = document.querySelector('.s-cat-wrap');
@@ -626,10 +662,5 @@ function render(){
   } else if (isMJ && site.faction){
     al.innerHTML = '<div class="s-note">Refuge affilié à <b>' + esc(site.faction) + '</b> : l\'accès suit l\'appartenance à la faction (pas de liste d\'alliés).</div>';
   } else al.innerHTML = '';
-
-  // note dépôt (joueur) — le dépôt de matériaux par scrap arrive à l'Incrément 2
-  if (!isMJ){
-    al.innerHTML += '<div class="s-note">Les matériaux de la Réserve sont fournis par le MJ pour l\'instant ; le dépôt par récupération (scrap du junk) arrive bientôt.</div>';
-  }
 }
 function esc(s){ return (''+s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
