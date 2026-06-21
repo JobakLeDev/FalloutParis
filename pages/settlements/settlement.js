@@ -215,11 +215,13 @@ function cellClick(id, x, y){
 }
 // ---- repos au refuge : long repos bonifié par les blocs présents ----
 function _siteHas(site, type){ return (site.blocks || []).some(b => b.type === type); }
+// Porte = désormais une ARÊTE (jaune), plus un bloc → le « repos sécurisé » se base là-dessus
+function _hasDoorEdge(site){ return Object.values(site.edges || {}).includes('door'); }
 function restBody(site){
   if (isMJ || !me || !canAccess(site) || !site.restPoint) return '';
   const bonus = [];
   if (_siteHas(site,'cooking')) bonus.push('🍖 faim'); if (_siteHas(site,'water')) bonus.push('🚰 soif');
-  if (_siteHas(site,'medical')) bonus.push('🩺 rad'); if (_siteHas(site,'door')) bonus.push('🚪 sûr');
+  if (_siteHas(site,'medical')) bonus.push('🩺 rad'); if (_hasDoorEdge(site)) bonus.push('🚪 sûr');
   return '<button class="sbtn add" onclick="reposRefuge()">😴 Se reposer (PV max)</button>'
     + (bonus.length ? `<div class="s-note">Bonus : ${bonus.join(' · ')}</div>` : '');
 }
@@ -232,7 +234,7 @@ async function reposRefuge(){
   if (_siteHas(site,'cooking')) gains.push('🍖 faim restaurée');
   if (_siteHas(site,'water'))   gains.push('🚰 soif restaurée');
   if (_siteHas(site,'medical')) gains.push('🩺 radiations soignées');
-  if (_siteHas(site,'door'))    gains.push('🚪 repos sécurisé');
+  if (_hasDoorEdge(site))       gains.push('🚪 repos sécurisé');
   if (!await fpConfirm('Se reposer ici ?\n\n' + gains.join('\n'))) return;
   let nowMin = 0;
   try { const ts = await fdb.collection('temps').doc(fpCampId()).get(); nowMin = (typeof partyMinutesFor === 'function') ? partyMinutesFor(ts.exists ? ts.data() : {}, me.id) : 0; } catch(e){}
@@ -684,7 +686,7 @@ function render(){
     if(catWrap) catWrap.style.display = '';
     if(cols) cols.classList.remove('s-cols-solo');
     const isSettlement = site.type === 'settlement';
-    document.getElementById('s-cat').innerHTML = (window.BUILD_BLOCKS || []).map(b => {
+    document.getElementById('s-cat').innerHTML = (window.BUILD_BLOCKS || []).filter(b => !b.hidden).map(b => {
       const need = matsFor(b);
       const blocked = b.settlementOnly && !isSettlement;
       const ok = skillOk(b) && !blocked;
