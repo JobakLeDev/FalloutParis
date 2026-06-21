@@ -69,7 +69,8 @@ function skillName(k){ const d = (typeof SKILLS_DEF !== 'undefined' ? SKILLS_DEF
 function matLabel(t){ return (window.MAT_LABELS && window.MAT_LABELS[t] && window.MAT_LABELS[t].label) || t; }
 function blockDef(type){ return (window.BUILD_BLOCKS || []).find(b => b.id === type) || null; }
 // Icône d'un bloc : image de tile si disponible (def.img), sinon emoji
-function blockIcoInner(def){ return def && def.img ? `<img class="bk-img" src="../../img/${def.img}" alt="" draggable="false" onerror="this.parentNode.textContent='${def.icon}'">` : (def ? def.icon : ''); }
+function _imgVer(){ return (typeof _DATA_VER !== 'undefined') ? _DATA_VER : '1'; }
+function blockIcoInner(def){ return def && def.img ? `<img class="bk-img" src="../../img/${def.img}?v=${_imgVer()}" alt="" draggable="false" onerror="this.parentNode.textContent='${def.icon}'">` : (def ? def.icon : ''); }
 function matsFor(block){ return (window.BUILD_MATS && window.BUILD_MATS[block.complexity]) || { common:0, uncommon:0, rare:0 }; }
 
 async function initSettlement(){
@@ -432,7 +433,7 @@ function renderPop(site){
   const def = blockDef(_popBlock);
   let body = (_POP_ACTION[_popBlock] ? _POP_ACTION[_popBlock](site) : '') || '';
   if(!body) body = `<div class="s-note">${esc(def?.desc || 'Aucune action directe ici.')}</div>`;
-  document.getElementById('s-pop-t').innerHTML = def ? ((def.img ? `<img class="s-pop-ic" src="../../img/${def.img}" alt="" onerror="this.replaceWith('${def.icon}')">` : def.icon) + ' ' + esc(def.name)) : '';
+  document.getElementById('s-pop-t').innerHTML = def ? ((def.img ? `<img class="s-pop-ic" src="../../img/${def.img}?v=${_imgVer()}" alt="" onerror="this.replaceWith('${def.icon}')">` : def.icon) + ' ' + esc(def.name)) : '';
   document.getElementById('s-pop-b').innerHTML = body;
   ov.style.display = 'flex';
 }
