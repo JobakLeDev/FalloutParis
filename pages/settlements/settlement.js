@@ -339,7 +339,6 @@ function security(site){ return countBlk(site,'turret') * 2; }
 function sCampNow(){ let mx = 0; (tempsData?.parties || []).forEach(p => { mx = Math.max(mx, p.minutes || 0); }); return mx; }
 function vendorFor(site, key){ return (site.vendors && site.vendors[key]) || (key === 'shop_water' ? site.vendor : null) || null; }
 const _RND = () => 0.6 + Math.random() * 0.8;
-const FARM_RATE = 1;   // rations/jour par potager exploité (rendement RÉGULIER, sans aléa)
 // Colons assignés aux potagers (1 colon par bloc potager ; plafonné par le nb de potagers ET de colons)
 function maxFarmers(site){ return Math.min(countBlk(site,'farm'), site.settlers||0); }
 function activeFarms(site){ return Math.min(countBlk(site,'farm'), site.farmers||0); }
@@ -351,7 +350,7 @@ function sTick(site){
   const days = (now - site.lastTick) / 1440;
   if(days <= 0) return;
   const workingFarms = activeFarms(site);   // potagers réellement exploités = min(potagers, colons assignés)
-  if(workingFarms > 0) site.food = Math.round(((site.food||0) + workingFarms * days * FARM_RATE) * 10) / 10;
+  if(workingFarms > 0) site.food = Math.round(((site.food||0) + workingFarms * days * _RND()) * 10) / 10;
   const vW = vendorFor(site,'shop_water');
   if(countBlk(site,'shop_water') && vW && waterPoints(site) > 0) site.caps = (site.caps||0) + Math.round(waterPoints(site) * (vW.talent||1) * days * _RND());
   const vF = vendorFor(site,'shop_food');
