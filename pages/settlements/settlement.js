@@ -439,7 +439,9 @@ function renderActions(site){
 let _popBlock = null;   // type de bloc dont le pop-up est ouvert (vue joueur)
 const _POP_ACTION = {
   bed:           s => restBody(s),
+  cooking:       s => cookBody(s),
   water:         s => waterBody(s),
+  medical:       s => medBody(s),
   wbench_weapon: s => benchBody(s, 'weapon'),
   wbench_armor:  s => benchBody(s, 'armor'),
   storage:       s => storeBody(s),
@@ -472,14 +474,61 @@ function renderTokens(site){
     + ids.map(pid => { const on = !!(site.pos && site.pos[pid]); return `<span class="ally-chip${on?' on':''}" onclick="placeTok('${pid}')">${on?'📍':'+'} ${esc(joueursCamp[pid].nom||pid)}</span>`; }).join('');
 }
 
-// ---- point d'eau : remplir ses contenants ----
+// ---- actions directes : manger (cuisine), boire (eau), se soigner (médical) ----
+async function _partyNow(){ try { const ts = await fdb.collection('temps').doc(fpCampId()).get(); return (typeof partyMinutesFor === 'function') ? partyMinutesFor(ts.exists ? ts.data() : {}, me.id) : 0; } catch(e){ return 0; } }
+function cookBody(site){
+  if(isMJ || !me || !canAccess(site) || !_siteHas(site,'cooking')) return '';
+  return '<button class="sbtn add" onclick="eatHere()">🍖 Manger (rassasier la faim)</button>';
+}
+async function eatHere(){
+  const site = data.sites[selSite]; if(!site || !me) return;
+  if(!canAccess(site) || !_onSite(site)){ alert('Tu dois être sur place.'); return; }
+  if(!_siteHas(site,'cooking')){ alert('Pas de cuisine ici.'); return; }
+  const now = await _partyNow(); const sv = { ...(me.survie || {}), eat: now };
+  try { await fdb.collection('joueurs').doc(viewerId).update({ survie: sv, lastUpdate: Date.now() }); me.survie = sv; }
+  catch(e){ alert('Erreur : ' + e.message); return; }
+  alert('🍖 Repas pris — faim rassasiée.'); closeBlockPop();
+}
+function medBody(site){
+  if(isMJ || !me || !canAccess(site) || !_siteHas(site,'medical')) return '';
+  if(!medicOk(site)) return '<div class="s-note">Aucun médecin assigné — le MJ doit affecter un médecin au poste (panneau Postes).</div>';
+  return '<button class="sbtn add" onclick="healHere()">🩺 Se faire soigner (PV au max + radiations)</button>';
+}
+async function healHere(){
+  const site = data.sites[selSite]; if(!site || !me) return;
+  if(!canAccess(site) || !_onSite(site)){ alert('Tu dois être sur place.'); return; }
+  if(!medicOk(site)){ alert('Aucun médecin assigné au poste médical.'); return; }
+  const sp = me.special || {}, niv = me.niveau || 1;
+  const eff = (typeof fpEffSum === 'function') ? fpEffSum(me.activeEffects || [], 'hpMax') : 0;
+  const hpMax = (sp.L || 5) + (sp.E || 5) + Math.max(0, niv - 1) + eff;
+  const hp = Math.max(me.hp || 0, hpMax);   // ne baisse jamais les PV
+  try { await fdb.collection('joueurs').doc(viewerId).update({ hp, rad: 0, lastUpdate: Date.now() }); me.hp = hp; me.rad = 0; }
+  catch(e){ alert('Erreur : ' + e.message); return; }
+  alert('🩺 Soigné — PV au max, radiations éliminées.'); closeBlockPop();
+}
+
+// ---- point d'eau : boire + remplir ses contenants ----
 function _containers(){ return (me?.inventory || []).filter(it => { const d = (window.DB?.stuff||[]).find(s => s.n === it.name); return d && d.cap != null; }); }
+async function drinkHere(){
+  const site = data.sites[selSite]; if(!site || !me) return;
+  if(!canAccess(site) || !_onSite(site)){ alert('Tu dois être sur place.'); return; }
+  if(!_siteHas(site,'water')){ alert('Pas de point d\'eau ici.'); return; }
+  const now = await _partyNow(); const sv = { ...(me.survie || {}), drink: now };
+  try { await fdb.collection('joueurs').doc(viewerId).update({ survie: sv, lastUpdate: Date.now() }); me.survie = sv; }
+  catch(e){ alert('Erreur : ' + e.message); return; }
+  alert('🥤 Soif étanchée.'); closeBlockPop();
+}
 function waterBody(site){
   if(isMJ || !me || !canAccess(site) || !_siteHas(site,'water')) return '';
+  let h = '<button class="sbtn add" onclick="drinkHere()">🥤 Boire (étancher la soif)</button>';
   const conts = _containers();
-  if(!conts.length) return '<div class="s-note">Apporte une gourde / un bidon / un jerrican.</div>';
-  const lines = conts.map(it => { const d = (window.DB.stuff).find(s => s.n === it.name); return `${esc(it.name)} ${(it.water||0)}/${d.cap}`; }).join(' · ');
-  return '<button class="sbtn add" onclick="fillContainers()">💧 Remplir</button><div class="s-note">' + lines + '</div>';
+  if(conts.length){
+    const lines = conts.map(it => { const d = (window.DB.stuff).find(s => s.n === it.name); return `${esc(it.name)} ${(it.water||0)}/${d.cap}`; }).join(' · ');
+    h += '<button class="sbtn add" style="margin-top:6px" onclick="fillContainers()">💧 Remplir mes contenants</button><div class="s-note">' + lines + '</div>';
+  } else {
+    h += '<div class="s-note">Apporte une gourde / un bidon / un jerrican pour emporter de l\'eau.</div>';
+  }
+  return h;
 }
 async function fillContainers(){
   const site = data.sites[selSite]; if(!site || !me) return;
