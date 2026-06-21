@@ -168,7 +168,7 @@ function switchCampaign(id){
   location.reload();
 }
 async function creerCampagne(){
-  const name = (prompt('Nom de la nouvelle campagne :', 'Campagne ' + (Object.keys(campaigns).length + 2)) || '').trim();
+  const name = (await fpPrompt('Nom de la nouvelle campagne :', 'Campagne ' + (Object.keys(campaigns).length + 2)) || '').trim();
   if(!name) return;
   const id = 'camp_' + Date.now();
   try{
@@ -180,17 +180,17 @@ async function creerCampagne(){
 }
 async function gererCampagnes(){
   const cur = fpCampId();
-  const action = (prompt('Campagne active : « ' + campName(cur) + ' »\n\nTape :\n  R = renommer\n  N = nouvelle campagne\n  S = supprimer (de la liste)\n  (vide = annuler)', '') || '').trim().toUpperCase();
+  const action = (await fpPrompt('Campagne active : « ' + campName(cur) + ' »\n\nTape :\n  R = renommer\n  N = nouvelle campagne\n  S = supprimer (de la liste)\n  (vide = annuler)', '') || '').trim().toUpperCase();
   if(action === 'N'){ creerCampagne(); return; }
   if(action === 'R'){
-    const name = (prompt('Nouveau nom :', campName(cur)) || '').trim(); if(!name) return;
+    const name = (await fpPrompt('Nouveau nom :', campName(cur)) || '').trim(); if(!name) return;
     try{ await db.collection('campaigns').doc(cur).set({ name, ts: (campaigns[cur]?.ts || Date.now()) }, { merge:true }); renderCampSel(); }
     catch(e){ alert('Échec : ' + e.message); }
     return;
   }
   if(action === 'S'){
     if(cur === 'data'){ alert('La campagne par défaut ne peut pas être supprimée.'); return; }
-    if(!confirm('Retirer « ' + campName(cur) + ' » de la liste ?\n\nNote : cela ne supprime PAS les données (quêtes, persos…) — ça enlève juste l\'entrée du sélecteur. Bascule ensuite sur une autre campagne.')) return;
+    if(!await fpConfirm('Retirer « ' + campName(cur) + ' » de la liste ?\n\nNote : cela ne supprime PAS les données (quêtes, persos…) — ça enlève juste l\'entrée du sélecteur. Bascule ensuite sur une autre campagne.')) return;
     try{ await db.collection('campaigns').doc(cur).delete(); localStorage.setItem('fp_activeCampaign','data'); location.reload(); }
     catch(e){ alert('Échec : ' + e.message); }
     return;
@@ -226,7 +226,7 @@ async function _applyGameState(d){
 }
 
 async function creerSauvegarde(){
-  const raw = prompt('Nom de la sauvegarde (campagne « ' + campName(fpCampId()) + ' ») :', 'Session ' + new Date().toLocaleDateString('fr-FR'));
+  const raw = await fpPrompt('Nom de la sauvegarde (campagne « ' + campName(fpCampId()) + ' ») :', 'Session ' + new Date().toLocaleDateString('fr-FR'));
   if(raw === null) return;
   const label = raw.trim() || ('Sauvegarde ' + new Date().toLocaleString('fr-FR'));
   try{
@@ -240,14 +240,14 @@ async function creerSauvegarde(){
 
 async function restaurerSauvegarde(id){
   const sv = savesList.find(s => s.id === id); if(!sv) return;
-  if(!confirm('Restaurer « ' + sv.label + ' » ?\n\nCela réécrit les fiches joueurs et l\'état (quêtes, journal, carte, temps, encyclopédie) tels qu\'ils étaient lors de cette sauvegarde.\nLes actions faites depuis seront perdues.')) return;
+  if(!await fpConfirm('Restaurer « ' + sv.label + ' » ?\n\nCela réécrit les fiches joueurs et l\'état (quêtes, journal, carte, temps, encyclopédie) tels qu\'ils étaient lors de cette sauvegarde.\nLes actions faites depuis seront perdues.')) return;
   try{ await _applyGameState(sv.data || {}); alert('✓ État restauré à « ' + sv.label + ' ».'); }
   catch(e){ alert('Échec de la restauration : ' + e.message); }
 }
 
 async function supprimerSauvegarde(id){
   const sv = savesList.find(s => s.id === id); if(!sv) return;
-  if(!confirm('Supprimer la sauvegarde « ' + sv.label + ' » ?')) return;
+  if(!await fpConfirm('Supprimer la sauvegarde « ' + sv.label + ' » ?')) return;
   try{ await db.collection('saves').doc(id).delete(); }catch(e){ alert('Échec : ' + e.message); }
 }
 
@@ -271,7 +271,7 @@ function importerSauvegardeFichier(input){
     let payload; try{ payload = JSON.parse(r.result); }catch(e){ alert('Fichier illisible (JSON invalide).'); input.value=''; return; }
     const d = (payload && payload.data) ? payload.data : payload;
     if(!d || !d.joueurs){ alert('Ce fichier n\'est pas une sauvegarde Fallout Paris.'); input.value=''; return; }
-    if(!confirm('Restaurer l\'état depuis ce fichier ?\n\nCela réécrit les fiches joueurs et l\'état actuel.')){ input.value=''; return; }
+    if(!await fpConfirm('Restaurer l\'état depuis ce fichier ?\n\nCela réécrit les fiches joueurs et l\'état actuel.')){ input.value=''; return; }
     try{ await _applyGameState(d); alert('✓ État restauré depuis le fichier.'); }
     catch(e){ alert('Échec : ' + e.message); }
     input.value='';
@@ -491,7 +491,7 @@ function ouvrirBoutique(){
   logAction('Boutique ouverte à '+noms);
 }
 function fermerBoutique(){ if(boutiqueData.shops && boutiqueData.shops['mj']){ boutiqueData.shops['mj'].openFor = []; saveBoutique(); renderBoutiqueMJ(); showMsg('Boutique fermée'); } }
-function clearBoutique(){ if(confirm('Supprimer la boutique itinérante ?')){ if(boutiqueData.shops) delete boutiqueData.shops['mj']; saveBoutique(); renderBoutiqueMJ(); } }
+async function clearBoutique(){ if(await fpConfirm('Supprimer la boutique itinérante ?')){ if(boutiqueData.shops) delete boutiqueData.shops['mj']; saveBoutique(); renderBoutiqueMJ(); } }
 function renderBoutiqueMJ(){
   const el = document.getElementById('shop-summary'); if(!el) return;
   const sh = boutiqueData.shops && boutiqueData.shops['mj'];
@@ -507,7 +507,7 @@ function renderBoutiqueMJ(){
 // ============================================================
 let actionLog = [];
 function logAction(text){ if(typeof fpLogAction === 'function') fpLogAction(db, 'MJ', text); }
-function clearActionLog(){ if(confirm('Vider le journal d\'actions ?')) db.collection('log').doc(fpCampId()).set({ entries: [] }).catch(e=>console.error(e)); }
+async function clearActionLog(){ if(await fpConfirm('Vider le journal d\'actions ?')) db.collection('log').doc(fpCampId()).set({ entries: [] }).catch(e=>console.error(e)); }
 function renderActionLog(){
   const el = document.getElementById('actionlog-list'); if(!el) return;
   if(!actionLog.length){ el.innerHTML = '<div class="empty" style="font-size:8px;color:var(--td);padding:10px">Aucune action enregistrée.</div>'; return; }
@@ -619,7 +619,7 @@ function genButin(){
   logAction(`Butin généré — ${added} objet(s)${cats.includes('caps')?' + caps':''}`);
 }
 function rmButin(i){ butinData.items.splice(i,1); saveButin(); }
-function clearButin(){ if(confirm('Vider le pool de butin ?')){ butinData = {items:[],caps:0,players:[]}; saveButin(); } }
+async function clearButin(){ if(await fpConfirm('Vider le pool de butin ?')){ butinData = {items:[],caps:0,players:[]}; saveButin(); } }
 function chButinCaps(d){ butinData.caps = Math.max(0,(butinData.caps||0)+d); saveButin(); }
 
 // ============================================================
@@ -826,9 +826,9 @@ function addParty(){
   tempsData.parties.push({ id: uidParty(), name: 'Groupe ' + n, players: [], minutes: TEMPS_DEFAUT, solo:false });
   saveTemps(); renderParties();
 }
-function delParty(id){
+async function delParty(id){
   const p = findParty(id); if(!p) return;
-  if(!confirm('Supprimer ce groupe ? Ses membres redeviennent individuels (ils gardent l\'heure du groupe).')) return;
+  if(!await fpConfirm('Supprimer ce groupe ? Ses membres redeviennent individuels (ils gardent l\'heure du groupe).')) return;
   const mins = (p.minutes != null) ? p.minutes : TEMPS_DEFAUT;
   const members = (p.players || []).slice();
   tempsData.parties = tempsData.parties.filter(x => x.id !== id);
@@ -839,12 +839,12 @@ function delParty(id){
 }
 function setPartyName(id,v){ const p=findParty(id); if(p){ p.name=v; saveTemps(); } }
 function avanceParty(id,delta){ const p=findParty(id); if(!p) return; p.minutes = Math.max(0,(p.minutes||0)+(parseInt(delta)||0)); saveTemps(); renderParties(); }
-function reglerDateParty(id){
+async function reglerDateParty(id){
   const p=findParty(id); if(!p) return;
   const cur = tempsDate(p.minutes);
-  const ds = prompt('Date (JJ/MM/AAAA) :', `${cur.getDate()}/${cur.getMonth()+1}/${cur.getFullYear()}`); if(ds==null) return;
+  const ds = await fpPrompt('Date (JJ/MM/AAAA) :', `${cur.getDate()}/${cur.getMonth()+1}/${cur.getFullYear()}`); if(ds==null) return;
   const dm = ds.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/); if(!dm){ showMsg('Format date invalide',true); return; }
-  const hs = prompt('Heure (HH:MM) :', fmtHeure(p.minutes)); if(hs==null) return;
+  const hs = await fpPrompt('Heure (HH:MM) :', fmtHeure(p.minutes)); if(hs==null) return;
   const hm = hs.match(/^(\d{1,2})[:hH]?(\d{0,2})$/); if(!hm){ showMsg('Format heure invalide',true); return; }
   const nd = new Date(parseInt(dm[3]), (parseInt(dm[2])||1)-1, parseInt(dm[1])||1, Math.min(23,parseInt(hm[1])||0), Math.min(59,parseInt(hm[2])||0), 0);
   p.minutes = Math.max(0, tempsMinutesDepuis(nd));

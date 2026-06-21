@@ -1562,9 +1562,9 @@ async function finCombat(){
   const total = defaits.reduce((a,e) => a + combatXpOf(e), 0);
   const nbJ = Object.keys(combattants).length;
   if(total > 0 && nbJ > 0){
-    if(!confirm('Terminer le combat et attribuer ' + total + ' XP à chacun des ' + nbJ + ' joueur(s) ?')) return;
+    if(!await fpConfirm('Terminer le combat et attribuer ' + total + ' XP à chacun des ' + nbJ + ' joueur(s) ?')) return;
     await attribuerXPFinCombat();
-  } else if(!confirm('Terminer le combat ?')) return;
+  } else if(!await fpConfirm('Terminer le combat ?')) return;
   ordreInitiative = [];
   actionsState = {};
   tourActif = 0;
@@ -1595,7 +1595,7 @@ async function genButinCombat(){
   const { items, caps } = generateCombatLoot(defaits);
   if(!items.length && !caps){ alert('Les ennemis vaincus ne laissent rien cette fois.'); return; }
   const resume = items.map(it => `${it.qty}× ${it.name}`).join('\n') + (caps ? `\n${caps} caps` : '');
-  if(!confirm(`Butin de ${defaits.length} ennemi(s) vaincu(s) :\n\n${resume}\n\nAjouter au pool de butin partagé ?`)) return;
+  if(!await fpConfirm(`Butin de ${defaits.length} ennemi(s) vaincu(s) :\n\n${resume}\n\nAjouter au pool de butin partagé ?`)) return;
   try{
     const ref = db.collection('butin').doc(fpCampId());
     const snap = await ref.get();

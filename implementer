@@ -1,11 +1,12 @@
 Liste des truc à implémenter :
-- dans l'inventaire joueur : les boutons récents et marquer comme vu sont moches, laisse la place pour le texte quelque part fais moi un truc un peu joli.
-- uniformise l'ensemble des fenetres pop up (les boites de saisie qui apparaissent ou les messages etc et qui ont un look windows) pour qu'elle s'intègrent dans le style visuel de l'app. (alert() fait ; reste confirm()/prompt() natifs)
-- possibilité pour les joueurs de stocker des choses dans l'inventaire des settlements.
-- la découverte d'un refuge/settlement est determiné automatiquement quand son jeton arrive à moins de 100m sur la map principale.
-
-
 --- Fait ---
+-[OK] inventaire : barre « objets récents » refaite (pills propres : 🆕 Récents avec badge compteur rouge + on=ambre, « Tout marquer vu » en ghost ; libellés lisibles). fiche css v86, fiche v100.
+-[OK] pop-ups uniformisées : confirm()/prompt() natifs remplacés par fpConfirm/fpPrompt (Promise, modale stylée app — input + Annuler/OK, Entrée/Échap) dans shared.js. 45 sites convertis en await (fonctions passées async) sur 9 pages. shared v84, style v84.
+-[OK] coffre du settlement : le joueur sur place dépose/retire des objets (site.inv) via le pop-up de la Réserve 📦 (storeBody/depositItem/withdrawItem, contenants d'eau préservés par exemplaire, mods conservés). settlement v16/css v12.
+-[OK] découverte auto refuge/settlement : le jeton du joueur à <100 m du POI lié le révèle automatiquement (carte.js _settlementAutoReveal dans recordFog → poi.revealedFor + logLieu). carte v17.
+-[OK] repos settlement : message unique (suppression de l'alerte de fin, la confirmation stylée suffit). settlement v16.
+-[OK] MJ : changement du POI de rattachement d'un refuge/settlement depuis l'en-tête (sélecteur setPoi). settlement v16.
+-[OK] jeton joueur : plus d'auto-placement à l'ouverture du lieu ; le joueur place son jeton en cliquant une case vide (puis clic jeton → déplacement). settlement v16.
 -[OK] actions refuge via la map : le joueur clique l'ICÔNE d'un bloc sur la grille → pop-up (#s-pop) avec l'action correspondante (Couchage→repos, Point d'eau→remplir, Établis→bricoler/équiper, Réserve→scrap ; blocs passifs → description). Plus de bandeau de cartes (renderActions ne sert qu'à signaler « pas sur place »). Blocs utilisables = halo ambre pulsé (.s-cell-act). openBlockPop/closeBlockPop/renderPop + _POP_ACTION. settlement v15/css v11.
 -[OK] le joueur déplace son propre jeton : clic sur son jeton (sur place) → sélection (halo ambre), puis clic sur une case libre (hors bloc) = déplacement. selTok élargi au joueur (son id, _onSite), cellClick gère le déplacement joueur. Auto-placement du jeton seulement si présent sur le lieu. settlement v15.
 -[OK] établis : mods en boutons Bricoler/Équiper avec mémoire par pièce. it.unlocked{slot:[modId]} = mods déjà bricolés sur CETTE arme/armure. 1er bricolage = consomme la Réserve + débloque + équipe ; ensuite « ↺ Équiper » gratuit ; « Aucun » = retrait gratuit. Retour visuel : bouton équipé/validé enfoncé + coche dessous (+ pulse vert). benchBody/benchCraft/benchEquip remplacent installMod. Compatible fpApplyWeaponMods (it.mods → préfixe/nom + props). settlement v14/css v10.

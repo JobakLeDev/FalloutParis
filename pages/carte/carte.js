@@ -900,9 +900,9 @@ function lockMetro(){
   metroMap.setView(MAP_BOUNDS.getCenter(), zFill, { animate:false });
 }
 
-function ajouterLieu() {
-  const name = prompt('Nom du lieu :'); if (!name) return;
-  const image = prompt('Chemin de l\'image (ex: ../../img/plan_metro.jpg) :', '../../img/') || '';
+async function ajouterLieu() {
+  const name = await fpPrompt('Nom du lieu :'); if (!name) return;
+  const image = await fpPrompt('Chemin de l\'image (ex: ../../img/plan_metro.jpg) :', '../../img/') || '';
   const newLieu = { id: 'l' + Date.now(), name, image, pois: [] };
   lieux.push(newLieu);
   fdb.collection('carte').doc('lieux').set({ lieux });
@@ -982,9 +982,9 @@ function ouvrirLieu(id) {
 }
 
 // ---- AUTH MJ ----
-function demanderMJ() {
+async function demanderMJ() {
   if (isMJ || viewerId) return;
-  if (prompt('Code MJ :') !== MJ_CODE) return;
+  if (await fpPrompt('Code MJ :') !== MJ_CODE) return;
   sessionStorage.setItem('mj_auth', '1');
   isMJ = true; updateModeUI(); renderGeoLayers(); renderAll();
 }
@@ -1305,8 +1305,23 @@ function renderFog() {
   fogOverlay = L.imageOverlay(cv.toDataURL(), b, { pane: 'fogPane', interactive: false }).addTo(map);
 }
 
+// Découverte auto d'un refuge/settlement : son jeton arrive à <100 m du POI lié → révélé au joueur.
+const SETTLEMENT_DISCOVER_M = 100;
+function _settlementAutoReveal(id, lat, lng) {
+  if (!id) return;
+  Object.values(settlementsData.sites || {}).forEach(s => {
+    if (!s.poi) return;
+    const poi = (mapData.pois || []).find(p => p.name === s.poi);
+    if (!poi || poi.lat == null) return;
+    if (L.latLng(lat, lng).distanceTo(L.latLng(poi.lat, poi.lng)) > SETTLEMENT_DISCOVER_M) return;
+    poi.revealedFor = poi.revealedFor || [];
+    if (!poi.revealedFor.includes(id)) { poi.revealedFor.push(id); if (typeof logLieu === 'function') logLieu(poi.name, id, 'poi:' + poi.id); }
+  });
+}
+
 // Enregistre le trajet exploré en mètres (gommage permanent, traînée interpolée).
 function recordFog(id, lat, lng) {
+  _settlementAutoReveal(id, lat, lng);
   mapData.fog = mapData.fog || {};
   const arr = mapData.fog[id] = mapData.fog[id] || [];
   const last = arr[arr.length - 1];
@@ -1373,36 +1388,36 @@ function renderMJMaintenance(){
     </div>`;
   el.innerHTML = h || '<span class="empty">—</span>';
 }
-function resetFog(id){
-  if (!confirm('Réinitialiser le brouillard de ' + (joueurs[id]?.nom || id) + ' ?')) return;
+async function resetFog(id){
+  if (!await fpConfirm('Réinitialiser le brouillard de ' + (joueurs[id]?.nom || id) + ' ?')) return;
   if (mapData.fog) delete mapData.fog[id];
   if (mapData.metroFog) delete mapData.metroFog[id];
   saveData();
   if (typeof fpLogAction === 'function') fpLogAction(fdb, 'MJ', 'Brouillard réinitialisé : ' + (joueurs[id]?.nom || id));
 }
-function resetAllFog(){
-  if (!confirm('Réinitialiser le brouillard de TOUS les joueurs ?')) return;
+async function resetAllFog(){
+  if (!await fpConfirm('Réinitialiser le brouillard de TOUS les joueurs ?')) return;
   mapData.fog = {}; mapData.metroFog = {};
   saveData();
   if (typeof fpLogAction === 'function') fpLogAction(fdb, 'MJ', 'Tous les brouillards réinitialisés');
 }
-function removeToken(id){
-  if (!confirm('Retirer ' + (joueurs[id]?.nom || id) + ' de la carte (jeton + brouillard) ?')) return;
+async function removeToken(id){
+  if (!await fpConfirm('Retirer ' + (joueurs[id]?.nom || id) + ' de la carte (jeton + brouillard) ?')) return;
   ['tokens','metroTokens','fog','metroFog','underground','beacons'].forEach(k => { if (mapData[k]) delete mapData[k][id]; });
   // retire aussi cet id des listes de balises des autres
   if (mapData.beacons) Object.keys(mapData.beacons).forEach(k => { mapData.beacons[k] = (mapData.beacons[k] || []).filter(x => x !== id); });
   saveData();
 }
-function cleanOrphanTokens(){
+async function cleanOrphanTokens(){
   const orphans = _mapPresenceIds().filter(id => !joueurs[id]);
   if (!orphans.length){ alert('Aucun jeton orphelin.'); return; }
-  if (!confirm('Supprimer ' + orphans.length + ' jeton(s) orphelin(s) ?')) return;
+  if (!await fpConfirm('Supprimer ' + orphans.length + ' jeton(s) orphelin(s) ?')) return;
   orphans.forEach(id => ['tokens','metroTokens','fog','metroFog','underground','beacons'].forEach(k => { if (mapData[k]) delete mapData[k][id]; }));
   if (mapData.beacons) Object.keys(mapData.beacons).forEach(k => { mapData.beacons[k] = (mapData.beacons[k] || []).filter(x => joueurs[x]); });
   saveData();
 }
-function resetAllTokens(){
-  if (!confirm('Retirer TOUS les jetons de la carte ? (le brouillard est conservé)')) return;
+async function resetAllTokens(){
+  if (!await fpConfirm('Retirer TOUS les jetons de la carte ? (le brouillard est conservé)')) return;
   mapData.tokens = {}; mapData.metroTokens = {}; mapData.underground = {};
   saveData();
 }
@@ -1487,7 +1502,7 @@ function _genShopItems(n){
 }
 async function genPoiShop(poiId){
   const poi = (mapData.pois||[]).find(x => x.id === poiId); if(!poi) return;
-  const nb = parseInt(prompt('Nombre d\'articles dans la boutique :', '12')) || 12;
+  const nb = parseInt(await fpPrompt('Nombre d\'articles dans la boutique :', '12')) || 12;
   const ref = fdb.collection('boutiques').doc(fpCampId());
   let shops = {};
   try { const s = await ref.get(); shops = (s.exists && s.data().shops) || {}; } catch(e){}
@@ -1646,20 +1661,20 @@ function startAddPOI(type){
   updatePoiPicker();
   setHint('Clique sur la carte pour placer : ' + POI_TYPES[type].label);
 }
-function creerPOI(latlng) {
+async function creerPOI(latlng) {
   const type = POI_TYPES[pendingPoiType] ? pendingPoiType : 'other';
   addingPOI = false; updatePoiPicker(); setHint('');
-  const name = prompt('Nom du ' + POI_TYPES[type].label + ' :'); if (!name) return;
-  const desc = prompt('Description (optionnel) :') || '';
+  const name = await fpPrompt('Nom du ' + POI_TYPES[type].label + ' :'); if (!name) return;
+  const desc = await fpPrompt('Description (optionnel) :') || '';
   mapData.pois.push({ id: 'p' + Date.now(), name, type,
     lat: latlng.lat, lng: latlng.lng, desc, revealedFor: [] });
   saveData();
 }
-function editPOI(id) {
+async function editPOI(id) {
   const p = mapData.pois.find(x => x.id === id); if (!p) return;
-  const name = prompt('Nom :', p.name); if (name === null) return;
-  const type = prompt('Type (' + Object.keys(POI_TYPES).join(', ') + ') :', p.type);
-  const desc = prompt('Description :', p.desc || '');
+  const name = await fpPrompt('Nom :', p.name); if (name === null) return;
+  const type = await fpPrompt('Type (' + Object.keys(POI_TYPES).join(', ') + ') :', p.type);
+  const desc = await fpPrompt('Description :', p.desc || '');
   p.name = name || p.name; if (POI_TYPES[type]) p.type = type; p.desc = desc || '';
   saveData();
 }
@@ -1901,14 +1916,14 @@ function _sendProposal(to, type, extra){
     .catch(e=>{ console.error('echange', e); carteToast("Échec de l'envoi"); });
   if (map) map.closePopup();
 }
-function propGroup(to){
+async function propGroup(to){
   const g = groupOf(to);
   if(g){   // la cible est déjà dans un groupe → proposer de le rejoindre (pas de saisie de nom)
     _sendProposal(to, 'group', { groupName: g.name || 'Groupe', joinTarget: true });
     return;
   }
   const def = joueurs[viewerId]?.nom ? ('Groupe de ' + joueurs[viewerId].nom) : 'Groupe';
-  const name = prompt('Nom du groupe à proposer :', def);
+  const name = await fpPrompt('Nom du groupe à proposer :', def);
   if(name === null) return;   // annulé
   _sendProposal(to, 'group', { groupName: name.trim() || 'Groupe' });
 }

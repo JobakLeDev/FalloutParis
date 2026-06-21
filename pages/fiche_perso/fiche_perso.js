@@ -528,7 +528,8 @@ function _updRecentBtn(){
   const b=document.getElementById('inv-recent-btn'); if(!b) return;
   const n=_countNew();
   b.classList.toggle('on', _invRecentOnly);
-  b.textContent = '🆕 Récents' + (n?(' ('+n+')'):'');
+  const badge=document.getElementById('inv-recent-count');
+  if(badge){ badge.textContent = n||''; badge.classList.toggle('show', n>0); }
   b.style.display = '';
 }
 

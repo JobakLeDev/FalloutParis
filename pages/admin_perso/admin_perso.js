@@ -374,7 +374,7 @@ function addCompFromBase(){
   renderCompanions();
 }
 function addBlankCompanion(){ editCompanions.push(blankCompanion()); renderCompanions(); }
-function rmComp(i){ if(confirm('Supprimer ce compagnon ?')){ editCompanions.splice(i,1); renderCompanions(); } }
+async function rmComp(i){ if(await fpConfirm('Supprimer ce compagnon ?')){ editCompanions.splice(i,1); renderCompanions(); } }
 function setComp(i,k,v){
   const c=editCompanions[i]; if(!c) return;
   if(k==='level'||k==='hpMax'||k==='defense'){ c[k]=parseInt(v)||0; if(k==='hpMax') c.hpCur=Math.min(c.hpCur??c.hpMax,c.hpMax); }
@@ -491,7 +491,7 @@ async function sauvegarder(){
 // ---- SUPPRIMER ----
 async function supprimer(){
   if(!currentId)return;
-  if(!confirm(`Supprimer ${currentId} définitivement ?`))return;
+  if(!await fpConfirm(`Supprimer ${currentId} définitivement ?`))return;
   await db.collection('joueurs').doc(currentId).delete();
   currentId=null;
   document.getElementById('editor').style.display='none';

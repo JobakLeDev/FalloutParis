@@ -103,7 +103,7 @@ async function prendreTout(){
   if (!(bData.players||[]).includes(viewerId)) return;
   const items = bData.items || [];
   if (!items.length && !(bData.caps>0)) return;
-  if (!confirm('Tout récupérer (objets, munitions et caps) ?')) return;
+  if (!await fpConfirm('Tout récupérer (objets, munitions et caps) ?')) return;
   const ref = fdb.collection('joueurs').doc(viewerId);
   let snap;
   try { snap = await ref.get(); } catch(e){ alert('Erreur Firebase'); return; }

@@ -46,9 +46,9 @@ function init() {
   window.addEventListener('message', e => { if (e.data === 'quetes-refresh') render(); });
 }
 
-function demanderMJ() {
+async function demanderMJ() {
   if (isMJ || viewerId) return;
-  if (prompt('Code MJ :') !== MJ_CODE) return;
+  if (await fpPrompt('Code MJ :') !== MJ_CODE) return;
   sessionStorage.setItem('mj_auth', '1');
   isMJ = true; updateModeUI(); render();
 }
@@ -156,7 +156,7 @@ function addQuete() {
   qData.quests.unshift({ id: uid(), title: 'Nouvelle quête', desc: '', status: 'active', objectives: [], revealedFor: [], reward: '', qtype: 'annexe', qtier: 'standard' });
   saveQuetes(); render();
 }
-function delQuete(i) { if (confirm('Supprimer cette quête ?')) { qData.quests.splice(i, 1); saveQuetes(); render(); } }
+async function delQuete(i) { if (await fpConfirm('Supprimer cette quête ?')) { qData.quests.splice(i, 1); saveQuetes(); render(); } }
 function setQ(i, k, v) { if (!qData.quests[i]) return; qData.quests[i][k] = v; saveQuetes(); }      // texte : pas de re-render (focus)
 function setQMeta(i, k, v) { if (!qData.quests[i]) return; qData.quests[i][k] = v; saveQuetes(); render(); }   // type/tier : re-render (maj aperçu XP)
 

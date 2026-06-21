@@ -52,7 +52,7 @@ function initFilterIcons(){
     b.innerHTML = t.icon + ' ' + b.textContent.trim();
   });
 }
-function demanderMJ(){ if (isMJ || viewerId) return; if (prompt('Code MJ :') !== MJ_CODE) return; sessionStorage.setItem('mj_auth','1'); isMJ = true; updateModeUI(); render(); }
+async function demanderMJ(){ if (isMJ || viewerId) return; if (await fpPrompt('Code MJ :') !== MJ_CODE) return; sessionStorage.setItem('mj_auth','1'); isMJ = true; updateModeUI(); render(); }
 function updateModeUI(){
   const m = document.getElementById('jhdr-mode'); if (m) m.textContent = isMJ ? 'Vue MJ' : (viewerId ? 'Vue joueur' : 'Visiteur');
   const mb = document.getElementById('jmj-btn'); if (mb) mb.style.display = (isMJ || viewerId) ? 'none' : '';
@@ -100,14 +100,14 @@ function addEntry(){
   document.getElementById('j-add-title').value = '';
   saveJournal(); render();
 }
-function delEntry(idx){ if (confirm('Supprimer cette entrée ?')) { jData.entries.splice(idx,1); saveJournal(); render(); } }
+async function delEntry(idx){ if (await fpConfirm('Supprimer cette entrée ?')) { jData.entries.splice(idx,1); saveJournal(); render(); } }
 function setE(idx, k, v){ if (!jData.entries[idx]) return; jData.entries[idx][k] = v; saveJournal(); }   // texte : pas de re-render
 function setEType(idx, v){ jData.entries[idx].type = v; saveJournal(); render(); }
-function reglerTemps(idx){
+async function reglerTemps(idx){
   const e = jData.entries[idx]; const cur = tempsDate(e.time||0);
-  const ds = prompt('Date (JJ/MM/AAAA) :', `${cur.getDate()}/${cur.getMonth()+1}/${cur.getFullYear()}`); if (ds==null) return;
+  const ds = await fpPrompt('Date (JJ/MM/AAAA) :', `${cur.getDate()}/${cur.getMonth()+1}/${cur.getFullYear()}`); if (ds==null) return;
   const dm = ds.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/); if (!dm) return;
-  const hs = prompt('Heure (HH:MM) :', fmtHeure(e.time||0)); if (hs==null) return;
+  const hs = await fpPrompt('Heure (HH:MM) :', fmtHeure(e.time||0)); if (hs==null) return;
   const hm = hs.match(/^(\d{1,2})[:hH]?(\d{0,2})$/); if (!hm) return;
   const nd = new Date(parseInt(dm[3]), (parseInt(dm[2])||1)-1, parseInt(dm[1])||1, Math.min(23,parseInt(hm[1])||0), Math.min(59,parseInt(hm[2])||0), 0);
   e.time = Math.max(0, tempsMinutesDepuis(nd));

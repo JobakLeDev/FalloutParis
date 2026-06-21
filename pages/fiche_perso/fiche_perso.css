@@ -351,9 +351,17 @@ html, body { overflow-x: hidden !important; overflow-y: auto !important; height:
 .iname .inew{ font-size:10px; }
 
 /* Barre "objets récents" (inventaire) — version intégrée */
-.inv-recent-bar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;padding:4px 8px;border:1px solid var(--b);background:#0a140a;border-radius:3px;}
-.inv-recent-hint{font-size:8px;letter-spacing:1px;color:var(--td);}
-.inv-recent-actions{display:flex;gap:6px;}
-.inv-pill{background:var(--gk);border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;padding:4px 11px;border-radius:11px;cursor:pointer;transition:all .12s;white-space:nowrap;}
-.inv-pill:hover{border-color:var(--g);color:var(--tb);}
+.inv-recent-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;padding:6px 10px;border:1px solid var(--b);background:linear-gradient(180deg,#0c160c,#080f08);border-radius:4px;flex-wrap:wrap;}
+.inv-recent-hint{display:inline-flex;align-items:center;gap:5px;font-size:9px;letter-spacing:1px;color:var(--td);text-transform:uppercase;}
+.inv-recent-hint .inew-dot{font-size:11px;}
+.inv-recent-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.inv-pill{display:inline-flex;align-items:center;gap:6px;background:var(--gk);border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;padding:5px 13px;border-radius:13px;cursor:pointer;transition:all .12s;white-space:nowrap;}
+.inv-pill .ip-ic{font-size:11px;line-height:1;}
+.inv-pill:hover{border-color:var(--g);color:var(--tb);background:#173117;}
+.inv-pill.ghost{background:transparent;}
+.inv-pill.ghost:hover{background:#122212;}
+.inv-pill.on{background:var(--am);border-color:var(--am);color:#1a1200;font-weight:bold;box-shadow:0 0 9px rgba(232,168,32,.45);}
+.inv-pill .ip-badge{display:none;}
+.inv-pill .ip-badge.show{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:15px;padding:0 4px;background:var(--rd);color:#fff;border-radius:8px;font-size:8px;line-height:1;}
+.inv-pill.on .ip-badge.show{background:#1a1200;color:var(--am);}
 .itag.AMMO{background:#3a2a0a;color:var(--am);}

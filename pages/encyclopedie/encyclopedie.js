@@ -47,9 +47,9 @@ function initEncy(){
   window.addEventListener('message', e => { if(e.data === 'ency-refresh') render(); });
 }
 
-function demanderMJ(){
+async function demanderMJ(){
   if(isMJ || viewerId) return;
-  if(prompt('Code MJ :') !== MJ_CODE) return;
+  if(await fpPrompt('Code MJ :') !== MJ_CODE) return;
   sessionStorage.setItem('mj_auth', '1');
   isMJ = true; updateModeUI(); render();
 }

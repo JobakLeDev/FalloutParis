@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fallout Paris — Fiche Personnage</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../../common/style.css?v=83">
-  <link rel="stylesheet" href="fiche_perso.css?v=85">
+  <link rel="stylesheet" href="../../common/style.css?v=84">
+  <link rel="stylesheet" href="fiche_perso.css?v=86">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
@@ -211,10 +211,10 @@
     <!-- TOUT -->
     <div class="inv-content on" id="inv-all">
       <div class="inv-recent-bar">
-        <span class="inv-recent-hint">🆕 = acquis récemment</span>
+        <span class="inv-recent-hint"><span class="inew-dot">🆕</span> acquis récemment</span>
         <span class="inv-recent-actions">
-          <button id="inv-recent-btn" class="inv-pill" onclick="toggleRecent()">🆕 Récents</button>
-          <button class="inv-pill" onclick="markInvSeen()" title="Marquer tous les objets comme vus">✓ Marquer vus</button>
+          <button id="inv-recent-btn" class="inv-pill" onclick="toggleRecent()"><span class="ip-ic">🆕</span><span class="ip-lbl">Récents</span><span class="ip-badge" id="inv-recent-count"></span></button>
+          <button class="inv-pill ghost" onclick="markInvSeen()" title="Marquer tous les objets comme vus"><span class="ip-ic">✓</span><span class="ip-lbl">Tout marquer vu</span></button>
         </span>
       </div>
       <div class="scr" id="inv-all-list"></div>
@@ -436,10 +436,10 @@
   </div>
 </div>
 
-  <script src="../../common/shared.js?v=83"></script>
+  <script src="../../common/shared.js?v=84"></script>
   <script src="../../common/db.js?v=81"></script>
   <script src="../../common/survie.js?v=76"></script>
-  <script src="fiche_perso.js?v=99"></script>
+  <script src="fiche_perso.js?v=100"></script>
   <script src="../../common/firebase.js?v=86"></script>
   <script src="../../common/responsive.js?v=1"></script>
 </body>

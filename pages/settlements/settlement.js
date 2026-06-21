@@ -102,9 +102,9 @@ async function initSettlement(){
   fdb.collection('temps').doc(fpCampId()).onSnapshot(s => { tempsData = s.exists ? s.data() : {}; render(); });
 }
 
-function demanderMJ(){
+async function demanderMJ(){
   if (isMJ || viewerId) return;
-  if (prompt('Code MJ :') !== MJ_CODE) return;
+  if (await fpPrompt('Code MJ :') !== MJ_CODE) return;
   sessionStorage.setItem('mj_auth', '1'); isMJ = true; updateModeUI(); render();
 }
 function updateModeUI(){
@@ -154,8 +154,9 @@ function creerSite(){
   selSite = id; save();
   document.getElementById('ns-name').value = '';
 }
-function supprimerSite(id){ if (!isMJ) return; if (!confirm('Supprimer ce refuge ?')) return; delete data.sites[id]; if (selSite === id) selSite = null; save(); }
+async function supprimerSite(id){ if (!isMJ) return; if (!await fpConfirm('Supprimer ce refuge ?')) return; delete data.sites[id]; if (selSite === id) selSite = null; save(); }
 function setType(id){ if(!isMJ) return; const s = data.sites[id]; if(!s) return; s.type = (s.type === 'settlement') ? 'refuge' : 'settlement'; save(); }
+function setPoi(id, val){ if(!isMJ) return; const s = data.sites[id]; if(!s) return; s.poi = val || ''; save(); }
 function chSettlers(id, d){ if(!isMJ) return; const s = data.sites[id]; if(!s) return; s.settlers = Math.max(0, (s.settlers||0) + d); save(); }
 function creditStock(id, tier, delta){
   if (!isMJ) return; const s = data.sites[id]; if (!s) return;
@@ -178,10 +179,13 @@ function cellClick(id, x, y){
     if ((s.blocks || []).some(b => b.x === x && b.y === y)){ return; }   // pas sur un bloc
     s.pos = s.pos || {}; s.pos[me.id] = { x, y }; _selTok = null; save(); return;
   }
-  // Joueur : clic sur l'icône d'un bloc → pop-up d'action
+  // Joueur : clic sur l'icône d'un bloc → pop-up d'action ; clic sur une case vide → place/pose son jeton
   if (!isMJ && !selBlock){
     const b = (s.blocks || []).find(c => c.x === x && c.y === y);
-    if (b){ if(!_onSite(s)){ alert('Tu dois être sur place (' + (s.poi || 'le lieu') + ').'); return; } openBlockPop(b.type); }
+    if (b){ if(!_onSite(s)){ alert('Tu dois être sur place (' + (s.poi || 'le lieu') + ').'); return; } openBlockPop(b.type); return; }
+    if (me && canAccess(s) && _onSite(s) && !(s.pos && s.pos[me.id])){   // pas encore de jeton → apparaître ici
+      s.pos = s.pos || {}; s.pos[me.id] = { x, y }; save();
+    }
     return;
   }
   if (!selBlock) return;
@@ -226,7 +230,7 @@ async function reposRefuge(){
   if (_siteHas(site,'water'))   gains.push('🚰 soif restaurée');
   if (_siteHas(site,'medical')) gains.push('🩺 radiations soignées');
   if (_siteHas(site,'door'))    gains.push('🚪 repos sécurisé');
-  if (!confirm('Se reposer ici ?\n\n' + gains.join('\n'))) return;
+  if (!await fpConfirm('Se reposer ici ?\n\n' + gains.join('\n'))) return;
   let nowMin = 0;
   try { const ts = await fdb.collection('temps').doc(fpCampId()).get(); nowMin = (typeof partyMinutesFor === 'function') ? partyMinutesFor(ts.exists ? ts.data() : {}, me.id) : 0; } catch(e){}
   const sp = me.special || {}, niv = me.niveau || 1;
@@ -238,7 +242,7 @@ async function reposRefuge(){
   if (_siteHas(site,'medical')) upd.rad = 0;
   try { await fdb.collection('joueurs').doc(viewerId).update(upd); me.survie = sv; me.hp = hpMax; if (upd.rad != null) me.rad = 0; }
   catch(e){ alert('Erreur : ' + e.message); return; }
-  alert('😴 Repos terminé.\n' + gains.join('\n'));
+  // message unique : la confirmation stylée affiche déjà les gains
 }
 
 // ---- scrap : démonter du junk de son inventaire → Réserve du refuge ----
@@ -269,6 +273,57 @@ function scrapBody(site){
     return `<div class="scrap-row"><span>🔩 <b>${esc(it.name)}</b> ×${it.qty} <small>→ ${yieldStr(def)}</small></span>
       <span><button class="bp-mini" onclick="scrapJunk('${safe}',false)">Démonter</button>${it.qty>1?`<button class="bp-mini" onclick="scrapJunk('${safe}',true)">Tout (×${it.qty})</button>`:''}</span></div>`;
   }).join('');
+}
+
+// ---- coffre du refuge : dépôt / retrait d'objets (site.inv) ----
+function _isContName(n){ return (window.DB?.stuff||[]).some(s => s.n === n && s.cap != null); }
+function _modSig(it){ return JSON.stringify(it.mods || null); }
+function _packStoreItem(it, qty){ const o = { name: it.name, type: it.type, w: it.w||0, qty }; if(it.mods) o.mods = it.mods; if(it.unlocked) o.unlocked = it.unlocked; if(it.water != null) o.water = it.water; return o; }
+function storeBody(site){
+  if (isMJ || !me || !canAccess(site)) return '';
+  const sinv = site.inv || [];
+  let h = '<div class="s-sub">📦 Coffre du refuge</div>';
+  h += sinv.length ? '<div class="chest-list">' + sinv.map((it,i) => {
+    const wc = _isContName(it.name) ? ` <span style="color:#2a9d8f">💧${it.water||0}</span>` : '';
+    return `<div class="scrap-row"><span>${esc(it.name)}${wc} ×${it.qty||1}</span><span><button class="bp-mini" onclick="withdrawItem(${i},false)">Prendre</button>${(it.qty>1)?`<button class="bp-mini" onclick="withdrawItem(${i},true)">Tout</button>`:''}</span></div>`;
+  }).join('') + '</div>' : '<div class="s-note">Vide.</div>';
+  const mine = (me.inventory || []).map((it,idx) => ({it,idx})).filter(x => !x.it.equipped && (x.it.qty||1) > 0);
+  h += '<div class="s-sub" style="margin-top:9px">Déposer un objet</div>';
+  h += mine.length ? '<div class="chest-list">' + mine.map(({it,idx}) => {
+    const wc = _isContName(it.name) ? ` <span style="color:#2a9d8f">💧${it.water||0}</span>` : '';
+    return `<div class="scrap-row"><span>${esc(it.name)}${wc} ×${it.qty||1}</span><span><button class="bp-mini" onclick="depositItem(${idx},false)">Déposer</button>${(it.qty>1)?`<button class="bp-mini" onclick="depositItem(${idx},true)">Tout</button>`:''}</span></div>`;
+  }).join('') + '</div>' : '<div class="s-note">Rien à déposer.</div>';
+  // démontage (matériaux) en complément
+  const scrap = scrapBody(site);
+  if(scrap) h += '<div class="s-sub" style="margin-top:9px">🔩 Démonter (→ matériaux)</div>' + scrap;
+  return h;
+}
+async function depositItem(idx, all){
+  const site = data.sites[selSite]; if(!site || !me) return;
+  if(!canAccess(site) || !_onSite(site)){ alert('Tu dois être sur place.'); return; }
+  const inv = (me.inventory || []).map(x => ({ ...x }));
+  const it = inv[idx]; if(!it || it.equipped) return;
+  const give = Math.min(all ? (it.qty||1) : 1, it.qty||1); if(give <= 0) return;
+  it.qty = (it.qty||1) - give; if(it.qty <= 0) inv.splice(idx, 1);
+  site.inv = site.inv || [];
+  if(_isContName(it.name)){ for(let k=0;k<give;k++) site.inv.push(_packStoreItem({ ...it, qty:1 }, 1)); }
+  else { const ex = site.inv.find(x => x.name===it.name && x.type===it.type && _modSig(x)===_modSig(it)); if(ex) ex.qty = (ex.qty||1) + give; else site.inv.push(_packStoreItem(it, give)); }
+  try { await fdb.collection('joueurs').doc(viewerId).update({ inventory: inv, lastUpdate: Date.now() }); me.inventory = inv; }
+  catch(e){ alert('Erreur : ' + e.message); return; }
+  save();
+}
+async function withdrawItem(idx, all){
+  const site = data.sites[selSite]; if(!site || !me) return;
+  if(!canAccess(site) || !_onSite(site)){ alert('Tu dois être sur place.'); return; }
+  const sinv = site.inv || []; const it = sinv[idx]; if(!it) return;
+  const take = Math.min(all ? (it.qty||1) : 1, it.qty||1); if(take <= 0) return;
+  it.qty = (it.qty||1) - take; if(it.qty <= 0) sinv.splice(idx, 1);
+  const inv = (me.inventory || []).map(x => ({ ...x }));
+  if(_isContName(it.name)){ for(let k=0;k<take;k++){ const o = _packStoreItem({ ...it, qty:1 }, 1); o.equipped = false; inv.push(o); } }
+  else { const ex = inv.find(x => x.name===it.name && x.type===it.type && !x.equipped && _modSig(x)===_modSig(it)); if(ex) ex.qty = (ex.qty||1) + take; else { const o = _packStoreItem(it, take); o.equipped = false; inv.push(o); } }
+  try { await fdb.collection('joueurs').doc(viewerId).update({ inventory: inv, lastUpdate: Date.now() }); me.inventory = inv; }
+  catch(e){ alert('Erreur : ' + e.message); return; }
+  save();
 }
 
 // ---- économie, production, défense & colons ----
@@ -365,7 +420,7 @@ const _POP_ACTION = {
   water:         s => waterBody(s),
   wbench_weapon: s => benchBody(s, 'weapon'),
   wbench_armor:  s => benchBody(s, 'armor'),
-  storage:       s => scrapBody(s),
+  storage:       s => storeBody(s),
 };
 function openBlockPop(type){ _popBlock = type; render(); }
 function closeBlockPop(){ _popBlock = null; render(); }
@@ -560,7 +615,9 @@ function render(){
   const isSet = site.type === 'settlement';
   const typeTag = `<span class="tag" style="${isSet?'color:#1a1200;background:var(--g);border-color:var(--g)':''}">${isSet?'🏘️ Settlement':'🏚 Refuge'}</span>${isMJ?`<button class="sbtn" style="font-size:9px;padding:2px 6px;margin-left:4px" onclick="setType('${selSite}')">⇄ type</button>`:''}`;
   const facTag = site.faction ? `<span class="tag">${site.faction}</span>` : `<span class="tag">Indépendant</span>`;
-  const poiTag = site.poi ? `<span class="tag">📍 ${esc(site.poi)}</span>` : (isMJ ? `<span class="tag" style="color:var(--rd)">⚠ non lié à un lieu</span>` : '');
+  const poiTag = isMJ
+    ? `<span class="tag${site.poi?'':' '}" style="${site.poi?'':'color:var(--rd);'}padding:1px 5px">📍 <select class="s-poi-sel" onchange="setPoi('${selSite}',this.value)"><option value="">— non lié —</option>${cartePois.map(n => `<option value="${esc(n)}"${site.poi===n?' selected':''}>${esc(n)}</option>`).join('')}</select></span>`
+    : (site.poi ? `<span class="tag">📍 ${esc(site.poi)}</span>` : '');
   const restTag = site.restPoint ? `<span class="tag rest">🛏 Point de repos</span>` : '';
   const mjTools = isMJ ? `<span class="s-mj-tools"><button class="sbtn" onclick="supprimerSite('${selSite}')">✕ Supprimer</button></span>` : '';
   document.getElementById('s-site-head').innerHTML = mjTools + esc(site.name) + typeTag + facTag + poiTag + restTag;
@@ -597,10 +654,7 @@ function render(){
   }
   cells += '<div class="s-edges">' + gridEdgesHtmlS({ w: site.w, h: site.h, edges: site.edges || {} }, CS) + '</div>';
   if (isMJ && _edgeBrush) cells += sEdgeHotspots(site, CS);
-  // Jeton du joueur visiteur : auto-placement à la 1re visite (joueur allié, présent sur le lieu)
-  if (!isMJ && me && canAccess(site) && _onSite(site) && !(site.pos && site.pos[me.id]) && !_autoPlaced){
-    _autoPlaced = true; site.pos = site.pos || {}; site.pos[me.id] = _firstFreeCell(site); save();
-  }
+  // (Pas d'auto-placement : le joueur place lui-même son jeton en cliquant une case vide.)
   // Jetons (tous les joueurs présents sur ce refuge)
   const pos = site.pos || {};
   const canMoveOwn = !isMJ && me && canAccess(site) && _onSite(site);
@@ -614,7 +668,7 @@ function render(){
   gw.innerHTML = cells;
   renderEdgePal();
   renderPop(site);
-  document.getElementById('s-grid-hint').textContent = _selTok ? '— clique une case libre pour déplacer le jeton' : _edgeBrush ? ('— clique les BORDS des cases pour poser : ' + ({wall:'Mur',door:'Porte',window:'Fenêtre',erase:'Effacer'}[_edgeBrush])) : selBlock ? ('— clique une case pour poser : ' + (blockDef(selBlock)?.name||'')) : (isMJ ? '— bloc du catalogue + case · pinceau Mur/Porte/Fenêtre + bords · clic jeton = déplacer · clic bloc posé = retirer' : '— clique une icône pour l\'utiliser · clique ton jeton puis une case pour te déplacer');
+  document.getElementById('s-grid-hint').textContent = _selTok ? '— clique une case libre pour déplacer le jeton' : _edgeBrush ? ('— clique les BORDS des cases pour poser : ' + ({wall:'Mur',door:'Porte',window:'Fenêtre',erase:'Effacer'}[_edgeBrush])) : selBlock ? ('— clique une case pour poser : ' + (blockDef(selBlock)?.name||'')) : (isMJ ? '— bloc du catalogue + case · pinceau Mur/Porte/Fenêtre + bords · clic jeton = déplacer · clic bloc posé = retirer' : (_onSite(site) ? (!(site.pos && site.pos[me?.id]) ? '— clique une case vide pour faire apparaître ton jeton · clique une icône pour l\'utiliser' : '— clique une icône pour l\'utiliser · clique ton jeton puis une case pour te déplacer') : ''));
 
   // catalogue — MJ uniquement (côté joueur, la liste de blocs est masquée)
   const catWrap = document.querySelector('.s-cat-wrap');

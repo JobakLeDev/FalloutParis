@@ -266,4 +266,36 @@ function partyMinutesFor(tempsData, pid){
     try { b.focus(); } catch(e){}
   }
   window.alert = fpShowAlert;
+
+  // confirm()/prompt() stylés (asynchrones → renvoient une Promise). À utiliser avec await.
+  function fpModal(opts){
+    const kind = opts.kind, msg = opts.msg, def = opts.def;
+    return new Promise(resolve => {
+      const go = () => {
+        let o = document.getElementById('fp-alert');
+        if(!o){ o = document.createElement('div'); o.id = 'fp-alert'; document.body.appendChild(o); }
+        const m = document.createElement('div'); m.className = 'fp-alert-box';
+        const t = document.createElement('div'); t.className = 'fp-alert-msg'; t.textContent = (msg == null ? '' : '' + msg);
+        m.appendChild(t);
+        let input = null;
+        if(kind === 'prompt'){
+          input = document.createElement('input'); input.className = 'fp-alert-input'; input.value = (def == null ? '' : '' + def);
+          m.appendChild(input);
+        }
+        const row = document.createElement('div'); row.className = 'fp-alert-row';
+        const done = (val) => { m.remove(); if(!o.children.length) o.style.display = 'none'; resolve(val); };
+        const cancel = document.createElement('button'); cancel.className = 'fp-alert-cancel'; cancel.textContent = 'Annuler';
+        cancel.onclick = () => done(kind === 'prompt' ? null : false);
+        const ok = document.createElement('button'); ok.className = 'fp-alert-ok'; ok.textContent = 'OK';
+        ok.onclick = () => done(kind === 'prompt' ? input.value : true);
+        row.appendChild(cancel); row.appendChild(ok); m.appendChild(row);
+        o.appendChild(m); o.style.display = 'flex';
+        try { (input || ok).focus(); } catch(e){}
+        if(input) input.addEventListener('keydown', e => { if(e.key === 'Enter') ok.onclick(); else if(e.key === 'Escape') done(null); });
+      };
+      if(!document.body) document.addEventListener('DOMContentLoaded', go); else go();
+    });
+  }
+  window.fpConfirm = (msg) => fpModal({ kind:'confirm', msg });
+  window.fpPrompt  = (msg, def) => fpModal({ kind:'prompt', msg, def });
 })();
