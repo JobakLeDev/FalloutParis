@@ -134,6 +134,7 @@ async function charger(id){
   renderAmmo();
   populateInvSelect();
   populateCompBaseSel();
+  populateRecruitSel();
   renderCompanions();
   document.getElementById('e-customtitle').value=d.customTitle||'';
   renderProfil();
@@ -375,6 +376,80 @@ function addCompFromBase(){
 }
 function addBlankCompanion(){ editCompanions.push(blankCompanion()); renderCompanions(); }
 async function rmComp(i){ if(await fpConfirm('Supprimer ce compagnon ?')){ editCompanions.splice(i,1); renderCompanions(); } }
+
+// ---- Compagnons recrutés (forme-fiche : PV/dégâts/RD calculés comme un vrai perso) ----
+const _SK = (typeof SKILLS_DEF!=='undefined'?SKILLS_DEF:[]);
+function _skName(k){ const d=_SK.find(s=>s.key===k); return d?d.name:k; }
+function compHpMax(c){ const sp=c.special||{}; return (sp.L||5)+(sp.E||5)+Math.max(0,(c.niveau||1)-1)+((c.perks&&c.perks['Life Giver'])||0)*(sp.E||5); }
+function populateRecruitSel(){
+  const sel=document.getElementById('comp-recruit-sel'); if(!sel) return;
+  sel.innerHTML='<option value="">+ Recruter un compagnon…</option>'+(window.COMPANIONS||[]).map(c=>`<option value="${c.id}">${c.nom} — ${c.role||''} (${c.archetype||''})</option>`).join('');
+}
+function recruitCompanion(){
+  const id=document.getElementById('comp-recruit-sel')?.value; if(!id) return;
+  const src=(window.COMPANIONS||[]).find(c=>c.id===id); if(!src) return;
+  const c=JSON.parse(JSON.stringify(src));
+  c.id=src.id+'_'+Date.now().toString(36);   // id unique (recrutement multiple possible)
+  c.inventory=c.inventory||[]; c.rad=c.rad||0; c.caps=c.caps||0; c.niveau=c.niveau||1;
+  c.hpMax=compHpMax(c); c.hpCur=c.hpMax;
+  editCompanions.push(c);
+  document.getElementById('comp-recruit-sel').value='';
+  renderCompanions();
+}
+function charCompanionCard(c,i){
+  const sp=c.special||{};
+  const spLine=['S','P','E','C','I','A','L'].map(k=>`<span class="cc-sp">${k}<b>${sp[k]??'-'}</b></span>`).join('');
+  const sk=Object.entries(c.skills||{}).filter(([,v])=>v>0).map(([k,v])=>`${_skName(k)} +${v}`).join(' · ')||'—';
+  const pk=Object.entries(c.perks||{}).map(([n,r])=>r>1?`${n} ${r}`:n).join(' · ')||'—';
+  const inv=(c.inventory||[]).map((it,j)=>{
+    const eqB=(it.type==='WEAPON'||it.type==='ARMOR'||it.type==='CLOTHING')
+      ? `<button class="inv-btn${it.equipped?' on':''}" title="Équiper" onclick="toggleCompEquip(${i},${j})">${it.equipped?'✓ équipé':'équiper'}</button>`:'';
+    return `<div class="ceditrow"><span style="flex:2;font-size:10px">${it.equipped?'<b style="color:var(--g)">●</b> ':''}${it.name}</span>
+      <span class="cc-tag">${it.type}</span>
+      <button class="inv-btn" onclick="chCompItemQty(${i},${j},-1)">−</button><span style="width:22px;text-align:center">${it.qty||1}</span><button class="inv-btn" onclick="chCompItemQty(${i},${j},1)">+</button>
+      ${eqB}<button class="inv-btn" style="color:var(--rd)" onclick="rmCompItem(${i},${j})">✕</button></div>`;
+  }).join('')||'<div class="empty" style="font-size:9px;color:var(--td);padding:4px">Sac vide</div>';
+  const opts=(typeof ALL_ITEMS!=='undefined'?ALL_ITEMS:[]).map(it=>`<option value="${it.n}">${it.n} (${it.t})</option>`).join('');
+  return `<div class="cedit" style="border-color:var(--gd)">
+    <div class="cedit-head">
+      <input class="ci" style="flex:2;font-size:11px" value="${c.nom||''}" onchange="setComp(${i},'nom',this.value)">
+      <span class="cc-meta">${c.archetype||''} · ${c.role||''} · ${c.faction||''}</span>
+      <button class="inv-btn" style="color:var(--rd)" onclick="rmComp(${i})">✕ Suppr.</button>
+    </div>
+    <div class="cedit-row" style="flex-wrap:wrap;gap:6px">
+      <span>Niv <input class="ci" style="width:38px" type="number" value="${c.niveau||1}" onchange="setCompNiv(${i},this.value)"></span>
+      ${spLine}
+      <span>❤ PV max <b style="color:var(--g)">${compHpMax(c)}</b></span>
+    </div>
+    <div class="cedit-row" style="font-size:9px;color:var(--td);display:block"><b>Compétences :</b> ${sk}<br><b>Perks :</b> ${pk}</div>
+    <div class="cedit-row" style="display:block">
+      <div style="font-size:9px;color:var(--am);margin-bottom:3px">🎒 INVENTAIRE (équipe armes/armures → dégâts & RD calculés en combat)</div>
+      ${inv}
+      <div class="ceditrow" style="margin-top:4px"><select class="ci" style="flex:1" id="comp-inv-sel-${i}"><option value="">+ Ajouter un objet…</option>${opts}</select><button class="inv-btn" onclick="compAddItem(${i})">+ Ajouter</button></div>
+    </div>
+  </div>`;
+}
+function setCompNiv(i,v){ const c=editCompanions[i]; if(!c) return; c.niveau=Math.max(1,parseInt(v)||1); c.hpMax=compHpMax(c); if(c.hpCur==null||c.hpCur>c.hpMax) c.hpCur=c.hpMax; renderCompanions(); }
+function compAddItem(i){
+  const c=editCompanions[i]; if(!c) return;
+  const name=document.getElementById('comp-inv-sel-'+i)?.value; if(!name) return;
+  const db2=(typeof ALL_ITEMS!=='undefined'?ALL_ITEMS:[]).find(x=>x.n===name); if(!db2) return;
+  c.inventory=c.inventory||[];
+  const ex=c.inventory.find(x=>x.name===name);
+  if(ex){ ex.qty=(ex.qty||1)+1; renderCompanions(); return; }
+  const item={name,type:db2.t,qty:1,w:db2.w||0,equipped:false};
+  if(db2.z) item.zone=db2.z;
+  c.inventory.push(item); renderCompanions();
+}
+function rmCompItem(i,j){ editCompanions[i]?.inventory?.splice(j,1); renderCompanions(); }
+function chCompItemQty(i,j,n){ const it=editCompanions[i]?.inventory?.[j]; if(!it) return; it.qty=Math.max(1,(it.qty||1)+n); renderCompanions(); }
+function toggleCompEquip(i,j){
+  const c=editCompanions[i]; const it=c?.inventory?.[j]; if(!it) return;
+  if(!it.equipped && (it.type==='ARMOR'||it.type==='CLOTHING') && it.zone){   // une seule armure par zone
+    c.inventory.forEach(x=>{ if(x!==it && x.equipped && (x.type==='ARMOR'||x.type==='CLOTHING') && x.zone===it.zone) x.equipped=false; });
+  }
+  it.equipped=!it.equipped; renderCompanions();
+}
 function setComp(i,k,v){
   const c=editCompanions[i]; if(!c) return;
   if(k==='level'||k==='hpMax'||k==='defense'){ c[k]=parseInt(v)||0; if(k==='hpMax') c.hpCur=Math.min(c.hpCur??c.hpMax,c.hpMax); }
@@ -394,6 +469,7 @@ function renderCompanions(){
   if(!editCompanions.length){ el.innerHTML='<div class="empty" style="font-size:9px;color:var(--td);padding:8px">Aucun compagnon</div>'; return; }
   const ni=(v)=>v==null?'':v;
   el.innerHTML=editCompanions.map((c,i)=>{
+    if(c.special) return charCompanionCard(c,i);   // compagnon recruté (forme-fiche)
     const atks=(c.attacks||[]).map((a,j)=>`<div class="ceditrow">
       <input class="ci" style="flex:2" value="${a.name||''}" onchange="setCompAtk(${i},${j},'name',this.value)" placeholder="nom">
       <input class="ci" style="width:42px" value="${a.attr||''}" onchange="setCompAtk(${i},${j},'attr',this.value)" placeholder="attr" title="body/mind...">

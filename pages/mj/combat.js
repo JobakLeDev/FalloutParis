@@ -513,6 +513,28 @@ function buildAlliesFromCompanions(){
     const d = combattants[id]?.data; if(!d) return;
     const ownerNom = (d.nom||id);
     (d.companions||[]).forEach((c, idx) => {
+      if(c.special){   // compagnon recruté (forme-fiche) → PV/dégâts/RD/TN calculés comme un vrai perso
+        const pvMax = (typeof getHpMax === 'function') ? getHpMax(c) : ((c.special.L||5)+(c.special.E||5)+Math.max(0,(c.niveau||1)-1));
+        const wIt = (c.inventory||[]).find(it => it.equipped && it.type === 'WEAPON');
+        let atq = 1, atkName = 'Mains nues', skKey = 'barehand';
+        if(wIt){ const base = (window.DB?.weapons||[]).find(x => x.n === wIt.name) || {};
+          const eff = (typeof fpApplyWeaponMods === 'function') ? fpApplyWeaponMods(base, wIt.mods) : base;
+          atq = parseInt(eff.dmg) || parseInt(base.dmg) || 1; atkName = wIt.name; skKey = base.sk || 'light_weapon'; }
+        let rd = 0;
+        (c.inventory||[]).filter(it => it.equipped && (it.type==='ARMOR'||it.type==='CLOTHING')).forEach(a => {
+          const base = (window.DB?.armor||[]).find(x => x.n === a.name) || {};
+          const e = (typeof fpApplyArmorMods === 'function') ? fpApplyArmorMods(base, a.mods) : base;
+          rd = Math.max(rd, e.ph || base.ph || 0);
+        });
+        const tn = (typeof getTN === 'function') ? (getTN(c, skKey).total || 10) : 10;
+        allies.push({
+          id: c.id || (id+'_c'+idx), nom: (c.nom||'Compagnon'), owner: id, ownerNom,
+          pvMax, pvCur: (c.hpCur != null ? Math.min(c.hpCur, pvMax) : pvMax),
+          atq: String(atq), rd, defense: 1, char: true, special: c.special,
+          attacks: [{ name: atkName, skill: skKey, tn, dmg: atq }], abilities: [],
+        });
+        return;
+      }
       const atk = (c.attacks && c.attacks[0]) || {};
       allies.push({
         id: c.id || (id+'_c'+idx), nom: (c.nom||'Compagnon'),
