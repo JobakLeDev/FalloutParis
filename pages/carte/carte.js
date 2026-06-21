@@ -609,14 +609,28 @@ function renderLieux() {
   if (lieux.length) html += lieux.map(l =>
     `<button class="lieu-btn${lieuActif?.id === l.id ? ' on' : ''}" onclick="ouvrirLieu('${l.id}')">${l.name}</button>`
   ).join('');
-  // Refuges visibles (le joueur est sur le lieu) — MJ voit tout
+  // Refuges/Settlements visibles (MJ voit tout) — triés par distance croissante au jeton du joueur
   const sites = Object.entries(settlementsData.sites || {}).filter(([id, s]) => settlementVisible(s));
-  if (sites.length) {
-    html += '<div class="lieux-sub">🏚 Refuges</div>' + sites.map(([id, s]) =>
-      `<button class="lieu-btn refuge${_openRefuge === id ? ' on' : ''}" onclick="ouvrirRefuge('${id}')">🏚 ${s.name}${s.restPoint ? ' 🛏' : ''}${isMJ && !s.poi ? ' ⚠' : ''}</button>`
-    ).join('');
-  }
+  const refuges = sites.filter(([, s]) => s.type !== 'settlement');
+  const setls   = sites.filter(([, s]) => s.type === 'settlement');
+  if (viewerId) { const byD = (a, b) => _siteDist(a[1]) - _siteDist(b[1]); refuges.sort(byD); setls.sort(byD); }
+  else { const byN = (a, b) => (a[1].name || '').localeCompare(b[1].name || ''); refuges.sort(byN); setls.sort(byN); }
+  const siteBtn = ([id, s], ic) => {
+    const d = _siteDist(s);
+    const dtxt = (viewerId && isFinite(d)) ? ` <small style="opacity:.65">· ${d < 1000 ? Math.round(d) + ' m' : (d / 1000).toFixed(1) + ' km'}</small>` : '';
+    return `<button class="lieu-btn refuge${_openRefuge === id ? ' on' : ''}" onclick="ouvrirRefuge('${id}')">${ic} ${s.name}${s.restPoint ? ' 🛏' : ''}${isMJ && !s.poi ? ' ⚠' : ''}${dtxt}</button>`;
+  };
+  if (refuges.length) html += '<div class="lieux-sub">🏚 Refuges</div>' + refuges.map(e => siteBtn(e, '🏚')).join('');
+  if (setls.length)   html += '<div class="lieux-sub">🏘️ Settlements</div>' + setls.map(e => siteBtn(e, '🏘️')).join('');
   el.innerHTML = html || '<span class="empty">Aucun lieu accessible.</span>';
+}
+// Distance (m) entre le jeton du joueur et le POI d'un refuge (Infinity si inconnu)
+function _siteDist(s){
+  const tok = mapData.tokens?.[viewerId];
+  if (!tok || tok.lat == null || !s.poi) return Infinity;
+  const poi = (mapData.pois || []).find(p => p.name === s.poi);
+  if (!poi || poi.lat == null) return Infinity;
+  return L.latLng(tok.lat, tok.lng).distanceTo(L.latLng(poi.lat, poi.lng));
 }
 
 // Ouvre le constructeur de refuge (iframe) dans la zone des lieux
