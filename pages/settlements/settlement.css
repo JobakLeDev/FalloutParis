@@ -1,4 +1,6 @@
 *{box-sizing:border-box;margin:0;padding:0;}
+/* Refuge : voile phosphore vert atténué pour laisser voir les couleurs des blocs */
+:root{ --crt-green:0.07; }
 body{background:var(--bg);color:var(--t);font-family:'Share Tech Mono',monospace;background-image:var(--scan);min-height:100vh;}
 .shdr{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:10px 16px;border-bottom:1px solid var(--b2);background:var(--p);}
 .shdr-title{font-family:'Oswald',sans-serif;letter-spacing:3px;color:var(--g);font-size:16px;}
