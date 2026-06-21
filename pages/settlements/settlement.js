@@ -68,6 +68,8 @@ const TIERS = ['common', 'uncommon', 'rare'];
 function skillName(k){ const d = (typeof SKILLS_DEF !== 'undefined' ? SKILLS_DEF : []).find(s => s.key === k); return d ? d.name : k; }
 function matLabel(t){ return (window.MAT_LABELS && window.MAT_LABELS[t] && window.MAT_LABELS[t].label) || t; }
 function blockDef(type){ return (window.BUILD_BLOCKS || []).find(b => b.id === type) || null; }
+// Icône d'un bloc : image de tile si disponible (def.img), sinon emoji
+function blockIcoInner(def){ return def && def.img ? `<img class="bk-img" src="../../img/${def.img}" alt="" draggable="false">` : (def ? def.icon : ''); }
 function matsFor(block){ return (window.BUILD_MATS && window.BUILD_MATS[block.complexity]) || { common:0, uncommon:0, rare:0 }; }
 
 async function initSettlement(){
@@ -430,7 +432,7 @@ function renderPop(site){
   const def = blockDef(_popBlock);
   let body = (_POP_ACTION[_popBlock] ? _POP_ACTION[_popBlock](site) : '') || '';
   if(!body) body = `<div class="s-note">${esc(def?.desc || 'Aucune action directe ici.')}</div>`;
-  document.getElementById('s-pop-t').innerHTML = def ? (def.icon + ' ' + esc(def.name)) : '';
+  document.getElementById('s-pop-t').innerHTML = def ? ((def.img ? `<img class="s-pop-ic" src="../../img/${def.img}" alt="">` : def.icon) + ' ' + esc(def.name)) : '';
   document.getElementById('s-pop-b').innerHTML = body;
   ov.style.display = 'flex';
 }
@@ -646,7 +648,7 @@ function render(){
     let cls = 's-cell', bc = '', inner = '', title = 'Vide';
     if (def){ cls += ' filled'; bc = '--bc:' + (def.color || '#3a5c3a') + ';'; title = def.name;
       if(!isMJ && me && canAccess(site) && _onSite(site) && _POP_ACTION[b.type]) cls += ' s-cell-act';   // bloc utilisable → halo
-      inner = `<span class="bk-ic">${def.icon}</span><span class="bk-lbl">${esc(def.name)}</span>`; }
+      inner = `<span class="bk-ic">${blockIcoInner(def)}</span><span class="bk-lbl">${esc(def.name)}</span>`; }
     else if (pend){ const pdef = blockDef(pend.type); cls += ' pending'; title = 'En attente : ' + (pdef?.name || '');
       inner = `<span class="bk-ic dim">${pdef ? pdef.icon : '·'}</span><span class="pg">⏳</span>`; }
     const click = (isMJ && b) ? `onclick="removeBlock('${selSite}',${x},${y})" title="Retirer ${esc(def.name)}"` : `onclick="cellClick('${selSite}',${x},${y})" title="${esc(title)}"`;
@@ -687,7 +689,7 @@ function render(){
       const ok = skillOk(b) && !blocked;
       const skillsTxt = b.skills && b.skills.length ? (b.skills.map(skillName).join(' / ') + ' ' + b.complexity) : 'aucune comp.';
       return `<button class="cat-item${selBlock===b.id?' sel':''}${ok?'':' locked'}" style="border-left:4px solid ${b.color||'#3a5c3a'}" ${ok?`onclick="selectCat('${b.id}')"`:''} title="${esc(b.desc)}${blocked?' — réservé aux settlements':''}">
-        <span class="ci-ic" style="background:${b.color||'#3a5c3a'}22">${b.icon}</span> ${esc(b.name)}${blocked?' 🏘️':''}
+        <span class="ci-ic" style="background:${b.color||'#3a5c3a'}22">${blockIcoInner(b)}</span> ${esc(b.name)}${blocked?' 🏘️':''}
         <span class="ci-meta">Requis : ${skillsTxt} · <span class="ci-cost">${costStr(need)}</span>${blocked?' · settlement':''}</span>
       </button>`;
     }).join('');
