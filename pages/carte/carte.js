@@ -629,6 +629,7 @@ function ouvrirRefuge(id) {
   const camp = (typeof fpCampId === 'function') ? fpCampId() : 'data';
   let src = '../settlements/settlement.html?embed=1&site=' + encodeURIComponent(id) + '&camp=' + encodeURIComponent(camp);
   if (viewerId) src += '&id=' + encodeURIComponent(viewerId);
+  src += '&cb=' + Date.now();   // anti-cache : recharge toujours la dernière version de settlement.html
   fr.src = src; fr.style.display = 'block';
   renderLieux();
 }
