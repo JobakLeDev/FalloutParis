@@ -13,7 +13,7 @@ const lockSite = _p.get('site') || null;   // ouvert depuis la carte sur UN refu
 
 let fdb, me = null;                 // me = fiche du joueur (?id)
 let cartePois = [];                 // noms des POI de la carte (lien settlement ↔ lieu)
-let carteData = { pois: [], geoReveal: {} };   // POI + révélations (présence du joueur sur le lieu)
+let carteData = { pois: [], geoReveal: {}, tokens: {} };   // POI + révélations + jetons (proximité du joueur)
 let data = { sites: {} };           // /settlements/<camp>
 let joueursCamp = {};               // joueurs de la campagne (pour alliés)
 let tempsData = null;               // /temps/<camp> (pour le tick éco/colons)
@@ -85,7 +85,7 @@ async function initSettlement(){
   // Carte (live) : POI (sélecteur MJ) + révélations (présence du joueur sur le lieu)
   fdb.collection('carte').doc(fpCampId()).onSnapshot(cs => {
     const d = cs.exists ? cs.data() : {};
-    carteData = { pois: Array.isArray(d.pois) ? d.pois : [], geoReveal: (d.geoReveal && typeof d.geoReveal === 'object') ? d.geoReveal : {} };
+    carteData = { pois: Array.isArray(d.pois) ? d.pois : [], geoReveal: (d.geoReveal && typeof d.geoReveal === 'object') ? d.geoReveal : {}, tokens: (d.tokens && typeof d.tokens === 'object') ? d.tokens : {} };
     cartePois = carteData.pois.map(p => p.name).filter(Boolean);
     populatePoiSel();
     render();
@@ -126,14 +126,22 @@ function canAccess(site){
   if (site.faction) return me.faction === site.faction;
   return Array.isArray(site.allies) && site.allies.includes(me.id);
 }
-// Le joueur doit être PHYSIQUEMENT sur le lieu (POI révélé) pour agir dans le refuge
+// Le joueur doit être PHYSIQUEMENT à proximité du lieu sur la carte principale pour agir/apparaître.
+const ON_SITE_M = 150;   // distance max (mètres) entre le jeton du joueur et le POI
+function _distM(a, b){   // haversine (mètres) — identique à L.latLng.distanceTo de la carte
+  if(!a || !b || a.lat == null || b.lat == null) return Infinity;
+  const R = 6371000, toR = x => x * Math.PI / 180;
+  const dLat = toR(b.lat - a.lat), dLng = toR(b.lng - a.lng);
+  const s = Math.sin(dLat/2)**2 + Math.cos(toR(a.lat)) * Math.cos(toR(b.lat)) * Math.sin(dLng/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
 function _onSite(site){
   if (isMJ) return true;
-  if (!me || !site) return false;
-  if (!site.poi) return false;   // refuge non lié à un lieu → pas de présence joueur possible
+  if (!me || !site || !site.poi) return false;   // refuge non lié à un lieu → pas de présence possible
   const poi = (carteData.pois || []).find(p => p.name === site.poi);
-  if (poi && Array.isArray(poi.revealedFor) && poi.revealedFor.includes(me.id)) return true;
-  return (carteData.geoReveal?.[site.poi] || []).includes(me.id);
+  if (!poi || poi.lat == null) return false;
+  const tok = (carteData.tokens || {})[me.id];   // jeton du joueur sur la carte principale (surface)
+  return _distM(tok, poi) <= ON_SITE_M;
 }
 function skillOk(block){
   if (!block.skills || !block.skills.length) return true;
