@@ -76,6 +76,8 @@ let editInventory = [];
 let editAmmo = [];
 let editTagged = [];
 let editCompanions = [];
+let _editCamp = 'data';      // campagne du perso édité (pour assigner un compagnon à un settlement de la bonne campagne)
+let _editSites = {};         // settlements de cette campagne (pour le choix « envoyer vers un lieu »)
 
 // ---- LISTE ----
 async function chargerListe(){
@@ -111,6 +113,8 @@ async function charger(id){
   editAmmo=[...(d.ammo||[])];
   editTagged=[...(d.taggedSkills||[])];
   editCompanions=JSON.parse(JSON.stringify(d.companions||[]));
+  _editCamp=d.campaign||'data';
+  db.collection('settlements').doc(_editCamp).get().then(s=>{ _editSites=(s.exists&&s.data().sites)||{}; populateRecruitDest(); }).catch(()=>{ _editSites={}; populateRecruitDest(); });
 
   // Remplir infos
   document.getElementById('e-id').value=id;
@@ -385,16 +389,46 @@ function populateRecruitSel(){
   const sel=document.getElementById('comp-recruit-sel'); if(!sel) return;
   sel.innerHTML='<option value="">+ Recruter un compagnon…</option>'+(window.COMPANIONS||[]).map(c=>`<option value="${c.id}">${c.nom} — ${c.role||''} (${c.archetype||''})</option>`).join('');
 }
-function recruitCompanion(){
-  const id=document.getElementById('comp-recruit-sel')?.value; if(!id) return;
-  const src=(window.COMPANIONS||[]).find(c=>c.id===id); if(!src) return;
+function _siteBeds(s){ return (s.blocks||[]).filter(b=>b.type==='bed').length; }
+function _siteFreeBeds(s){ return _siteBeds(s) - (s.settlers||0) - ((s.residents||[]).length); }
+function populateRecruitDest(){
+  const sel=document.getElementById('comp-recruit-dest'); if(!sel) return;
+  let h='<option value="player">→ Avec ce joueur (compagnon)</option>';
+  Object.entries(_editSites||{}).forEach(([id,s])=>{ const free=_siteFreeBeds(s); if(free>0) h+=`<option value="site:${id}">→ ${s.name||'Lieu'} (${free} lit${free>1?'s':''} libre${free>1?'s':''})</option>`; });
+  sel.innerHTML=h;
+}
+function _buildRecruit(id){
+  const src=(window.COMPANIONS||[]).find(c=>c.id===id); if(!src) return null;
   const c=JSON.parse(JSON.stringify(src));
   c.id=src.id+'_'+Date.now().toString(36);   // id unique (recrutement multiple possible)
   c.inventory=c.inventory||[]; c.rad=c.rad||0; c.caps=c.caps||0; c.niveau=c.niveau||1;
   c.hpMax=compHpMax(c); c.hpCur=c.hpMax;
-  editCompanions.push(c);
+  return c;
+}
+async function recruitCompanion(){
+  const id=document.getElementById('comp-recruit-sel')?.value; if(!id) return;
+  const dest=document.getElementById('comp-recruit-dest')?.value||'player';
+  const c=_buildRecruit(id); if(!c) return;
+  if(dest.startsWith('site:')){ await assignCompanionToSite(dest.slice(5), c); }
+  else { editCompanions.push(c); renderCompanions(); }   // avec le joueur (sauvegardé au prochain "Enregistrer")
   document.getElementById('comp-recruit-sel').value='';
-  renderCompanions();
+}
+// Envoie le compagnon vivre dans un settlement/refuge (occupe un lit) — écrit /settlements/<camp>
+async function assignCompanionToSite(sid, c){
+  try{
+    const ref=db.collection('settlements').doc(_editCamp);
+    const snap=await ref.get();
+    const data=snap.exists?snap.data():{sites:{}};
+    const sites=data.sites||{}; const s=sites[sid];
+    if(!s){ alert('Lieu introuvable.'); return; }
+    s.residents=s.residents||[];
+    if(_siteFreeBeds(s)<1){ alert('Aucun lit disponible dans ce lieu.'); return; }
+    c.homeSite=sid;
+    s.residents.push(c);
+    await ref.set({sites},{merge:false});
+    _editSites=sites; populateRecruitDest();
+    alert('🛏 '+(c.nom||'Compagnon')+' rejoint « '+(s.name||'le lieu')+' » comme résident.');
+  }catch(e){ alert('Erreur : '+e.message); }
 }
 function charCompanionCard(c,i){
   const sp=c.special||{};

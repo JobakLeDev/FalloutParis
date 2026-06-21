@@ -351,6 +351,8 @@ async function withdrawItem(idx, all){
 function countBlk(site, t){ return (site.blocks || []).filter(b => b.type === t).length; }
 function waterPoints(site){ return countBlk(site,'water'); }
 function bedCount(site){ return countBlk(site,'bed'); }
+function residentCount(site){ return (site.residents || []).length; }   // compagnons résidents (1 lit chacun)
+function removeResident(id, idx){ if(!isMJ) return; const s = data.sites[id]; if(!s || !s.residents) return; s.residents.splice(idx, 1); save(); }
 function security(site){ return countBlk(site,'turret') * 2; }
 function sCampNow(){ let mx = 0; (tempsData?.parties || []).forEach(p => { mx = Math.max(mx, p.minutes || 0); }); return mx; }
 function vendorFor(site, key){ return (site.vendors && site.vendors[key]) || (key === 'shop_water' ? site.vendor : null) || null; }
@@ -378,7 +380,7 @@ function sTick(site){
   if(countBlk(site,'shop_food') && vF && (site.food||0) > 0){ const sold = Math.min(site.food, (vF.talent||1) * days * _RND()); if(sold > 0){ site.food = Math.round((site.food - sold) * 10) / 10; site.caps = (site.caps||0) + Math.round(sold * 2); } }
   const vD = vendorFor(site,'diner');
   if(countBlk(site,'diner') && vD && countBlk(site,'cooking') && (site.food||0) > 0){ const meals = Math.min(site.food, (vD.talent||1) * days * _RND()); if(meals > 0){ site.food = Math.round((site.food - meals) * 10) / 10; site.caps = (site.caps||0) + Math.round(meals * 4); } }
-  if(countBlk(site,'beacon')){ const cap = bedCount(site); let s = site.settlers||0; if(s < cap){ let arr = 0; const tries = Math.max(1, Math.floor(days)); for(let i=0;i<tries && (s+arr)<cap;i++){ if(Math.random()<0.5) arr++; } if(arr>0) site.settlers = Math.min(cap, s+arr); } }
+  if(countBlk(site,'beacon')){ const cap = Math.max(0, bedCount(site) - residentCount(site)); let s = site.settlers||0; if(s < cap){ let arr = 0; const tries = Math.max(1, Math.floor(days)); for(let i=0;i<tries && (s+arr)<cap;i++){ if(Math.random()<0.5) arr++; } if(arr>0) site.settlers = Math.min(cap, s+arr); } }
   site.lastTick = now; save();
 }
 function renderStats(site){
@@ -394,7 +396,13 @@ function renderStats(site){
   ];
   if(farms > 0) parts.push(`🧑‍🌾 Potagers <b>${Math.min(site.farmers||0, maxFarmers(site))}</b>/<b>${farms}</b> <small style="color:var(--td)">(colons : ${maxFarmers(site)} dispo)</small>${farmCtrl}`);
   parts.push(`◉ Caps <b style="color:var(--am)">${site.caps||0}</b>`);
-  el.innerHTML = '<div class="s-statbar">' + parts.map(p => `<span class="s-stat">${p}</span>`).join('') + '</div>';
+  const res = site.residents || [];
+  let resHtml = '';
+  if(res.length){
+    resHtml = '<div class="s-sub" style="margin-top:8px">🛌 Résidents <small style="color:var(--td)">(' + res.length + '/' + bedCount(site) + ' lits)</small></div>'
+      + res.map((r,i) => `<span class="ally-chip on">🧑 ${esc(r.nom||'?')}<small style="color:var(--td)"> ${esc(r.role||'')}</small>${isMJ?` <button class="s-stat-btn" title="Renvoyer (libère le lit)" onclick="removeResident('${selSite}',${i})">✕</button>`:''}</span>`).join('');
+  }
+  el.innerHTML = '<div class="s-statbar">' + parts.map(p => `<span class="s-stat">${p}</span>`).join('') + '</div>' + resHtml;
 }
 function renderEco(site){
   const el = document.getElementById('s-eco'); if(!el) return;
