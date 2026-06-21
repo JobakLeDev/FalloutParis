@@ -387,7 +387,7 @@ function _skName(k){ const d=_SK.find(s=>s.key===k); return d?d.name:k; }
 function compHpMax(c){ const sp=c.special||{}; return (sp.L||5)+(sp.E||5)+Math.max(0,(c.niveau||1)-1)+((c.perks&&c.perks['Life Giver'])||0)*(sp.E||5); }
 function populateRecruitSel(){
   const sel=document.getElementById('comp-recruit-sel'); if(!sel) return;
-  sel.innerHTML='<option value="">+ Recruter un compagnon…</option>'+(window.COMPANIONS||[]).map(c=>`<option value="${c.id}">${c.nom} — ${c.role||''} (${c.archetype||''})</option>`).join('');
+  sel.innerHTML='<option value="">+ Recruter un compagnon…</option>'+(window.COMPANIONS||[]).map(c=>`<option value="${c.id}">${c.nom} — ${c.role||''}${c.faction?' ('+c.faction+')':''}</option>`).join('');
 }
 function _siteBeds(s){ return (s.blocks||[]).filter(b=>b.type==='bed').length; }
 function _siteFreeBeds(s){ return _siteBeds(s) - (s.settlers||0) - ((s.residents||[]).length); }
@@ -447,7 +447,7 @@ function charCompanionCard(c,i){
   return `<div class="cedit" style="border-color:var(--gd)">
     <div class="cedit-head">
       <input class="ci" style="flex:2;font-size:11px" value="${c.nom||''}" onchange="setComp(${i},'nom',this.value)">
-      <span class="cc-meta">${c.archetype||''} · ${c.role||''} · ${c.faction||''}</span>
+      <span class="cc-meta">${c.role||''} · ${c.faction||''}</span>
       <button class="inv-btn" style="color:var(--rd)" onclick="rmComp(${i})">✕ Suppr.</button>
     </div>
     <div class="cedit-row" style="flex-wrap:wrap;gap:6px">
