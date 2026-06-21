@@ -14,6 +14,7 @@ const lockSite = _p.get('site') || null;   // ouvert depuis la carte sur UN refu
 let fdb, me = null;                 // me = fiche du joueur (?id)
 let cartePois = [];                 // noms des POI de la carte (lien settlement ↔ lieu)
 let carteData = { pois: [], geoReveal: {}, tokens: {} };   // POI + révélations + jetons (proximité du joueur)
+let _carteLoaded = false;   // vrai après le 1er snapshot /carte (évite de retirer les jetons trop tôt)
 let data = { sites: {} };           // /settlements/<camp>
 let joueursCamp = {};               // joueurs de la campagne (pour alliés)
 let tempsData = null;               // /temps/<camp> (pour le tick éco/colons)
@@ -86,6 +87,7 @@ async function initSettlement(){
   fdb.collection('carte').doc(fpCampId()).onSnapshot(cs => {
     const d = cs.exists ? cs.data() : {};
     carteData = { pois: Array.isArray(d.pois) ? d.pois : [], geoReveal: (d.geoReveal && typeof d.geoReveal === 'object') ? d.geoReveal : {}, tokens: (d.tokens && typeof d.tokens === 'object') ? d.tokens : {} };
+    _carteLoaded = true;
     cartePois = carteData.pois.map(p => p.name).filter(Boolean);
     populatePoiSel();
     render();
@@ -135,13 +137,17 @@ function _distM(a, b){   // haversine (mètres) — identique à L.latLng.distan
   const s = Math.sin(dLat/2)**2 + Math.cos(toR(a.lat)) * Math.cos(toR(b.lat)) * Math.sin(dLng/2)**2;
   return 2 * R * Math.asin(Math.sqrt(s));
 }
-function _onSite(site){
-  if (isMJ) return true;
-  if (!me || !site || !site.poi) return false;   // refuge non lié à un lieu → pas de présence possible
+// Le jeton du joueur <pid> est-il à proximité du POI du refuge (carte principale) ?
+function _tokenNear(site, pid){
+  if (!site || !site.poi) return false;
   const poi = (carteData.pois || []).find(p => p.name === site.poi);
   if (!poi || poi.lat == null) return false;
-  const tok = (carteData.tokens || {})[me.id];   // jeton du joueur sur la carte principale (surface)
-  return _distM(tok, poi) <= ON_SITE_M;
+  return _distM((carteData.tokens || {})[pid], poi) <= ON_SITE_M;
+}
+function _onSite(site){
+  if (isMJ) return true;
+  if (!me || !site) return false;
+  return _tokenNear(site, me.id);
 }
 function skillOk(block){
   if (!block.skills || !block.skills.length) return true;
@@ -734,6 +740,15 @@ function render(){
   cells += '<div class="s-edges">' + gridEdgesHtmlS({ w: site.w, h: site.h, edges: site.edges || {} }, CS) + '</div>';
   if (isMJ && _edgeBrush) cells += sEdgeHotspots(site, CS);
   // (Pas d'auto-placement : le joueur place lui-même son jeton en cliquant une case vide.)
+  // Retrait auto : un jeton dont le joueur s'est éloigné du POI disparaît du refuge
+  if (_carteLoaded && site.pos && site.poi){
+    const poiOk = (carteData.pois || []).some(p => p.name === site.poi && p.lat != null);
+    if (poiOk){
+      let changed = false;
+      Object.keys(site.pos).forEach(pid => { if(!_tokenNear(site, pid)){ delete site.pos[pid]; changed = true; } });
+      if (changed) save();
+    }
+  }
   // Jetons (tous les joueurs présents sur ce refuge)
   const pos = site.pos || {};
   const canMoveOwn = !isMJ && me && canAccess(site) && _onSite(site);
