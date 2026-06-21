@@ -651,7 +651,7 @@ function render(){
     let cls = 's-cell', bc = '', inner = '', title = 'Vide';
     if (def){ cls += ' filled'; bc = '--bc:' + (def.color || '#3a5c3a') + ';'; title = def.name;
       if(!isMJ && me && canAccess(site) && _onSite(site) && _POP_ACTION[b.type]) cls += ' s-cell-act';   // bloc utilisable → halo
-      inner = `<span class="bk-ic">${blockIcoInner(def)}</span><span class="bk-lbl">${esc(def.name)}</span>`; }
+      inner = `<span class="bk-ic">${blockIcoInner(def)}</span>` + (def.img ? '' : `<span class="bk-lbl">${esc(def.name)}</span>`); }
     else if (pend){ const pdef = blockDef(pend.type); cls += ' pending'; title = 'En attente : ' + (pdef?.name || '');
       inner = `<span class="bk-ic dim">${pdef ? pdef.icon : '·'}</span><span class="pg">⏳</span>`; }
     const click = (isMJ && b) ? `onclick="removeBlock('${selSite}',${x},${y})" title="Retirer ${esc(def.name)}"` : `onclick="cellClick('${selSite}',${x},${y})" title="${esc(title)}"`;
