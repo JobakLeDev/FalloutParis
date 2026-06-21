@@ -40,11 +40,10 @@ body.embed .shdr-btns{display:none;}
 .s-cell:hover{border-color:var(--g);box-shadow:inset 0 0 0 1px var(--g);}
 /* case occupée : tuile pleine teintée par la couleur du bloc (--bc) */
 .s-cell.filled{background:#12200f;background:radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--bc) 55%, #060d06), #060d06 78%);border-color:var(--bc);}
-.s-cell .bk-ic{font-size:30px;line-height:1;filter:drop-shadow(0 1px 2px #000);}
+/* .bk-ic remplit toute la case (emoji centré, ou image en plein cadre) */
+.s-cell .bk-ic{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:30px;line-height:1;filter:drop-shadow(0 1px 2px #000);}
 .s-cell .bk-ic.dim{opacity:.5;}
-/* Icône image (tile) d'un bloc — remplit la case, prime sur le fond/quadrillage */
-.s-cell .bk-ic .bk-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;image-rendering:auto;}
-.s-cell.filled:has(.bk-img){background:#060d06;}
+.s-cell .bk-ic .bk-img{width:100%;height:100%;object-fit:cover;display:block;image-rendering:auto;}
 .s-cell .bk-lbl{position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:6.5px;letter-spacing:.3px;color:var(--tb);background:rgba(0,0,0,.55);padding:1px 1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .s-cell.pending{border-color:var(--am);border-style:dashed;}
 .s-cell .pg{position:absolute;top:1px;right:2px;font-size:9px;color:var(--am);}
