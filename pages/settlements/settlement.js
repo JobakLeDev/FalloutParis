@@ -339,14 +339,19 @@ function security(site){ return countBlk(site,'turret') * 2; }
 function sCampNow(){ let mx = 0; (tempsData?.parties || []).forEach(p => { mx = Math.max(mx, p.minutes || 0); }); return mx; }
 function vendorFor(site, key){ return (site.vendors && site.vendors[key]) || (key === 'shop_water' ? site.vendor : null) || null; }
 const _RND = () => 0.6 + Math.random() * 0.8;
+const FARM_RATE = 1;   // rations/jour par potager exploité (rendement RÉGULIER, sans aléa)
+// Colons assignés aux potagers (1 colon par bloc potager ; plafonné par le nb de potagers ET de colons)
+function maxFarmers(site){ return Math.min(countBlk(site,'farm'), site.settlers||0); }
+function activeFarms(site){ return Math.min(countBlk(site,'farm'), site.farmers||0); }
+function chFarmers(id, d){ if(!isMJ) return; const s = data.sites[id]; if(!s) return; s.farmers = Math.max(0, Math.min(maxFarmers(s), (s.farmers||0) + d)); save(); }
 function sTick(site){
   if(!isMJ || !site) return;
   const now = sCampNow();
   if(site.lastTick == null){ site.lastTick = now; save(); return; }
   const days = (now - site.lastTick) / 1440;
   if(days <= 0) return;
-  const farms = countBlk(site,'farm');
-  if(farms > 0) site.food = Math.round(((site.food||0) + farms * days * _RND()) * 10) / 10;
+  const workingFarms = activeFarms(site);   // potagers réellement exploités = min(potagers, colons assignés)
+  if(workingFarms > 0) site.food = Math.round(((site.food||0) + workingFarms * days * FARM_RATE) * 10) / 10;
   const vW = vendorFor(site,'shop_water');
   if(countBlk(site,'shop_water') && vW && waterPoints(site) > 0) site.caps = (site.caps||0) + Math.round(waterPoints(site) * (vW.talent||1) * days * _RND());
   const vF = vendorFor(site,'shop_food');
@@ -359,13 +364,16 @@ function sTick(site){
 function renderStats(site){
   const el = document.getElementById('s-stats'); if(!el) return;
   const colonsCtrl = isMJ ? ` <button class="s-stat-btn" onclick="chSettlers('${selSite}',-1)">−</button><button class="s-stat-btn" onclick="chSettlers('${selSite}',1)">+</button>` : '';
+  const farms = countBlk(site,'farm');
+  const farmCtrl = (isMJ && farms > 0) ? ` <button class="s-stat-btn" onclick="chFarmers('${selSite}',-1)">−</button><button class="s-stat-btn" onclick="chFarmers('${selSite}',1)">+</button>` : '';
   const parts = [
     `🛡 Sécurité <b>${security(site)}</b>`,
     `🛏 Colons <b>${site.settlers||0}</b>/<b>${bedCount(site)}</b>${colonsCtrl}`,
     `🚰 Eau <b>${waterPoints(site)}</b>/j`,
-    `🌱 Food <b>${countBlk(site,'farm')}</b>/j · stock <b>${Math.floor(site.food||0)}</b>`,
-    `◉ Caps <b style="color:var(--am)">${site.caps||0}</b>`,
+    `🌱 Food <b>${activeFarms(site)}</b>/j · stock <b>${Math.floor(site.food||0)}</b>`,
   ];
+  if(farms > 0) parts.push(`🧑‍🌾 Potagers <b>${Math.min(site.farmers||0, maxFarmers(site))}</b>/<b>${farms}</b> <small style="color:var(--td)">(colons : ${maxFarmers(site)} dispo)</small>${farmCtrl}`);
+  parts.push(`◉ Caps <b style="color:var(--am)">${site.caps||0}</b>`);
   el.innerHTML = '<div class="s-statbar">' + parts.map(p => `<span class="s-stat">${p}</span>`).join('') + '</div>';
 }
 function renderEco(site){
