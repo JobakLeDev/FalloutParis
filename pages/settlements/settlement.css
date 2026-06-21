@@ -92,15 +92,11 @@ body.sitelock #s-layout{ grid-template-columns:1fr; padding:8px; }
 .cedge{position:absolute;border-radius:1px;}
 .cedge-v{width:3px;}
 .cedge-h{height:3px;}
-/* Murs = texture pierre (tiles paris) au lieu d'un trait vert ; arête élargie + recentrée */
-.cedge.e-wall{background:none;border-radius:0;z-index:5;}
-.cedge-v.e-wall{width:16px;margin-left:-6.5px;background:url('../../img/tiles/walls/wall_v.png') center/100% 100% no-repeat;}
-.cedge-h.e-wall{height:16px;margin-top:-6.5px;background:url('../../img/tiles/walls/wall_h.png') center/100% 100% no-repeat;}
+.cedge.e-wall{background:var(--g);box-shadow:0 0 5px rgba(93,190,93,.85);}
 .cedge.e-door{background:var(--am);box-shadow:0 0 5px rgba(232,168,32,.8);}
 .cedge-v.e-window{background:repeating-linear-gradient(0deg,#5fd0e6 0 4px,transparent 4px 7px);}
 .cedge-h.e-window{background:repeating-linear-gradient(90deg,#5fd0e6 0 4px,transparent 4px 7px);}
-/* Jointure de coin : petit bloc pierre pour fondre les angles de murs */
-.cedge-knee{position:absolute;width:16px;height:16px;margin:-6px 0 0 -6px;border-radius:0;background:#9c8d6c;box-shadow:inset 0 0 0 1px rgba(0,0,0,.4);z-index:5;}
+.cedge-knee{position:absolute;width:4px;height:4px;border-radius:50%;background:var(--g);box-shadow:0 0 5px rgba(93,190,93,.85);z-index:5;}
 .cedge-hot{position:absolute;z-index:6;cursor:pointer;pointer-events:auto;background:rgba(232,168,32,.10);}
 .cedge-hot:hover{background:rgba(232,168,32,.5);}
 .s-edge-pal{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;}
