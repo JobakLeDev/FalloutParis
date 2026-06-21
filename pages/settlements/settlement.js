@@ -160,7 +160,7 @@ function creerSite(){
 async function supprimerSite(id){ if (!isMJ) return; if (!await fpConfirm('Supprimer ce refuge ?')) return; delete data.sites[id]; if (selSite === id) selSite = null; save(); }
 function setType(id){ if(!isMJ) return; const s = data.sites[id]; if(!s) return; s.type = (s.type === 'settlement') ? 'refuge' : 'settlement'; save(); }
 function setPoi(id, val){ if(!isMJ) return; const s = data.sites[id]; if(!s) return; s.poi = val || ''; save(); }
-function chSettlers(id, d){ if(!isMJ) return; const s = data.sites[id]; if(!s) return; s.settlers = Math.max(0, (s.settlers||0) + d); save(); }
+function chSettlers(id, d){ if(!isMJ) return; const s = data.sites[id]; if(!s) return; s.settlers = Math.max(assignedColons(s), (s.settlers||0) + d); save(); }   // pas en dessous des colons assignés
 function creditStock(id, tier, delta){
   if (!isMJ) return; const s = data.sites[id]; if (!s) return;
   s.stock = s.stock || { common:0, uncommon:0, rare:0 };
@@ -217,11 +217,13 @@ function cellClick(id, x, y){
 function _siteHas(site, type){ return (site.blocks || []).some(b => b.type === type); }
 // Porte = désormais une ARÊTE (jaune), plus un bloc → le « repos sécurisé » se base là-dessus
 function _hasDoorEdge(site){ return Object.values(site.edges || {}).includes('door'); }
+// Le poste médical ne soigne au repos que si un médecin (PNJ/colon) y est assigné
+function medicOk(site){ return _siteHas(site,'medical') && !!vendorFor(site,'medical'); }
 function restBody(site){
   if (isMJ || !me || !canAccess(site) || !site.restPoint) return '';
   const bonus = [];
   if (_siteHas(site,'cooking')) bonus.push('🍖 faim'); if (_siteHas(site,'water')) bonus.push('🚰 soif');
-  if (_siteHas(site,'medical')) bonus.push('🩺 rad'); if (_hasDoorEdge(site)) bonus.push('🚪 sûr');
+  if (medicOk(site)) bonus.push('🩺 rad'); if (_hasDoorEdge(site)) bonus.push('🚪 sûr');
   return '<button class="sbtn add" onclick="reposRefuge()">😴 Se reposer (PV max)</button>'
     + (bonus.length ? `<div class="s-note">Bonus : ${bonus.join(' · ')}</div>` : '');
 }
@@ -233,7 +235,7 @@ async function reposRefuge(){
   const gains = ['🛏 Bien reposé (PV au max)'];
   if (_siteHas(site,'cooking')) gains.push('🍖 faim restaurée');
   if (_siteHas(site,'water'))   gains.push('🚰 soif restaurée');
-  if (_siteHas(site,'medical')) gains.push('🩺 radiations soignées');
+  if (medicOk(site)) gains.push('🩺 radiations soignées');
   if (_hasDoorEdge(site))       gains.push('🚪 repos sécurisé');
   if (!await fpConfirm('Se reposer ici ?\n\n' + gains.join('\n'))) return;
   let nowMin = 0;
@@ -244,7 +246,7 @@ async function reposRefuge(){
   if (_siteHas(site,'water'))   sv.drink = nowMin;
   const hpMax = (sp.L || 5) + (sp.E || 5) + Math.max(0, niv - 1) + 2;       // base RAW + 2 (bien reposé)
   const upd = { survie: sv, hp: hpMax, lastUpdate: Date.now() };
-  if (_siteHas(site,'medical')) upd.rad = 0;
+  if (medicOk(site)) upd.rad = 0;
   try { await fdb.collection('joueurs').doc(viewerId).update(upd); me.survie = sv; me.hp = hpMax; if (upd.rad != null) me.rad = 0; }
   catch(e){ alert('Erreur : ' + e.message); return; }
   // message unique : la confirmation stylée affiche déjà les gains
@@ -339,9 +341,14 @@ function security(site){ return countBlk(site,'turret') * 2; }
 function sCampNow(){ let mx = 0; (tempsData?.parties || []).forEach(p => { mx = Math.max(mx, p.minutes || 0); }); return mx; }
 function vendorFor(site, key){ return (site.vendors && site.vendors[key]) || (key === 'shop_water' ? site.vendor : null) || null; }
 const _RND = () => 0.6 + Math.random() * 0.8;
-// Colons assignés aux potagers (1 colon par bloc potager ; plafonné par le nb de potagers ET de colons)
-function maxFarmers(site){ return Math.min(countBlk(site,'farm'), site.settlers||0); }
-function activeFarms(site){ return Math.min(countBlk(site,'farm'), site.farmers||0); }
+// Main-d'œuvre (modèle pool) : chaque poste assigné (potager + comptoirs + médical) occupe 1 colon du total.
+const _WORK_KEYS = ['shop_water','shop_food','diner','medical'];   // postes à PNJ/colon assigné (vendeurs)
+function vendorCount(site){ return _WORK_KEYS.filter(k => vendorFor(site,k)).length; }
+function assignedColons(site){ return (site.farmers||0) + vendorCount(site); }   // colons au travail
+function freeColons(site){ return Math.max(0, (site.settlers||0) - assignedColons(site)); }
+// Colons assignés aux potagers (1/potager ; plafonné par potagers ET colons libres pour ce poste)
+function maxFarmers(site){ return Math.max(0, Math.min(countBlk(site,'farm'), (site.settlers||0) - vendorCount(site))); }
+function activeFarms(site){ return Math.max(0, Math.min(countBlk(site,'farm'), site.farmers||0, (site.settlers||0) - vendorCount(site))); }
 function chFarmers(id, d){ if(!isMJ) return; const s = data.sites[id]; if(!s) return; s.farmers = Math.max(0, Math.min(maxFarmers(s), (s.farmers||0) + d)); save(); }
 function sTick(site){
   if(!isMJ || !site) return;
@@ -367,7 +374,7 @@ function renderStats(site){
   const farmCtrl = (isMJ && farms > 0) ? ` <button class="s-stat-btn" onclick="chFarmers('${selSite}',-1)">−</button><button class="s-stat-btn" onclick="chFarmers('${selSite}',1)">+</button>` : '';
   const parts = [
     `🛡 Sécurité <b>${security(site)}</b>`,
-    `🛏 Colons <b>${site.settlers||0}</b>/<b>${bedCount(site)}</b>${colonsCtrl}`,
+    `🛏 Colons <b>${site.settlers||0}</b>/<b>${bedCount(site)}</b> <small style="color:var(--td)">(occupés ${assignedColons(site)}, libres ${freeColons(site)})</small>${colonsCtrl}`,
     `🚰 Eau <b>${waterPoints(site)}</b>/j`,
     `🌱 Food <b>${activeFarms(site)}</b>/j · stock <b>${Math.floor(site.food||0)}</b>`,
   ];
@@ -377,12 +384,12 @@ function renderStats(site){
 }
 function renderEco(site){
   const el = document.getElementById('s-eco'); if(!el) return;
-  const shops = [['shop_water','🪧 Eau'],['shop_food','🍲 Nourriture'],['diner','🍳 Restaurant']].filter(([k]) => countBlk(site,k));
+  const shops = [['shop_water','🪧 Eau'],['shop_food','🍲 Nourriture'],['diner','🍳 Restaurant'],['medical','🩺 Médical']].filter(([k]) => countBlk(site,k));
   if(!shops.length){ el.innerHTML = ''; return; }
-  let h = '<div class="s-sub">🏪 Comptoirs</div>';
+  let h = '<div class="s-sub">🏪 Postes (1 colon/poste) <small style="color:var(--td)">— libres : ' + freeColons(site) + '/' + (site.settlers||0) + '</small></div>';
   shops.forEach(([k,lbl]) => { const v = vendorFor(site,k);
-    h += `<div class="s-eco-row">${lbl} — vendeur : ${v ? esc(v.name)+' (talent '+v.talent+')' : '<i>aucun</i>'}</div>`;
-    if(isMJ) h += `<div class="s-eco-ctrl"><input id="ev-${k}" class="s-inp" style="width:130px;display:inline-block" placeholder="Nom vendeur"><select id="et-${k}" class="s-inp" style="width:60px;display:inline-block"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select><button class="sbtn" onclick="assignVendor('${k}')">Assigner</button></div>`;
+    h += `<div class="s-eco-row">${lbl} — ${k==='medical'?'médecin':'vendeur'} : ${v ? esc(v.name)+' (talent '+v.talent+')'+(isMJ?` <button class="s-stat-btn" onclick="unassignVendor('${k}')" title="Libérer le colon">✕</button>`:'') : '<i>aucun</i>'}</div>`;
+    if(isMJ) h += `<div class="s-eco-ctrl"><input id="ev-${k}" class="s-inp" style="width:130px;display:inline-block" placeholder="Nom"><select id="et-${k}" class="s-inp" style="width:60px;display:inline-block"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select><button class="sbtn" onclick="assignVendor('${k}')">Assigner</button></div>`;
   });
   if(isMJ){ const opts = Object.keys(joueursCamp).map(pid => `<option value="${pid}">${esc(joueursCamp[pid].nom||pid)}</option>`).join('') || '<option value="">—</option>';
     h += `<div class="s-eco-ctrl">Verser <input id="eco-amt" type="number" class="s-inp" style="width:64px;display:inline-block" value="50" min="1"> caps → <select id="eco-to" class="s-inp" style="width:130px;display:inline-block">${opts}</select><button class="sbtn" onclick="withdrawCaps()">→ joueur</button></div>`;
@@ -393,10 +400,13 @@ function assignVendor(key){
   if(!isMJ) return; const site = data.sites[selSite]; if(!site) return;
   const name = (document.getElementById('ev-'+key)?.value || '').trim();
   const tal = Math.max(1, Math.min(5, parseInt(document.getElementById('et-'+key)?.value) || 1));
-  if(!name){ alert('Nom du vendeur requis.'); return; }
+  if(!name){ alert('Nom requis.'); return; }
+  const isNew = !vendorFor(site, key);   // remplacer un poste déjà pourvu ne consomme pas un colon de plus
+  if(isNew && freeColons(site) < 1){ alert('Aucun colon libre pour ce poste.\nAugmente le nombre de colons (🛏) ou libère un autre poste.'); return; }
   site.vendors = site.vendors || {}; site.vendors[key] = { name, talent: tal };
   if(site.lastTick == null) site.lastTick = sCampNow(); save();
 }
+function unassignVendor(key){ if(!isMJ) return; const site = data.sites[selSite]; if(!site) return; if(site.vendors) delete site.vendors[key]; if(key === 'shop_water') delete site.vendor; save(); }
 async function withdrawCaps(){
   if(!isMJ) return; const site = data.sites[selSite]; if(!site) return;
   const amt = parseInt(document.getElementById('eco-amt')?.value) || 0;
