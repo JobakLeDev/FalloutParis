@@ -492,10 +492,25 @@ const _POP_ACTION = {
   cooking:       s => cookBody(s),
   water:         s => waterBody(s),
   medical:       s => medBody(s),
+  shop_water:    s => posteBody(s, 'shop_water'),
+  shop_food:     s => posteBody(s, 'shop_food'),
+  diner:         s => posteBody(s, 'diner'),
   wbench_weapon: s => benchBody(s, 'weapon'),
   wbench_armor:  s => benchBody(s, 'armor'),
   storage:       s => storeBody(s),
 };
+// Ligne « qui tient le poste » (vue joueur, lecture) pour les blocs-postes
+const _POSTE_ROLE = { shop_water:'vendeur', shop_food:'vendeur', diner:'restaurateur', cooking:'cuisinier', medical:'médecin' };
+function posteLine(site, key){
+  const v = vendorFor(site, key); const role = _POSTE_ROLE[key] || 'PNJ';
+  return v ? `<div class="s-note">👤 ${role} : <b style="color:var(--g)">${esc(v.name)}</b>${v.talent?' <small>(talent '+v.talent+')</small>':''}</div>`
+           : `<div class="s-note">👤 ${role} : <i>poste vacant</i></div>`;
+}
+function posteBody(site, key){
+  if(isMJ || !me || !canAccess(site)) return '';
+  const def = blockDef(key);
+  return posteLine(site, key) + (def && def.desc ? `<div class="s-note" style="color:var(--td)">${esc(def.desc)}</div>` : '');
+}
 function openBlockPop(type){ _popBlock = type; render(); }
 function closeBlockPop(){ _popBlock = null; render(); }
 function renderPop(site){
@@ -528,7 +543,7 @@ function renderTokens(site){
 async function _partyNow(){ try { const ts = await fdb.collection('temps').doc(fpCampId()).get(); return (typeof partyMinutesFor === 'function') ? partyMinutesFor(ts.exists ? ts.data() : {}, me.id) : 0; } catch(e){ return 0; } }
 function cookBody(site){
   if(isMJ || !me || !canAccess(site) || !_siteHas(site,'cooking')) return '';
-  return '<button class="sbtn add" onclick="eatHere()">🍖 Manger (rassasier la faim)</button>';
+  return posteLine(site, 'cooking') + '<button class="sbtn add" onclick="eatHere()">🍖 Manger (rassasier la faim)</button>';
 }
 async function eatHere(){
   const site = data.sites[selSite]; if(!site || !me) return;
@@ -541,8 +556,8 @@ async function eatHere(){
 }
 function medBody(site){
   if(isMJ || !me || !canAccess(site) || !_siteHas(site,'medical')) return '';
-  if(!medicOk(site)) return '<div class="s-note">Aucun médecin assigné — le MJ doit affecter un médecin au poste (panneau Postes).</div>';
-  return '<button class="sbtn add" onclick="healHere()">🩺 Se faire soigner (PV au max + radiations)</button>';
+  if(!medicOk(site)) return posteLine(site, 'medical') + '<div class="s-note">Aucun médecin assigné — le MJ doit en affecter un (panneau Postes).</div>';
+  return posteLine(site, 'medical') + '<button class="sbtn add" onclick="healHere()">🩺 Se faire soigner (PV au max + radiations)</button>';
 }
 async function healHere(){
   const site = data.sites[selSite]; if(!site || !me) return;
