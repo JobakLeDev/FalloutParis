@@ -338,19 +338,17 @@ function lancerInitiative(){
     initActionsState('e_'+e.id, false, {});
   });
 
-  // Trier par initiative décroissante
-  ordreInitiative.sort((a,b) => b.init - a.init);
-
-  // Compagnons (alliés) : agissent juste après leur PC — RAW p.45 (pas d'init propre)
+  // Compagnons (alliés) : initiative PROPRE, indépendante du joueur (forme-fiche : PER+AGI ; ancien schéma : body+mind)
   buildAlliesFromCompanions();
   allies.forEach(a => {
-    const ownerIdx = ordreInitiative.findIndex(x => x.id === a.owner);
-    const ownerInit = ownerIdx !== -1 ? ordreInitiative[ownerIdx].init : 0;
-    const entry = { id:'a_'+a.id, nom:a.nom, type:'allie', init: ownerInit, aid:a.id, owner:a.owner, ownerNom:a.ownerNom };
-    if(ownerIdx !== -1) ordreInitiative.splice(ownerIdx+1, 0, entry); else ordreInitiative.push(entry);
+    const init = a.char ? ((a.special?.P||5) + (a.special?.A||5)) : ((a.body||5) + (a.mind||4));
+    ordreInitiative.push({ id:'a_'+a.id, nom:a.nom, type:'allie', init, aid:a.id, owner:a.owner, ownerNom:a.ownerNom });
     initActionsState('a_'+a.id, false, {});
   });
   if(allies.length) addLog('🐾 ' + allies.length + ' compagnon(s) en soutien');
+
+  // Tri global par initiative décroissante (joueurs + ennemis + compagnons mêlés)
+  ordreInitiative.sort((a,b) => b.init - a.init);
 
   tourActif = 0;
   numRound = 1;
