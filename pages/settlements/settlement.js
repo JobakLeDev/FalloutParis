@@ -360,7 +360,7 @@ function sCampNow(){ let mx = 0; (tempsData?.parties || []).forEach(p => { mx = 
 function vendorFor(site, key){ return (site.vendors && site.vendors[key]) || (key === 'shop_water' ? site.vendor : null) || null; }
 const _RND = () => 0.6 + Math.random() * 0.8;
 // Main-d'œuvre (modèle pool) : chaque poste assigné (potager + comptoirs + médical) occupe 1 colon du total.
-const _WORK_KEYS = ['shop_water','shop_food','diner','medical'];   // postes à PNJ/colon assigné (vendeurs)
+const _WORK_KEYS = ['shop_water','shop_food','diner','cooking','medical'];   // postes à PNJ/colon assigné (vendeurs/cuisinier/médecin)
 function vendorCount(site){ return _WORK_KEYS.filter(k => vendorFor(site,k)).length; }
 function assignedColons(site){ return (site.farmers||0) + vendorCount(site); }   // colons au travail
 function freeColons(site){ return Math.max(0, (site.settlers||0) - assignedColons(site)); }
@@ -381,7 +381,8 @@ function sTick(site){
   const vF = vendorFor(site,'shop_food');
   if(countBlk(site,'shop_food') && vF && (site.food||0) > 0){ const sold = Math.min(site.food, (vF.talent||1) * days * _RND()); if(sold > 0){ site.food = Math.round((site.food - sold) * 10) / 10; site.caps = (site.caps||0) + Math.round(sold * 2); } }
   const vD = vendorFor(site,'diner');
-  if(countBlk(site,'diner') && vD && countBlk(site,'cooking') && (site.food||0) > 0){ const meals = Math.min(site.food, (vD.talent||1) * days * _RND()); if(meals > 0){ site.food = Math.round((site.food - meals) * 10) / 10; site.caps = (site.caps||0) + Math.round(meals * 4); } }
+  const vCook = vendorFor(site,'cooking');   // restaurant : nécessite un cuisinier assigné à la cuisine
+  if(countBlk(site,'diner') && vD && countBlk(site,'cooking') && vCook && (site.food||0) > 0){ const meals = Math.min(site.food, (vD.talent||1) * (vCook.talent||1) * days * _RND() * 0.5); if(meals > 0){ site.food = Math.round((site.food - meals) * 10) / 10; site.caps = (site.caps||0) + Math.round(meals * 4); } }
   if(countBlk(site,'beacon')){ const cap = Math.max(0, bedCount(site) - residentCount(site)); let s = site.settlers||0; if(s < cap){ let arr = 0; const tries = Math.max(1, Math.floor(days)); for(let i=0;i<tries && (s+arr)<cap;i++){ if(Math.random()<0.5) arr++; } if(arr>0) site.settlers = Math.min(cap, s+arr); } }
   site.lastTick = now; save();
 }
@@ -408,11 +409,12 @@ function renderStats(site){
 }
 function renderEco(site){
   const el = document.getElementById('s-eco'); if(!el) return;
-  const shops = [['shop_water','🪧 Eau'],['shop_food','🍲 Nourriture'],['diner','🍳 Restaurant'],['medical','🩺 Médical']].filter(([k]) => countBlk(site,k));
+  const shops = [['shop_water','🪧 Eau'],['shop_food','🍲 Nourriture'],['cooking','🍳 Cuisine'],['diner','🍴 Restaurant'],['medical','🩺 Médical']].filter(([k]) => countBlk(site,k));
   if(!shops.length){ el.innerHTML = ''; return; }
+  const _postLbl = { medical:'médecin', cooking:'cuisinier' };
   let h = '<div class="s-sub">🏪 Postes (1 colon/poste) <small style="color:var(--td)">— libres : ' + freeColons(site) + '/' + (site.settlers||0) + '</small></div>';
   shops.forEach(([k,lbl]) => { const v = vendorFor(site,k);
-    h += `<div class="s-eco-row">${lbl} — ${k==='medical'?'médecin':'vendeur'} : ${v ? esc(v.name)+' (talent '+v.talent+')'+(isMJ?` <button class="s-stat-btn" onclick="unassignVendor('${k}')" title="Libérer le colon">✕</button>`:'') : '<i>aucun</i>'}</div>`;
+    h += `<div class="s-eco-row">${lbl} — ${_postLbl[k]||'vendeur'} : ${v ? esc(v.name)+' (talent '+v.talent+')'+(isMJ?` <button class="s-stat-btn" onclick="unassignVendor('${k}')" title="Libérer le colon">✕</button>`:'') : '<i>aucun</i>'}${k==='diner'&&!vendorFor(site,'cooking')?' <small style="color:var(--am)">⚠ nécessite un cuisinier</small>':''}</div>`;
     if(isMJ){
       if(pnjList.length){
         const pnjOpts = '<option value="">— Choisir un PNJ —</option>' + pnjList.map(p => `<option value="${esc(p.nom)}">${esc(p.nom)}${p.role?' — '+esc(p.role):''}</option>`).join('');
