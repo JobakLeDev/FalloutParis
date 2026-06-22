@@ -517,12 +517,12 @@ function buildAlliesFromCompanions(){
         const pvMax = (typeof getHpMax === 'function') ? getHpMax(c) : ((c.special.L||5)+(c.special.E||5)+Math.max(0,(c.niveau||1)-1));
         const wIt = (c.inventory||[]).find(it => it.equipped && it.type === 'WEAPON');
         let atq = 1, atkName = 'Mains nues', skKey = 'barehand';
-        if(wIt){ const base = (window.DB?.weapons||[]).find(x => x.n === wIt.name) || {};
+        if(wIt){ const base = (window.DB?.weapons||[]).find(x => x.n === wIt.name) || { n:wIt.name, dmg:wIt.dmg||'1D', eff:wIt.eff||'–', dt:wIt.dt, sk:wIt.sk, fr:'–', a:'-', w:wIt.w||0 };
           const eff = (typeof fpApplyWeaponMods === 'function') ? fpApplyWeaponMods(base, wIt.mods) : base;
-          atq = parseInt(eff.dmg) || parseInt(base.dmg) || 1; atkName = wIt.name; skKey = base.sk || 'light_weapon'; }
+          atq = parseInt(eff.dmg) || parseInt(base.dmg) || 1; atkName = wIt.name; skKey = base.sk || wIt.sk || 'light_weapon'; }
         let rd = 0;
         (c.inventory||[]).filter(it => it.equipped && (it.type==='ARMOR'||it.type==='CLOTHING')).forEach(a => {
-          const base = (window.DB?.armor||[]).find(x => x.n === a.name) || {};
+          const base = (window.DB?.armor||[]).find(x => x.n === a.name) || { n:a.name, ph:a.ph||0, en:a.en||0, rad:a.rad||0, z:a.zone, w:a.w||0 };
           const e = (typeof fpApplyArmorMods === 'function') ? fpApplyArmorMods(base, a.mods) : base;
           rd = Math.max(rd, e.ph || base.ph || 0);
         });

@@ -66,7 +66,9 @@
     { "n": "Gyroscope",             "yield": { "common": 0, "uncommon": 1, "rare": 2 }, "w": 2, "r": 4 },
     { "n": "Puce de ciblage",       "yield": { "common": 0, "uncommon": 1, "rare": 2 }, "w": 0.5, "r": 4 },
     { "n": "Cellule à fission (vide)","yield": { "common": 0, "uncommon": 1, "rare": 2 }, "w": 2, "r": 4 },
-    { "n": "Plaque de blindage",    "yield": { "common": 1, "uncommon": 1, "rare": 2 }, "w": 5, "r": 4 }
+    { "n": "Plaque de blindage",    "yield": { "common": 1, "uncommon": 1, "rare": 2 }, "w": 5, "r": 4 },
+    { "n": "Cigarettes d'avant guerre","yield": { "common": 1, "uncommon": 2, "rare": 0 }, "w": 0.5, "r": 1 },
+    { "n": "Clopes du bassin","yield": { "common": 1, "uncommon": 2, "rare": 0 }, "w": 0.5, "r": 1 }
   ],
   "materialLabels": {
     "common":   { "label": "Matériaux communs",     "ex": "bois, acier, plastique, tissu, béton, os" },

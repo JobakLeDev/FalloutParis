@@ -1,41 +1,657 @@
 {
   "_comment": "Roster de compagnons recrutables (PNJ). Forme = fiche joueur (special S/P/E/C/I/A/L, skills par clé, perks par nom, niveau) → réutilise getHpMax / fpApplyWeaponMods / RD d'armure. Le MJ recrute via Admin perso → copie dans joueurs/{id}.companions[] (avec inventory). Combat piloté par le MJ ; PV/dégâts/RD calculés comme un vrai perso.",
   "companions": [
-    { "id": "comp_lucien_corbeau", "nom": "Lucien Corbeau", "faction": "La Commune", "role": "Cuisinier", "niveau": 1,
-      "special": { "S": 7, "P": 5, "E": 7, "C": 8, "I": 5, "A": 6, "L": 6 },
-      "skills": { "survival": 2, "cac_weapon": 2, "barter": 1, "medicine": 1 },
-      "perks": { "Hunter": 1, "Smooth Talker": 1, "Adrenalin Rush": 1 } },
-    { "id": "comp_jerome_lacroix", "nom": "Jérôme Lacroix", "faction": "Les Zazous", "role": "Musicien", "niveau": 1,
-      "special": { "S": 4, "P": 8, "E": 6, "C": 7, "I": 6, "A": 7, "L": 6 },
-      "skills": { "speech": 2, "pilot": 1, "sneak": 2, "survival": 1 },
-      "perks": { "Night Person": 1, "Light Step": 1, "Ghost": 1 } },
-    { "id": "comp_marina_rossi", "nom": "Marina Rossi", "faction": "NNFP", "role": "Cartographe", "niveau": 1,
-      "special": { "S": 5, "P": 8, "E": 6, "C": 6, "I": 8, "A": 7, "L": 6 },
-      "skills": { "pilot": 2, "survival": 2, "sneak": 2, "science": 1 },
-      "perks": { "Pathfinder": 1, "Infiltrator": 1, "Cap Collector": 1 } },
-    { "id": "comp_sophie_leconte", "nom": "Sophie Leconte", "faction": "Le Réseau", "role": "Archéologue", "niveau": 1,
-      "special": { "S": 4, "P": 7, "E": 5, "C": 6, "I": 9, "A": 6, "L": 5 },
-      "skills": { "science": 3, "repair": 2, "lockpick": 1, "sneak": 1 },
-      "perks": { "Hacker": 1, "Master Thief": 1, "Nerd Rage!": 1 } },
-    { "id": "comp_marc_durand", "nom": "Marc Durand", "faction": "Les Ultras", "role": "Soldat", "niveau": 1,
-      "special": { "S": 8, "P": 6, "E": 8, "C": 5, "I": 4, "A": 7, "L": 5 },
-      "skills": { "cac_weapon": 3, "heavy_weapon": 2, "barehand": 2, "survival": 1 },
-      "perks": { "Big Leagues": 1, "Slayer": 1, "Iron Fist": 2 } },
-    { "id": "comp_jules_leclerc", "nom": "Jules Leclerc", "faction": "Vault 74", "role": "Médecin", "niveau": 1,
-      "special": { "S": 4, "P": 6, "E": 5, "C": 7, "I": 8, "A": 5, "L": 6 },
-      "skills": { "medicine": 3, "science": 2, "speech": 1, "survival": 1 },
-      "perks": { "Medic": 1, "Life Giver": 2, "Faster Healing": 1 } },
-    { "id": "comp_david_rodriguez", "nom": "David 'Dave' Rodriguez", "faction": "Settlement indépendant", "role": "Charpentier", "niveau": 1,
-      "special": { "S": 8, "P": 5, "E": 7, "C": 8, "I": 6, "A": 5, "L": 6 },
-      "skills": { "repair": 3, "athletics": 2, "heavy_weapon": 1, "speech": 2 },
-      "perks": { "Jury Rigging": 1, "Toughness": 2, "Inspirational": 1 } },
-    { "id": "comp_karim_ndiaye", "nom": "Karim Ndiaye", "faction": "Vault 1", "role": "Pilote", "niveau": 1,
-      "special": { "S": 7, "P": 7, "E": 7, "C": 7, "I": 7, "A": 6, "L": 6 },
-      "skills": { "pilot": 3, "heavy_weapon": 2, "barter": 2, "science": 1 },
-      "perks": { "Sniper": 1, "Steady Aim": 1, "Size Matters": 1 } },
-    { "id": "comp_bastien_mercier", "nom": "Bastien 'Bas' Mercier", "faction": "Settlement nomade", "role": "Sniper", "niveau": 1,
-      "special": { "S": 5, "P": 8, "E": 5, "C": 6, "I": 6, "A": 7, "L": 5 },
-      "skills": { "light_weapon": 3, "sneak": 2, "pilot": 2, "speech": 2 },
-      "perks": { "Sniper": 1, "Gunslinger": 1, "Quick Draw": 1 } }
+    {
+      "id": "comp_lucien_corbeau",
+      "nom": "Lucien Corbeau",
+      "faction": "La Commune",
+      "role": "Cuisinier",
+      "niveau": 1,
+      "special": {
+        "S": 7,
+        "P": 5,
+        "E": 7,
+        "C": 8,
+        "I": 5,
+        "A": 6,
+        "L": 6
+      },
+      "skills": {
+        "survival": 2,
+        "cac_weapon": 2,
+        "barter": 1,
+        "medicine": 1
+      },
+      "perks": {
+        "Hunter": 1,
+        "Smooth Talker": 1,
+        "Adrenalin Rush": 1
+      },
+      "inventory": [
+        {
+          "name": "Combat Knife",
+          "type": "WEAPON",
+          "qty": 1,
+          "w": 0.5,
+          "equipped": true,
+          "dmg": "3D",
+          "eff": "Piercing 1",
+          "dt": "Physical",
+          "sk": "cac_weapon",
+          "rarity": 1
+        },
+        {
+          "name": "Plastron en cuir",
+          "type": "ARMOR",
+          "qty": 1,
+          "w": 2.27,
+          "equipped": true,
+          "ph": 1,
+          "en": 2,
+          "rad": 0,
+          "rarity": 1,
+          "zone": "Torso"
+        },
+        {
+          "name": "Brassard en cuir",
+          "type": "ARMOR",
+          "qty": 1,
+          "w": 0.91,
+          "equipped": true,
+          "ph": 1,
+          "en": 2,
+          "rad": 0,
+          "rarity": 1,
+          "zone": "Arm"
+        },
+        {
+          "name": "Jambières en cuir",
+          "type": "ARMOR",
+          "qty": 1,
+          "w": 0.91,
+          "equipped": true,
+          "ph": 1,
+          "en": 2,
+          "rad": 0,
+          "rarity": 1,
+          "zone": "Leg"
+        }
+      ]
+    },
+    {
+      "id": "comp_jerome_lacroix",
+      "nom": "Jérôme Lacroix",
+      "faction": "Les Zazous",
+      "role": "Musicien",
+      "niveau": 1,
+      "special": {
+        "S": 4,
+        "P": 8,
+        "E": 6,
+        "C": 7,
+        "I": 6,
+        "A": 7,
+        "L": 6
+      },
+      "skills": {
+        "speech": 2,
+        "pilot": 1,
+        "sneak": 2,
+        "survival": 1
+      },
+      "perks": {
+        "Night Person": 1,
+        "Light Step": 1,
+        "Ghost": 1
+      },
+      "inventory": [
+        {
+          "name": "Tomahawk",
+          "type": "WEAPON",
+          "qty": 1,
+          "w": 0.5,
+          "equipped": true,
+          "dmg": "4D",
+          "eff": "Piercing 1",
+          "dt": "Physical",
+          "sk": "throwing",
+          "rarity": 2
+        },
+        {
+          "name": "Laser Pistol",
+          "type": "WEAPON",
+          "qty": 1,
+          "w": 1.8,
+          "equipped": false,
+          "dmg": "4D",
+          "eff": "—",
+          "dt": "Energy",
+          "sk": "en_weapon",
+          "rarity": 2
+        },
+        {
+          "name": "Drifter Outfit",
+          "type": "CLOTHING",
+          "qty": 1,
+          "w": 10,
+          "equipped": true,
+          "ph": 1,
+          "en": 2,
+          "rad": 0,
+          "rarity": 1
+        }
+      ]
+    },
+    {
+      "id": "comp_marina_rossi",
+      "nom": "Marina Rossi",
+      "faction": "NNFP",
+      "role": "Cartographe",
+      "niveau": 1,
+      "special": {
+        "S": 5,
+        "P": 8,
+        "E": 6,
+        "C": 6,
+        "I": 8,
+        "A": 7,
+        "L": 6
+      },
+      "skills": {
+        "pilot": 2,
+        "survival": 2,
+        "sneak": 2,
+        "science": 1
+      },
+      "perks": {
+        "Pathfinder": 1,
+        "Infiltrator": 1,
+        "Cap Collector": 1
+      },
+      "inventory": [
+        {
+          "name": "Hunting Rifle",
+          "type": "WEAPON",
+          "qty": 1,
+          "w": 4.5,
+          "equipped": true,
+          "dmg": "7D",
+          "eff": "—",
+          "dt": "Physical",
+          "sk": "light_weapon",
+          "rarity": 2
+        },
+        {
+          "name": "Tough Clothing",
+          "type": "CLOTHING",
+          "qty": 1,
+          "w": 3,
+          "equipped": true,
+          "ph": 1,
+          "en": 1,
+          "rad": 0,
+          "rarity": 1
+        },
+        {
+          "name": "Brassard en métal renforcé",
+          "type": "ARMOR",
+          "qty": 1,
+          "w": 3.63,
+          "equipped": true,
+          "ph": 3,
+          "en": 2,
+          "rad": 0,
+          "rarity": 3,
+          "zone": "Arm"
+        },
+        {
+          "name": "Jambières en métal renforcées",
+          "type": "ARMOR",
+          "qty": 1,
+          "w": 3.63,
+          "equipped": true,
+          "ph": 3,
+          "en": 2,
+          "rad": 0,
+          "rarity": 3,
+          "zone": "Leg"
+        }
+      ]
+    },
+    {
+      "id": "comp_sophie_leconte",
+      "nom": "Sophie Leconte",
+      "faction": "Le Réseau",
+      "role": "Archéologue",
+      "niveau": 1,
+      "special": {
+        "S": 4,
+        "P": 7,
+        "E": 5,
+        "C": 6,
+        "I": 9,
+        "A": 6,
+        "L": 5
+      },
+      "skills": {
+        "science": 3,
+        "repair": 2,
+        "lockpick": 1,
+        "sneak": 1
+      },
+      "perks": {
+        "Hacker": 1,
+        "Master Thief": 1,
+        "Nerd Rage!": 1
+      },
+      "inventory": [
+        {
+          "name": "Laser Pistol",
+          "type": "WEAPON",
+          "qty": 1,
+          "w": 1.8,
+          "equipped": true,
+          "dmg": "4D",
+          "eff": "—",
+          "dt": "Energy",
+          "sk": "en_weapon",
+          "rarity": 2
+        },
+        {
+          "name": "Casual Clothing",
+          "type": "CLOTHING",
+          "qty": 1,
+          "w": 2,
+          "equipped": true,
+          "ph": 0,
+          "en": 0,
+          "rad": 0,
+          "rarity": 1
+        }
+      ]
+    },
+    {
+      "id": "comp_marc_durand",
+      "nom": "Marc Durand",
+      "faction": "Les Ultras",
+      "role": "Soldat",
+      "niveau": 1,
+      "special": {
+        "S": 8,
+        "P": 6,
+        "E": 8,
+        "C": 5,
+        "I": 4,
+        "A": 7,
+        "L": 5
+      },
+      "skills": {
+        "cac_weapon": 3,
+        "heavy_weapon": 2,
+        "barehand": 2,
+        "survival": 1
+      },
+      "perks": {
+        "Big Leagues": 1,
+        "Slayer": 1,
+        "Iron Fist": 2
+      },
+      "inventory": [
+        {
+          "name": "Revolutionary Sword",
+          "type": "WEAPON",
+          "qty": 1,
+          "w": 1.4,
+          "equipped": true,
+          "dmg": "4D",
+          "eff": "Piercing 1, Parry",
+          "dt": "Physical",
+          "sk": "cac_weapon",
+          "rarity": 2
+        },
+        {
+          "name": "Combat Rifle",
+          "type": "WEAPON",
+          "qty": 1,
+          "w": 5.4,
+          "equipped": false,
+          "dmg": "6D",
+          "eff": "Piercing 1",
+          "dt": "Physical",
+          "sk": "light_weapon",
+          "rarity": 2
+        },
+        {
+          "name": "Casque de combat renforcé",
+          "type": "ARMOR",
+          "qty": 1,
+          "w": 2.27,
+          "equipped": true,
+          "ph": 3,
+          "en": 3,
+          "rad": 0,
+          "rarity": 3,
+          "zone": "Head"
+        },
+        {
+          "name": "Plastron de combat renforcé",
+          "type": "ARMOR",
+          "qty": 1,
+          "w": 5.44,
+          "equipped": true,
+          "ph": 3,
+          "en": 3,
+          "rad": 0,
+          "rarity": 3,
+          "zone": "Torso"
+        },
+        {
+          "name": "Jambières de combat renforcées",
+          "type": "ARMOR",
+          "qty": 1,
+          "w": 2.27,
+          "equipped": true,
+          "ph": 3,
+          "en": 3,
+          "rad": 0,
+          "rarity": 3,
+          "zone": "Leg"
+        },
+        {
+          "name": "Brassard de combat renforcé",
+          "type": "ARMOR",
+          "qty": 1,
+          "w": 2.27,
+          "equipped": true,
+          "ph": 3,
+          "en": 3,
+          "rad": 0,
+          "rarity": 3,
+          "zone": "Arm"
+        }
+      ]
+    },
+    {
+      "id": "comp_jules_leclerc",
+      "nom": "Jules Leclerc",
+      "faction": "Vault 74",
+      "role": "Médecin",
+      "niveau": 1,
+      "special": {
+        "S": 4,
+        "P": 6,
+        "E": 5,
+        "C": 7,
+        "I": 8,
+        "A": 5,
+        "L": 6
+      },
+      "skills": {
+        "medicine": 3,
+        "science": 2,
+        "speech": 1,
+        "survival": 1
+      },
+      "perks": {
+        "Medic": 1,
+        "Life Giver": 2,
+        "Faster Healing": 1
+      },
+      "inventory": [
+        {
+          "name": "10mm Pistol",
+          "type": "WEAPON",
+          "qty": 1,
+          "w": 1.4,
+          "equipped": true,
+          "dmg": "4D",
+          "eff": "—",
+          "dt": "Physical",
+          "sk": "light_weapon",
+          "rarity": 2
+        },
+        {
+          "name": "Vault 74 Jumpsuit",
+          "type": "CLOTHING",
+          "qty": 1,
+          "w": 1,
+          "equipped": true,
+          "ph": 0,
+          "en": 0,
+          "rad": 2,
+          "rarity": 2
+        }
+      ]
+    },
+    {
+      "id": "comp_david_rodriguez",
+      "nom": "David 'Dave' Rodriguez",
+      "faction": "Settlement indépendant",
+      "role": "Charpentier",
+      "niveau": 1,
+      "special": {
+        "S": 8,
+        "P": 5,
+        "E": 7,
+        "C": 8,
+        "I": 6,
+        "A": 5,
+        "L": 6
+      },
+      "skills": {
+        "repair": 3,
+        "athletics": 2,
+        "heavy_weapon": 1,
+        "speech": 2
+      },
+      "perks": {
+        "Jury Rigging": 1,
+        "Toughness": 2,
+        "Inspirational": 1
+      },
+      "inventory": [
+        {
+          "name": "Super Sledge",
+          "type": "WEAPON",
+          "qty": 1,
+          "w": 8.2,
+          "equipped": true,
+          "dmg": "6D",
+          "eff": "Stun",
+          "dt": "Physical",
+          "sk": "cac_weapon",
+          "rarity": 3
+        },
+        {
+          "name": "Plastron de combat renforcé",
+          "type": "ARMOR",
+          "qty": 1,
+          "w": 5.44,
+          "equipped": true,
+          "ph": 3,
+          "en": 3,
+          "rad": 0,
+          "rarity": 3,
+          "zone": "Torso"
+        },
+        {
+          "name": "Jambières de combat renforcées",
+          "type": "ARMOR",
+          "qty": 1,
+          "w": 2.27,
+          "equipped": true,
+          "ph": 3,
+          "en": 3,
+          "rad": 0,
+          "rarity": 3,
+          "zone": "Leg"
+        },
+        {
+          "name": "Brassard de combat renforcé",
+          "type": "ARMOR",
+          "qty": 1,
+          "w": 2.27,
+          "equipped": true,
+          "ph": 3,
+          "en": 3,
+          "rad": 0,
+          "rarity": 3,
+          "zone": "Arm"
+        }
+      ]
+    },
+    {
+      "id": "comp_karim_ndiaye",
+      "nom": "Karim Ndiaye",
+      "faction": "Vault 1",
+      "role": "Pilote",
+      "niveau": 1,
+      "special": {
+        "S": 7,
+        "P": 7,
+        "E": 7,
+        "C": 7,
+        "I": 7,
+        "A": 6,
+        "L": 6
+      },
+      "skills": {
+        "pilot": 3,
+        "heavy_weapon": 2,
+        "barter": 2,
+        "science": 1
+      },
+      "perks": {
+        "Sniper": 1,
+        "Steady Aim": 1,
+        "Size Matters": 1
+      },
+      "inventory": [
+        {
+          "name": "Plasma Rifle",
+          "type": "WEAPON",
+          "qty": 1,
+          "w": 4.5,
+          "equipped": true,
+          "dmg": "7D",
+          "eff": "Radioactive",
+          "dt": "Energy",
+          "sk": "en_weapon",
+          "rarity": 4
+        },
+        {
+          "name": "Casque en métal lourd",
+          "type": "ARMOR",
+          "qty": 1,
+          "w": 5.44,
+          "equipped": true,
+          "ph": 4,
+          "en": 3,
+          "rad": 0,
+          "rarity": 3,
+          "zone": "Head"
+        },
+        {
+          "name": "Plastron en métal lourd",
+          "type": "ARMOR",
+          "qty": 1,
+          "w": 10.43,
+          "equipped": true,
+          "ph": 4,
+          "en": 3,
+          "rad": 0,
+          "rarity": 3,
+          "zone": "Torso"
+        },
+        {
+          "name": "Jambières en métal lourdes",
+          "type": "ARMOR",
+          "qty": 1,
+          "w": 5.44,
+          "equipped": true,
+          "ph": 4,
+          "en": 3,
+          "rad": 0,
+          "rarity": 3,
+          "zone": "Leg"
+        },
+        {
+          "name": "Brassard en métal lourd",
+          "type": "ARMOR",
+          "qty": 1,
+          "w": 5.44,
+          "equipped": true,
+          "ph": 4,
+          "en": 3,
+          "rad": 0,
+          "rarity": 3,
+          "zone": "Arm"
+        }
+      ]
+    },
+    {
+      "id": "comp_bastien_mercier",
+      "nom": "Bastien 'Bas' Mercier",
+      "faction": "Settlement nomade",
+      "role": "Sniper",
+      "niveau": 1,
+      "special": {
+        "S": 5,
+        "P": 8,
+        "E": 5,
+        "C": 6,
+        "I": 6,
+        "A": 7,
+        "L": 5
+      },
+      "skills": {
+        "light_weapon": 3,
+        "sneak": 2,
+        "pilot": 2,
+        "speech": 2
+      },
+      "perks": {
+        "Sniper": 1,
+        "Gunslinger": 1,
+        "Quick Draw": 1
+      },
+      "inventory": [
+        {
+          "name": "Hunting Rifle",
+          "type": "WEAPON",
+          "qty": 1,
+          "w": 4.5,
+          "equipped": true,
+          "dmg": "7D",
+          "eff": "—",
+          "dt": "Physical",
+          "sk": "light_weapon",
+          "rarity": 2
+        },
+        {
+          "name": "10mm Pistol",
+          "type": "WEAPON",
+          "qty": 1,
+          "w": 1.4,
+          "equipped": false,
+          "dmg": "4D",
+          "eff": "—",
+          "dt": "Physical",
+          "sk": "light_weapon",
+          "rarity": 2
+        },
+        {
+          "name": "Road Leathers",
+          "type": "CLOTHING",
+          "qty": 1,
+          "w": 2,
+          "equipped": true,
+          "ph": 1,
+          "en": 0,
+          "rad": 0,
+          "rarity": 1
+        }
+      ]
+    }
   ]
 }
