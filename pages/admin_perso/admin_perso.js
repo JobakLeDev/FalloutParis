@@ -390,7 +390,7 @@ function populateRecruitSel(){
   sel.innerHTML='<option value="">+ Recruter un compagnon…</option>'+(window.COMPANIONS||[]).map(c=>`<option value="${c.id}">${c.nom} — ${c.role||''}${c.faction?' ('+c.faction+')':''}</option>`).join('');
 }
 function _siteBeds(s){ return (s.blocks||[]).filter(b=>b.type==='bed').length; }
-function _siteFreeBeds(s){ return _siteBeds(s) - (s.settlers||0) - ((s.residents||[]).length); }
+function _siteFreeBeds(s){ const vend=Object.keys(s.vendors||{}).filter(k=>s.vendors[k]).length; return _siteBeds(s) - (s.settlers||0) - ((s.residents||[]).length) - vend; }
 function populateRecruitDest(){
   const sel=document.getElementById('comp-recruit-dest'); if(!sel) return;
   let h='<option value="player">→ Avec ce joueur (compagnon)</option>';
