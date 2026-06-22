@@ -912,7 +912,10 @@ function rCompanions(){
     const drTxt=[['Phys',dr.phys],['Én',dr.energy],['Rad',dr.rad],['Poison',dr.poison]].filter(([l,v])=>v).map(([l,v])=>`${l} ${v}`).join(' · ')||'—';
     const atks=(c.attacks||[]).map(a=>`<div class="cmp-atk">⚔ <b>${a.name}</b> — ${(a.attr||'').toUpperCase()}${a.skill?'+'+a.skill:''} · TN ${a.tn} · <span style="color:var(--am)">${a.dmg} DC</span> ${a.dmgType||''}${a.eff?' · '+a.eff:''}</div>`).join('');
     const abil=(c.abilities||[]).map(a=>`<div class="cmp-abil"><b>${a.name}</b>${a.desc?' — '+a.desc:''}</div>`).join('');
-    const init=(c.initiative==null||c.initiative==='')?'comme toi':c.initiative;
+    // Initiative propre (forme-fiche : PER+AGI ; créature : body+mind ; sinon valeur fixée)
+    const init = c.special ? ((c.special.P||5)+(c.special.A||5))
+               : (c.attrs ? ((c.attrs.body||5)+(c.attrs.mind||4))
+               : ((c.initiative==null||c.initiative==='') ? 'comme toi' : c.initiative));
     const cid=String(c.id ?? i);
     const col=_compCollapsed.has(cid);
     return `<div class="cmp-card${col?' collapsed':''}">
