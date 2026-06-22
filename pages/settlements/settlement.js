@@ -18,6 +18,7 @@ let _carteLoaded = false;   // vrai après le 1er snapshot /carte (évite de ret
 let data = { sites: {} };           // /settlements/<camp>
 let joueursCamp = {};               // joueurs de la campagne (pour alliés)
 let tempsData = null;               // /temps/<camp> (pour le tick éco/colons)
+let pnjList = [];                   // roster PNJ de la campagne (/pnj/<camp>) — assignables aux postes
 let selSite = null;                 // id du refuge sélectionné
 let selBlock = null;                // bloc choisi dans le catalogue (à poser)
 let _edgeBrush = null;              // MJ : pinceau d'arête ('wall'|'door'|'window'|'erase')
@@ -105,6 +106,7 @@ async function initSettlement(){
     render();
   });
   fdb.collection('temps').doc(fpCampId()).onSnapshot(s => { tempsData = s.exists ? s.data() : {}; render(); });
+  fdb.collection('pnj').doc(fpCampId()).onSnapshot(s => { pnjList = (s.exists && Array.isArray(s.data().list)) ? s.data().list : []; render(); }, e => console.warn('pnj:', e && e.code));
 }
 
 async function demanderMJ(){
@@ -411,7 +413,14 @@ function renderEco(site){
   let h = '<div class="s-sub">🏪 Postes (1 colon/poste) <small style="color:var(--td)">— libres : ' + freeColons(site) + '/' + (site.settlers||0) + '</small></div>';
   shops.forEach(([k,lbl]) => { const v = vendorFor(site,k);
     h += `<div class="s-eco-row">${lbl} — ${k==='medical'?'médecin':'vendeur'} : ${v ? esc(v.name)+' (talent '+v.talent+')'+(isMJ?` <button class="s-stat-btn" onclick="unassignVendor('${k}')" title="Libérer le colon">✕</button>`:'') : '<i>aucun</i>'}</div>`;
-    if(isMJ) h += `<div class="s-eco-ctrl"><input id="ev-${k}" class="s-inp" style="width:130px;display:inline-block" placeholder="Nom"><select id="et-${k}" class="s-inp" style="width:60px;display:inline-block"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select><button class="sbtn" onclick="assignVendor('${k}')">Assigner</button></div>`;
+    if(isMJ){
+      if(pnjList.length){
+        const pnjOpts = '<option value="">— Choisir un PNJ —</option>' + pnjList.map(p => `<option value="${esc(p.nom)}">${esc(p.nom)}${p.role?' — '+esc(p.role):''}</option>`).join('');
+        h += `<div class="s-eco-ctrl"><select id="ev-${k}" class="s-inp" style="width:150px;display:inline-block">${pnjOpts}</select><select id="et-${k}" class="s-inp" style="width:60px;display:inline-block" title="Talent"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select><button class="sbtn" onclick="assignVendor('${k}')">Assigner</button></div>`;
+      } else {
+        h += `<div class="s-eco-ctrl"><span class="s-note">Aucun PNJ — crée-en dans la page <a href="../pnj/pnj.html" style="color:var(--g)">🧑 PNJ</a>.</span></div>`;
+      }
+    }
   });
   if(isMJ){ const opts = Object.keys(joueursCamp).map(pid => `<option value="${pid}">${esc(joueursCamp[pid].nom||pid)}</option>`).join('') || '<option value="">—</option>';
     h += `<div class="s-eco-ctrl">Verser <input id="eco-amt" type="number" class="s-inp" style="width:64px;display:inline-block" value="50" min="1"> caps → <select id="eco-to" class="s-inp" style="width:130px;display:inline-block">${opts}</select><button class="sbtn" onclick="withdrawCaps()">→ joueur</button></div>`;

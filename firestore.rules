@@ -85,6 +85,10 @@ service cloud.firestore {
     // /settlements/<campId> = { sites:{ <id>:{name,w,h,faction,allies,stock,blocks,pending,restPoint} } }
     match /settlements/{doc} { allow read, write: if true; }
 
+    // ---------- Roster de PNJ narratifs (par campagne) ----------
+    // /pnj/<campId> = { list:[{id,nom,faction,role,notes,special?,skills?,perks?}] }
+    match /pnj/{doc} { allow read, write: if true; }
+
     // ---------- Tout le reste : INTERDIT ----------
     // Empêche la création de collections/documents non prévus.
     match /{document=**} {

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg?v=e0a48636">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fallout Paris — PNJ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../common/style.css?v=60a9c208">
+  <link rel="stylesheet" href="pnj.css?v=112fb3d8">
+  <link rel="stylesheet" href="../../common/zoom.css?v=2a2cfe92">
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <!-- LOCK -->
+  <div class="lock" id="lock">
+    <div class="lock-box">
+      <div class="lock-title">ACCÈS MJ</div>
+      <div class="lock-sub">FALLOUT PARIS — PNJ</div>
+      <input type="password" class="lock-input" id="lk-inp" placeholder="••••" maxlength="4" inputmode="numeric" onkeydown="if(event.key==='Enter')tryUnlock()">
+      <button class="lock-btn" onclick="tryUnlock()">ENTRER</button>
+      <div class="lock-err" id="lk-err" style="display:none">Code incorrect</div>
+    </div>
+  </div>
+
+  <div id="app" style="display:none">
+    <div class="phdr">
+      <div class="phdr-title">🧑 PNJ <small id="pnj-camp"></small></div>
+      <div class="phdr-btns">
+        <a class="pbtn" href="../mj/mj.html">🎲 MJ</a>
+        <a class="pbtn" href="../settlements/settlement.html">🏚 Refuges</a>
+        <a class="pbtn" href="../../index.html">Accueil</a>
+      </div>
+    </div>
+
+    <div id="pnj-layout">
+      <aside id="pnj-side">
+        <div class="pnj-side-title">Roster (<span id="pnj-count">0</span>)</div>
+        <div id="pnj-list"><span class="empty">Chargement…</span></div>
+        <button class="pbtn add" onclick="addBlank()">+ Nouveau PNJ</button>
+        <div class="pnj-sub" style="margin-top:14px">📥 Importer (coller du JSON)</div>
+        <textarea id="pnj-import" class="pnj-imp" placeholder='Liste JSON : [{"nom":"...","faction":"...","role":"...","notes":"..."}] ou {"list":[...]}'></textarea>
+        <button class="pbtn" onclick="importJSON()">Importer (ajouter)</button>
+        <div class="pnj-note" id="pnj-imp-msg"></div>
+      </aside>
+      <main id="pnj-main">
+        <div id="pnj-empty" class="pnj-big-empty">Sélectionne ou crée un PNJ.</div>
+        <div id="pnj-edit" style="display:none"></div>
+      </main>
+    </div>
+  </div>
+
+  <script src="../../common/shared.js?v=9d7d9c39"></script>
+  <script src="pnj.js?v=2268e841"></script>
+  <script src="../../common/responsive.js?v=f2bdcb93"></script>
+</body>
+</html>
