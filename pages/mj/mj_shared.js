@@ -403,6 +403,10 @@ function generateCombatLoot(enemies){
       }
       if(p.ammo && Math.random() < (p.ammo.chance ?? 0.6)){ const a = lootRollAmmo(); if(a) add(a.ammo, 'AMMO', 'ammo', a.qty); }
       if(p.stuff && Math.random() < (p.stuff.chance ?? 0.08)){ const s = lootWeightedPick(DB.stuff||[]); if(s) add(s.n, 'STUFF', 'stuff', 1); }
+      if(p.frame && t >= (p.frame.minTier??4) && Math.random() < (p.frame.chance??0.12)){
+        const frames=(DB.armor||[]).filter(a=>a.t==='POWERARMOR_FRAME');
+        const f=lootWeightedPick(frames); if(f) add(f.n, 'POWERARMOR_FRAME', 'armor', 1);
+      }
       if(p.caps && Math.random() < (p.caps.chance ?? 0.2)) caps += (p.caps.base || 0) + lootSumCD(t) * (p.caps.perTier || 2);
     } else { // human
       const p = LP.profiles?.human || {};
