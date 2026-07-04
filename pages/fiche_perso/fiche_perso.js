@@ -69,27 +69,41 @@ function rdP(type){
   if(type==='poison')return (p['Snake Eater']||0)*2;
   return 0;
 }
+const _PA_SLOTS=[
+  {k:'head',label:'Tête',zone:'Head'},{k:'torso',label:'Torse',zone:'Torso'},
+  {k:'armL',label:'Bras G',zone:'Arm'},{k:'armR',label:'Bras D',zone:'Arm'},
+  {k:'legL',label:'Jambe G',zone:'Leg'},{k:'legR',label:'Jambe D',zone:'Leg'},
+];
+function getActiveFrame(){
+  return char.inventory.find(it=>it.type==='POWERARMOR_FRAME'&&it.equipped)||null;
+}
 function getLocRD(zone){
   const zm={head:'Head',torso:'Torso',armL:'Arm',armR:'Arm',legL:'Leg',legR:'Leg'};
-  // RAW p.123 : pour chaque emplacement, prendre la RD la PLUS ÉLEVÉE par type
-  // entre le vêtement et l'armure (PAS la somme). Les perks s'ajoutent ensuite.
   let aPh=0,aEn=0,aRad=0;
-  char.inventory.forEach(it=>{
-    if(!it.equipped)return;
-    const db=[...DB.armor].find(a=>a.n===it.name);
-    if(!db)return;
-    // Body = bras/jambes/torse (pas la tête), All = tout
-    const coversZone = db.z===zm[zone]
-      || (db.t==='POWERARMOR'&&char.powerArmor)
-      || (db.z==='Body'&&zone!=='head')
-      || db.z==='All';
-    if(coversZone){
-      const e = (typeof fpApplyArmorMods==='function') ? fpApplyArmorMods(db, it.mods) : db;  // mods d'armure
-      aPh=Math.max(aPh,e.ph||0);
-      aEn=Math.max(aEn,e.en||0);
-      aRad=(db.rad===999||aRad===999)?999:Math.max(aRad,e.rad||0);
+  const frame=getActiveFrame();
+  if(char.powerArmor&&frame){
+    // DR depuis le slot correspondant de la frame
+    const piece=frame.slots?.[zone];
+    if(piece){
+      const base=DB.armor.find(a=>a.n===piece.name)||{};
+      const e=(typeof fpApplyArmorMods==='function')?fpApplyArmorMods(base,piece.mods):base;
+      aPh=e.ph||0; aEn=e.en||0; aRad=e.rad||0;
     }
-  });
+  } else {
+    // RAW p.123 : armure normale
+    char.inventory.forEach(it=>{
+      if(!it.equipped)return;
+      const db=[...DB.armor].find(a=>a.n===it.name);
+      if(!db)return;
+      const coversZone=db.z===zm[zone]||(db.z==='Body'&&zone!=='head')||db.z==='All';
+      if(coversZone){
+        const e=(typeof fpApplyArmorMods==='function')?fpApplyArmorMods(db,it.mods):db;
+        aPh=Math.max(aPh,e.ph||0);
+        aEn=Math.max(aEn,e.en||0);
+        aRad=(db.rad===999||aRad===999)?999:Math.max(aRad,e.rad||0);
+      }
+    });
+  }
   return{phys:aPh+rdP('phys')+effSum('phys'), en:aEn+rdP('en')+effSum('energy'), rad:aRad===999?999:aRad+rdP('rad')+effSum('rad')};
 }
 function getWeaponTN(inv){
@@ -418,7 +432,7 @@ function rStatus(){
   const lines=[];
   if(nerd)lines.push(`⚡ Nerd Rage : +${char.perks['Nerd Rage!']} RD & Dmg`);
   if(adr)lines.push('💪 Adrenalin Rush : FOR = 10');
-  if(char.powerArmor)lines.push('🦾 Power Armor actif');
+  if(char.powerArmor){const f=getActiveFrame();lines.push(`🦾 Power Armor actif${f?' — '+f.name:''}${f&&!f.core?' (⚠ plus de core!)':''}`);}
   if(char.rad>0)lines.push(`☢ ${char.rad} pts radiation`);
   const el=document.getElementById('statuts');if(el)el.innerHTML=lines.join('<br>')||'<span style="opacity:0.4">Aucun statut actif</span>';
   const b=document.getElementById('bdgs');if(!b)return;
@@ -591,6 +605,33 @@ function rInvWeap(){
 function rInvArmor(){
   const el=document.getElementById('inv-armor-list');if(!el)return;
   el.innerHTML='';
+  // Frames Power Armor
+  char.inventory.forEach((it,i)=>{
+    if(it.type!=='POWERARMOR_FRAME')return;
+    const slots=it.slots||{};
+    const filled=_PA_SLOTS.filter(s=>slots[s.k]).length;
+    const coreOk=it.core;
+    el.innerHTML+=`<div class="irow pa-frame-fiche${it.equipped?' equipped-row':''}">
+      <span class="itag POWERARMOR" style="font-size:7px;padding:1px 3px">FRAME</span>
+      <span class="iname${it.equipped?' eq':''}" style="flex:2">${it.name}</span>
+      <span style="font-size:8px;color:${coreOk?'var(--g)':'var(--rd)'}">${coreOk?'🔋':'⚠'}</span>
+      <span style="font-size:8px;color:var(--td)">${filled}/6 pièces</span>
+      <button class="ieq-btn ${it.equipped?'on':'off'}" onclick="tEquipFrame(${i})">${it.equipped?'● ACTIVE':'○ Activer'}</button>
+      <button class="idel-btn" onclick="jetItem(${i})" title="Jeter">🗑</button>
+    </div>`;
+    if(it.equipped){
+      const slotsHtml=_PA_SLOTS.map(s=>{
+        const p=slots[s.k];
+        const db=p?DB.armor.find(a=>a.n===p.name)||{}:{};
+        return `<div class="irow pa-slot-fiche">
+          <span style="min-width:46px;font-size:8px;color:var(--am)">${s.label}</span>
+          ${p?`<span class="iname" style="font-size:9px">${p.name}</span><span style="font-size:8px;color:var(--td)">Ph:${db.ph||0} En:${db.en||0}${db.rad?' Rad:'+db.rad:''}</span>`
+             :`<span style="font-size:8px;color:var(--td)">— vide —</span>`}
+        </div>`;
+      }).join('');
+      el.innerHTML+=slotsHtml;
+    }
+  });
   char.inventory.filter(it=>['ARMOR','POWERARMOR','CLOTHING','OUTFIT'].includes(it.type)).forEach((it)=>{
     const i=char.inventory.indexOf(it);
     const base=[...DB.armor].find(a=>a.n===it.name)||{};
@@ -738,7 +779,23 @@ function addXP(n){
 function setMom(i){char.momentum=(i<char.momentum)?i:i+1;rMom();}
 function tWound(k){char.wounds[k]=!char.wounds[k];rLocs();}
 function cyclePerk(n){char.perks[n]=((char.perks[n]||0)+1)%((PERKS_DEF[n]?.max||1)+1);rAll();}
-function togglePA(){char.powerArmor=!char.powerArmor;document.getElementById('pa-btn').textContent=`Power Armor : ${char.powerArmor?'ON':'OFF'}`;rAll();}
+function togglePA(){
+  if(!char.powerArmor){
+    const f=getActiveFrame();
+    if(!f){alert('Aucune frame Power Armor activée dans l\'inventaire.');return;}
+    if(!f.core){alert('La frame n\'a pas de cellule de fusion.');return;}
+  }
+  char.powerArmor=!char.powerArmor;
+  rAll();
+}
+function tEquipFrame(i){
+  const it=char.inventory[i];if(!it||it.type!=='POWERARMOR_FRAME')return;
+  const was=it.equipped;
+  char.inventory.forEach(o=>{if(o.type==='POWERARMOR_FRAME')o.equipped=false;});
+  if(!was)it.equipped=true;
+  if(char.powerArmor&&!getActiveFrame())char.powerArmor=false;
+  rAll();
+}
 function toggleAtout(name){const it=char.inventory.find(i=>i.name===name&&i.type==='WEAPON');if(it)it.persoBonus=!it.persoBonus;rAll();}
 
 function tEquip(i){

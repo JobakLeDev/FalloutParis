@@ -56,6 +56,18 @@ const ALL_ITEMS=[
   {n:'Plastron de combat renforcé',t:'ARMOR',w:5.44,z:'Torso'},{n:'Plastron en métal lourd',t:'ARMOR',w:10.43,z:'Torso'},
   {n:'Jambières de combat',t:'ARMOR',w:0.91,z:'Leg'},{n:'Brassard de combat',t:'ARMOR',w:0.91,z:'Arm'},
   {n:'Plastron T-51',t:'POWERARMOR',w:82,z:'Torso'},{n:'Casque T-51',t:'POWERARMOR',w:27.2,z:'Head'},
+  {n:'Bras T-51',t:'POWERARMOR',w:22.7,z:'Arm'},{n:'Jambes T-51',t:'POWERARMOR',w:24.9,z:'Leg'},
+  {n:'Plastron T-45',t:'POWERARMOR',w:70,z:'Torso'},{n:'Casque T-45',t:'POWERARMOR',w:20,z:'Head'},
+  {n:'Bras T-45',t:'POWERARMOR',w:18,z:'Arm'},{n:'Jambes T-45',t:'POWERARMOR',w:20,z:'Leg'},
+  {n:'Plastron T-60',t:'POWERARMOR',w:85,z:'Torso'},{n:'Casque T-60',t:'POWERARMOR',w:28,z:'Head'},
+  {n:'Bras T-60',t:'POWERARMOR',w:24,z:'Arm'},{n:'Jambes T-60',t:'POWERARMOR',w:26,z:'Leg'},
+  {n:'Plastron X-01',t:'POWERARMOR',w:90,z:'Torso'},{n:'Casque X-01',t:'POWERARMOR',w:25,z:'Head'},
+  {n:'Bras X-01',t:'POWERARMOR',w:22,z:'Arm'},{n:'Jambes X-01',t:'POWERARMOR',w:24,z:'Leg'},
+  // Frames Power Armor
+  {n:'Frame T-45',t:'POWERARMOR_FRAME',w:10},{n:'Frame T-51',t:'POWERARMOR_FRAME',w:10},
+  {n:'Frame T-60',t:'POWERARMOR_FRAME',w:10},{n:'Frame X-01',t:'POWERARMOR_FRAME',w:10},
+  // Cellule
+  {n:'Cellule de fusion',t:'STUFF',w:1},
   // Aide
   {n:'Stimpak',t:'DRUGS',w:0.05},{n:'Super Stimpak',t:'DRUGS',w:0.05},
   {n:'RadAway',t:'DRUGS',w:0.05},{n:'Rad-X',t:'DRUGS',w:0.05},
@@ -235,9 +247,15 @@ function _itemModKind(it){
   if(_MODDABLE.armor.includes(it.type)) return 'armor';
   return null;
 }
+const _PA_SLOTS=[
+  {k:'head',label:'Tête',zone:'Head'},{k:'torso',label:'Torse',zone:'Torso'},
+  {k:'armL',label:'Bras G',zone:'Arm'},{k:'armR',label:'Bras D',zone:'Arm'},
+  {k:'legL',label:'Jambe G',zone:'Leg'},{k:'legR',label:'Jambe D',zone:'Leg'},
+];
 function renderInventory(){
   const g=document.getElementById('inv-grid');g.innerHTML='';
   editInventory.forEach((it,i)=>{
+    if(it.type==='POWERARMOR_FRAME'){ g.innerHTML+=_paFrameHtml(it,i); return; }
     const kind=_itemModKind(it);
     const nbMods = it.mods ? Object.values(it.mods).filter(Boolean).length : 0;
     g.innerHTML+=`<div class="inv-row">
@@ -251,6 +269,33 @@ function renderInventory(){
     </div>`;
     if(_modsOpen===i && kind) g.innerHTML+=renderModsPanel(i, kind);
   });
+}
+function _paFrameHtml(it,i){
+  it.slots=it.slots||{head:null,torso:null,armL:null,armR:null,legL:null,legR:null};
+  const paPieces=((window.DB&&window.DB.armor)||[]).filter(a=>a.t==='POWERARMOR');
+  const slotRows=_PA_SLOTS.map(s=>{
+    const cur=it.slots[s.k]?.name||'';
+    const opts='<option value="">— vide —</option>'+paPieces.filter(p=>p.z===s.zone)
+      .map(p=>`<option value="${p.n}"${p.n===cur?' selected':''}>${p.n} · Ph${p.ph} En${p.en} Rad${p.rad}</option>`).join('');
+    return `<div class="pa-slot-row"><span class="pa-slot-lbl">${s.label}</span><select class="mods-sel" style="flex:1" onchange="paSetSlot(${i},'${s.k}',this.value)">${opts}</select></div>`;
+  }).join('');
+  return `<div class="pa-frame-card">
+    <div class="pa-frame-head">
+      <span class="pa-frame-title">🦾 ${it.name}</span>
+      <label class="pa-core-lbl"><input type="checkbox" ${it.core?'checked':''} onchange="paToggleCore(${i})"> Cellule de fusion</label>
+      <button class="inv-btn" style="color:var(--rd)" onclick="rmInvItem(${i})">✕</button>
+    </div>
+    <div class="pa-slots">${slotRows}</div>
+  </div>`;
+}
+function paSetSlot(i,slot,name){
+  const it=editInventory[i];if(!it||it.type!=='POWERARMOR_FRAME')return;
+  it.slots=it.slots||{};
+  it.slots[slot]=name?{name,mods:{}}:null;
+}
+function paToggleCore(i){
+  const it=editInventory[i];if(!it)return;
+  it.core=!it.core;
 }
 function toggleMods(i){ _modsOpen = (_modsOpen===i? -1 : i); renderInventory(); }
 function renderModsPanel(i, kind){
@@ -311,11 +356,13 @@ function addInvItem(){
   const name=document.getElementById('inv-add-sel').value;
   if(!name)return;
   const db2=ALL_ITEMS.find(i=>i.n===name);if(!db2)return;
+  const isFrame=db2.t==='POWERARMOR_FRAME';
   const exist=editInventory.find(i=>i.name===name);
-  if(exist){exist.qty++;renderInventory();return;}
+  if(exist&&!isFrame){exist.qty++;renderInventory();return;}
   const item={name,type:db2.t,qty:1,w:db2.w||0,equipped:false};
   if(db2.z)item.zone=db2.z;
   if(db2.t==='WEAPON')item.persoBonus=false;
+  if(isFrame)item.slots={head:null,torso:null,armL:null,armR:null,legL:null,legR:null},item.core=false;
   editInventory.push(item);
   document.getElementById('inv-add-sel').value='';
   renderInventory();
