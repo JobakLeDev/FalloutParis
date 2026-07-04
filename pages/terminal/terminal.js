@@ -104,7 +104,7 @@ function typeLines(el, lines, cb){
   const next = () => {
     if(i >= lines.length){ cb && cb(); return; }
     const div = document.createElement('div'); el.appendChild(div);
-    typewriter(div, lines[i], () => { i++; setTimeout(next, 90); }, 9);
+    typewriter(div, lines[i], () => { i++; setTimeout(next, 40); }, 4);
   };
   next();
 }
