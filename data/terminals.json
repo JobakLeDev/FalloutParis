@@ -1,33 +1,142 @@
 {
   "terminals": {
-    "term-demo": {
-      "titre": "TERMINAL DE DÉMONSTRATION",
-      "header": "BULL TÉLÉMATIQUE (MC) — SERVICE TÉLÉTEL",
+    "mdr-redaction": {
+      "titre": "MAISON DE LA RADIO — RÉDACTION",
+      "header": "ORTF — RADIODIFFUSION NATIONALE — POSTE 3E ÉTAGE",
       "nodes": [
         {
-          "id": "journaux",
-          "label": "JOURNAUX DE SÉCURITÉ",
-          "body": "Accès autorisé. Sélectionnez une entrée.",
+          "id": "antenne",
+          "label": "JOURNAL D'ANTENNE",
+          "body": "Registre automatique des diffusions.\nDernière synchronisation : 23.10.2077 — 09:41.",
           "children": [
-            { "id": "j1", "label": "Entrée 12.04.2287", "body": "Les goules ont franchi le périmètre nord.\nVerrouillage du niveau -2 enclenché." },
-            { "id": "j2", "label": "Entrée 15.04.2287", "body": "Plus de réponse de l'équipe de maintenance.\nRationnement des stimpaks ordonné." }
+            {
+              "id": "a1",
+              "label": "18.10.2077 — Programme normal",
+              "body": "06:00 Matinale — 09:00 Revue de presse\n12:00 Concert public — 20:00 Feuilleton\nIncidents : néant.\nAudience secteur parisien : nominale."
+            },
+            {
+              "id": "a2",
+              "label": "21.10.2077 — Directive de grille",
+              "body": "Sur instruction de la Direction :\nsuppression du débat de 18:00.\nRemplacement par programme musical.\nMotif : non communiqué."
+            },
+            {
+              "id": "a3",
+              "label": "22.10.2077 — Message préenregistré",
+              "body": "Réception d'une bande scellée en provenance\ndu réseau gouvernemental.\nConsigne : diffusion UNIQUEMENT sur ordre,\ncanal prioritaire, toutes fréquences.\nBande stockée au niveau -2 (bunker).\nNe pas écouter. Ne pas dupliquer."
+            },
+            {
+              "id": "a4",
+              "label": "23.10.2077 — 09:41",
+              "body": ">> ALERTE RÉSEAU NATIONAL <<\nBascule automatique canal d'urgence.\n09:41 : perte liaison émetteurs nord.\n09:42 : perte liaison émetteurs sud.\n09:44 : [FIN DU REGISTRE]"
+            }
           ]
         },
-        { "id": "memo", "label": "NOTE DE SERVICE", "body": "À tout le personnel :\nle générateur de secours sera coupé à 22h00 pour maintenance." },
         {
-          "id": "portes",
-          "label": "COMMANDES DES PORTES",
+          "id": "redaction",
+          "label": "MESSAGERIE — RÉDACTION",
+          "body": "Boîte partagée. 4 messages conservés.",
           "children": [
-            { "id": "p1", "label": "Porte du laboratoire", "body": ">> VERROUILLÉE <<\nNiveau d'accréditation insuffisant." }
+            {
+              "id": "r1",
+              "label": "H. Vasseur → R. Kaddour (19.10)",
+              "body": "Riad,\nTroisième nuit que des convois quittent Paris\npar l'ouest. Berlines ministérielles, escorte.\nJ'ai les plaques. J'ai des noms.\nJe tiens quelque chose. Je creuse.\n— Hélène"
+            },
+            {
+              "id": "r2",
+              "label": "R. Kaddour → H. Vasseur (20.10)",
+              "body": "Hélène,\nLaisse tomber. Ordre d'en haut, et pas\nde chez nous — de BEAUCOUP plus haut.\nLe sujet convois n'existe pas.\nDétruis tes notes. Je suis sérieux.\n— R."
+            },
+            {
+              "id": "r3",
+              "label": "H. Vasseur → R. Kaddour (22.10)",
+              "body": "Ils savent quelque chose que nous ne savons pas.\nOn m'a suivie hier soir. Mon appartement a été visité.\nJ'ai mis mes notes en lieu sûr, là où personne\nne pense à chercher : sous nos pieds.\nSi tu lis ça et que je ne suis plus là,\ndescends au -2.\n— H."
+            },
+            {
+              "id": "r4",
+              "label": "Intendance (23.10 — 08:12)",
+              "body": "Rappel à tout le personnel :\nla cantine sera fermée vendredi pour inventaire.\nMerci de rapporter les plateaux.\nBonne journée à tous."
+            }
           ]
         },
         {
-          "id": "classifie",
-          "label": "DOSSIER CLASSIFIÉ",
+          "id": "notes",
+          "label": "NOTES DE SERVICE",
+          "body": "Circulaires Direction de l'Information.",
+          "children": [
+            {
+              "id": "n1",
+              "label": "Réf. DI-2077-388 (20.10)",
+              "body": "OBJET : Rumeurs de mouvements de personnalités.\nToute rumeur relative à des départs ou\nrelocalisations de membres du Gouvernement\nsera DÉMENTIE en antenne.\nÉléments de langage : « exercice de routine ».\nPar délégation du Palais."
+            },
+            {
+              "id": "n2",
+              "label": "Réf. DI-2077-391 (22.10)",
+              "body": "OBJET : Continuité d'antenne.\nEn cas d'alerte réseau, le personnel technique\nrejoint le niveau -2. Le personnel de rédaction\nreste en poste et maintient une programmation\nNORMALE ET RASSURANTE.\nAucune exception."
+            }
+          ]
+        },
+        {
+          "id": "pub",
+          "label": "ARCHIVES PUBLICITAIRES",
+          "body": "Spot en rotation — semaine du 18.10.2077 :\n\n« Le temps passe. Pas vous.\nÉTERNELLE, le soin visage des laboratoires\nBeauté de France. Volontaires recherchés\npour notre programme d'essai gratuit —\nrenseignez-vous en institut. »\n\n(37 diffusions/semaine — annonceur prioritaire)"
+        }
+      ]
+    },
+    "mdr-bunker": {
+      "titre": "MAISON DE LA RADIO — BUNKER NIVEAU -2",
+      "header": "RÉSEAU GOUVERNEMENTAL DE DIFFUSION — ACCÈS RESTREINT",
+      "nodes": [
+        {
+          "id": "urgence",
+          "label": "REGISTRE DU CANAL D'URGENCE",
+          "body": "Liaisons protégées État / diffuseurs.\nDernière activité : 23.10.2077.",
+          "children": [
+            {
+              "id": "u1",
+              "label": "23.10.2077 — 09:39",
+              "body": "RÉCEPTION FLASH — PRIORITÉ ABSOLUE\nORIGINE : DÉFENSE AÉRIENNE\n« Vecteurs multiples en approche.\nDélai estimé : minutes. »\nTransmis au Palais. Accusé : NÉANT."
+            },
+            {
+              "id": "u2",
+              "label": "23.10.2077 — 09:43",
+              "body": "ANOMALIE BALISTIQUE — SECTEUR OUEST\nLe vecteur assigné à la zone LD-1\ndévie de sa trajectoire calculée.\nImpact constaté : 1,2 km SO du point prévu.\nCAUSE : erreur de guidage ou\naltération des données de tir.\nDossier transmis pour analyse. Jamais rouvert."
+            },
+            {
+              "id": "u3",
+              "label": "23.10.2077 — 10:02",
+              "body": "Dernier message reçu, origine inconnue,\nsignal faible, répété 3 fois :\n« Ici le site VLG. Mise en veille effectuée.\nLes scellés sont posés. Le technicien\nreste sur place. Que Dieu nous pardonne. »\n[FIN DES TRANSMISSIONS]"
+            }
+          ]
+        },
+        {
+          "id": "bande",
+          "label": "BANDE SCELLÉE — NE PAS DIFFUSER",
           "locked": 2,
-          "body": "PROJET CERBÈRE — phase 3.\nLes sujets présentent une agressivité accrue. Confinement niveau 4 recommandé.",
+          "body": "TRANSCRIPTION — ALLOCUTION PRÉENREGISTRÉE\nEnregistrée le : 21.10.2077 — 15:30\nOrdre de diffusion prévu : 23.10.2077\n\n« Françaises, Français,\nnotre pays vient d'être frappé par une\nattaque d'une violence sans précédent.\nLe Gouvernement, préservé, veille sur vous\ndepuis un lieu sûr. Restez chez vous.\nLa France se relèvera. »\n\nNOTE D'EXPLOITATION : vérifier la date\nd'enregistrement avant archivage.\nL'allocution évoque l'attaque AU PASSÉ\ndeux jours AVANT les faits.",
           "children": [
-            { "id": "c1", "label": "Code d'accès au bunker", "body": "Code porte bunker : 7-3-9-1" }
+            {
+              "id": "b1",
+              "label": "Bordereau de la bande",
+              "body": "Enregistré au Palais de l'Élysée.\nPrésent en cabine : le Président,\nla Première Dame, deux conseillers,\nun officier de transmissions (Cne CHARPENTIER,\n8e RT, détaché protocole).\nCopies : 3. Destinataires : diffuseurs nationaux.\nClassement : SECRET — DÉFENSE."
+            }
+          ]
+        },
+        {
+          "id": "maintenance",
+          "label": "JOURNAL DE MAINTENANCE",
+          "locked": 3,
+          "body": "Registre technique du site.\nDernière entrée : 26.10.2077.",
+          "children": [
+            {
+              "id": "m1",
+              "label": "24.10.2077 — Entrée manuelle",
+              "body": "Le personnel du -2 est vivant. Les étages\nne répondent plus. Hélène est descendue\njuste avant. Elle avait raison sur tout.\nSes notes sont dans le coffre de la régie,\navec les miennes.\n— R.K."
+            },
+            {
+              "id": "m2",
+              "label": "26.10.2077 — Dernière entrée",
+              "body": "Un homme est venu. Combinaison DGSI,\nmatricule T-114. Il a ouvert la porte du -2\nSANS le code — il avait le sien.\nIl a copié le registre du canal d'urgence,\npuis il a dit : « Quelqu'un doit veiller\nsur ce qui dort à l'ouest. »\nIl est reparti vers l'est, à pied.\nNous partons demain vers le sud.\nQue celui qui lit ceci fasse mieux que nous.\n[FIN DU JOURNAL]"
+            }
           ]
         }
       ]
