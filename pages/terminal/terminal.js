@@ -210,8 +210,9 @@ function doHack(){
   const lines = []; for(let i = 0; i < 6; i++) lines.push('ANALYSE ' + _hex(2) + ' ' + _hex(4) + ' ' + _hex(6) + ' …');
   const anim = document.createElement('div'); anim.className = 't-body'; body.parentNode.insertBefore(anim, menu);
   typeLines(anim, lines, () => {
-    const d = [Math.floor(Math.random()*20)+1, Math.floor(Math.random()*20)+1];
-    const succ = d.filter(v => v <= sciTN).length + d.filter(v => v === 1).length;
+    const nDice = Math.max(2, diff);
+    const d = Array.from({length: nDice}, () => Math.floor(Math.random()*20)+1);
+    const succ = d.filter(v => v <= sciTN).length;
     const ok = succ >= diff;
     const res = document.createElement('div'); res.className = 't-body' + (ok ? '' : ' t-err');
     res.textContent = 'DÉS : ' + d.join(' / ') + ' (TN ' + sciTN + ') → ' + succ + ' succès / ' + diff + ' requis\n'
