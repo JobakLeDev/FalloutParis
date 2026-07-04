@@ -116,3 +116,12 @@ hr.fo{border:none;border-top:1px solid var(--b);margin:8px 0;}
 .ceditrow{ display:flex; gap:3px; align-items:center; margin-bottom:3px; }
 .ci{ background:#0c150c; border:1px solid var(--b2); color:var(--tb); font-family:'Share Tech Mono',monospace; font-size:9px; padding:3px 5px; outline:none; min-width:0; }
 .ci:focus{ border-color:var(--g); }
+/* Frame Power Armor */
+.pa-frame-card{ background:#060d06; border:1px solid var(--am); padding:7px 8px; margin-bottom:8px; }
+.pa-frame-head{ display:flex; gap:6px; align-items:center; margin-bottom:6px; flex-wrap:wrap; }
+.pa-frame-title{ color:var(--am); font-size:10px; letter-spacing:1px; flex:1; }
+.pa-core-lbl{ font-size:9px; color:var(--td); display:flex; align-items:center; gap:4px; cursor:pointer; }
+.pa-core-lbl input{ accent-color:var(--am); }
+.pa-slots{ display:flex; flex-direction:column; gap:3px; }
+.pa-slot-row{ display:flex; align-items:center; gap:6px; }
+.pa-slot-lbl{ font-size:8px; color:var(--am); min-width:48px; letter-spacing:.5px; }

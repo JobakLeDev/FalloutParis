@@ -365,3 +365,6 @@ html, body { overflow-x: hidden !important; overflow-y: auto !important; height:
 .inv-pill .ip-badge.show{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:15px;padding:0 4px;background:var(--rd);color:#fff;border-radius:8px;font-size:8px;line-height:1;}
 .inv-pill.on .ip-badge.show{background:#1a1200;color:var(--am);}
 .itag.AMMO{background:#3a2a0a;color:var(--am);}
+/* Frame PA */
+.pa-frame-fiche{ border-color:var(--am) !important; }
+.pa-slot-fiche{ padding-left:10px; border-color:transparent !important; background:#060d06; }
