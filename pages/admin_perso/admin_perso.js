@@ -63,9 +63,8 @@ const ALL_ITEMS=[
   {n:'Bras T-60',t:'POWERARMOR',w:24,z:'Arm'},{n:'Jambes T-60',t:'POWERARMOR',w:26,z:'Leg'},
   {n:'Plastron X-01',t:'POWERARMOR',w:90,z:'Torso'},{n:'Casque X-01',t:'POWERARMOR',w:25,z:'Head'},
   {n:'Bras X-01',t:'POWERARMOR',w:22,z:'Arm'},{n:'Jambes X-01',t:'POWERARMOR',w:24,z:'Leg'},
-  // Frames Power Armor
-  {n:'Frame T-45',t:'POWERARMOR_FRAME',w:10},{n:'Frame T-51',t:'POWERARMOR_FRAME',w:10},
-  {n:'Frame T-60',t:'POWERARMOR_FRAME',w:10},{n:'Frame X-01',t:'POWERARMOR_FRAME',w:10},
+  // Frame Power Armor (un seul modèle générique — les pièces sont interchangeables)
+  {n:'Frame Power Armor',t:'POWERARMOR_FRAME',w:10},
   // Cellule
   {n:'Cellule de fusion',t:'STUFF',w:1},
   // Aide

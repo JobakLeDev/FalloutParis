@@ -627,11 +627,29 @@ function rInvArmor(){
     if(it.equipped){
       const slotsHtml=_PA_SLOTS.map(s=>{
         const p=slots[s.k];
-        const db=p?DB.armor.find(a=>a.n===p.name)||{}:{};
+        if(p){
+          const db=DB.armor.find(a=>a.n===p.name)||{};
+          return `<div class="irow pa-slot-fiche">
+            <span style="min-width:46px;font-size:8px;color:var(--am)">${s.label}</span>
+            <span class="iname" style="font-size:9px;flex:1">${p.name}</span>
+            <span style="font-size:8px;color:var(--td)">Ph:${db.ph||0} En:${db.en||0}${db.rad?' Rad:'+db.rad:''}</span>
+            <button class="ieq-btn off" style="font-size:7px;padding:2px 4px" onclick="paRemovePiece(${i},'${s.k}')">↩ Retirer</button>
+          </div>`;
+        }
+        const avail=char.inventory.filter((it2,j)=>j!==i&&it2.type==='POWERARMOR'&&_paZone(it2)===s.zone);
+        if(!avail.length)
+          return `<div class="irow pa-slot-fiche">
+            <span style="min-width:46px;font-size:8px;color:var(--am)">${s.label}</span>
+            <span style="font-size:8px;color:var(--td)">— vide — <small>(pas de pièce ${s.zone})</small></span>
+          </div>`;
+        const selId=`pa-sel-${i}-${s.k}`;
+        const opts=avail.map(it2=>`<option value="${it2.name.replace(/"/g,'&quot;')}">${it2.name}</option>`).join('');
         return `<div class="irow pa-slot-fiche">
           <span style="min-width:46px;font-size:8px;color:var(--am)">${s.label}</span>
-          ${p?`<span class="iname" style="font-size:9px">${p.name}</span><span style="font-size:8px;color:var(--td)">Ph:${db.ph||0} En:${db.en||0}${db.rad?' Rad:'+db.rad:''}</span>`
-             :`<span style="font-size:8px;color:var(--td)">— vide —</span>`}
+          <select id="${selId}" style="flex:1;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:8px;padding:1px 3px">
+            <option value="">— choisir —</option>${opts}
+          </select>
+          <button class="ieq-btn off" style="font-size:7px;padding:2px 4px" onclick="paEquipPiece(${i},'${s.k}',document.getElementById('${selId}').value)">+ Inst.</button>
         </div>`;
       }).join('');
       el.innerHTML+=slotsHtml;
@@ -804,6 +822,29 @@ async function tEquipFrame(i){
     it.equipped=true;
   }
   rAll();
+}
+function _paZone(it){ return it.zone||(DB.armor.find(a=>a.n===it.name)||{}).z||''; }
+async function paEquipPiece(frameIdx,slotKey,pieceName){
+  if(!pieceName){alert('Choisis une pièce.');return;}
+  const frame=char.inventory[frameIdx];
+  if(!frame||frame.type!=='POWERARMOR_FRAME'||!frame.equipped)return;
+  const pieceIdx=char.inventory.findIndex((it,j)=>j!==frameIdx&&it.type==='POWERARMOR'&&it.name===pieceName);
+  if(pieceIdx<0){alert('Pièce introuvable dans l\'inventaire.');return;}
+  const cur=frame.slots?.[slotKey];
+  if(cur){const cdb=DB.armor.find(a=>a.n===cur.name)||{};char.inventory.push({name:cur.name,type:'POWERARMOR',qty:1,w:cdb.w||0,equipped:false,zone:cdb.z||''});}
+  frame.slots=frame.slots||{};
+  const piece=char.inventory[pieceIdx];
+  frame.slots[slotKey]={name:pieceName,mods:piece.mods||{}};
+  if((piece.qty||1)>1)piece.qty--;else char.inventory.splice(pieceIdx,1);
+  await sauvegarder();rInvArmor();
+}
+async function paRemovePiece(frameIdx,slotKey){
+  const frame=char.inventory[frameIdx];if(!frame||frame.type!=='POWERARMOR_FRAME')return;
+  const cur=frame.slots?.[slotKey];if(!cur)return;
+  const db=DB.armor.find(a=>a.n===cur.name)||{};
+  char.inventory.push({name:cur.name,type:'POWERARMOR',qty:1,w:db.w||0,equipped:false,zone:db.z||''});
+  frame.slots[slotKey]=null;
+  await sauvegarder();rInvArmor();
 }
 function toggleAtout(name){const it=char.inventory.find(i=>i.name===name&&i.type==='WEAPON');if(it)it.persoBonus=!it.persoBonus;rAll();}
 
