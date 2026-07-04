@@ -140,6 +140,292 @@
           ]
         }
       ]
+    },
+    "fn-archives": {
+      "titre": "FORT DE NOISY — ARCHIVES MILITAIRES",
+      "header": "8e RÉGIMENT DE TRANSMISSIONS — POSTE DE COMMANDE",
+      "nodes": [
+        {
+          "id": "registre",
+          "label": "REGISTRE D'ACCÈS — BUNKER OPÉRATIONNEL",
+          "body": "Journal des présences et mouvements.\nSite gardé par équipe de 4 personnes en permanence.",
+          "children": [
+            {
+              "id": "reg1",
+              "label": "19.10.2077 — Personnel nominal",
+              "body": "Équipe jour : 4 militaires\nÉquipe nuit : 3 militaires + 1 civil (consultant DGSI)\nContrôle de chaîne : nominal\nÉtat des systèmes : nominal"
+            },
+            {
+              "id": "reg2",
+              "label": "22.10.2077 — Ordre de réduction",
+              "body": "Réception ordre DGSI :\n« Ramener équipe à 2 + chef de poste.\nPersonnel excédentaire en congés.\nMaintien système à régime réduit.\nResponsable : Cne THIERRY. »"
+            },
+            {
+              "id": "reg3",
+              "label": "23.10.2077 — 08:15",
+              "body": "Cne Thierry, Cpl Martin partis en surface.\nSol seul au -2 avec moi (T-114).\nL'alarme retentit à 09:39.\nSol court vérifier les générateurs.\nJe ne l'ai plus revu."
+            },
+            {
+              "id": "reg4",
+              "label": "23.10.2077 — 10:30",
+              "body": "Sécurisation du site enclen chée.\nTous les sas vérifiés. Les niveaux -1 et -2 sealed off.\nÉquipement de survie activé : capacité 12 mois\n(rationnement strict : 8 mois réaliste).\nLa Défense est silencieuse."
+            }
+          ]
+        },
+        {
+          "id": "correspondance",
+          "label": "MESSAGERIE MILITAIRE SÉCURISÉE",
+          "body": "Liaisons cryptées avec la hiérarchie. 6 messages.",
+          "children": [
+            {
+              "id": "corr1",
+              "label": "15.10 — Ordre du Colonel Mercier",
+              "body": "À Thierry (Cne, Fort Noisy) :\n« Réduis à l'essentiel dès le 22. Maintiens le\nchiffrement de toutes les transmissions entrantes.\nSi tu reçois un message en clair d'une source\nofficielle, ne lui fais pas confiance.\nC'est un test. Ordre classé. »"
+            },
+            {
+              "id": "corr2",
+              "label": "20.10 — Demande d'accès urgente",
+              "body": "Émetteur masqué, signal très faible :\n« Fort Noisy, confirmez réception.\nTechnician T-114 : les codes VLG\nvous sont-ils accessibles en -2 ?\nRépondez par le système fermé UNIQUEMENT.\nSignature cryptée : MD. »"
+            },
+            {
+              "id": "corr3",
+              "label": "20.10 — Réponse (non signée)",
+              "body": "« Codes VLG en coffre blind du -2.\nSeul Thierry et moi y avons accès.\nT-114 enregistre la demande mais\nne valide aucune transmission externe. »"
+            },
+            {
+              "id": "corr4",
+              "label": "21.10 — Thierry → T-114 (message brûlé)",
+              "body": "« Si tu lis ça, c'est que je ne suis\npas revenu. Les codes, c'est toi.\nTa priorité : JAMAIS les laisser\nactivé quelque chose de l'extérieur.\nLa Défense n'avait pas à être épargné.\nCe n'était pas une erreur. »"
+            },
+            {
+              "id": "corr5",
+              "label": "23.10 — Avant la perte",
+              "body": "Message du Bunker DGSI (VLG), très faible :\n« Noisy, préparez le coffre.\nL'ordre viendra de l'est.\nSi l'ordre vient du Palais,\nIGNOREZ-LE.\nUNIQUEMENT de l'est. »"
+            },
+            {
+              "id": "corr6",
+              "label": "23.10 — 10:05",
+              "body": "Dernier message détecté, source inconnue :\n« VLG scellé. Noisy ?\nLa Route Nationale 13.\nRejoins-moi. Il faut un témoin. »\n\nJ'ai éteint la radio.\nLa Route Nationale 13 mène à l'est.\nJe suis resté ici."
+            }
+          ]
+        },
+        {
+          "id": "archives",
+          "label": "ARCHIVES — PROJET BEAUTÉ",
+          "body": "Documents transmis sous scellé en 2075.\nClassement : SECRET.\n\nCORRESPONDANCE COMMERCIALE INTERCEPTÉE",
+          "children": [
+            {
+              "id": "arch1",
+              "label": "Mémo — Laboratoires de Beauté de France",
+              "body": "« … programme de volontaires pour traitement\nexperimental avancé. Résultats intéressants mais\ntaux de succès anormal en testeurs VIP.\nMutations mineures observées à long terme.\nPlus d'informations à classe RESTREINT GOUVERNEMENT. »"
+            },
+            {
+              "id": "arch2",
+              "label": "Dossier thématique — Essais cosmétiques",
+              "body": "Fichier joint : « Les résultats ne sont pas\nceque nous pensions. Les VIP testeurs\nne présentent pas les réactions civiles\nstandard. Source de la formule à\nétudier ultérieurement. »"
+            }
+          ]
+        }
+      ]
+    },
+    "fn-veilleur": {
+      "titre": "FORT DE NOISY — BUNKER DU VEILLEUR",
+      "header": "BLOC NIVEAU -2 — ZONE SÉCURISÉE — ACCÈS PERSONNEL AUTORISÉ",
+      "nodes": [
+        {
+          "id": "journal",
+          "label": "JOURNAL PERSONNEL — T-114",
+          "body": "Entrées manuscrites. Scan automatique depuis 2077.",
+          "children": [
+            {
+              "id": "j1",
+              "label": "23.10.2077 — Jour 0",
+              "body": "Thierry ne reviendra pas. Sol non plus.\nJ'ai scellé tous les sas. Le fort tiendra\n12 mois en autarcie. Moi aussi.\nJ'ai les codes. Je sais ce qu'ils ouvrent.\nLe Bunker VLG attend quelqu'un qui\nne viendra jamais.\nQue Dieu pardonne à ceux qui ont su."
+            },
+            {
+              "id": "j2",
+              "label": "15.11.2077 — Jour 23",
+              "body": "Les vents d'automne passent au-dessus.\nLe silence est complet. Les écrans sont morts.\nJ'ai lu les dossiers Beauté. Ce n'était pas de\nla cosmétologie. Ils savaient. Les VIP savaient,\net ils se sont exposés quand même —\nou on les y a forcés.\nÀ partir de quand c'est du poison ?"
+            },
+            {
+              "id": "j3",
+              "label": "12.2079 — Jour 800",
+              "body": "Deux ans. Les stocks tiennent. J'ai trouvé\nune radio que Sol avait cachée. Il y a un monde\nlà dehors maintenant. Super mutants, goules.\nLe monde a changé plus vite que moi."
+            },
+            {
+              "id": "j4",
+              "label": "06.2089 — Jour 4200",
+              "body": "J'ai décidé : je garde les codes.\nPas pour moi. Pour celui qui comprendra.\nPour celui qui voudra savoir si c'était\nune erreur ou une décision.\nLes codes ouvrent le Bunker VLG et son lanceur.\nLes schémas y sont aussi.\nSi quelqu'un sort d'ici vivant, il faut qu'il sache."
+            }
+          ]
+        },
+        {
+          "id": "codes",
+          "label": "COFFRE — CODES D'ACCÈS VLG",
+          "locked": 3,
+          "body": "CODES MILITAIRES — CLASSIFICATION MAXIMUM\nBUNKER DGSI — VILLIERS-LA-GARENNE\n\nCODES DE DÉSACTIVATION SYSTÈME :\n7-3-9-1 (entrée principal)\n4-1-7-2 (salle de commande)\n\nCODES DE VERROUILLAGE D'URGENCE :\n9-2-8-5 (isolement systèmes externes)\n\nPROTOCOLE DE SABOGAGE :\n[dossier attaché — voir ci-dessous]",
+          "children": [
+            {
+              "id": "sabotage",
+              "label": "PROTOCOLE SABOGAGE — LANCEUR VLG",
+              "body": "En cas d'ordre illégal de mise à feu :\n1. Accès salle de commande (code 4-1-7-2)\n2. Isolement systèmes externes (code 9-2-8-5)\n3. Destruction des relais de transmission\n4. Destruction des données de tir\n\nResultat : le lanceur ne peut pas être dirigé.\nNe peut pas être arrêté. Ne peut pas recevoir\nd'ordres de l'extérieur.\n\nCe protocole a été appliqué le 23.10.2077\npar ordre du Commandant Mercier,\ntransmis par le Capitaine Charpentier.\nLe Bunker VLG n'obéit plus à personne\ndepuis ce jour."
+            },
+            {
+              "id": "note",
+              "label": "Note finale — Raison de vivre",
+              "body": "Le Bunker VLG a une seule fonction :\nempêcher quiconque de relancer les missiles.\nCharpentier a menti à Mercier en appliquant\nle protocole. Mercier savait probablement.\nMoi, j'ai choisi de rester ici pour que\nles codes et schémas existent quelque part.\n\nSi tu lis ceci : le Bunker DGSI ne te\nlaissera jamais les codes d'une autre façon.\nMais tu sauras qu'ils existent. Tu sauras\nqu'on peut l'arrêter.\n\nC'est suffisant.\n— Celui qui veille"
+            }
+          ]
+        }
+      ]
+    },
+    "mv-archives": {
+      "titre": "FORT DU MONT-VALÉRIEN — ARCHIVES DU RÉGIMENT",
+      "header": "8e RÉGIMENT DE TRANSMISSIONS — DIRECTION HISTORIQUE",
+      "nodes": [
+        {
+          "id": "historique",
+          "label": "BRÈVE HISTOIRE DU 8e RT",
+          "body": "Document institutionnel — Classement OUVERT depuis 2070.",
+          "children": [
+            {
+              "id": "h1",
+              "label": "Création et Mandat",
+              "body": "Fondé en 1957. Mandat : assurer les télécommunications\nstratégiques et systèmes d'information du Ministère\nde la Défense. Deux sites principaux :\n— Mont-Valérien (ouest de Paris)\n— Villiers-la-Garenne (nord-ouest, bunker DGSI)\n\nPersonnel en 2077 : 340 officiers et militaires."
+            },
+            {
+              "id": "h2",
+              "label": "Mission spécialisée — Protocoles de crise",
+              "body": "En cas d'attaque nucléaire, le 8e RT assure :\n1. La continuité des communications Palais ↔ Bunkers\n2. L'activation des protocoles d'urgence nationaux\n3. La gestion des transmissions de commandement\n4. L'isolement des systèmes non-sécurisés\n\nTous les officiers supérieurs du Régiment\nsont briefés sur les codes de défense complète."
+            },
+            {
+              "id": "h3",
+              "label": "Déploiement 2076-2077 — Contexte politique",
+              "body": "Accords commerciaux Français-Américains\naugmentent présence militaire US en France.\nLe 8e RT assure l'intégration des systèmes\nnécessaires. Tensions internes : plusieurs officiers\nopposent cette dépendance stratégique.\nColonnel Mercier (chef du Régiment) en tête."
+            },
+            {
+              "id": "h4",
+              "label": "Affectation spéciale — Capitaine Charpentier",
+              "body": "Cne CHARPENTIER, Michel — 2042-[FIN].\nAffecté au 8e RT en 2074.\nFormation : protocoles cryptés, gestion crises.\nNotations : excellent militaire, patriote fermement\nopposé aux influences extérieures.\nAffecté au Palais en septembre 2077 pour\n« consultation protocoles présidentiels ».\nLieu d'affectation : Élysée, unité de protocole."
+            }
+          ]
+        },
+        {
+          "id": "ordres",
+          "label": "ORDRES DE COMMANDEMENT — 2077",
+          "body": "Circulaires du Colonel Mercier et directives supérieures.",
+          "children": [
+            {
+              "id": "o1",
+              "label": "Ordre spécial — 8.10.2077",
+              "body": "À l'attention de tous les officiers du 8e RT :\n« Si vous recevez des ordres contradictoires\nde deux sources prétendant être autorisées,\nappliquez le protocole de vérification chaîne.\nEn cas de doute, consultez le Commandant Mercier.\nLe doute n'est pas une faiblesse. »"
+            },
+            {
+              "id": "o2",
+              "label": "Directive secrète — 19.10.2077",
+              "body": "[CLASSIFIÉ DÉFENSE]\n« À Charpentier, poste Palais :\nVos contacts avec le 8e RT continuent.\nSi le Palais donne un ordre radio de tir\nvers Paris ou ses environs, ce sera faux.\nLe Palais, une fois à couvert, n'a plus\nraison de nous préserver. Soyez vigilant. »"
+            },
+            {
+              "id": "o3",
+              "label": "Message crypté — 21.10.2077",
+              "body": "De : Mercier\nÀ : Charpentier (via canal fermé Palais)\n\n« Michel, on sait que ça vient.\nOn pense que La Défense ne sera pas épargné.\nSi tu es à l'Élysée le jour du tir,\ntu dois agir. C'est une obligation personnelle,\npas un ordre. »"
+            },
+            {
+              "id": "o4",
+              "label": "Dernier message — 23.10.2077 — 10:00",
+              "body": "De : Mercier\n\n« Charpentier. T-114 vient de confirmer : VLG isolé.\nLe lanceur ne peut plus obéir à distance.\nC'est fait. Maintenant tu dois partir.\nSais-tu ce que tu vas faire ? »\n\nAucune réponse enregistrée."
+            }
+          ]
+        },
+        {
+          "id": "personnel",
+          "label": "REGISTRE DU PERSONNEL — AFFECTATIONS POST-GUERRE",
+          "body": "État du Régiment après 23.10.2077.",
+          "children": [
+            {
+              "id": "p1",
+              "label": "Pertes et survivants",
+              "body": "Colonel Mercier : [DÉCÉDÉ]\nMajor Leclerc : [DISPERSÉ]\nCne Charpentier : [AFFECTATION INCONNUE]\nCne Thierry (Fort Noisy) : [DÉCÉDÉ]\n\nSurvivants du régiment : estimé 40 à 60 militaires,\ndisperés. Aucune organisation centralisée."
+            },
+            {
+              "id": "p2",
+              "label": "Unité Réseau — Formation inconnue",
+              "body": "Un groupe s'est reconstitué autour de l'infrastructure\ndu 8e RT (émetteurs, relais, La Défense).\nChef supposé : Cne Charpentier (?).\nStructure : hiérarchique et très fermée.\nObsession commune : télécommunications,\nrépétition de protocoles militaires d'époque.\nCulte supposé : énergie, électricité, ondes.\n\n[Source : observation externe, pas de confirmation]"
+            }
+          ]
+        }
+      ]
+    },
+    "mv-charpentier": {
+      "titre": "FORT DU MONT-VALÉRIEN — CHAMBRE PERSONNELLE",
+      "header": "AFFAIRES PRIVÉES — CAPITAINE CHARPENTIER — ACCÈS RESTREINT",
+      "nodes": [
+        {
+          "id": "journal_prive",
+          "label": "JOURNAL PERSONNEL — CONFIDENCES",
+          "body": "Cahier manuscrit scanné. Dates : 2074-2077.",
+          "children": [
+            {
+              "id": "jp1",
+              "label": "2075 — Doutes",
+              "body": "Ce qu'on nous demande : intégrer des systèmes\naméricains. Pour notre sécurité, paraît-il.\nMais c'est pour leur accès, plutôt.\nMercier le dit aussi. On n'est plus maîtres\nde nos propres défenses. Quand perd-on\nle droit de se révolter ?"
+            },
+            {
+              "id": "jp2",
+              "label": "Juillet 2077 — Affectation au Palais",
+              "body": "On me demande de coordonner les protocoles\ndPresidentiels. Protocoles de crise inclus.\nRéunion avec la Première Dame et deux conseillers.\nJe dois enregistrer une allocution, au cas où.\nUne allocution de crise. Enregistrée avant la crise.\nComment peut-on parler d'attaque au passé\nsi on ignore quand elle frappera ?"
+            },
+            {
+              "id": "jp3",
+              "label": "19.10.2077 — Révélation",
+              "body": "Un message du Palais : préparez les convois\npour évacuation des personnalités. Départ\nimmédiat. Vers le sud.\nEux, ils savent. Depuis longtemps, ils savaient.\nLa France qui meurt, et ils partent.\nLe peuple qui meurt, et Mercier me demande\nde les en empêcher ?\nNon. Pas les en empêcher. Juste :\nne pas laisser relancer les missiles après."
+            },
+            {
+              "id": "jp4",
+              "label": "23.10.2077 — 09:35 — Choix",
+              "body": "C'est maintenant. L'alerte est venue.\nChampagne qui me regarde. Deux conseillers.\nLa Première Dame en larmes (pour elle ou pour la France ?).\nOn me dit : préparez l'allocution pour diffusion.\nJe dis : oui, Madame.\nEt je quitte le Palais par les égouts.\nIls ne voudront jamais admettre qu'un capitaine\nles a sauvés malgré eux."
+            },
+            {
+              "id": "jp5",
+              "label": "26.10.2077 — Deuil",
+              "body": "Mercier est mort. Je l'ai appris par radio.\nLe fort de Noisy a signé : Thierry et moi,\non a scellé les codes.\nT-114 reste. Bon.\nMercier disait : « Parfois, on sauve le monde\nen refusant de l'obéir. »\nMaintenant quoi ? Rester ici ?"
+            },
+            {
+              "id": "jp6",
+              "label": "2079 — Transformation",
+              "body": "Je ne suis plus Capitaine. Ils m'appellent Proton.\nLes autres ont des noms d'électricité.\nC'est du théâtre, un costume pour oublier.\nMais ça marche. On se sent moins seuls\nsi on chante les mêmes hymnes.\nLe Réseau grandit. Les transmissions reprennent.\nJ'ai commencé quelque chose qui m'échappe."
+            }
+          ]
+        },
+        {
+          "id": "plans",
+          "label": "PLANS ET SCHEMATICS — PROJET RESTAURATION",
+          "locked": 3,
+          "body": "Dossier classé SECRET — CHARPENTIER\n\nOBJECTIF : Relancer les lanceurs de missiles.\n\nRATIONALE : Le monde a changé. Rester fort,\nc'est avoir le pouvoir de frapper. L'élite l'a su,\nça leur a sauvé la vie. Pour diriger ce qui reste,\nil faut la même capacité. Pas pour les réduire\nen poussière — pour les obliger à nous écouter.",
+          "children": [
+            {
+              "id": "plan1",
+              "label": "Phase 1 — Reconstitution du Réseau (2078-2085)",
+              "body": "Objective : restaurer les relais.\nStatut : [COMPLÉTÉ]\n— La Défense : centre opérationnel\n— Mont Valérien : hub de transmission\n— Sites mineurs : relais locaux\n\nRésultat : 60-80 personnel loyal. Structure hiérarchique\nstable sous couverture religieuse (culte de l'énergie)."
+            },
+            {
+              "id": "plan2",
+              "label": "Phase 2 — Localisation et accès aux codes (2085-2095)",
+              "body": "Objective : retrouver les codes de désactivation.\nStatut : [EN COURS]\n— T-114 au Fort de Noisy : détient codes VLG ✓\n— Codes de tir dans Bunker DGSI : innaccessible ?\n— Route Nationale 13 vers l'est : explorer\n\nDéfi : le Bunker VLG a été isolé. Procédure\ninverse requise. Aucun contact depuis 2077."
+            },
+            {
+              "id": "plan3",
+              "label": "Phase 3 — Réactivation du lanceur (2095-??)",
+              "body": "Objective : restaurer la capacité de tir.\nStatut : [PLANIFICATION]\n\nÉtapes :\n1. Récupérer codes chez T-114\n2. Atteindre Bunker DGSI à Villiers-la-Garenne\n3. Inverser protocole d'isolement\n4. Restaurer liaison de commande\n5. Test de tir (cible à définir : symbole ? répression ?)\n\nProblème non résolu : une fois activé,\nqui garantit que JE maîtrise le lanceur ?\nOu c'est simplement une menace que je brandirai\npour que le monde m'écoute ?"
+            },
+            {
+              "id": "note_perso",
+              "label": "Note personnelle — Confession finale",
+              "body": "Je ne sais plus si c'est du pouvoir ou de la vengeance.\nLes élites nous ont abandonnés, et j'ai agi.\nJ'ai agi seul, et maintenant j'ai une armée\nqui m'obéit. Ils croient en moi comme ils croiraient\nen un dieu.\n\nSi quelqu'un d'autre atteint ce bunker,\nIl verra cette note. Il comprendra que j'ai\nvoulu arrêter les missiles, puis les relancer.\nJe n'ai pas changé. J'ai juste compris :\nle monde obéit au pouvoir de détruire,\nj'aurais dû apprendre cette leçon plus tôt."
+            }
+          ]
+        }
+      ]
     }
   }
 }
