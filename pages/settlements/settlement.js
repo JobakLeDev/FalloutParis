@@ -711,6 +711,17 @@ async function benchCraft(idx, slot, modId, kind){
   _benchFlash(idx + ':' + slot + ':' + modId);
 }
 
+// ---- quitter le refuge (bouton Sortir, mode embed joueur) ----
+async function quitterRefuge(){
+  const site = data.sites[selSite];
+  if(site && viewerId && site.pos && site.pos[viewerId]){
+    delete site.pos[viewerId];
+    save();
+  }
+  if(window.parent && window.parent !== window)
+    window.parent.postMessage({ type: 'quitter-refuge' }, '*');
+}
+
 // ---- support d'armure (armor_stand) ----
 function armorStandBody(site){
   if(isMJ || !me || !canAccess(site)) return '';
@@ -826,7 +837,8 @@ function render(){
     : (site.poi ? `<span class="tag">📍 ${esc(site.poi)}</span>` : '');
   const restTag = site.restPoint ? `<span class="tag rest">🛏 Point de repos</span>` : '';
   const mjTools = isMJ ? `<span class="s-mj-tools"><button class="sbtn" onclick="supprimerSite('${selSite}')">✕ Supprimer</button></span>` : '';
-  document.getElementById('s-site-head').innerHTML = mjTools + esc(site.name) + typeTag + facTag + poiTag + restTag;
+  const exitBtn = (!isMJ && embed && viewerId) ? `<button class="sbtn s-exit-btn" onclick="quitterRefuge()" title="Quitter ce lieu et revenir à la carte">← Sortir</button>` : '';
+  document.getElementById('s-site-head').innerHTML = exitBtn + mjTools + esc(site.name) + typeTag + facTag + poiTag + restTag;
 
   // stock (Réserve)
   document.getElementById('s-stock').innerHTML = TIERS.map(t => {

@@ -38,6 +38,7 @@ const FOG_RADIUS_CITY_M  = 600;   // rayon de découverte intra-muros (ville)
 const FOG_RADIUS_RURAL_M = 1500;  // rayon de découverte hors périphérique (campagne)
 const FOG_STEP_M      = 250;   // espacement min entre points explorés enregistrés
 const VISION_RADIUS_M = 1500;  // rayon de vision des alliés
+const ENTER_REFUGE_M  = 15;    // distance max pour entrer dans un refuge/settlement depuis la carte
 const TELEPORT_M      = 5000;  // au-delà : repositionnement (pas de traîné)
 // Métro
 const METRO_REVEAL_M  = 350;   // portée de découverte le long du tunnel courant
@@ -252,6 +253,10 @@ function buildMap() {
       if (currentTab === 'paris' && map) map.invalidateSize();
       if (currentTab === 'metro' && metroMap) metroMap.invalidateSize();
       setTimeout(centerOnViewer, 60);
+    }
+    if (e.data?.type === 'quitter-refuge') {
+      switchMapTab('paris');
+      setTimeout(() => { if (map) { map.invalidateSize(); centerOnViewer(); } }, 80);
     }
   });
 
@@ -631,6 +636,32 @@ function _siteDist(s){
   const poi = (mapData.pois || []).find(p => p.name === s.poi);
   if (!poi || poi.lat == null) return Infinity;
   return L.latLng(tok.lat, tok.lng).distanceTo(L.latLng(poi.lat, poi.lng));
+}
+
+// Retourne [id, site] du premier settlement lié à ce POI (si visible du joueur), sinon null
+function _siteForPoi(poiName){
+  if(!poiName) return null;
+  return Object.entries(settlementsData.sites || {}).find(([, s]) => s.poi === poiName && settlementVisible(s)) || null;
+}
+// Première case libre d'un refuge (réplique de _firstFreeCell dans settlement.js)
+function _firstFreeCellS(site){
+  for(let y = (site.h||4)-1; y >= 0; y--) for(let x = 0; x < (site.w||4); x++){
+    if(!(site.blocks||[]).some(b=>b.x===x&&b.y===y) && !Object.values(site.pos||{}).some(p=>p&&p.x===x&&p.y===y)) return {x,y};
+  }
+  return {x:0,y:0};
+}
+// Entrer dans un refuge depuis la carte (place le jeton, bascule sur LIEUX, ouvre l'iframe)
+async function entrerRefuge(siteId){
+  const site = settlementsData.sites?.[siteId]; if(!site || !viewerId) return;
+  map.closePopup();
+  if(!(site.pos && site.pos[viewerId])){
+    const free = _firstFreeCellS(site);
+    const merge = {}; merge['sites.' + siteId + '.pos.' + viewerId] = free;
+    try { await fdb.collection('settlements').doc(fpCampId()).update(merge); }
+    catch(e){ console.warn('entrerRefuge place token:', e); }
+  }
+  switchMapTab('lieux');
+  setTimeout(() => ouvrirRefuge(siteId), 60);
 }
 
 // Ouvre le constructeur de refuge (iframe) dans la zone des lieux
@@ -1165,6 +1196,20 @@ function poiPopup(p, t) {
           ? `<div class="tok-actions"><button onclick="enterPoiShop('${p.id}')">🛒 Entrer dans la boutique</button></div>`
           : `<div class="zpop-pool" style="color:var(--td)">🛒 Trop loin pour commercer.</div>`;
       }
+    }
+  }
+  // Refuge/Settlement lié à ce POI : bouton d'entrée si le joueur est à portée
+  if(viewerId && !isMJ){
+    const sitePair = _siteForPoi(p.name);
+    if(sitePair){
+      const tok = mapData.tokens?.[viewerId];
+      const dist = tok ? L.latLng(tok.lat, tok.lng).distanceTo(L.latLng(p.lat, p.lng)) : Infinity;
+      const ic = sitePair[1].type === 'settlement' ? '🏘️' : '🏚';
+      const lbl = sitePair[1].type === 'settlement' ? 'settlement' : 'refuge';
+      if(dist <= ENTER_REFUGE_M)
+        h += `<div class="tok-actions"><button onclick="entrerRefuge('${sitePair[0]}')">${ic} Entrer dans le ${lbl}</button></div>`;
+      else if(isFinite(dist))
+        h += `<div class="zpop-pool" style="color:var(--td)">${ic} Trop loin pour entrer (${Math.round(dist)} m)</div>`;
     }
   }
   if (isMJ) h += `<div class="zpop-mj"><button onclick="editPOI('${p.id}')">✎ Éditer</button>
