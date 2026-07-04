@@ -740,25 +740,7 @@
     "r": 5
   },
   {
-    "n": "Frame T-45",
-    "t": "POWERARMOR_FRAME",
-    "w": 10,
-    "r": 5
-  },
-  {
-    "n": "Frame T-51",
-    "t": "POWERARMOR_FRAME",
-    "w": 10,
-    "r": 5
-  },
-  {
-    "n": "Frame T-60",
-    "t": "POWERARMOR_FRAME",
-    "w": 10,
-    "r": 5
-  },
-  {
-    "n": "Frame X-01",
+    "n": "Frame Power Armor",
     "t": "POWERARMOR_FRAME",
     "w": 10,
     "r": 5
