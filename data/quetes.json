@@ -13,34 +13,34 @@
       "versions_faction": {
         "republique": {
           "objectif": "Enquête sur archives gouvernementales. Discrétion requise.",
-          "description": "Les archives administratives pré-guerre pourraient contenir des infos d'État cruciales. On vous envoie enquêter discrètement à l'est. Personne ne doit le savoir."
+          "description": "Les archives administratives pré-guerre pourraient contenir des infos d'État cruciales. On vous envoie enquêter discrètement à l'ouest. Personne ne doit le savoir."
         },
         "reseau": {
-          "objectif": "Signaux radio détectés à l'est. Possible technologie pré-guerre intacte.",
+          "objectif": "Signaux radio détectés à l'ouest. Possible technologie pré-guerre intacte.",
           "description": "Nos détecteurs captent des transmissions anciennes. Technologie pré-guerre probablement intacte là-bas. Reconnaissance complète, rapportez tout ce que vous trouvez."
         },
         "nnfp": {
           "objectif": "Trouver documentations pré-guerre pour archives communes",
-          "description": "On cherche des documents d'avant 2077. Ce bâtiment à l'est pourrait en contenir. Documentation historique pour la mémoire collective."
+          "description": "On cherche des documents d'avant 2077. Ce bâtiment à l'ouest pourrait en contenir. Documentation historique pour la mémoire collective."
         },
         "zazous": {
           "objectif": "Collection de disques rare repérée. À récupérer.",
-          "description": "Une vraie collection! Musique, jazz, vinyles intacts. On a entendu dire qu'il y en a plein à l'est. C'est pour nous ça, allez chercher!"
+          "description": "Une vraie collection! Musique, jazz, vinyles intacts. On a entendu dire qu'il y en a plein à l'ouest. C'est pour nous ça, allez chercher!"
         },
         "ultras": {
-          "objectif": "Cache de valeur signalée à l'est. Check et on split.",
-          "description": "Rumeur: quelque chose de valeur là-bas à l'est. Vous y allez, vous rapportez. On fait 50/50 sur le butin."
+          "objectif": "Cache de valeur signalée à l'ouest. Check et on split.",
+          "description": "Rumeur: quelque chose de valeur là-bas à l'ouest. Vous y allez, vous rapportez. On fait 50/50 sur le butin."
         },
         "commune": {
-          "objectif": "Reconnaissance surface est. Infos sur dangers. Reviens vite.",
-          "description": "Surface = danger. Mais besoin d'infos. Tu enquêtes discrètement à l'est, tu documentes, tu reviens vite. Évite les risques inutiles."
+          "objectif": "Reconnaissance surface ouest. Infos sur dangers. Reviens vite.",
+          "description": "Surface = danger. Mais besoin d'infos. Tu enquêtes discrètement à l'ouest, tu documentes, tu reviens vite. Évite les risques inutiles."
         }
       },
       "objectifs": [
         {
           "id": "obj1",
-          "titre": "Enquêter sur le lieu mystérieux à l'est",
-          "description": "Rassembler les indices : rumeurs, PNJ, signaux. Les pistes convergent vers un grand bâtiment à l'est."
+          "titre": "Enquêter sur le lieu mystérieux à l'ouest",
+          "description": "Rassembler les indices : rumeurs, PNJ, signaux. Les pistes convergent vers un grand bâtiment à l'ouest."
         },
         {
           "id": "obj2",
@@ -50,14 +50,14 @@
         {
           "id": "obj3",
           "titre": "Se rendre à la Maison de la Radio",
-          "description": "Traverser Paris vers l'est et atteindre le bâtiment."
+          "description": "Traverser Paris vers l'ouest et atteindre le bâtiment."
         }
       ],
       "choix": [
         {
           "id": "c1",
           "label": "Accepter et partir immédiatement",
-          "consequences": "Quête activée, direction est. Allié avec faction."
+          "consequences": "Quête activée, direction ouest. Allié avec faction."
         },
         {
           "id": "c2",
