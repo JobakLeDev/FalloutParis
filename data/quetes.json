@@ -39,18 +39,18 @@
       "objectifs": [
         {
           "id": "obj1",
-          "titre": "Recevoir l'ordre de mission",
-          "description": "Votre chef de faction vous confie une mission à l'est."
+          "titre": "Enquêter sur le lieu mystérieux à l'est",
+          "description": "Rassembler les indices : rumeurs, PNJ, signaux. Les pistes convergent vers un grand bâtiment à l'est."
         },
         {
           "id": "obj2",
-          "titre": "Enquêter et suivre les pistes",
-          "description": "Rassembler indices, rencontrer des PNJs, suivre rumeurs. La Maison de la Radio existe."
+          "titre": "Trouver la Maison de la Radio",
+          "description": "Identifier et localiser le bâtiment source des rumeurs."
         },
         {
           "id": "obj3",
-          "titre": "Arriver au bâtiment",
-          "description": "Atteindre la Maison de la Radio à l'est."
+          "titre": "Se rendre à la Maison de la Radio",
+          "description": "Traverser Paris vers l'est et atteindre le bâtiment."
         }
       ],
       "choix": [
@@ -111,18 +111,18 @@
       "objectifs": [
         {
           "id": "obj1",
-          "titre": "Infiltrer ou combattre",
-          "description": "Accéder au bunker souterrain. Combat, furtivité ou diversion."
+          "titre": "Pénétrer dans la Maison de la Radio",
+          "description": "Des super mutants occupent les étages — combat, furtivité ou diversion."
         },
         {
           "id": "obj2",
-          "titre": "Récupérer les ressources",
-          "description": "Trouver et récupérer: archives, disques, objets selon votre faction."
+          "titre": "Accéder au bunker souterrain",
+          "description": "Trouver l'entrée du bunker sous le bâtiment."
         },
         {
           "id": "obj3",
-          "titre": "Révélation: le sabotage 2077",
-          "description": "Découvrir indices sabotage 2077, mention du Veilleur, allusion système de tir."
+          "titre": "Récupérer ce que votre faction convoite",
+          "description": "Archives, technologie, disques ou butin selon la faction."
         }
       ],
       "choix": [
@@ -141,7 +141,8 @@
           "label": "Diversion/manipulation",
           "consequences": "Créatif, dépend du roleplay."
         }
-      ]
+      ],
+      "lore_mj": "Découverte libre (jamais un objectif) : les terminaux et archives audio du bunker contiennent les indices du sabotage de 2077, la mention du Veilleur et l'allusion au système de tir. Disponible si les joueurs fouillent d'eux-mêmes."
     },
     {
       "id": "q_retour_au_bercail_001",
@@ -182,13 +183,13 @@
       "objectifs": [
         {
           "id": "obj1",
-          "titre": "Retour au siège faction",
-          "description": "Revenir à votre chef de faction avec les ressources/infos."
+          "titre": "Rentrer au siège de votre faction",
+          "description": "Reprendre la route avec les ressources et les informations."
         },
         {
           "id": "obj2",
-          "titre": "Remettre les objets/infos",
-          "description": "Remettre complètement à votre faction les ressources récupérées."
+          "titre": "Remettre les ressources à votre chef",
+          "description": "Livrer complètement ce qui a été récupéré."
         }
       ],
       "choix": [
@@ -222,18 +223,18 @@
       "objectifs": [
         {
           "id": "obj1",
-          "titre": "Trouver l'enfant",
-          "description": "L'enfant seul, perdu."
+          "titre": "Mettre l'enfant en sécurité",
+          "description": "L'enfant est seul, confus, en danger."
         },
         {
           "id": "obj2",
-          "titre": "Identifier sa faction/famille",
-          "description": "Découvrir d'où vient l'enfant."
+          "titre": "Découvrir d'où vient l'enfant",
+          "description": "Identifier sa famille ou son settlement."
         },
         {
           "id": "obj3",
-          "titre": "Le ramener ou prendre décision",
-          "description": "Ramener à sa famille ou faire autre choix."
+          "titre": "Ramener l'enfant chez les siens",
+          "description": "Le raccompagner jusqu'à sa famille."
         }
       ],
       "choix": [
@@ -267,18 +268,18 @@
       "objectifs": [
         {
           "id": "obj1",
-          "titre": "Rencontrer le chercheur",
-          "description": "Écouter histoire, accepter mission."
+          "titre": "Enquêter sur la disparition à l'est",
+          "description": "Suivre les pistes, interroger, fouiller."
         },
         {
           "id": "obj2",
-          "titre": "Enquêter à l'est",
-          "description": "Suivre pistes, trouver traces."
+          "titre": "Découvrir le sort du disparu",
+          "description": "[MJ] Mort, vivant, ou transformé ?"
         },
         {
           "id": "obj3",
-          "titre": "Découvrir le sort",
-          "description": "Mort, vivant, ou transformé?"
+          "titre": "Rapporter la nouvelle au chercheur",
+          "description": "Revenir lui dire ce qui est advenu."
         }
       ],
       "choix": [
@@ -312,18 +313,13 @@
       "objectifs": [
         {
           "id": "obj1",
-          "titre": "Entendre l'histoire",
-          "description": "Écouter PNJ parler de sa perte."
+          "titre": "Retrouver l'objet perdu",
+          "description": "Fouiller les ruines, les marchés noirs, interroger les aventuriers."
         },
         {
           "id": "obj2",
-          "titre": "Chercher l'objet",
-          "description": "Fouiller ruines, marchés noirs, aventuriers."
-        },
-        {
-          "id": "obj3",
-          "titre": "Retrouver ou garder",
-          "description": "Restituer ou garder l'objet."
+          "titre": "Rapporter l'objet au survivant",
+          "description": "Le lui remettre en main propre."
         }
       ],
       "choix": [
@@ -357,18 +353,13 @@
       "objectifs": [
         {
           "id": "obj1",
-          "titre": "Écouter le fermier",
-          "description": "Il explique ce qu'il cherche."
+          "titre": "Retrouver la formule perdue",
+          "description": "Fouiller le labo et les archives."
         },
         {
           "id": "obj2",
-          "titre": "Fouiller labo/archives",
-          "description": "Chercher la formule perdue."
-        },
-        {
-          "id": "obj3",
-          "titre": "Ramener ou garder",
-          "description": "Restituer ou exploiter la formule."
+          "titre": "Rapporter la formule au fermier",
+          "description": "Lui restituer son travail."
         }
       ],
       "choix": [
@@ -403,18 +394,13 @@
       "objectifs": [
         {
           "id": "obj1",
-          "titre": "Accepter d'escorter",
-          "description": "Le commerçant demande protection."
+          "titre": "Protéger le commerçant en chemin",
+          "description": "Affronter les obstacles — créatures, Ultras."
         },
         {
           "id": "obj2",
-          "titre": "Protéger en chemin",
-          "description": "Affronter obstacles (créatures/Ultras)."
-        },
-        {
-          "id": "obj3",
-          "titre": "Arriver à destination",
-          "description": "Le commerçant atteint son but."
+          "titre": "Atteindre la destination sains et saufs",
+          "description": "Le commerçant arrive à bon port."
         }
       ],
       "choix": [
@@ -448,18 +434,13 @@
       "objectifs": [
         {
           "id": "obj1",
-          "titre": "Accepter la livraison",
-          "description": "Prendre l'objet/message."
+          "titre": "Se rendre chez le destinataire",
+          "description": "Le voyage jusqu'au point de livraison."
         },
         {
           "id": "obj2",
-          "titre": "Se rendre à destination",
-          "description": "Voyage vers le destinataire."
-        },
-        {
-          "id": "obj3",
-          "titre": "Livrer",
-          "description": "Remettre le message/objet."
+          "titre": "Remettre le message en main propre",
+          "description": "Livrer l'objet ou le message."
         }
       ],
       "choix": [
@@ -493,18 +474,18 @@
       "objectifs": [
         {
           "id": "obj1",
-          "titre": "Découvrir le problème",
-          "description": "Identifier cause maladie."
+          "titre": "Identifier la source du mal",
+          "description": "Eau contaminée ? Créature ? Radiations ?"
         },
         {
           "id": "obj2",
-          "titre": "Chercher remède/solution",
-          "description": "Trouver ou fabriquer remède."
+          "titre": "Trouver un remède",
+          "description": "Trouver ou fabriquer de quoi soigner."
         },
         {
           "id": "obj3",
-          "titre": "Soigner ou rapporter",
-          "description": "Aider settlement ou laisser."
+          "titre": "Soigner le settlement",
+          "description": "Administrer le remède et enrayer le mal."
         }
       ],
       "choix": [
@@ -538,18 +519,13 @@
       "objectifs": [
         {
           "id": "obj1",
-          "titre": "Découvrir le pari",
-          "description": "Apprendre ce qu'ils parient."
+          "titre": "Prendre part au pari — concurrent ou arbitre",
+          "description": "Les deux Zazous exigent un dénouement."
         },
         {
           "id": "obj2",
-          "titre": "Décider participation",
-          "description": "Participer ou arbitrer?"
-        },
-        {
-          "id": "obj3",
-          "titre": "Résultat",
-          "description": "Gagnant, perdant, arbitrage."
+          "titre": "Mener le pari à son terme",
+          "description": "Une seule règle : que tout le monde s'en souvienne."
         }
       ],
       "choix": [
@@ -583,18 +559,18 @@
       "objectifs": [
         {
           "id": "obj1",
-          "titre": "Découvrir l'opération",
-          "description": "Apprendre qu'il y a traffic."
+          "titre": "Enquêter sur le trafic de chems",
+          "description": "Comprendre qui vend, qui achète, qui protège."
         },
         {
           "id": "obj2",
-          "titre": "Décider action",
-          "description": "Participer, saboter, ignorer."
+          "titre": "Remonter jusqu'aux trafiquants",
+          "description": "Localiser l'opération et ses têtes."
         },
         {
           "id": "obj3",
-          "titre": "Conséquences",
-          "description": "Résultat selon choix."
+          "titre": "Régler le sort de l'opération",
+          "description": "[MJ] Participer, saboter ou tout raser — au choix des joueurs."
         }
       ],
       "choix": [
@@ -629,18 +605,18 @@
       "objectifs": [
         {
           "id": "obj1",
-          "titre": "Rencontrer la femme",
-          "description": "Écouter son histoire."
+          "titre": "Retrouver la trace du mari disparu",
+          "description": "Les essais cosmétiques pré-guerre sont la dernière piste."
         },
         {
           "id": "obj2",
-          "titre": "Enquêter au labo",
-          "description": "Trouver Laurent Connel et archives."
+          "titre": "Explorer le laboratoire d'essais cosmétiques",
+          "description": "La dernière adresse connue du mari. [MJ] Laurent Connel s'y trouve."
         },
         {
           "id": "obj3",
-          "titre": "Réunir ou documenter",
-          "description": "Couple se retrouve ou garder secret."
+          "titre": "Révéler à la femme le sort de son mari",
+          "description": "Lui dire la vérité — ou pas."
         }
       ],
       "choix": [
@@ -659,7 +635,8 @@
           "label": "Tuer super mutant/documenter",
           "consequences": "Archives Projet Beauté, femme ennemi."
         }
-      ]
+      ],
+      "lore_mj": "Découverte libre : les archives du labo révèlent le Projet Beauté — expériences FEV déguisées en traitement anti-âge. Disponible si les joueurs fouillent, pas nécessaire pour retrouver le mari."
     },
     {
       "id": "q_vivre_heureux_001",
@@ -676,18 +653,13 @@
       "objectifs": [
         {
           "id": "obj1",
-          "titre": "Couple demande refuge",
-          "description": "Laurent et femme cherchent endroit sûr."
+          "titre": "Escorter le couple vers Notre-Dame",
+          "description": "Affrontements possibles en chemin."
         },
         {
           "id": "obj2",
-          "titre": "Escorter à la Cour",
-          "description": "Chemin vers Notre-Dame, affrontements possibles."
-        },
-        {
-          "id": "obj3",
-          "titre": "Arriver à destination",
-          "description": "Couple accueilli à la Cour des Miracles."
+          "titre": "Atteindre la Cour des Miracles sains et saufs",
+          "description": "Le couple est accueilli au refuge."
         }
       ],
       "choix": [
@@ -721,18 +693,18 @@
       "objectifs": [
         {
           "id": "obj1",
-          "titre": "Goule commence transformation",
-          "description": "Ami demande aide urgente."
+          "titre": "Trouver qui peut enrayer la transformation",
+          "description": "Les rumeurs parlent d'un médecin sous Notre-Dame."
         },
         {
           "id": "obj2",
-          "titre": "Chercher le médecin",
-          "description": "Localiser Cour des Miracles."
+          "titre": "Escorter la goule jusqu'au médecin",
+          "description": "Le temps presse — la conscience s'efface."
         },
         {
           "id": "obj3",
-          "titre": "Escorter et arriver",
-          "description": "Médecin prend en charge ou trop tard."
+          "titre": "Confier l'ami au médecin à temps",
+          "description": "[MJ] Arrivée à temps ou trop tard selon le rythme des joueurs."
         }
       ],
       "choix": [
@@ -766,18 +738,13 @@
       "objectifs": [
         {
           "id": "obj1",
-          "titre": "Découvrir le racket",
-          "description": "Témoin Ultras menacer quelqu'un."
+          "titre": "Tirer la victime des griffes des Ultras",
+          "description": "Combattre, payer, négocier ou détourner l'attention — tous les moyens sont bons."
         },
         {
           "id": "obj2",
-          "titre": "Décider intervention",
-          "description": "Combattre, payer, ou fuir."
-        },
-        {
-          "id": "obj3",
-          "titre": "Résultat",
-          "description": "Combat, transaction, ou évasion."
+          "titre": "S'assurer qu'elle reparte saine et sauve",
+          "description": "La victime quitte la zone hors de danger."
         }
       ],
       "choix": [
@@ -811,18 +778,18 @@
       "objectifs": [
         {
           "id": "obj1",
-          "titre": "Découvrir sabotage",
-          "description": "Zone détruite, NNFP accuse rivaux."
+          "titre": "Inspecter la zone agricole sabotée",
+          "description": "Cultures brûlées, puits empoisonné."
         },
         {
           "id": "obj2",
-          "titre": "Enquêter ou aider",
-          "description": "Trouver coupables ou réparer dégâts."
+          "titre": "Remonter la piste des saboteurs",
+          "description": "[MJ] Les Ultras sont responsables."
         },
         {
           "id": "obj3",
-          "titre": "Résolution",
-          "description": "Coupables découverts ou zone réparée."
+          "titre": "Aider la NNFP à remettre la zone en état",
+          "description": "Réparer les dégâts, relancer la production."
         }
       ],
       "choix": [
@@ -857,18 +824,13 @@
       "objectifs": [
         {
           "id": "obj1",
-          "titre": "Rencontrer l'entrepreneur",
-          "description": "Écouter son rêve d'auberge."
+          "titre": "Nettoyer le bâtiment des créatures",
+          "description": "Évacuer créatures et goules, sécuriser les lieux."
         },
         {
           "id": "obj2",
-          "titre": "Nettoyer bâtiment",
-          "description": "Évacuer créatures/goules, rendre habitable."
-        },
-        {
-          "id": "obj3",
-          "titre": "Auberge établie",
-          "description": "PNJ s'installe, joueurs peuvent revenir se reposer."
+          "titre": "Rendre le lieu prêt pour l'auberge",
+          "description": "L'entrepreneur s'installe — lieu de repos pour la suite."
         }
       ],
       "choix": [
@@ -888,6 +850,59 @@
           "consequences": "Aucun effet, auberge ne démarre pas."
         }
       ]
+    },
+    {
+      "id": "q_signal_mont_valerien_001",
+      "titre": "Le Signal du Mont",
+      "type": "structuree",
+      "qtype": "annexe",
+      "qtier": "majeure",
+      "trigger": "PNJ",
+      "trigger_cible": "Émissaire du Réseau",
+      "niveau": 1,
+      "reward": "Composants électroniques rares + relation Réseau ++ (accès marchand Réseau)",
+      "objectif": "Récupérer la technologie de transmission du Fort du Mont-Valérien pour le Réseau.",
+      "description": "Le Réseau connaît le Fort du Mont-Valérien : une ancienne place forte militaire qui, avant la guerre, abritait le cœur des transmissions du pouvoir. Ils savent que les baies de communication y sont encore intactes — mais ils ne peuvent pas y entrer. Le fort grouille de créatures (griffemorts nichés dans les casemates). Trop précieux pour être perdu, trop dangereux pour leurs Techniciens. Alors le Réseau engage des étrangers : montez là-haut, récupérez le module de transmission, rapportez-le. Ce qu'ils ne disent pas : pourquoi ce fort compte autant pour eux.",
+      "objectifs": [
+        {
+          "id": "obj1",
+          "titre": "Atteindre le Fort du Mont-Valérien",
+          "description": "Monter la colline au sud-ouest de La Défense, au bord du cratère. Terrain irradié, approche exposée."
+        },
+        {
+          "id": "obj2",
+          "titre": "Se frayer un chemin à travers les griffemorts",
+          "description": "Les casemates sont un nid. Combat frontal, discrétion, ou détournement."
+        },
+        {
+          "id": "obj3",
+          "titre": "Récupérer le module de transmission",
+          "description": "La salle des transmissions est intacte, le module principal en place."
+        },
+        {
+          "id": "obj4",
+          "titre": "Rapporter le module au Réseau",
+          "description": "Livrer le module comme convenu — ou pas."
+        }
+      ],
+      "choix": [
+        {
+          "id": "c1",
+          "label": "Rapporter le module au Réseau (contrat honoré)",
+          "consequences": "Quête réussie. Composants rares, relation Réseau ++, accès à leur marchand. Le Réseau tient désormais un relais de transmission longue portée — graine discrète de la Phase 3."
+        },
+        {
+          "id": "c2",
+          "label": "Fouiller les terminaux avant de rendre le module",
+          "consequences": "Les logs mentionnent des 'signaux anciens' et des coordonnées vers l'ouest lointain. Info rare : les joueurs sentent que le Réseau ne cherche pas que de la lumière et du chauffage. Amorce Phase 2. Réseau ne sait pas ce qu'ils ont lu."
+        },
+        {
+          "id": "c3",
+          "label": "Garder le module (trahir le Réseau)",
+          "consequences": "Quête échouée côté Réseau : relation --, Techniciens hostiles. Mais les joueurs détiennent un nœud de transmission convoité — monnaie d'échange avec la République ou le NNFP."
+        }
+      ],
+      "lore_mj": "Découverte libre : les terminaux encore actifs contiennent des logs — 'signaux anciens', coordonnées vers l'ouest lointain. Amorce discrète de la Phase 2/3. Disponible uniquement si les joueurs fouillent d'eux-mêmes ; le contrat n'y fait aucune allusion."
     }
   ]
 }
