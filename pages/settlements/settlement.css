@@ -28,6 +28,7 @@ body.embed .shdr-btns{display:none;}
 #s-site-head .tag{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;border:1px solid var(--b2);padding:2px 7px;margin-left:8px;color:var(--td);vertical-align:middle;}
 #s-site-head .tag.rest{color:#1a1200;background:var(--am);border-color:var(--am);}
 .s-mj-tools{float:right;display:flex;gap:5px;}
+.s-exit-btn{float:left;margin-right:10px;border-color:var(--am)!important;color:var(--am)!important;}
 #s-stock{display:flex;gap:14px;flex-wrap:wrap;background:#060d06;border:1px solid var(--b);padding:8px 10px;margin-bottom:12px;}
 .s-mat{font-size:11px;}.s-mat b{color:var(--tb);font-family:'Oswald',sans-serif;font-size:14px;}
 .s-mat .mc{font-size:8px;color:var(--td);display:block;letter-spacing:1px;}
