@@ -24,7 +24,12 @@ const char = {
 // ============================================================
 // CALCULS
 // ============================================================
-const SP = () => char.special;
+const SP = () => {
+  const s = {...char.special};
+  if(char.powerArmor && char.inventory.find(it=>it.type==='POWERARMOR_FRAME'&&it.equipped))
+    s.S = Math.min(10, (s.S||1) + 2);
+  return s;
+};
 
 // ---- calculs.js ----
 // ============================================================
@@ -788,12 +793,16 @@ function togglePA(){
   char.powerArmor=!char.powerArmor;
   rAll();
 }
-function tEquipFrame(i){
+async function tEquipFrame(i){
   const it=char.inventory[i];if(!it||it.type!=='POWERARMOR_FRAME')return;
-  const was=it.equipped;
-  char.inventory.forEach(o=>{if(o.type==='POWERARMOR_FRAME')o.equipped=false;});
-  if(!was)it.equipped=true;
-  if(char.powerArmor&&!getActiveFrame())char.powerArmor=false;
+  if(it.equipped){
+    if(!await fpConfirm('Sortir de la frame et la laisser sur place ?'))return;
+    char.inventory.splice(i,1);
+    char.powerArmor=false;
+  } else {
+    char.inventory.forEach(o=>{if(o.type==='POWERARMOR_FRAME')o.equipped=false;});
+    it.equipped=true;
+  }
   rAll();
 }
 function toggleAtout(name){const it=char.inventory.find(i=>i.name===name&&i.type==='WEAPON');if(it)it.persoBonus=!it.persoBonus;rAll();}
