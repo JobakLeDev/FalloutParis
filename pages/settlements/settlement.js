@@ -201,7 +201,7 @@ function cellClick(id, x, y){
   // Joueur : clic sur l'icône d'un bloc → pop-up d'action ; clic sur une case vide → place/pose son jeton
   if (!isMJ && !selBlock){
     const b = (s.blocks || []).find(c => c.x === x && c.y === y);
-    if (b){ if(!_onSite(s)){ alert('Tu dois être sur place (' + (s.poi || 'le lieu') + ').'); return; } openBlockPop(b.type); return; }
+    if (b){ if(!_onSite(s)){ alert('Tu dois être sur place (' + (s.poi || 'le lieu') + ').'); return; } openBlockPop(b.type, b.x, b.y); return; }
     if (me && canAccess(s) && _onSite(s) && !(s.pos && s.pos[me.id])){   // pas encore de jeton → apparaître ici
       s.pos = s.pos || {}; s.pos[me.id] = { x, y }; save();
     }
@@ -487,6 +487,7 @@ function renderActions(site){
 
 // ---- Pop-up d'action : déclenché en cliquant l'icône d'un bloc sur la grille ----
 let _popBlock = null;   // type de bloc dont le pop-up est ouvert (vue joueur)
+let _popBlockXY = null; // position {x,y} du bloc cliqué (utile pour armor_stand)
 const _POP_ACTION = {
   bed:           s => restBody(s),
   cooking:       s => cookBody(s),
@@ -498,6 +499,7 @@ const _POP_ACTION = {
   wbench_weapon: s => benchBody(s, 'weapon'),
   wbench_armor:  s => benchBody(s, 'armor'),
   storage:       s => storeBody(s),
+  armor_stand:   s => armorStandBody(s),
 };
 // Ligne « qui tient le poste » (vue joueur, lecture) pour les blocs-postes
 const _POSTE_ROLE = { shop_water:'vendeur', shop_food:'vendeur', diner:'restaurateur', cooking:'cuisinier', medical:'médecin' };
@@ -511,8 +513,8 @@ function posteBody(site, key){
   const def = blockDef(key);
   return posteLine(site, key) + (def && def.desc ? `<div class="s-note" style="color:var(--td)">${esc(def.desc)}</div>` : '');
 }
-function openBlockPop(type){ _popBlock = type; render(); }
-function closeBlockPop(){ _popBlock = null; render(); }
+function openBlockPop(type, x, y){ _popBlock = type; _popBlockXY = (x != null) ? {x, y} : null; render(); }
+function closeBlockPop(){ _popBlock = null; _popBlockXY = null; render(); }
 function renderPop(site){
   const ov = document.getElementById('s-pop'); if(!ov) return;
   if(isMJ || !_popBlock || !me || !canAccess(site) || !_onSite(site) || !_siteHas(site, _popBlock)){ ov.style.display='none'; return; }
@@ -709,6 +711,74 @@ async function benchCraft(idx, slot, modId, kind){
   _benchFlash(idx + ':' + slot + ':' + modId);
 }
 
+// ---- support d'armure (armor_stand) ----
+function armorStandBody(site){
+  if(isMJ || !me || !canAccess(site)) return '';
+  const key = _popBlockXY ? (_popBlockXY.x + ',' + _popBlockXY.y) : null;
+  if(!key) return '';
+  const stored = (site.armorStands || {})[key];
+  let h = '';
+  if(stored && stored.frame){
+    const f = stored.frame;
+    const slots = f.slots || {};
+    const equipped = Object.values(slots).filter(Boolean).map(s => s.name);
+    h += `<div class="s-note">🦾 <b>${esc(f.name)}</b>${f.core ? ' · Cellule OK' : ' · <span style="color:var(--am)">⚠ sans cellule</span>'}</div>`;
+    if(equipped.length) h += `<div class="s-note" style="color:var(--td)">${equipped.map(esc).join(' · ')}</div>`;
+    h += `<button class="sbtn add" onclick="takeFrame()">⬆ Entrer dans la frame</button>`;
+  } else {
+    h += '<div class="s-note">Support vide.</div>';
+    const myFrame = (me.inventory || []).find(it => it.type === 'POWERARMOR_FRAME' && it.equipped);
+    if(myFrame){
+      h += `<div class="s-note">🦾 <b>${esc(myFrame.name)}</b> — actuellement portée.</div>`;
+      h += `<button class="sbtn" onclick="depositFrame()">⬇ Déposer la frame ici</button>`;
+    } else {
+      h += '<div class="s-note">Tu ne portes pas de frame Power Armor.</div>';
+    }
+  }
+  return h;
+}
+async function depositFrame(){
+  const site = data.sites[selSite]; if(!site || !me) return;
+  if(!canAccess(site) || !_onSite(site)){ alert('Tu dois être sur place.'); return; }
+  if(!_popBlockXY) return;
+  const key = _popBlockXY.x + ',' + _popBlockXY.y;
+  const inv = (me.inventory || []).map(x => ({ ...x }));
+  const fi = inv.findIndex(it => it.type === 'POWERARMOR_FRAME' && it.equipped);
+  if(fi < 0){ alert('Tu ne portes pas de frame.'); return; }
+  const frame = JSON.parse(JSON.stringify(inv[fi]));
+  frame.equipped = false;
+  if(!await fpConfirm('Déposer ta frame "' + frame.name + '" sur ce support ?')) return;
+  inv.splice(fi, 1);
+  site.armorStands = site.armorStands || {};
+  site.armorStands[key] = { frame };
+  try {
+    await fdb.collection('joueurs').doc(viewerId).update({ inventory: inv, powerArmor: false, lastUpdate: Date.now() });
+    me.inventory = inv; me.powerArmor = false;
+  } catch(e){ alert('Erreur : ' + e.message); return; }
+  save(); closeBlockPop();
+}
+async function takeFrame(){
+  const site = data.sites[selSite]; if(!site || !me) return;
+  if(!canAccess(site) || !_onSite(site)){ alert('Tu dois être sur place.'); return; }
+  if(!_popBlockXY) return;
+  const key = _popBlockXY.x + ',' + _popBlockXY.y;
+  const stands = site.armorStands || {};
+  const stored = stands[key]; if(!stored || !stored.frame){ alert('Support vide.'); return; }
+  const frame = JSON.parse(JSON.stringify(stored.frame));
+  frame.equipped = true; frame.qty = 1;
+  if(!await fpConfirm('Entrer dans la frame "' + frame.name + '" ?')) return;
+  const inv = (me.inventory || []).map(x => ({ ...x }));
+  inv.forEach(it => { if(it.type === 'POWERARMOR_FRAME') it.equipped = false; });
+  inv.push(frame);
+  delete stands[key];
+  site.armorStands = stands;
+  try {
+    await fdb.collection('joueurs').doc(viewerId).update({ inventory: inv, lastUpdate: Date.now() });
+    me.inventory = inv;
+  } catch(e){ alert('Erreur : ' + e.message); return; }
+  save(); closeBlockPop();
+}
+
 function removeBlock(id, x, y){
   if (!isMJ) return; const s = data.sites[id]; if (!s) return;
   s.blocks = (s.blocks || []).filter(b => !(b.x === x && b.y === y));
@@ -782,7 +852,13 @@ function render(){
     let cls = 's-cell', bc = '', inner = '', title = 'Vide';
     if (def){ cls += ' filled'; bc = '--bc:' + (def.color || '#3a5c3a') + ';'; title = def.name;
       if(!isMJ && me && canAccess(site) && _onSite(site) && _POP_ACTION[b.type]) cls += ' s-cell-act';   // bloc utilisable → halo
-      inner = `<span class="bk-ic">${blockIcoInner(def)}</span>` + (def.img ? '' : `<span class="bk-lbl">${esc(def.name)}</span>`); }
+      // armor_stand : image selon état (vide / avec frame)
+      let renderDef = def;
+      if(b.type === 'armor_stand' && def.imgFull){
+        const stKey = x + ',' + y;
+        if((site.armorStands || {})[stKey]?.frame) renderDef = { ...def, img: def.imgFull };
+      }
+      inner = `<span class="bk-ic">${blockIcoInner(renderDef)}</span>` + (renderDef.img ? '' : `<span class="bk-lbl">${esc(def.name)}</span>`); }
     else if (pend){ const pdef = blockDef(pend.type); cls += ' pending'; title = 'En attente : ' + (pdef?.name || '');
       inner = `<span class="bk-ic dim">${pdef ? pdef.icon : '·'}</span><span class="pg">⏳</span>`; }
     const click = (isMJ && b) ? `onclick="removeBlock('${selSite}',${x},${y})" title="Retirer ${esc(def.name)}"` : `onclick="cellClick('${selSite}',${x},${y})" title="${esc(title)}"`;
