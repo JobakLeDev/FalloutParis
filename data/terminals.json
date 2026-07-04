@@ -426,6 +426,183 @@
           ]
         }
       ]
+    },
+    "lb-surface": {
+      "titre": "CITÉ DES SCIENCES — ACCUEIL ET ARCHIVES",
+      "header": "LABORATOIRES DE BEAUTÉ DE FRANCE — DIVISION RECHERCHE",
+      "nodes": [
+        {
+          "id": "registre_acces",
+          "label": "REGISTRE D'ACCÈS — NIVEAU PUBLIC",
+          "body": "Journal des visites autorisées à la Cité.\nCouverture officielle : visite du muséum scientifique.",
+          "children": [
+            {
+              "id": "ra1",
+              "label": "10.2075 — Embauche personnel technique",
+              "body": "Arrivée : M. Laurent Connel, 44 ans.\nPoste : Technicien informatique — Division Recherche.\nContrat : CDI, durée indéterminée.\nAccès : niveau -2 (bunker recherche) autorisé pour maintenance systèmes.\nBriefing sécurité : complété.\nRéseau informatique du labo : sous responsabilité Laurent Connel."
+            },
+            {
+              "id": "ra2",
+              "label": "15.09.2077 — Inauguration symposium",
+              "body": "Visite officielle : ministres, industriels, presse.\nThème : « Innovation scientifique française ».\nPrésentation des laboratoires Beauté de France.\nConférenciers : Dr Simone Arnault (directrice), Dr Maurice Delacroix (Palais).\nAuditoire : ~200 personnes, couverture médias nationale.\nPersonnel du labo : présent (dont Laurent Connel en arrière-plan, maintenance informatique)."
+            },
+            {
+              "id": "ra3",
+              "label": "18.09.2077 — Visite VIP spéciale",
+              "body": "Mme Danielle Moreau (épouse Laurent Connel).\nAccompagnement : Dr Simone Arnault.\nVisite guidée complète des installations de recherche.\nDurée : 3 heures, accès zones restreintes.\nNotes d'escorte : « Visiteuse très intéressée. Questions approfondies sur formulations avancées. »\nRemarque : Laurent Connel absent ce jour-là (maintenance équipement critique)."
+            },
+            {
+              "id": "ra4",
+              "label": "07.2077 — INCIDENT CRITIQUE — EXPLOSION LABO",
+              "body": "07.18.2077 — 14:30 — Explosion secteur -2 (niveau recherche).\nCause : rupture d'équipement de confinement biologique.\nVictimes : Laurent Connel (technicien informatique) — EXPOSURE DIRECTE.\nEmanations : aérosols FEV-C massifs.\nProtocols d'urgence : activés.\nLaurent Connel : CONFINÉ IMMÉDIATEMENT au bunker.\nOrdre médical : rester en isolement jusqu'à clarification exposition.\nSa femme Muriel : tentative de contact non autorisée (Laurent confiné d'urgence, pas de communication externe).\nStatut Laurent : [CONFINÉ DEPUIS JUILLET]\nDurée confinement : ~3 mois (non communiqué au public)."
+            },
+            {
+              "id": "ra5",
+              "label": "23.10.2077 — 09:45 — ALERTE SITE",
+              "body": "09:45 — Sirènes d'alerte nationale. Ordre de confinement.\nPersonnel surface : 14 personnes identifiées.\nOrdre direct : évacuation vers niveau -2 (bunker sécurisé) IMMÉDIATEMENT.\nDéverrouillage sas d'urgence.\nConsigne : portes de surface SCELLÉES.\nStatut actuel : aucun contact -2 depuis 09:50.\nRemarque : Laurent Connel déjà confiné -2 depuis juillet (3 mois). Regroupement avec autres sujets testés."
+            }
+          ]
+        },
+        {
+          "id": "correspondance",
+          "label": "CORRESPONDANCE ADMINISTRATIVE — PALAIS ↔ LBF",
+          "body": "Échanges entre direction Beauté de France et Élysée.",
+          "children": [
+            {
+              "id": "corr1",
+              "label": "02.2076 — Accord de collaboration gouvernementale",
+              "body": "De : Dr Maurice Delacroix, Conseiller Santé — Palais de l'Élysée\nÀ : Dr Simone Arnault, Directrice — Laboratoires Beauté de France\n\n« Mme Arnault,\n\nNous souhaitons initier une collaboration de recherche avancée sur une formulation cosmétique de nouvelle génération.\nSujets : volontaires VIP consentants de haut rang (ministres, épouses, industriels).\n\nRésultats attendus : amélioration visible et durable within 6 semaines.\nDiscrétion absolue requise. Budget : illimité.\n\nVos installations sous-terraines nous intéressent particulièrement.\nPouvez-vous accueillir cohorte initiale ?\n\nMeilleures salutations,\nDr Maurice Delacroix »"
+            },
+            {
+              "id": "corr2",
+              "label": "03.2076 — Acceptation et détails logistiques",
+              "body": "De : Dr Simone Arnault\nÀ : Dr Maurice Delacroix\n\n« Dr Delacroix,\n\nNous accueillons avec enthousiasme cette collaboration prestigieuse.\n\nNos installations souterraines (niveau -2) permettent confidentialité et sécurité optimales.\nCapacité : 8 à 10 sujets VIP. Zones dédiées : laboratoire, chambre monitoring, zones repos.\n\nPremière cohorte proposée : 6 sujets VIP de haut rang gouvernemental.\nProtocole : application hebdomadaire, monitoring médical complet, documentation exhaustive.\n\nDélai mise en route : 2 semaines.\n\nCordialement,\nDr Simone Arnault »"
+            },
+            {
+              "id": "corr3",
+              "label": "11.2076 — Premiers résultats prometteurs",
+              "body": "De : Dr Simone Arnault\nÀ : Dr Maurice Delacroix\n\n« Dr Delacroix,\n\nRésultats spectaculaires après 8 semaines.\nTous les sujets rapportent : vitalité accrue, tonus cutané remarquable, éclat sans précédent.\n\nCependant, analyses biologiques révèlent modifications organiques.\nMajoration taux hémoglobine, protéines non identifiées, modulations enzymatiques anormales.\n\nContinuons monitoring. Les sujets demandent poursuite du traitement.\n\nDr Simone Arnault »"
+            },
+            {
+              "id": "corr4",
+              "label": "06.2077 — Observations préoccupantes",
+              "body": "De : Dr Simone Arnault\nÀ : Dr Maurice Delacroix\n\n« Dr Delacroix,\n\nSituation évolutive. Mutations tissulaires profondes observées.\nModifications : peau épaissie, force musculaire +200-300%, densité osseuse accrue.\n\nIl ne s'agit plus d'un produit cosmétique.\nLes sujets VIP commencent à exprimer préoccupations. Trois demandent arrêt.\n\nQue recommandez-vous ?\n\nDr Arnault »"
+            },
+            {
+              "id": "corr5",
+              "label": "07.2077 — Ordre de continuation",
+              "body": "De : Dr Maurice Delacroix\nÀ : Dr Simone Arnault\n\n« Dr Arnault,\n\nLe Palais a évalué la situation. Décision : CONTINUER.\n\nLes sujets VIP sont trop impliqués. Arrêter créerait complications politiques graves.\nIls connaissent trop de détails sensibles.\n\nMaintenir continuité. Maintenir secret absolu. Maintenir documentation.\n\nContinuez les traitements.\n\nDr Delacroix »"
+            },
+            {
+              "id": "corr6",
+              "label": "10.2077 — Demandes d'arrêt des sujets",
+              "body": "De : Dr Simone Arnault\nÀ : Dr Maurice Delacroix\n\n« Dr Delacroix,\n\nUrgent. Trois sujets VIP demandent arrêt catégorique des traitements.\nIls rapportent transformations corporelles visibles, douleurs, perte contrôle.\nUne a découvert la composition réelle et menace divulgation.\n\nQue faisons-nous ?\n\nDr Arnault »"
+            },
+            {
+              "id": "corr7",
+              "label": "10.2077 — Réponse : confinement et contrôle",
+              "body": "De : Dr Maurice Delacroix\nÀ : Dr Simone Arnault\n\n« Dr Arnault,\n\nLe sujet doit être rassuré ou contraint. Les dossiers restent confidentiels.\nAugmentez surveillance. Limitez communications externes.\n\nLes sujets restent au bunker pour « durée de monitoring prolongée ».\nLibération conditionnée à signature accord de confidentialité renforcée.\n\nDr Delacroix »"
+            }
+          ]
+        },
+        {
+          "id": "marketing",
+          "label": "ARCHIVES MARKETING — PUBLICITÉS CIBLÉES",
+          "body": "Campagnes médias 2075-2077.",
+          "children": [
+            {
+              "id": "mk1",
+              "label": "Spot radio national — « ÉTERNELLE »",
+              "body": "[Diffusé 37 fois/semaine sur France Inter, France Musique, France Culture]\n\n« Le temps passe. Pas vous.\nÉTERNELLE, le soin visage des Laboratoires Beauté de France.\nVolontaires recherchés pour notre programme d'essai gratuit.\nRésultats spectaculaires garantis.\nRenseignez-vous auprès de votre institut de beauté.\nVous méritez d'être ÉTERNELLE. »\n\n[Cible : femmes 35-55 ans, revenus élevés]\n[Budget campagne : très important]"
+            },
+            {
+              "id": "mk2",
+              "label": "Plaquette VIP — Programme confidentiel",
+              "body": "« Programme d'essai PRIVÉ — Sur invitation uniquement\n\nLes Laboratoires de Beauté de France vous proposent\nune expérience scientifique exclusive et discrète.\n\nFormulation cosmétique avancée : résultats visibles en semaines.\nTous les essais sont confidentiels. Documentation médicale complète.\nCandidatures sélectionnées par cooptation personnelle.\n\nLieu : installations privées sécurisées à Paris.\nDurée : 6 mois minimum.\nBudget : pris en charge par les laboratoires. »"
+            }
+          ]
+        }
+      ]
+    },
+    "lb-bunker": {
+      "titre": "CITÉ DES SCIENCES — BUNKER NIVEAU -2",
+      "header": "LABORATOIRES BEAUTÉ DE FRANCE — DIVISION RECHERCHE CONFIDENTIELLE",
+      "nodes": [
+        {
+          "id": "dossiers_medicaux",
+          "label": "DOSSIERS MÉDICAUX — COHORTE EXPÉRIMENTALE VIP",
+          "locked": 3,
+          "body": "[CLASSIFIÉ GOUVERNEMENT — ACCÈS RESTREINT]\nSujets VIP — Monitoring médical complet.",
+          "children": [
+            {
+              "id": "dm1",
+              "label": "SUJET 01 — Mme Danielle Moreau",
+              "body": "Identité : Danielle Moreau, 48 ans.\nProfession : épouse de Laurent Connel (technicien informatique LBF).\nDate d'enrôlement : mars 2076.\nTraitement : injections mensuelles formule ÉTERNELLE (dose standard).\n\nCHRONOLOGIE :\n08.2076 (5 mois) : Résultats cosmétiques excellents. Peau rajeunie, éclat remarquable.\n12.2076 (9 mois) : Mutations tissulaires. Peau lisse, épaissie.\n03.2077 (12 mois) : Densité osseuse augmentée. Force musculaire +280%.\n06.2077 (15 mois) : Modifications profondes. Conscience altérée légèrement.\n10.2077 (19 mois) : TRANSFORMATION AVANCÉE. Demande arrêt — REFUSÉE.\n23.10.2077 : Bunker confiné. MORPHOGÉNÈSE ACTIVE. Conscience : fragmentaire."
+            },
+            {
+              "id": "dm2",
+              "label": "SUJET 03 — Mme Jacqueline Vergès",
+              "body": "Identité : Jacqueline Vergès, 52 ans.\nProfession : PDG groupe cosmétique concurrent.\nDate d'enrôlement : avril 2076.\nTraitement : injections mensuelles ÉTERNELLE + variante expérimentale (avril 2077).\n\nCHRONOLOGIE :\n11.2076 (7 mois) : Résultats excellents. Apparence rajeunie.\n04.2077 (12 mois + variante) : Variante expérimentale introduite.\n05.2077 (13 mois) : Mutations AVANCÉES. Peau écailleuse, résistance thermique anormale.\n08.2077 (16 mois) : Sujet AGRESSIF. Agitation constante, violences contre personnel.\n23.10.2077 : TRANSFORMATION INCONTRÔLÉE. Conscience PERDUE. Agressivité CRITIQUE.\n\nNOTE : C'est l'échec de Sujet 03 qui a motivé le Palais à FORCER continuation des autres."
+            },
+            {
+              "id": "dm3",
+              "label": "SUJET 05 — M. Laurent Connel",
+              "body": "Identité : Laurent Connel, 46 ans.\nProfession : Technicien informatique — Division Recherche LBF (depuis octobre 2075).\nRôle : maintenance systèmes informatiques, accès niveau -2.\nÉpouse : Muriel Connel (ghoulifiée post-bombes, actuellement dehors, le cherche).\n\nCONTEXTE PARTICULIER :\nLaurent travaillait sur les systèmes critiques du bunker. En juillet 2077,\nexplosion labo provoque rupture équipement confinement biologique.\nExposure DIRECTE et MASSIVE à FEV-C lors explosion.\nImmédiatement CONFINÉ au bunker -2 par protocole d'urgence (juillet 2077).\n\nDurée confinement pré-bombardement : ~3 mois (juillet-octobre).\nPas de contact externe autorisé. Sa femme Muriel — dehors — sans nouvelles,\ntentative de contact refusée.\n\nCHRONOLOGIE :\n07.2077 (jour 0) : Explosion. Exposure massive FEV-C. Confinement immédiat.\nAugust 2077 : Mutations commencent. Laurent comprend ce qui arrive.\nSeptember 2077 : Transformation progressive. Force accrue, conscience altérée.\nOctober 2077 : Transformation avancée. SEMI-CONSCIENCE CONSERVÉE.\n23.10.2077 : Bunker confiné avec autres sujets VIP. \n\nSTATUT ACTUEL : TRANSFORMATION AVANCÉE mais SEMI-CONSCIENCE PRÉSENTE.\nLaurent peut parler, reconnaît noms, exprime douleur et confusion.\nCapable de narration partielle. Répète constamment : « Où est Muriel ? Pourquoi m'a-t-elle abandonné ? Pourquoi suis-je ici ? »\n\nTHÉRAPIE POTENTIELLE [MJ] : Laurent est le SEUL sujet capable de communication intelligible.\nIl peut RACONTER ce qui s'est passé. Si les joueurs le découvrent et trouvent moyen de\nle soigner/libérer, Laurent devient allié majeur et source narrative du Projet Beauté.\nRéunion avec Muriel (ghoul dehors) crée symétrie émotionnelle majeure."
+            },
+            {
+              "id": "dm4",
+              "label": "SUJET 02, 04, 06 — Autres VIP",
+              "body": "Trois autres sujets VIP enrôlés en 2076, noms non documentés en archive ouverte.\nStatut : [DOSSIERS VERROUILLÉS — Niveau de confidentialité plus élevé]\n\nRemarque : Aucune trace de sorties du bunker post-confinement.\nHypothèse : décédés ou transformés en super mutants confinés au -2."
+            }
+          ]
+        },
+        {
+          "id": "resultats",
+          "label": "RÉSULTATS SCIENTIFIQUES — FORMULE SECRÈTE",
+          "locked": 3,
+          "body": "[STRICTEMENT CONFIDENTIEL — GOUVERNEMENT FRANÇAIS]\nAnalyse chimique et biologique de ÉTERNELLE.",
+          "children": [
+            {
+              "id": "res1",
+              "label": "Composition décryptée — FEV-C",
+              "body": "FORMULE ÉTERNELLE — ANALYSE SPECTROGRAPHIQUE :\n\n40% : Bases cosmétiques standard\n30% : Protéines restructurantes synthétiques\n30% : COMPOSANT ACTIF [SOURCE INCONNUE]\n\nLE COMPOSANT ACTIF :\nAnalyse spectrographique : impossible correspondance chimie pure connue.\nMatière biogénétique modifiée. Structure protéique anormale. Gènes modifiés.\n\nORIGINE : Archives militaires pré-2070. Code interne : « Archives Chimie Avancée ».\n\nCLASSIFICATION : ARME BIOLOGIQUE (mutation forcée).\nDÉSIGNATION OFFICIELLE : « Chimie cosmétique avancée ».\nNOM INTERNE : FEV-C (Forced Evolutionary Vector — Cosmetic).\n\nCONCLUSION : Les Laboratoires Beauté ont utilisé une ARME DE GUERRE BIOLOGIQUE,\ndéguisée en cosmétique."
+            },
+            {
+              "id": "res2",
+              "label": "Mécanisme d'action — Progression mutante",
+              "body": "FEV-C PROVOQUE MUTATION CELLULAIRE PROGRESSIVE :\n\nSEMAINES 1-8 : Phase cosmétique. Beauté intense, rajeunissement visible.\nSEMAINES 9-24 : Phase mutationnelle. Mutations tissulaires : muscles, os, peau, système nerveux.\nSEMAINES 25+ : Phase terminale. Mutations organelles. Conscience fragmente.\n\nRÉSULTAT FINAL : À partir de 24-28 semaines, conscience humaine CÈDE À INSTINCTS\nDE CRÉATURE MUTANTE. Pas d'antidote. Pas de retour possible.\n\nLES SUJETS MUANTS DEVIENNENT HOSTILES ET EXTRÊMEMENT FORTS.\n\nOBSERVATION :\nLes super mutants observés post-2077 (Paris, La Défense, Villette) CORRESPONDENT\nAU PROFIL FEV-C. Les super mutants actuels SONT nos testeurs. Elles se SOUVIENNENT."
+            },
+            {
+              "id": "res3",
+              "label": "Rapport d'analyse — Dr Simone Arnault",
+              "body": "Dr Simone Arnault, Directrice LBF — Dernier enregistrement audio :\n\n[Bruit de fond : alarmes, chaos]\n\n« Je dois enregistrer ceci avant qu'on ne me trouve.\n\nOn m'a dit que c'était de la cosmétologie. C'était un mensonge.\nC'est une ARME. Le Palais le savait. Ils voulaient vérifier si on pouvait\ncréer des SOLDATS INVULNÉRABLES. Les sujets VIP étaient des cobayes.\n\nJ'ai reçu des ordres. J'ai signé les documents. J'ai regardé les sujets\nse transformer. J'ai enregistré leurs cris. Et j'ai continué.\n\nJe n'ai rien fait pour arrêter.\n\nSi quelqu'un le lit : les mutants au-dehors sont nos patientes.\nElle se souviennent partiellement. Elles souffrent.\n\nLe Palais a des réponses. Mais c'est moi qui ai tenu la seringue.\n\nQue Dieu pardonne. »\n\n[FIN DE L'ENREGISTREMENT]"
+            }
+          ]
+        },
+        {
+          "id": "destruction",
+          "label": "PROTOCOLE D'URGENCE — DESTRUCTION ET CONFINEMENT",
+          "locked": 3,
+          "body": "[ORDRE DIRECT DU PALAIS — 23.10.2077 10:30]\nProtocole d'effacement et isolation.",
+          "children": [
+            {
+              "id": "dest1",
+              "label": "Ordre du Palais — Dr Maurice Delacroix",
+              "body": "De : Dr Maurice Delacroix, Palais de l'Élysée\nVers : Dr Simone Arnault, Bunker LBF\nTransmis via canal sécurisé militaire — 23.10.2077 — 10:30\n\nSujet : ACTION IMMÉDIATE\n\n« Dr Arnault,\n\nL'attaque a commencé.\n\n1. Detruire TOUS les dossiers papier. Brûlez-les. Maintenant.\n2. Les données numériques : cachez-les ou supprimez-les.\n3. Les sujets mutants du bunker : confinement. À l'abandon. Scellez les portes.\n\nLa Cité des Sciences restera contaminée longtemps. Personne ne viendra chercher.\n\nFaites disparaître les preuves. »"
+            },
+            {
+              "id": "dest2",
+              "label": "Journal de destruction — Dr Simone Arnault",
+              "body": "23.10.2077 — 10:50 :\n\n« J'ai commencé à brûler les dossiers papier. La fumée monte dans\nle système de ventilation. Les sujets hurlent. Danielle appelle Laurent.\nLaurent répète le nom de Muriel — sa femme dehors.\n\nIl me regarde avec les yeux d'un homme qui comprend ce qu'il est devenu.\nEt il demande : « Pourquoi ? Juste pourquoi ? »\n\nJe n'ai pas réponse. »"
+            },
+            {
+              "id": "dest3",
+              "label": "Entrée finale — 23.10.2077 — 11:30",
+              "body": "23.10.2077 — 11:30 :\n\n« Les portes du -2 sont maintenant scellées.\n\nJ'ai laissé les données sur les serveurs. Archivées. Cachées, mais présentes.\nDans le code. Dans les fichiers. Laurent maintenait ces systèmes — il y a peut-être\nlaisser des traces de ce qu'il savait.\n\nSi quelqu'un vient avec les codes d'accès scientifique, il trouvera la vérité.\nSi quelqu'un vient pour comprendre, il aura réponses.\n\nIls méritent de savoir.\n\nMaintenant, je dois fermer le bunker complètement. Isolement complet.\n\nLaurent, Danielle, les autres : ils restent ici. Seuls. Transformés.\nSemi-conscients. Souffrants. Muets.\n\nLaurent cherche sa femme Muriel. Dehors, elle est ghoul, elle le cherche aussi.\nDeux mondes. Deux transformations. Aucun moyen de se retrouver.\n\nC'est ma peine.\n\nSi vous lisez ceci : cherchez le Palais. Cherchez Delacroix. »\n\n[DERNIER ENREGISTREMENT]\n[SCELÉ : -2 ISOLATION COMPLÈTE]\n[DONNÉES NUMÉRIQUES : PRÉSENTES, CACHÉES, ATTENDANT]"
+            }
+          ]
+        }
+      ]
     }
   }
 }
