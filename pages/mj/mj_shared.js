@@ -402,6 +402,7 @@ function generateCombatLoot(enemies){
         if(wl){ add(wl.weapon.n, wl.weapon.t || 'WEAPON', 'weapons', 1); if(wl.ammoName) add(wl.ammoName, 'AMMO', 'ammo', _lootAmmoQty(t)); }
       }
       if(p.ammo && Math.random() < (p.ammo.chance ?? 0.6)){ const a = lootRollAmmo(); if(a) add(a.ammo, 'AMMO', 'ammo', a.qty); }
+      if(p.stuff && Math.random() < (p.stuff.chance ?? 0.08)){ const s = lootWeightedPick(DB.stuff||[]); if(s) add(s.n, 'STUFF', 'stuff', 1); }
       if(p.caps && Math.random() < (p.caps.chance ?? 0.2)) caps += (p.caps.base || 0) + lootSumCD(t) * (p.caps.perTier || 2);
     } else { // human
       const p = LP.profiles?.human || {};

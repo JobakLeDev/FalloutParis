@@ -13,32 +13,76 @@
     "Robot": "machine",
     "Synth robotique": "machine"
   },
-  "tierByCategory": { "swarm": 1, "normal": 2, "elite": 3, "boss": 4 },
+  "tierByCategory": {
+    "swarm": 1,
+    "normal": 2,
+    "elite": 3,
+    "boss": 4
+  },
   "profiles": {
     "beast": {
       "foodPerTier": 1,
       "materials": {
         "chance": 0.7,
-        "pool": ["Glande mutée", "Carapace / chitine", "Cuir épais", "Sang irradié", "Os mutés"]
+        "pool": [
+          "Glande mutée",
+          "Carapace / chitine",
+          "Cuir épais",
+          "Sang irradié",
+          "Os mutés"
+        ]
       }
     },
     "human": {
-      "weapon": { "chance": 0.5 },
-      "armor": { "chance": 0.35 },
-      "drugs": { "chance": 0.4 },
-      "food": { "chance": 0.5 },
-      "drinks": { "chance": 0.4 },
-      "ammo": { "chance": 0.7 },
-      "caps": { "base": 0, "perTier": 3 }
+      "weapon": {
+        "chance": 0.5
+      },
+      "armor": {
+        "chance": 0.35
+      },
+      "drugs": {
+        "chance": 0.4
+      },
+      "food": {
+        "chance": 0.5
+      },
+      "drinks": {
+        "chance": 0.4
+      },
+      "ammo": {
+        "chance": 0.7
+      },
+      "caps": {
+        "base": 0,
+        "perTier": 3
+      }
     },
     "machine": {
       "scrap": {
         "perTier": 1,
-        "pool": ["Ferraille", "Circuit imprimé", "Composant électronique", "Huile de machine", "Vis et écrous", "Cellule à fusion (vide)"]
+        "pool": [
+          "Ferraille",
+          "Circuit imprimé",
+          "Composant électronique",
+          "Huile de machine",
+          "Vis et écrous",
+          "Cellule à fusion (vide)"
+        ]
       },
-      "ammo": { "chance": 0.6 },
-      "weapon": { "chance": 0.3 },
-      "caps": { "chance": 0.2, "base": 0, "perTier": 2 }
+      "ammo": {
+        "chance": 0.6
+      },
+      "weapon": {
+        "chance": 0.3
+      },
+      "caps": {
+        "chance": 0.2,
+        "base": 0,
+        "perTier": 2
+      },
+      "stuff": {
+        "chance": 0.08
+      }
     }
   },
   "defaultMeat": "Viande crue mutée",
