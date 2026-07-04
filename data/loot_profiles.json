@@ -82,6 +82,10 @@
       },
       "stuff": {
         "chance": 0.08
+      },
+      "frame": {
+        "chance": 0.12,
+        "minTier": 4
       }
     }
   },

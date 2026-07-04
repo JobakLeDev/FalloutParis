@@ -41,6 +41,7 @@ function buildInvItem(name){
   const item = { name, type, qty:1, w: db.w||0, equipped:false };
   if (type==='ARMOR'||type==='POWERARMOR') item.zone = db.z||'';
   if (type==='WEAPON') item.persoBonus = false;
+  if (type==='POWERARMOR_FRAME') { item.slots={head:null,torso:null,armL:null,armR:null,legL:null,legR:null}; item.core=false; }
   return item;
 }
 
