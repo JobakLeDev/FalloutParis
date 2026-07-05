@@ -108,6 +108,9 @@ body.embed #map, body.embed #map-metro{position:absolute;inset:0;width:auto;heig
 /* Point par défaut (POI sans icône) : pastille verte légèrement lumineuse */
 .poi-dot.glow{width:13px;height:13px;background:#5dbe5d;border:1px solid #0c1f0c;box-shadow:0 0 6px rgba(93,190,93,.8),0 0 2px rgba(93,190,93,.6);}
 .poi-svg{width:11px;height:11px;display:block;}
+/* Settlements / refuges : icône agrandie */
+.poi-dot.poi-big{width:28px;height:28px;border-width:2.5px;}
+.poi-dot.poi-big .poi-svg{width:17px;height:17px;}
 .poi-pick .poi-svg{width:18px;height:18px;}
 .poi-label{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.5px;color:var(--tb);text-shadow:0 0 4px #000,0 0 4px #000,1px 1px 2px #000;}
 
@@ -180,7 +183,7 @@ img.land-icon-img{
 .token-pin.group .token-label{color:#ffe0a0;}
 /* Objets au sol */
 .ground-item-pin{background:none !important;border:none !important;}
-.gi-img{width:28px;height:28px;filter:drop-shadow(0 0 4px rgba(90,170,90,0.9));animation:giPulse 2.5s ease-in-out infinite;}
+.gi-img{width:42px;height:42px;filter:drop-shadow(0 0 4px rgba(90,170,90,0.9));animation:giPulse 2.5s ease-in-out infinite;}
 @keyframes giPulse{0%,100%{transform:scale(1);opacity:.85;}50%{transform:scale(1.12);opacity:1;}}
 /* Ping joueurs (signal lumineux temporaire) */
 .ping-pin span{position:absolute;left:0;top:0;transform:translate(-50%,-50%);border-radius:50%;}
@@ -194,7 +197,7 @@ img.land-icon-img{
 
 /* Bouches de métro (points d'accès) sur la carte principale — image détourée (Guimard) */
 .metro-entrance{display:flex;flex-direction:column;align-items:center;}
-.metro-entrance .me-img{width:24px;height:24px;object-fit:contain;filter:drop-shadow(0 0 3px rgba(93,255,93,.55));}
+.metro-entrance .me-img{width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 0 3px rgba(93,255,93,.55));}
 .metro-entrance .me-label{margin-top:-1px;font-family:'Share Tech Mono',monospace;font-size:6.5px;color:var(--tb);letter-spacing:.3px;white-space:nowrap;text-shadow:0 0 3px #000,0 0 2px #000;opacity:0;transition:opacity .12s;pointer-events:none;}
 .metro-entrance:hover{z-index:1000;}
 .metro-entrance:hover .me-img{filter:drop-shadow(0 0 5px rgba(93,255,93,.9)) brightness(1.2);}
