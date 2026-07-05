@@ -9,6 +9,8 @@
 // Fallout : plus de RATP. Tunnels en vert CRT monochrome, pointillés.
 // ============================================================
 let metroMap = null, metroInit = false;
+const metroStationMarkers = {};                 // nom → marqueur station (réouverture popup)
+let metroOpenStation = null, _metroReopen = false;
 async function initMetroMap(){
   if (metroInit) return;
   metroInit = true;
@@ -26,6 +28,7 @@ async function initMetroMap(){
   metroStationLayer = L.layerGroup().addTo(metroMap);
   metroTokenLayer   = L.layerGroup().addTo(metroMap);
   metroMap.on('click', onMetroClick);
+  metroMap.on('popupclose', () => { if (!_metroReopen) metroOpenStation = null; });
   // Seine en repère géographique (discret)
   try {
     const seine = await fetch(GEOJSON_BASE + 'seine.geojson').then(r => r.json());
@@ -138,16 +141,20 @@ function nearestStation(lat, lng){
 // ---- RENDU DE LA CARTE MÉTRO ----
 function renderMetro(){
   if (!metroMap) return;
+  _metroReopen = true;
   renderMetroLines();
   renderMetroStations();
   renderMetroTokens();
   renderMetroFog();
+  if (metroOpenStation && metroStationMarkers[metroOpenStation]) metroStationMarkers[metroOpenStation].openPopup();
+  _metroReopen = false;
 }
 
 // Stations : MJ → toutes ; joueur → seulement celles découvertes (proches d'un point exploré)
 function renderMetroStations(){
   if (!metroStationLayer) return;
   metroStationLayer.clearLayers();
+  for (const k in metroStationMarkers) delete metroStationMarkers[k];
   if (!metroStationsData) return;
   const explored = metroExploredPoints(viewerId);
   const seen = new Set();
@@ -155,13 +162,50 @@ function renderMetroStations(){
     const nom = f.properties.nom_gares || f.properties.nom_zdc || '';
     if (seen.has(nom)) return; seen.add(nom);
     const c = f.geometry?.coordinates; if (!c) return;
+    const lat = c[1], lng = c[0];
     if (!isMJ && viewerId){
-      const revealed = explored.some(p => L.latLng(p.lat, p.lng).distanceTo(L.latLng(c[1], c[0])) < METRO_TUNNEL_W_M * 1.6);
+      const revealed = explored.some(p => L.latLng(p.lat, p.lng).distanceTo(L.latLng(lat, lng)) < METRO_TUNNEL_W_M * 1.6);
       if (!revealed) return;
     }
-    L.marker([c[1], c[0]], { interactive: false, icon: L.divIcon({ className: 'metro-stn',
-      html: `<span class="ms-dot"></span><span class="ms-label">${nom}</span>`, iconSize: [8, 8], iconAnchor: [4, 4] }) }).addTo(metroStationLayer);
+    // Cliquable : propose au joueur de remonter à la surface (miroir de la descente)
+    const mk = L.marker([lat, lng], { title: nom, riseOnHover: true, icon: L.divIcon({ className: 'metro-stn',
+      html: `<span class="ms-dot"></span><span class="ms-label">${nom}</span>`, iconSize: [12, 12], iconAnchor: [6, 6] }) }).addTo(metroStationLayer);
+    mk.bindPopup(() => _metroStationPopup(lat, lng, nom));
+    mk.on('popupopen', () => { metroOpenStation = nom; });
+    metroStationMarkers[nom] = mk;
   });
+}
+// Popup d'une station (carte métro) : propose au JOUEUR sous terre de remonter s'il est à portée
+function _metroStationPopup(lat, lng, nom){
+  let h = `<div class="zpop"><div class="zpop-title">🚇 ${nom}</div>`;
+  if (viewerId && !isMJ){
+    if (!mapData.underground?.[viewerId]){
+      h += `<div class="zpop-pool" style="color:var(--td)">Tu n'es pas dans le métro.</div>`;
+    } else {
+      const t = mapData.metroTokens?.[viewerId];
+      const d = t ? L.latLng(t.lat, t.lng).distanceTo(L.latLng(lat, lng)) : Infinity;
+      if (d <= METRO_DESCEND_M) h += `<div class="tok-actions"><button onclick="remonterSurfaceIci(${lat},${lng})">🏙 Remonter à Paris</button></div>`;
+      else h += `<div class="zpop-pool" style="color:var(--td)">Trop loin (${Math.round(d)} m) — rapproche-toi de cette station.</div>`;
+    }
+  } else {
+    h += `<div class="zpop-pool" style="color:var(--td)">Station de métro — point d'accès.</div>`;
+  }
+  return h + '</div>';
+}
+// Le joueur remonte à la surface par cette station (jeton métro à ≤ METRO_DESCEND_M)
+function remonterSurfaceIci(lat, lng){
+  const id = viewerId; if (!id) return;
+  if (!mapData.underground?.[id]){ alert('Tu n\'es pas dans le métro.'); return; }
+  const t = mapData.metroTokens?.[id];
+  if (!t){ alert('Position métro inconnue.'); return; }
+  if (L.latLng(t.lat, t.lng).distanceTo(L.latLng(lat, lng)) > METRO_DESCEND_M){ alert('Tu es trop loin de cette station.'); return; }
+  mapData.underground[id] = false;
+  mapData.tokens = mapData.tokens || {};
+  mapData.tokens[id] = { lat, lng };
+  if (typeof recordFog === 'function') recordFog(id, lat, lng);
+  saveData();
+  if (metroMap) metroMap.closePopup();
+  if (typeof switchMapTab === 'function') switchMapTab('paris');   // bascule sur la vue Paris
 }
 
 // Jetons sous terre (mapData.underground) sur la carte métro
