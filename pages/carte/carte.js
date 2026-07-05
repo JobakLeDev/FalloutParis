@@ -254,7 +254,7 @@ function buildMap() {
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (moveMode) endMoveMode(); if (pingMode) endPingMode(); } });
 
   lockParis(true);
-  setTimeout(() => lockParis(true), 300);      // re-cadrage si conteneur (iframe) pas encore dimensionné
+  setTimeout(() => { if (embed) _embedSetMapHeight(); lockParis(true); }, 300);
   window.addEventListener('resize', () => {
     if (currentTab === 'paris') lockParis(false);
     else if (currentTab === 'metro' && metroMap) lockMetro();
@@ -262,7 +262,8 @@ function buildMap() {
   // La fiche joueur (iframe) demande un recentrage à chaque réaffichage de l'onglet CARTE
   window.addEventListener('message', e => {
     if (e.data === 'carte-recenter' && viewerId) {
-      if (currentTab === 'paris' && map) map.invalidateSize();
+      if (embed) _embedSetMapHeight();
+      if (currentTab === 'paris' && map) { map.invalidateSize(); lockParis(false); }
       if (currentTab === 'metro' && metroMap) metroMap.invalidateSize();
       setTimeout(centerOnViewer, 60);
     }
