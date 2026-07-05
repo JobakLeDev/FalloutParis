@@ -641,6 +641,7 @@ function rInvArmor(){
         ${coreBtn}
         <button class="ieq-btn ${it.equipped?'on':'off'}" onclick="tEquipFrame(${i})">${it.equipped?'● ACTIVE':'○ Activer'}</button>
         ${it.equipped?`<button class="ieq-btn off pa-toggle" onclick="togglePaExpand(${i})" title="Détail pièces">${open?'▲':'▼'}</button>`:''}
+        <button class="idel-btn" onclick="leaveHere(${i})" title="Laisser l'armure sur place">📍</button>
         <button class="idel-btn" onclick="jetItem(${i})" title="Jeter">🗑</button>
       </div>
       ${open&&it.equipped?`<div class="pa-slots-list">`+_PA_SLOTS.map(s=>{
@@ -685,7 +686,7 @@ function rInvArmor(){
       <span class="ipw">${((it.qty||1)*(it.w||0)).toFixed(2)}kg</span>
       <span style="font-size:8px;color:${rdMod?'var(--am)':'var(--td)'}">${base.z||'—'} Ph:${db.ph||0} En:${db.en||0}${db.rad?' Rad:'+db.rad:''}</span>
       <button class="ieq-btn ${it.equipped?'on':'off'}" onclick="tEquip(${i})">${it.equipped?'● ÉQUIPÉ':'○ Équiper'}</button>
-      <span style="display:flex;gap:2px"><button class="idel-btn" onclick="leaveHere(${i})" title="Laisser sur place">📍</button><button class="idel-btn" onclick="jetItem(${i})" title="Jeter (définitif)">🗑</button></span>
+      <span style="display:flex;gap:2px">${it.type!=='POWERARMOR'?`<button class="idel-btn" onclick="leaveHere(${i})" title="Laisser sur place">📍</button>`:''}<button class="idel-btn" onclick="jetItem(${i})" title="Jeter (définitif)">🗑</button></span>
     </div>`;
   });
 }
