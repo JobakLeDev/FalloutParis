@@ -383,9 +383,11 @@ function rLocsGen(){
     legR:{l:'JAMBE D.',el:'loc-legR'},
   };
   const frame=char.powerArmor?getActiveFrame():null;
-  // Swap vaultboy image selon mode PA
+  // Swap vaultboy image + bouton PA selon mode
   const vbImg=document.getElementById('vaultboy-img');
   if(vbImg) vbImg.src=frame?'../../img/VaultBoyPA.png':'../../img/VaultBoy.png';
+  const paBtn=document.getElementById('pa-btn');
+  if(paBtn) paBtn.textContent='Power Armor : '+(char.powerArmor?'ON':'OFF');
   Object.entries(LOCS).forEach(([k,loc])=>{
     const el=document.getElementById(loc.el);if(!el)return;
     const rd=getLocRD(k);
@@ -571,9 +573,10 @@ function rInvAll(){
   let html='';
   list.forEach(({it,i})=>{
     const isNew=isNewItem(it);
+    const _tlbl=it.type==='POWERARMOR'?'PA':it.type==='POWERARMOR_FRAME'?'FRAME':it.type;
     html+=`<div class="irow" style="grid-template-columns:44px 1fr 40px 42px 20px;gap:4px;${it.equipped?'border-color:var(--gd);background:#0a140a;':''}">
-      <span class="itag ${it.type}">${it.type}</span>
-      <span class="iname${it.equipped?' eq':''}">${isNew?'<span class="inew" title="Acquis récemment">🆕</span> ':''}${it.name}${it.equipped?' ●':''}</span>
+      <span class="itag ${it.type}">${_tlbl}</span>
+      <span class="iname${it.equipped?' eq':''}">${isNew?'<span class="inew" title="Acquis récemment">🆕</span> ':''}${it.equipped?'<span style="color:var(--g);font-size:9px">✓</span> ':''}${it.name}</span>
       <span class="iqval">${it.qty}</span>
       <span class="ipw">${((it.qty||1)*(it.w||0)).toFixed(2)}kg</span>
       <span></span>
@@ -678,13 +681,14 @@ function rInvArmor(){
     const db=fpApplyArmorMods(base, it.mods);   // RD modifiée par les mods
     const nMods=(it.mods&&Object.values(it.mods).filter(Boolean).length)||0;
     const rdMod=db.bonus&&(db.bonus.phys||db.bonus.energy||db.bonus.rad);
+    const typeLabel=it.type==='POWERARMOR'?'PA':it.type;
     el.innerHTML+=`<div class="irow armor-cols${it.equipped?' equipped-row':''}">
-      <span class="itag ${it.type}">${it.type}</span>
-      <span class="iname${it.equipped?' eq':''}" title="${it.name}">${it.name}${(()=>{const sm=modSummary(it,'armor');return sm?` <small class="imods">🔧 ${sm}</small>`:'';})()}</span>
+      <span class="itag ${it.type}">${typeLabel}</span>
+      <span class="iname${it.equipped?' eq':''}" title="${it.name}">${it.equipped?'<span style="color:var(--g);font-size:9px">✓</span> ':''}${it.name}${(()=>{const sm=modSummary(it,'armor');return sm?` <small class="imods">🔧 ${sm}</small>`:'';})()}</span>
       <span class="iqval">${it.qty}</span>
       <span class="ipw">${((it.qty||1)*(it.w||0)).toFixed(2)}kg</span>
       <span style="font-size:8px;color:${rdMod?'var(--am)':'var(--td)'}">${base.z||'—'} Ph:${db.ph||0} En:${db.en||0}${db.rad?' Rad:'+db.rad:''}</span>
-      <button class="ieq-btn ${it.equipped?'on':'off'}" onclick="tEquip(${i})">${it.equipped?'● ÉQUIPÉ':'○ Équiper'}</button>
+      ${it.type!=='POWERARMOR'?`<button class="ieq-btn ${it.equipped?'on':'off'}" onclick="tEquip(${i})">${it.equipped?'● ÉQUIPÉ':'○ Équiper'}</button>`:`<span style="font-size:8px;color:var(--td)">→ Frame</span>`}
       <span style="display:flex;gap:2px">${it.type!=='POWERARMOR'?`<button class="idel-btn" onclick="leaveHere(${i})" title="Laisser sur place">📍</button>`:''}<button class="idel-btn" onclick="jetItem(${i})" title="Jeter (définitif)">🗑</button></span>
     </div>`;
   });
@@ -694,12 +698,13 @@ async function leaveHere(i,skipConfirm=false){
   if(!skipConfirm&&!await fpConfirm(`Laisser "${it.name}" sur place ?\nL'objet apparaîtra sur la carte ou dans le lieu.`))return;
   try{
     const campId=(typeof fpCampId==='function')?fpCampId():'data';
+    const playerId=new URLSearchParams(location.search).get('id')||'';
     const cs=await db.collection('carte').doc(campId).get();
     const cd=cs.exists?cs.data():{};
-    const tok=(cd.tokens||{})[viewerId];
+    const tok=(cd.tokens||{})[playerId];
     if(!tok||tok.lat==null){alert('Ton personnage n\'est pas localisé sur la carte.');return;}
     const uid=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-    const drop={id:uid,name:it.name,type:it.type,qty:it.qty||1,w:it.w||0,droppedBy:char.name||viewerId,ts:Date.now()};
+    const drop={id:uid,name:it.name,type:it.type,qty:it.qty||1,w:it.w||0,droppedBy:char.name||playerId,ts:Date.now()};
     if(it.zone)drop.zone=it.zone;
     if(it.mods&&Object.keys(it.mods).length)drop.mods=it.mods;
     if(it.slots)drop.slots=it.slots;
@@ -876,8 +881,11 @@ async function tEquipFrame(i){
     await leaveHere(i,true);
     rAll();
   } else {
+    if(!it.core){alert('La frame n\'a pas de cellule de fusion. Installe une cellule avant d\'entrer.');return;}
     char.inventory.forEach(o=>{if(o.type==='POWERARMOR_FRAME')o.equipped=false;});
     it.equipped=true;
+    char.powerArmor=true;
+    await sauvegarder();
     rAll();
   }
 }
