@@ -270,7 +270,9 @@ function buildMap() {
     });
     fdb.collection('carte').doc(fpCampId()).onSnapshot(s => {
       const d = s.exists ? s.data() : {};
-      mapData = { pois: d.pois || [], zones: normZones(d.zones), tokens: d.tokens || {}, fog: d.fog || {}, geoReveal: d.geoReveal || {}, geoVisited: d.geoVisited || {}, ping: d.ping || null, metroTokens: d.metroTokens || {}, metroFog: d.metroFog || {}, underground: d.underground || {}, beacons: d.beacons || {}, groundItems: d.groundItems || [] };
+      // groundItems vit dans un doc SÉPARÉ (carte/ground__<camp>) → on le préserve
+      // à travers les réassignations de mapData (le .set(mapData) ne le touche plus).
+      mapData = { pois: d.pois || [], zones: normZones(d.zones), tokens: d.tokens || {}, fog: d.fog || {}, geoReveal: d.geoReveal || {}, geoVisited: d.geoVisited || {}, ping: d.ping || null, metroTokens: d.metroTokens || {}, metroFog: d.metroFog || {}, underground: d.underground || {}, beacons: d.beacons || {}, groundItems: mapData.groundItems || [] };
       renderAll();
       tryCenterPlayer();   // au 1er chargement : centrer sur le jeton du joueur
       // Si le joueur est sous terre au 1er chargement → ouvrir directement le métro centré sur lui
@@ -278,6 +280,12 @@ function buildMap() {
         _autoTabDone = true;
         if (mapData.underground?.[viewerId]) switchMapTab('metro');
       }
+    });
+    // Objets au sol — document dédié (immunisé contre le .set(mapData) complet)
+    fdb.collection('carte').doc('ground__' + fpCampId()).onSnapshot(s => {
+      const d = s.exists ? s.data() : {};
+      mapData.groundItems = Array.isArray(d.items) ? d.items : [];
+      if (map) renderGroundItems();
     });
     fdb.collection('carte').doc('lieux').onSnapshot(s => {
       lieux = (s.exists ? s.data().lieux : null) || [];
@@ -509,8 +517,16 @@ function isMajorRoad(f) {
 }
 
 async function saveData() {
-  try { await fdb.collection('carte').doc(fpCampId()).set(mapData); }
+  // groundItems est géré dans un doc dédié → on l'exclut du .set complet (sinon
+  // il serait effacé/écrasé à chaque sauvegarde de la carte).
+  const { groundItems, ...rest } = mapData;
+  try { await fdb.collection('carte').doc(fpCampId()).set(rest); }
   catch (e) { console.error('saveData:', e); }
+}
+// Écrit UNIQUEMENT le doc des objets au sol (append/pickup/suppression)
+async function saveGroundItems() {
+  try { await fdb.collection('carte').doc('ground__' + fpCampId()).set({ items: mapData.groundItems || [] }); }
+  catch (e) { console.error('saveGroundItems:', e); }
 }
 
 // ---- Visibilité d'un élément selon la perspective ----
@@ -794,12 +810,12 @@ async function ramasserGroundItem(itemId) {
   inv.push(clean);
   await fdb.collection('joueurs').doc(viewerId).update({ inventory: inv, lastUpdate: Date.now() });
   mapData.groundItems = (mapData.groundItems || []).filter(x => x.id !== itemId);
-  saveData(); map.closePopup(); renderGroundItems();
+  saveGroundItems(); map.closePopup(); renderGroundItems();
 }
 async function supprimerGroundItem(itemId) {
   if (!isMJ) return;
   mapData.groundItems = (mapData.groundItems || []).filter(x => x.id !== itemId);
-  saveData(); map.closePopup(); renderGroundItems();
+  saveGroundItems(); map.closePopup(); renderGroundItems();
 }
 function renderZones() {
   zoneLayer.clearLayers();

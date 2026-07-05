@@ -766,8 +766,12 @@ async function leaveHere(i,skipConfirm=false){
       await db.collection('settlements').doc(campId).update({[`sites.${siteDrop}.groundItems`]:gi});
       dest={type:'refuge',name:(sd.sites[siteDrop].name||'refuge')};
     } else {
-      const gi=[...(cd.groundItems||[]),{...drop,lat:tok.lat,lng:tok.lng}];
-      await db.collection('carte').doc(campId).update({groundItems:gi});
+      // Objets au sol de la carte : document DÉDIÉ carte/ground__<campId> (jamais
+      // touché par le .set(mapData) de la carte → plus d'effacement).
+      const gref=db.collection('carte').doc('ground__'+campId);
+      const gs=await gref.get();
+      const prev=(gs.exists&&Array.isArray(gs.data().items))?gs.data().items:[];
+      await gref.set({items:[...prev,{...drop,lat:tok.lat,lng:tok.lng}]});
       dest={type:'carte'};
     }
     char.inventory.splice(i,1);
