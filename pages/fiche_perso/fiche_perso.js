@@ -758,7 +758,7 @@ async function leaveHere(i,skipConfirm=false){
       const dlat=tok.lat-p.lat,dlng=tok.lng-p.lng;
       const cos=Math.cos(tok.lat*Math.PI/180);
       const dist=Math.sqrt(dlat*dlat*111320*111320+dlng*dlng*111320*cos*111320*cos);
-      if(dist<=150){siteDrop=sid;break;}
+      if(dist<=300){siteDrop=sid;break;}   // proximité refuge (aligné sur ON_SITE_M settlement.js)
     }
     let dest;
     if(siteDrop){

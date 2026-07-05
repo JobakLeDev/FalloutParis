@@ -38,7 +38,8 @@ const FOG_RADIUS_CITY_M  = 600;   // rayon de découverte intra-muros (ville)
 const FOG_RADIUS_RURAL_M = 1500;  // rayon de découverte hors périphérique (campagne)
 const FOG_STEP_M      = 250;   // espacement min entre points explorés enregistrés
 const VISION_RADIUS_M = 1500;  // rayon de vision des alliés
-const ENTER_REFUGE_M  = 15;    // distance max pour entrer dans un refuge/settlement depuis la carte
+const ENTER_REFUGE_M  = 300;   // distance max pour entrer dans un refuge/settlement depuis la carte
+const GROUND_PICK_M   = 250;   // distance max pour ramasser un objet au sol sur la carte
 const TELEPORT_M      = 5000;  // au-delà : repositionnement (pas de traîné)
 // Métro
 const METRO_REVEAL_M  = 350;   // portée de découverte le long du tunnel courant
@@ -789,7 +790,7 @@ function renderGroundItems() {
     });
     const myTok = viewerId ? mapData.tokens?.[viewerId] : null;
     const dist = myTok ? L.latLng(myTok.lat, myTok.lng).distanceTo(L.latLng(item.lat, item.lng)) : Infinity;
-    const canPick = !isMJ && viewerId && dist <= 50;
+    const canPick = !isMJ && viewerId && dist <= GROUND_PICK_M;
     let h = `<div class="zpop"><div class="zpop-title">🛡 ${item.name}</div>
       <div class="zpop-pool">${item.type} · ${item.qty||1}× · déposé par <b>${item.droppedBy||'?'}</b></div>`;
     if (canPick) { const _lbl = item.type==='POWERARMOR_FRAME' ? '🦾 Rentrer dans l\'armure' : '⬆ Ramasser'; h += `<div class="tok-actions"><button onclick="ramasserGroundItem('${item.id}')">${_lbl}</button></div>`; }
@@ -803,7 +804,7 @@ async function ramasserGroundItem(itemId) {
   if (!viewerId) return;
   const item = (mapData.groundItems || []).find(x => x.id === itemId); if (!item) return;
   const myTok = mapData.tokens?.[viewerId];
-  if (!myTok || L.latLng(myTok.lat, myTok.lng).distanceTo(L.latLng(item.lat, item.lng)) > 50) { alert('Trop loin.'); return; }
+  if (!myTok || L.latLng(myTok.lat, myTok.lng).distanceTo(L.latLng(item.lat, item.lng)) > GROUND_PICK_M) { alert('Trop loin.'); return; }
   const snap = await fdb.collection('joueurs').doc(viewerId).get();
   const inv = snap.exists ? [...(snap.data().inventory || [])] : [];
   const { id, lat, lng, droppedBy, ts, ...clean } = item;
@@ -1091,7 +1092,7 @@ function renderFog() {
 }
 
 // Découverte auto d'un refuge/settlement : son jeton arrive à <100 m du POI lié → révélé au joueur.
-const SETTLEMENT_DISCOVER_M = 100;
+const SETTLEMENT_DISCOVER_M = 300;
 function _settlementAutoReveal(id, lat, lng) {
   if (!id) return;
   Object.values(settlementsData.sites || {}).forEach(s => {
