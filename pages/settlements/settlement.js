@@ -396,10 +396,13 @@ function renderGround(site){
   if(!gi.length){el.innerHTML=h+'<div class="s-note">Aucun objet.</div>';return;}
   const onSite=!isMJ&&me&&canAccess(site)&&_onSite(site);
   h+=gi.map((it,i)=>{
-    const tag=it.type==='POWERARMOR_FRAME'?'FRAME':it.type==='POWERARMOR'?'PA':(it.type||'');
+    let tag=it.type==='POWERARMOR_FRAME'?'FRAME':it.type==='POWERARMOR'?'PA':(it.type||'');
+    // Éviter la redondance (ex. "FRAME" + "Frame Power Armor") : masquer le tag si le nom le contient déjà
+    if(tag && new RegExp('\\b'+tag+'\\b','i').test(it.name||'')) tag='';
+    const tagHtml=tag?`<span class="pa-sl-lbl" style="min-width:36px">${tag}</span>`:'';
     const pickBtn=onSite?`<button class="bp-mini" onclick="ramasserGroundItemS(${i})">⬆ Ramasser</button>`:'';
     const delBtn=isMJ?`<button class="bp-mini" style="color:var(--rd)" onclick="supprimerGroundItemS(${i})">🗑</button>`:'';
-    return `<div class="pa-slot-row"><span class="pa-sl-lbl" style="min-width:36px">${tag}</span><span class="pa-sl-name">${esc(it.name)} ×${it.qty||1}</span><span style="font-size:7px;color:var(--td)">${esc(it.droppedBy||'?')}</span>${pickBtn}${delBtn}</div>`;
+    return `<div class="pa-slot-row">${tagHtml}<span class="pa-sl-name">${esc(it.name)} ×${it.qty||1}</span><span style="font-size:7px;color:var(--td)">${esc(it.droppedBy||'?')}</span>${pickBtn}${delBtn}</div>`;
   }).join('');
   el.innerHTML=h;
 }
