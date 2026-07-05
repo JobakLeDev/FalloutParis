@@ -747,7 +747,7 @@ async function leaveHere(i,skipConfirm=false){
       await db.collection('carte').doc(campId).update({groundItems:gi});
     }
     char.inventory.splice(i,1);
-    await sauvegarder();
+    saveToFirebase();
     rInventory();
   }catch(e){alert('Erreur : '+e.message);}
 }
@@ -902,7 +902,7 @@ async function tEquipFrame(i){
     char.inventory.forEach(o=>{if(o.type==='POWERARMOR_FRAME')o.equipped=false;});
     it.equipped=true;
     char.powerArmor=true;
-    await sauvegarder();
+    saveToFirebase();
     rAll();
   }
 }
@@ -919,7 +919,7 @@ async function paEquipPiece(frameIdx,slotKey,pieceName){
   const piece=char.inventory[pieceIdx];
   frame.slots[slotKey]={name:pieceName,mods:piece.mods||{}};
   if((piece.qty||1)>1)piece.qty--;else char.inventory.splice(pieceIdx,1);
-  await sauvegarder();rInvArmor();
+  saveToFirebase();rInvArmor();
 }
 async function paRemovePiece(frameIdx,slotKey){
   const frame=char.inventory[frameIdx];if(!frame||frame.type!=='POWERARMOR_FRAME')return;
@@ -927,7 +927,7 @@ async function paRemovePiece(frameIdx,slotKey){
   const db=DB.armor.find(a=>a.n===cur.name)||{};
   char.inventory.push({name:cur.name,type:'POWERARMOR',qty:1,w:db.w||0,equipped:false,zone:db.z||''});
   frame.slots[slotKey]=null;
-  await sauvegarder();rInvArmor();
+  saveToFirebase();rInvArmor();
 }
 async function paInstallCore(frameIdx){
   const frame=char.inventory[frameIdx];if(!frame||frame.type!=='POWERARMOR_FRAME')return;
@@ -936,7 +936,7 @@ async function paInstallCore(frameIdx){
   frame.core=true;
   const cell=char.inventory[ci];
   if((cell.qty||1)>1)cell.qty--;else char.inventory.splice(ci,1);
-  await sauvegarder();rInvArmor();
+  saveToFirebase();rInvArmor();
 }
 async function paRemoveCore(frameIdx){
   const frame=char.inventory[frameIdx];if(!frame||frame.type!=='POWERARMOR_FRAME'||!frame.core)return;
@@ -945,7 +945,7 @@ async function paRemoveCore(frameIdx){
   const ex=char.inventory.find((x,j)=>j!==frameIdx&&x.name==='Cellule de fusion');
   if(ex)ex.qty=(ex.qty||1)+1;
   else char.inventory.push({name:'Cellule de fusion',type:'STUFF',qty:1,w:1,equipped:false});
-  await sauvegarder();rInvArmor();
+  saveToFirebase();rInvArmor();
 }
 function toggleAtout(name){const it=char.inventory.find(i=>i.name===name&&i.type==='WEAPON');if(it)it.persoBonus=!it.persoBonus;rAll();}
 
