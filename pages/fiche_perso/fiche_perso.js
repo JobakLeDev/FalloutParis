@@ -143,11 +143,17 @@ function sw(tab){
   // Charger la carte (iframe) à la première ouverture de l'onglet ; sinon recentrer sur le joueur
   if(tab==='carte'){
     const f=document.getElementById('carte-frame');
-    const bodyEl=document.querySelector('.body');
-    // Lire clientHeight avant de toucher l'iframe : force un reflow synchrone et
-    // garantit que l'iframe reçoit une hauteur px définie au moment où le browser
-    // crée son viewport (sinon window.innerHeight vaut 0 dans l'iframe).
-    const _syncH=()=>{ f.style.height=(bodyEl?bodyEl.clientHeight:window.innerHeight)+'px'; };
+    // Hauteur de l'iframe = espace viewport sous les onglets, en coordonnées de
+    // LAYOUT (offsetTop cumulé, insensible au zoom body de responsive.js). On ne
+    // peut pas se fier à .body.clientHeight (il s'écrase à ~0 : la page est en
+    // height:auto — bloc écran 27" — et #tc-carte hors flux ne lui donne pas de
+    // hauteur ; désormais #tc-carte est dans le flux et prend cette hauteur JS).
+    const _syncH=()=>{
+      const z=parseFloat(getComputedStyle(document.body).zoom)||1;
+      let top=0, el=f;
+      while(el){ top+=el.offsetTop||0; el=el.offsetParent; }
+      f.style.height=Math.max(320,(window.innerHeight/z)-top-6)+'px';
+    };
     _syncH();
     if(f && !f.src){
       f.src='../carte/carte.html?id='+encodeURIComponent(id)+'&embed=1&camp='+encodeURIComponent((char&&char.campaign)||'data');
