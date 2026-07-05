@@ -108,17 +108,45 @@ function zonesAlongPath(from, to) {
   }
   return [...seen.values()];
 }
+const _THREAT_ORDER = { calme: 0, normal: 1, eleve: 2, extreme: 3 };
+let _lastMove = null;   // {id, dist, zones} — pour relancer le générateur
+function rerollDeplacement() { if (_lastMove) showMoveResult(_lastMove.id, _lastMove.dist, _lastMove.zones); }
 function showMoveResult(id, dist, zones) {
   const el = document.getElementById('move-result'); if (!el) return;
+  _lastMove = { id, dist, zones };
   const nom = joueurs[id]?.nom || id;
   const distTxt = dist < 1000 ? Math.round(dist) + ' m' : (dist / 1000).toFixed(2) + ' km';
   // Report auto vers le dashboard MJ (champ « Distance (km) » du panneau Rencontres)
   try { localStorage.setItem('fp_lastMoveKm', JSON.stringify({ km: +(dist / 1000).toFixed(2), name: nom, ts: Date.now() })); } catch (e) {}
+
+  // Menace la plus élevée parmi les zones traversées → générateur de déplacement
+  let threat = 'normal';
+  zones.forEach(z => { if ((_THREAT_ORDER[z.threat] ?? 1) > (_THREAT_ORDER[threat] ?? 1)) threat = z.threat || 'normal'; });
+  const res = (typeof fpRollDeplacement === 'function') ? fpRollDeplacement(dist / 1000, threat) : null;
+  const menaceLbl = (typeof THREAT_LABELS !== 'undefined' && THREAT_LABELS[threat]) || threat;
+
+  let gen = '';
+  if (res) {
+    const timeTxt = fpFmtDuree(res.mins);
+    gen = `<div class="mjp-title" style="margin-top:8px">🎲 Déplacement <span style="color:var(--td);font-weight:normal">· ${menaceLbl} · ${res.pKm}%/km</span></div>
+      <div class="pz-row"><span class="pz-nom">⏱ Trajet</span><span class="pz-zone" style="color:var(--am)">${timeTxt}</span></div>`;
+    if (!res.events.length) {
+      gen += `<div class="pz-row"><span class="pz-nom" style="color:var(--g)">✓ Sans encombre</span></div>`;
+    } else {
+      gen += res.events.map((e, i) => {
+        const col = (e.type === 'combat' || e.type === 'danger') ? 'var(--rd)' : 'var(--am)';
+        return `<div class="pz-row"><span class="pz-nom" style="color:${col}">⚡ ${i + 1}. ${e.label}</span></div>`;
+      }).join('');
+    }
+    gen += `<button class="pz-gen" style="margin-top:6px;width:100%;background:none;border:1px solid var(--b2);color:var(--td);font-family:inherit;font-size:9px;padding:3px;cursor:pointer" onclick="rerollDeplacement()">🎲 Relancer le déplacement</button>`;
+  }
+
   el.innerHTML = `<div class="mjp-section">
     <div class="mjp-title">Déplacement</div>
     <div class="pz-row"><span class="pz-nom">${nom}</span><span class="pz-zone" style="color:var(--am)">${distTxt}</span></div>
     <div class="mjp-title" style="margin-top:6px">Zones traversées</div>
     ${zones.length ? zones.map(z => `<div class="pz-row"><span class="pz-nom">${z.name}</span><a class="pz-gen" href="${z.genUrl}" title="Générer rencontre">⚔</a></div>`).join('') : '<span class="empty">Aucune</span>'}
+    ${gen}
   </div>`;
 }
 function centerOnToken(id) {

@@ -1342,14 +1342,16 @@ function pointInPoly(x, y, poly) {
 function detectZone(lat, lng) {
   if (geoZonesData) {
     for (const f of geoZonesData.features) {
-      if (geoPointInFeature(lat, lng, f))
-        return { name: f.properties.Nom || 'Zone', genUrl: '../mj/mj.html?' + geoZoneGenQuery(f.properties) };
+      if (geoPointInFeature(lat, lng, f)) {
+        const q = geoZoneGenQuery(f.properties);
+        return { name: f.properties.Nom || 'Zone', threat: new URLSearchParams(q).get('threat') || 'normal', genUrl: '../mj/mj.html?' + q };
+      }
     }
   }
   for (const z of (mapData.zones || [])) {
     if (z.polygon && z.polygon.length >= 3 &&
         pointInPoly(lng, lat, z.polygon.map(p => ({ x: p.lng, y: p.lat }))))
-      return { name: z.name || z.baseZone, genUrl: zoneGenLink(z) };
+      return { name: z.name || z.baseZone, threat: z.threat || 'normal', genUrl: zoneGenLink(z) };
   }
   return null;
 }
