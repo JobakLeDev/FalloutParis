@@ -73,7 +73,7 @@ let mapLieu = null;        // instance Leaflet pour les lieux
 let settlementsData = { sites: {} };   // refuges (/settlements/<camp>) — affichés dans LIEUX selon la position
 let _openRefuge = null;    // id du refuge ouvert dans l'onglet LIEUX
 let joueurs = {};
-let zoneLayer, poiLayer, tokenLayer;
+let zoneLayer, poiLayer, tokenLayer, groundLayer;
 const poiMarkers = {}, zonePolys = {};
 let openItem = null, reopening = false;            // popup ouvert (pour le réouvrir après render)
 let zoneFormCtx = null;                            // {polygon} (création) ou {zone} (édition)
@@ -235,6 +235,7 @@ function buildMap() {
   geoMarkerLayer = L.layerGroup().addTo(map);
   zoneLayer  = L.layerGroup().addTo(map);
   poiLayer   = L.layerGroup().addTo(map);
+  groundLayer = L.layerGroup().addTo(map);
   tokenLayer = L.layerGroup().addTo(map);
 
   map.on('click', onMapClick);
@@ -737,6 +738,7 @@ function renderAll() {
   renderPOIs();
   renderGeoLayers();   // réagit aussi aux changements de geoReveal
   renderTokens();
+  renderGroundItems();
   renderFog();
   renderPing();
   renderMJPanel();
@@ -760,6 +762,45 @@ function normZones(z) {
   }));
 }
 
+function renderGroundItems() {
+  if (!groundLayer) return;
+  groundLayer.clearLayers();
+  (mapData.groundItems || []).forEach(item => {
+    const m = L.marker([item.lat, item.lng], {
+      icon: L.divIcon({ className: 'ground-item-pin',
+        html: `<img src="../../img/ground_armor.svg" class="gi-img" title="${item.name}">`,
+        iconSize: [28, 28], iconAnchor: [14, 20] })
+    });
+    const myTok = viewerId ? mapData.tokens?.[viewerId] : null;
+    const dist = myTok ? L.latLng(myTok.lat, myTok.lng).distanceTo(L.latLng(item.lat, item.lng)) : Infinity;
+    const canPick = !isMJ && viewerId && dist <= 50;
+    let h = `<div class="zpop"><div class="zpop-title">🛡 ${item.name}</div>
+      <div class="zpop-pool">${item.type} · ${item.qty||1}× · déposé par <b>${item.droppedBy||'?'}</b></div>`;
+    if (canPick) h += `<div class="tok-actions"><button onclick="ramasserGroundItem('${item.id}')">⬆ Ramasser</button></div>`;
+    else if (!isMJ && viewerId) h += `<div class="zpop-pool" style="color:var(--td)">Trop loin (${Math.round(dist)} m)</div>`;
+    if (isMJ) h += `<div class="zpop-mj"><button onclick="supprimerGroundItem('${item.id}')" class="del">🗑 Retirer</button></div>`;
+    m.bindPopup(h + '</div>');
+    m.addTo(groundLayer);
+  });
+}
+async function ramasserGroundItem(itemId) {
+  if (!viewerId) return;
+  const item = (mapData.groundItems || []).find(x => x.id === itemId); if (!item) return;
+  const myTok = mapData.tokens?.[viewerId];
+  if (!myTok || L.latLng(myTok.lat, myTok.lng).distanceTo(L.latLng(item.lat, item.lng)) > 50) { alert('Trop loin.'); return; }
+  const snap = await fdb.collection('joueurs').doc(viewerId).get();
+  const inv = snap.exists ? [...(snap.data().inventory || [])] : [];
+  const { id, lat, lng, droppedBy, ts, ...clean } = item;
+  inv.push(clean);
+  await fdb.collection('joueurs').doc(viewerId).update({ inventory: inv, lastUpdate: Date.now() });
+  mapData.groundItems = (mapData.groundItems || []).filter(x => x.id !== itemId);
+  saveData(); map.closePopup(); renderGroundItems();
+}
+async function supprimerGroundItem(itemId) {
+  if (!isMJ) return;
+  mapData.groundItems = (mapData.groundItems || []).filter(x => x.id !== itemId);
+  saveData(); map.closePopup(); renderGroundItems();
+}
 function renderZones() {
   zoneLayer.clearLayers();
   for (const k in zonePolys) delete zonePolys[k];

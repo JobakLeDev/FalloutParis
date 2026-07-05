@@ -388,6 +388,42 @@ function sTick(site){
   if(countBlk(site,'beacon')){ const cap = Math.max(0, bedCount(site) - extVendorCount(site) - residentCount(site)); let s = site.settlers||0; if(s < cap){ let arr = 0; const tries = Math.max(1, Math.floor(days)); for(let i=0;i<tries && (s+arr)<cap;i++){ if(Math.random()<0.5) arr++; } if(arr>0) site.settlers = Math.min(cap, s+arr); } }
   site.lastTick = now; save();
 }
+function renderGround(site){
+  const el=document.getElementById('s-ground');if(!el)return;
+  const gi=site.groundItems||[];
+  if(!gi.length&&!isMJ){el.innerHTML='';return;}
+  let h='<div class="s-sub">🛡 Objets au sol</div>';
+  if(!gi.length){el.innerHTML=h+'<div class="s-note">Aucun objet.</div>';return;}
+  const onSite=!isMJ&&me&&canAccess(site)&&_onSite(site);
+  h+=gi.map((it,i)=>{
+    const tag=it.type==='POWERARMOR_FRAME'?'FRAME':it.type==='POWERARMOR'?'PA':(it.type||'');
+    const pickBtn=onSite?`<button class="bp-mini" onclick="ramasserGroundItemS(${i})">⬆ Ramasser</button>`:'';
+    const delBtn=isMJ?`<button class="bp-mini" style="color:var(--rd)" onclick="supprimerGroundItemS(${i})">🗑</button>`:'';
+    return `<div class="pa-slot-row"><span class="pa-sl-lbl" style="min-width:36px">${tag}</span><span class="pa-sl-name">${esc(it.name)} ×${it.qty||1}</span><span style="font-size:7px;color:var(--td)">${esc(it.droppedBy||'?')}</span>${pickBtn}${delBtn}</div>`;
+  }).join('');
+  el.innerHTML=h;
+}
+async function ramasserGroundItemS(idx){
+  const site=data.sites[selSite];if(!site||!me)return;
+  if(!canAccess(site)||!_onSite(site)){alert('Tu dois être sur place.');return;}
+  const gi=[...(site.groundItems||[])];const it=gi[idx];if(!it)return;
+  gi.splice(idx,1);
+  const inv=(me.inventory||[]).map(x=>({...x}));
+  const{id,droppedBy,ts,...clean}=it;
+  inv.push(clean);
+  try{
+    await fdb.collection('joueurs').doc(viewerId).update({inventory:inv,lastUpdate:Date.now()});
+    me.inventory=inv;
+  }catch(e){alert('Erreur : '+e.message);return;}
+  site.groundItems=gi;
+  save();renderGround(site);
+}
+async function supprimerGroundItemS(idx){
+  if(!isMJ)return;
+  const site=data.sites[selSite];if(!site)return;
+  const gi=[...(site.groundItems||[])];gi.splice(idx,1);
+  site.groundItems=gi;save();renderGround(site);
+}
 function renderStats(site){
   const el = document.getElementById('s-stats'); if(!el) return;
   const colonsCtrl = isMJ ? ` <button class="s-stat-btn" onclick="chSettlers('${selSite}',-1)">−</button><button class="s-stat-btn" onclick="chSettlers('${selSite}',1)">+</button>` : '';
@@ -982,6 +1018,7 @@ function render(){
   renderStats(site);
   renderTokens(site);
   renderEco(site);
+  renderGround(site);
   renderActions(site);
 
   // grille — layout pixel (permet les arêtes murs/portes/fenêtres comme la battlemap)
