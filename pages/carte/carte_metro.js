@@ -167,9 +167,11 @@ function renderMetroStations(){
       const revealed = explored.some(p => L.latLng(p.lat, p.lng).distanceTo(L.latLng(lat, lng)) < METRO_TUNNEL_W_M * 1.6);
       if (!revealed) return;
     }
-    // Cliquable : propose au joueur de remonter à la surface (miroir de la descente)
+    // Cliquable : propose au joueur de remonter à la surface (miroir de la descente).
+    // La boîte englobe le point ET le nom (sinon cliquer le nom rate la cible).
+    const w = Math.max(30, nom.length * 4.8 + 10);
     const mk = L.marker([lat, lng], { title: nom, riseOnHover: true, icon: L.divIcon({ className: 'metro-stn',
-      html: `<span class="ms-dot"></span><span class="ms-label">${nom}</span>`, iconSize: [12, 12], iconAnchor: [6, 6] }) }).addTo(metroStationLayer);
+      html: `<span class="ms-dot"></span><span class="ms-label">${nom}</span>`, iconSize: [w, 28], iconAnchor: [w/2, 7] }) }).addTo(metroStationLayer);
     mk.bindPopup(() => _metroStationPopup(lat, lng, nom));
     mk.on('popupopen', () => { metroOpenStation = nom; });
     metroStationMarkers[nom] = mk;
@@ -250,8 +252,13 @@ function renderMetroTokens(){
       </div>`);
     } else {
       // Vue joueur : interactions de proximité (les jetons affichés ici sont déjà à portée)
-      const exBtns = (viewerId && id !== viewerId) ? _interactBtns(id) : '';
-      m.bindPopup('<b>' + nom + '</b>' + exBtns);
+      let btns = (viewerId && id !== viewerId) ? _interactBtns(id) : '';
+      // Mon propre jeton (posé sur la station) : proposer de REMONTER à la surface
+      if (me){
+        const st = nearestStation(pos.lat, pos.lng);
+        if (st && st.dist < METRO_DESCEND_M) btns += `<div class="tok-actions"><button onclick="remonterSurfaceIci(${st.lat},${st.lng})">🏙 Remonter à Paris</button></div>`;
+      }
+      m.bindPopup('<b>' + nom + '</b>' + btns);
     }
   });
 }

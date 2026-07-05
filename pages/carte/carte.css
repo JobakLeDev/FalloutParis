@@ -203,11 +203,11 @@ img.land-icon-img{
 .metro-entrance:hover .me-img{filter:drop-shadow(0 0 5px rgba(93,255,93,.9)) brightness(1.2);}
 .metro-entrance:hover .me-label{opacity:1;}
 
-/* Stations de métro (cliquables : remonter à la surface) */
-.metro-stn{display:flex;flex-direction:column;align-items:center;cursor:pointer;}
-.metro-stn .ms-dot{width:11px;height:11px;border-radius:50%;background:#5dff5d;border:1.5px solid #0c150c;box-shadow:0 0 5px rgba(93,255,93,.85);}
-.metro-stn:hover .ms-dot{background:#8dff8d;box-shadow:0 0 8px rgba(93,255,93,1);}
-.metro-stn .ms-label{margin-top:1px;font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--tb);letter-spacing:.5px;white-space:nowrap;text-shadow:0 0 3px #000,0 0 2px #000;pointer-events:none;}
+/* Stations de métro (cliquables : remonter à la surface) — toute la boîte (point + nom) est cliquable */
+.metro-stn{display:flex;flex-direction:column;align-items:center;cursor:pointer;overflow:visible;}
+.metro-stn .ms-dot{width:12px;height:12px;border-radius:50%;background:#5dff5d;border:1.5px solid #0c150c;box-shadow:0 0 5px rgba(93,255,93,.85);flex:none;}
+.metro-stn:hover .ms-dot{background:#8dff8d;box-shadow:0 0 9px rgba(93,255,93,1);}
+.metro-stn .ms-label{margin-top:1px;font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--tb);letter-spacing:.5px;white-space:nowrap;text-shadow:0 0 3px #000,0 0 2px #000;}
 
 /* ===== ÉCHANGES ENTRE JOUEURS (proximité) ===== */
 .tok-actions{display:flex;flex-direction:column;gap:4px;margin-top:6px;}
