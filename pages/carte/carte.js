@@ -792,7 +792,7 @@ function renderGroundItems() {
     const canPick = !isMJ && viewerId && dist <= 50;
     let h = `<div class="zpop"><div class="zpop-title">🛡 ${item.name}</div>
       <div class="zpop-pool">${item.type} · ${item.qty||1}× · déposé par <b>${item.droppedBy||'?'}</b></div>`;
-    if (canPick) h += `<div class="tok-actions"><button onclick="ramasserGroundItem('${item.id}')">⬆ Ramasser</button></div>`;
+    if (canPick) { const _lbl = item.type==='POWERARMOR_FRAME' ? '🦾 Rentrer dans l\'armure' : '⬆ Ramasser'; h += `<div class="tok-actions"><button onclick="ramasserGroundItem('${item.id}')">${_lbl}</button></div>`; }
     else if (!isMJ && viewerId) h += `<div class="zpop-pool" style="color:var(--td)">Trop loin (${Math.round(dist)} m)</div>`;
     if (isMJ) h += `<div class="zpop-mj"><button onclick="supprimerGroundItem('${item.id}')" class="del">🗑 Retirer</button></div>`;
     m.bindPopup(h + '</div>');
@@ -807,8 +807,15 @@ async function ramasserGroundItem(itemId) {
   const snap = await fdb.collection('joueurs').doc(viewerId).get();
   const inv = snap.exists ? [...(snap.data().inventory || [])] : [];
   const { id, lat, lng, droppedBy, ts, ...clean } = item;
+  const upd = { inventory: inv, lastUpdate: Date.now() };
+  if (clean.type === 'POWERARMOR_FRAME') {
+    // On ne « ramasse » pas une frame : on RENTRE dedans → équipée + PA active
+    inv.forEach(o => { if (o.type === 'POWERARMOR_FRAME') o.equipped = false; });
+    clean.equipped = true;
+    upd.powerArmor = true;
+  }
   inv.push(clean);
-  await fdb.collection('joueurs').doc(viewerId).update({ inventory: inv, lastUpdate: Date.now() });
+  await fdb.collection('joueurs').doc(viewerId).update(upd);
   mapData.groundItems = (mapData.groundItems || []).filter(x => x.id !== itemId);
   saveGroundItems(); map.closePopup(); renderGroundItems();
 }
