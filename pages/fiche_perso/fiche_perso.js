@@ -725,16 +725,22 @@ function rInvArmor(){
     </div>`;
   });
 }
+// Retourne : false si annulé/impossible (objet CONSERVÉ dans l'inventaire),
+// sinon {type:'refuge'|'carte', name} pour indiquer où l'objet a été déposé.
 async function leaveHere(i,skipConfirm=false){
-  const it=char.inventory[i]; if(!it)return;
-  if(!skipConfirm&&!await fpConfirm(`Laisser "${it.name}" sur place ?\nL'objet apparaîtra sur la carte ou dans le lieu.`))return;
+  const it=char.inventory[i]; if(!it)return false;
+  if(!skipConfirm&&!await fpConfirm(`Laisser "${it.name}" sur place ?\nL'objet apparaîtra sur la carte ou dans le lieu.`))return false;
   try{
     const campId=(typeof fpCampId==='function')?fpCampId():'data';
     const playerId=new URLSearchParams(location.search).get('id')||'';
     const cs=await db.collection('carte').doc(campId).get();
     const cd=cs.exists?cs.data():{};
     const tok=(cd.tokens||{})[playerId];
-    if(!tok||tok.lat==null){alert('Ton personnage n\'est pas localisé sur la carte.');return;}
+    if(!tok||tok.lat==null){
+      // Pas de jeton sur la carte → aucune position où déposer : on NE perd PAS l'objet.
+      if(!skipConfirm)alert('Tu n\'es pas localisé sur la carte : impossible de laisser au sol.\nL\'objet reste dans ton inventaire.');
+      return false;
+    }
     const uid=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
     const drop={id:uid,name:it.name,type:it.type,qty:it.qty||1,w:it.w||0,droppedBy:char.name||playerId,ts:Date.now()};
     if(it.zone)drop.zone=it.zone;
@@ -754,17 +760,21 @@ async function leaveHere(i,skipConfirm=false){
       const dist=Math.sqrt(dlat*dlat*111320*111320+dlng*dlng*111320*cos*111320*cos);
       if(dist<=150){siteDrop=sid;break;}
     }
+    let dest;
     if(siteDrop){
       const gi=[...(sd.sites[siteDrop].groundItems||[]),drop];
       await db.collection('settlements').doc(campId).update({[`sites.${siteDrop}.groundItems`]:gi});
+      dest={type:'refuge',name:(sd.sites[siteDrop].name||'refuge')};
     } else {
       const gi=[...(cd.groundItems||[]),{...drop,lat:tok.lat,lng:tok.lng}];
       await db.collection('carte').doc(campId).update({groundItems:gi});
+      dest={type:'carte'};
     }
     char.inventory.splice(i,1);
     saveToFirebase();
     rInventory();
-  }catch(e){alert('Erreur : '+e.message);}
+    return dest;
+  }catch(e){alert('Erreur : '+e.message);return false;}
 }
 
 function rInvAid(){
@@ -896,21 +906,38 @@ function addXP(n){
 function setMom(i){char.momentum=(i<char.momentum)?i:i+1;rMom();}
 function tWound(k){char.wounds[k]=!char.wounds[k];rLocs();}
 function cyclePerk(n){char.perks[n]=((char.perks[n]||0)+1)%((PERKS_DEF[n]?.max||1)+1);rAll();}
-function togglePA(){
+async function togglePA(){
   if(!char.powerArmor){
     const f=getActiveFrame();
     if(!f){alert('Aucune frame Power Armor activée dans l\'inventaire.');return;}
     if(!f.core){alert('La frame n\'a pas de cellule de fusion.');return;}
+    char.powerArmor=true;
+    saveToFirebase();
+    rAll();
+  } else {
+    // Désactiver = sortir de la frame et la laisser sur place (même comportement que tEquipFrame)
+    const idx=char.inventory.findIndex(it=>it.type==='POWERARMOR_FRAME'&&it.equipped);
+    if(idx>=0){ await tEquipFrame(idx); }
+    else { char.powerArmor=false; saveToFirebase(); rAll(); }
   }
-  char.powerArmor=!char.powerArmor;
-  rAll();
 }
 async function tEquipFrame(i){
   const it=char.inventory[i];if(!it||it.type!=='POWERARMOR_FRAME')return;
   if(it.equipped){
     if(!await fpConfirm(`Sortir de la frame "${it.name}" et la laisser sur place ?`))return;
+    const nom=it.name;
+    it.equipped=false;
     char.powerArmor=false;
-    await leaveHere(i,true);
+    const dest=await leaveHere(i,true);
+    if(dest){
+      alert(dest.type==='refuge'
+        ? `"${nom}" laissée au refuge « ${dest.name} » (voir « Objets au sol »).`
+        : `"${nom}" laissée au sol sur la carte, à ta position (icône armure).`);
+    } else {
+      // Non déposée (pas de jeton sur la carte) → on la GARDE dans l'inventaire, PA désactivée
+      saveToFirebase();
+      alert(`Tu n'es pas localisé sur la carte : "${nom}" reste dans ton inventaire (Power Armor désactivée).`);
+    }
     rAll();
   } else {
     if(!it.core){alert('La frame n\'a pas de cellule de fusion. Installe une cellule avant d\'entrer.');return;}
