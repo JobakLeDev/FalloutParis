@@ -82,6 +82,15 @@ body.sitelock #s-layout{ grid-template-columns:1fr; padding:8px; }
 .scrap-row small{color:var(--gd);}
 .scrap-row button{margin-left:4px;}
 .chest-list{max-height:180px;overflow:auto;}
+.bp-mini{background:#060d06;border:1px solid var(--b2);color:var(--td);font-family:'Share Tech Mono',monospace;font-size:8px;padding:2px 5px;cursor:pointer;}
+.bp-mini:hover{border-color:var(--am);color:var(--am);}
+/* Support d'armure — slots dans le pop-up */
+.pa-stand-slots{margin:6px 0 4px;display:flex;flex-direction:column;gap:3px;}
+.pa-stand-row{display:flex;align-items:center;gap:4px;font-size:9px;padding:2px 0;}
+.pa-stand-lbl{min-width:46px;color:var(--am);font-size:8px;}
+.pa-stand-name{flex:1;}
+.pa-stand-stat{font-size:8px;color:var(--td);white-space:nowrap;}
+.pa-stand-sel{flex:1;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:8px;padding:1px 3px;}
 .s-poi-sel{background:#0c150c;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:9px;padding:1px 3px;max-width:160px;cursor:pointer;}
 
 /* Établis (pose de mods) */

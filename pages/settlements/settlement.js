@@ -723,6 +723,16 @@ async function quitterRefuge(){
 }
 
 // ---- support d'armure (armor_stand) ----
+const _PA_SLOTS_S = [
+  {k:'head', label:'Tête',    zone:'Head'},
+  {k:'torso',label:'Torse',   zone:'Torso'},
+  {k:'armL', label:'Bras G',  zone:'Arm'},
+  {k:'armR', label:'Bras D',  zone:'Arm'},
+  {k:'legL', label:'Jambe G', zone:'Leg'},
+  {k:'legR', label:'Jambe D', zone:'Leg'},
+];
+function _sZone(it){ return it.zone || ((window.DB?.armor||[]).find(a=>a.n===it.name)||{}).z||''; }
+
 function armorStandBody(site){
   if(isMJ || !me || !canAccess(site)) return '';
   const key = _popBlockXY ? (_popBlockXY.x + ',' + _popBlockXY.y) : null;
@@ -732,10 +742,42 @@ function armorStandBody(site){
   if(stored && stored.frame){
     const f = stored.frame;
     const slots = f.slots || {};
-    const equipped = Object.values(slots).filter(Boolean).map(s => s.name);
     h += `<div class="s-note">🦾 <b>${esc(f.name)}</b>${f.core ? ' · Cellule OK' : ' · <span style="color:var(--am)">⚠ sans cellule</span>'}</div>`;
-    if(equipped.length) h += `<div class="s-note" style="color:var(--td)">${equipped.map(esc).join(' · ')}</div>`;
-    h += `<button class="sbtn add" onclick="takeFrame()">⬆ Entrer dans la frame</button>`;
+    // Gestion des slots : installer / retirer des pièces sans prendre la frame
+    const safeKey = key.replace(',', '-');
+    h += '<div class="pa-stand-slots">';
+    _PA_SLOTS_S.forEach(s => {
+      const p = slots[s.k];
+      if(p){
+        const db = (window.DB?.armor||[]).find(a=>a.n===p.name)||{};
+        h += `<div class="pa-stand-row">
+          <span class="pa-stand-lbl">${s.label}</span>
+          <span class="pa-stand-name">${esc(p.name)}</span>
+          <span class="pa-stand-stat">Ph:${db.ph||0} En:${db.en||0}${db.rad?' Rad:'+db.rad:''}</span>
+          <button class="bp-mini" onclick="paStandRemovePiece('${key}','${s.k}')">↩ Retirer</button>
+        </div>`;
+      } else {
+        const avail = (me.inventory||[]).filter(it => it.type==='POWERARMOR' && _sZone(it)===s.zone);
+        if(avail.length){
+          const selId = `pas-${safeKey}-${s.k}`;
+          const opts = avail.map(it2=>`<option value="${it2.name.replace(/"/g,'&quot;')}">${esc(it2.name)}</option>`).join('');
+          h += `<div class="pa-stand-row">
+            <span class="pa-stand-lbl">${s.label}</span>
+            <select id="${selId}" class="pa-stand-sel">
+              <option value="">— choisir —</option>${opts}
+            </select>
+            <button class="bp-mini" onclick="paStandEquipPiece('${key}','${s.k}',document.getElementById('${selId}').value)">Inst.</button>
+          </div>`;
+        } else {
+          h += `<div class="pa-stand-row">
+            <span class="pa-stand-lbl">${s.label}</span>
+            <span style="font-size:8px;color:var(--td)">— vide — <small>(pas de pièce ${s.zone})</small></span>
+          </div>`;
+        }
+      }
+    });
+    h += '</div>';
+    h += `<button class="sbtn add" style="margin-top:8px" onclick="takeFrame()">⬆ Entrer dans la frame</button>`;
   } else {
     h += '<div class="s-note">Support vide.</div>';
     const myFrame = (me.inventory || []).find(it => it.type === 'POWERARMOR_FRAME' && it.equipped);
@@ -747,6 +789,52 @@ function armorStandBody(site){
     }
   }
   return h;
+}
+async function paStandEquipPiece(standKey, slotKey, pieceName){
+  if(!pieceName){ alert('Choisis une pièce.'); return; }
+  const site = data.sites[selSite]; if(!site || !me) return;
+  if(!canAccess(site) || !_onSite(site)){ alert('Tu dois être sur place.'); return; }
+  const stands = site.armorStands||{};
+  const stored = stands[standKey]; if(!stored||!stored.frame){ alert('Aucune frame sur ce support.'); return; }
+  const frame = stored.frame;
+  const inv = (me.inventory||[]).map(x=>({...x}));
+  const pieceIdx = inv.findIndex(it => it.type==='POWERARMOR' && it.name===pieceName);
+  if(pieceIdx<0){ alert('Pièce introuvable dans l\'inventaire.'); return; }
+  // Retourner la pièce actuellement dans le slot à l'inventaire
+  const cur = frame.slots?.[slotKey];
+  if(cur){
+    const cdb=(window.DB?.armor||[]).find(a=>a.n===cur.name)||{};
+    inv.push({name:cur.name,type:'POWERARMOR',qty:1,w:cdb.w||0,equipped:false,zone:cdb.z||''});
+  }
+  frame.slots = frame.slots||{};
+  const piece = inv[pieceIdx];
+  frame.slots[slotKey] = { name:pieceName, mods:piece.mods||{} };
+  if((piece.qty||1)>1) piece.qty--; else inv.splice(pieceIdx,1);
+  try {
+    await fdb.collection('joueurs').doc(viewerId).update({ inventory:inv, lastUpdate:Date.now() });
+    me.inventory = inv;
+  } catch(e){ alert('Erreur : '+e.message); return; }
+  site.armorStands = stands;
+  save();
+  renderPop(site);
+}
+async function paStandRemovePiece(standKey, slotKey){
+  const site = data.sites[selSite]; if(!site || !me) return;
+  if(!canAccess(site) || !_onSite(site)){ alert('Tu dois être sur place.'); return; }
+  const stands = site.armorStands||{};
+  const stored = stands[standKey]; if(!stored||!stored.frame) return;
+  const cur = stored.frame.slots?.[slotKey]; if(!cur) return;
+  const db = (window.DB?.armor||[]).find(a=>a.n===cur.name)||{};
+  const inv = (me.inventory||[]).map(x=>({...x}));
+  inv.push({name:cur.name,type:'POWERARMOR',qty:1,w:db.w||0,equipped:false,zone:db.z||''});
+  stored.frame.slots[slotKey] = null;
+  try {
+    await fdb.collection('joueurs').doc(viewerId).update({ inventory:inv, lastUpdate:Date.now() });
+    me.inventory = inv;
+  } catch(e){ alert('Erreur : '+e.message); return; }
+  site.armorStands = stands;
+  save();
+  renderPop(site);
 }
 async function depositFrame(){
   const site = data.sites[selSite]; if(!site || !me) return;
