@@ -641,7 +641,6 @@ function rInvArmor(){
         ${coreBtn}
         <button class="ieq-btn ${it.equipped?'on':'off'}" onclick="tEquipFrame(${i})">${it.equipped?'● ACTIVE':'○ Activer'}</button>
         ${it.equipped?`<button class="ieq-btn off pa-toggle" onclick="togglePaExpand(${i})" title="Détail pièces">${open?'▲':'▼'}</button>`:''}
-        <button class="idel-btn" onclick="leaveHere(${i})" title="Laisser l'armure sur place">📍</button>
         <button class="idel-btn" onclick="jetItem(${i})" title="Jeter">🗑</button>
       </div>
       ${open&&it.equipped?`<div class="pa-slots-list">`+_PA_SLOTS.map(s=>{
