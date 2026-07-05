@@ -9,23 +9,39 @@ html, body { height: 100%; overflow: hidden; }
 .body { flex: 1 1 auto; min-height: 0; overflow: auto; }
 
 /* Onglets CARTE / QUÊTES / JOURNAL / BUTIN : l'iframe descend jusqu'en bas de l'écran (sans scroll).
-   .pip étant en height:auto, on donne une hauteur EXPLICITE = hauteur d'écran restante. */
-#tc-carte, #tc-quetes, #tc-journal, #tc-encyclopedie, #tc-butin {
+   #tc-carte prend 100% de la hauteur du .body (flex), pas de calc fixe. */
+#tc-quetes, #tc-journal, #tc-encyclopedie, #tc-butin {
   height: auto;
   margin: 0;
   padding: 0;
   overflow: hidden;
   text-align: center;
 }
-#tc-carte iframe, #tc-quetes iframe, #tc-journal iframe, #tc-encyclopedie iframe, #tc-settlements iframe, #tc-butin iframe {
+#tc-carte {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+#tc-carte iframe {
+  flex: 1 1 auto;
+  height: 0;
+  min-height: 0;
+  width: 100%;
+  border: 1px solid var(--b2);
+  margin: 0;
+  display: block;
+}
+#tc-quetes iframe, #tc-journal iframe, #tc-encyclopedie iframe, #tc-settlements iframe, #tc-butin iframe {
   display: block;
   width: 100%;
-  height: calc(100vh - 20rem);   /* descend jusqu'au bas de page (header+onglets ≈ 20rem) */
+  height: calc(100vh - 20rem);
   min-height: 16rem;
   border: 1px solid var(--b2);
   margin: 0 auto;
 }
-#tc-carte iframe{ width: 96%; height: calc(100vh - 28rem); }   /* carte plus étroite et moins haute */
 
 /* ============================================================
    MONTÉE DE NIVEAU
@@ -378,4 +394,4 @@ html, body { overflow-x: hidden !important; overflow-y: auto !important; height:
 .pa-sl-name{ font-size:8px; color:var(--t); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .pa-sl-rd{ font-size:7px; color:var(--td); white-space:nowrap; }
 .pa-sl-empty{ font-size:7px; color:var(--b2); }
-.pa-sl-sel{ flex:1; background:#060d06; border:1px solid var(--b2); color:var(--t); font-family:'Share Tech Mono',monospace; font-size:8px; padding:1px 3px; }
+.pa-sl-sel{ flex:0 1 8rem; min-width:0; max-width:8rem; background:#060d06; border:1px solid var(--b2); color:var(--t); font-family:'Share Tech Mono',monospace; font-size:8px; padding:1px 3px; }
