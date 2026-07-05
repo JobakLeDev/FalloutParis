@@ -75,7 +75,7 @@ let settlementsData = { sites: {} };   // refuges (/settlements/<camp>) — affi
 let _openRefuge = null;    // id du refuge ouvert dans l'onglet LIEUX
 let joueurs = {};
 let zoneLayer, poiLayer, tokenLayer, groundLayer, metroEntranceLayer;
-const poiMarkers = {}, zonePolys = {};
+const poiMarkers = {}, zonePolys = {}, metroEntranceMarkers = {};
 let openItem = null, reopening = false;            // popup ouvert (pour le réouvrir après render)
 let zoneFormCtx = null;                            // {polygon} (création) ou {zone} (édition)
 let currentTab = 'paris';
@@ -766,7 +766,8 @@ function renderAll() {
   if (openItem) {
     const layer = openItem.kind === 'poi' ? poiMarkers[openItem.id]
                 : openItem.kind === 'zone' ? zonePolys[openItem.id]
-                : openItem.kind === 'geomarker' ? geoMarkerRefs[openItem.id] : null;
+                : openItem.kind === 'geomarker' ? geoMarkerRefs[openItem.id]
+                : openItem.kind === 'metroEntrance' ? metroEntranceMarkers[openItem.id] : null;
     if (layer) layer.openPopup();
   }
   reopening = false;
@@ -796,6 +797,7 @@ function _viewerSurfacePoints() {
 function renderMetroEntrances() {
   if (!metroEntranceLayer) return;
   metroEntranceLayer.clearLayers();
+  for (const k in metroEntranceMarkers) delete metroEntranceMarkers[k];
   if (!metroStationsData) return;
   const pts = (!isMJ && viewerId) ? _viewerSurfacePoints() : null;
   const seen = new Set();
@@ -811,6 +813,8 @@ function renderMetroEntrances() {
     const mk = L.marker([lat, lng], { title: 'Métro — ' + nom, riseOnHover: true, icon: L.divIcon({ className: 'metro-entrance',
       html: `<img src="../../img/metro_bouche.png" class="me-img" alt=""><span class="me-label">${nom}</span>`, iconSize: [36, 38], iconAnchor: [18, 36] }) }).addTo(metroEntranceLayer);
     mk.bindPopup(() => _metroEntrancePopup(lat, lng, nom));
+    mk.on('popupopen', () => { openItem = { kind: 'metroEntrance', id: nom }; });
+    metroEntranceMarkers[nom] = mk;
   });
 }
 // Popup d'une bouche de métro : propose au JOUEUR de descendre s'il est à portée
