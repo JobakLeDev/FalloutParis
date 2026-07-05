@@ -25,11 +25,13 @@ html, body { height: 100%; overflow: hidden; }
   margin: 0 auto;
 }
 
-/* Onglet CARTE : position absolue pour remplir exactement le .body */
+/* Onglet CARTE : reste DANS LE FLUX (position:static) pour que .body ne
+   s'écrase pas — la page est en height:auto/scroll (bloc écran 27"), donc un
+   enfant hors flux (position:absolute) laisserait .body à 0. La hauteur px de
+   l'iframe est posée en JS (sw('carte')) en coordonnées de layout (offsetTop),
+   insensibles au zoom body. */
 #tc-carte.on {
   display: block;
-  position: absolute;
-  inset: 0;
   margin: 0;
   padding: 0;
   overflow: hidden;
@@ -37,7 +39,7 @@ html, body { height: 100%; overflow: hidden; }
 #tc-carte iframe {
   display: block;
   width: 100%;
-  height: 100%;
+  height: 70vh; /* fallback avant calcul JS */
   border: none;
 }
 
