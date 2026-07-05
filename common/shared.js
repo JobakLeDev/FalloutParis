@@ -51,6 +51,11 @@ function fpHealthStatus(pct){
   return { sev:3, label:'CRITIQUE' };
 }
 
+// Cœur de fusion (source d'énergie des Power Armor). Ancien nom « Cellule de fusion »
+// (qui est en réalité une munition) conservé en reconnaissance pour compat sauvegardes.
+const FP_FUSION_CORE = 'Cœur de fusion';
+function fpIsFusionCore(name){ return name === FP_FUSION_CORE || name === 'Cellule de fusion'; }
+
 // ============================================================
 // MODS D'ARMES / D'ARMURES (window.WEAPON_MODS / ARMOR_MODS chargés par db.js)
 // item.mods = { receiver:'hardened', barrel:'long', ... } (ids de mods par emplacement)

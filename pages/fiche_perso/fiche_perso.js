@@ -662,11 +662,11 @@ function rInvArmor(){
     const slots=it.slots||{};
     const filled=_PA_SLOTS.filter(s=>slots[s.k]).length;
     const coreOk=it.core;
-    const hasCell=char.inventory.some((x,j)=>j!==i&&x.name==='Cellule de fusion'&&(x.qty||1)>0);
+    const hasCell=char.inventory.some((x,j)=>j!==i&&fpIsFusionCore(x.name)&&(x.qty||1)>0);
     const coreBtn=coreOk
-      ?`<button class="ieq-btn off" style="font-size:7px;padding:2px 4px" onclick="paRemoveCore(${i})">⏏ Cellule</button>`
+      ?`<button class="ieq-btn off" style="font-size:7px;padding:2px 4px" onclick="paRemoveCore(${i})">⏏ Cœur</button>`
       :(hasCell?`<button class="ieq-btn off" style="font-size:7px;padding:2px 4px;border-color:var(--g);color:var(--g)" onclick="paInstallCore(${i})">🔋 Installer</button>`
-               :`<span style="font-size:8px;color:var(--rd)" title="Aucune cellule de fusion dans l'inventaire">⚠ core</span>`);
+               :`<span style="font-size:8px;color:var(--rd)" title="Aucun cœur de fusion dans l'inventaire">⚠ core</span>`);
     const open=_paExpanded.has(i);
     el.innerHTML+=`<div class="pa-frame-block${it.equipped?' equipped-row':''}">
       <div class="pa-frame-hdr">
@@ -910,7 +910,7 @@ async function togglePA(){
   if(!char.powerArmor){
     const f=getActiveFrame();
     if(!f){alert('Aucune frame Power Armor activée dans l\'inventaire.');return;}
-    if(!f.core){alert('La frame n\'a pas de cellule de fusion.');return;}
+    if(!f.core){alert('La frame n\'a pas de cœur de fusion.');return;}
     char.powerArmor=true;
     saveToFirebase();
     rAll();
@@ -940,7 +940,7 @@ async function tEquipFrame(i){
     }
     rAll();
   } else {
-    if(!it.core){alert('La frame n\'a pas de cellule de fusion. Installe une cellule avant d\'entrer.');return;}
+    if(!it.core){alert('La frame n\'a pas de cœur de fusion. Installe un cœur avant d\'entrer.');return;}
     char.inventory.forEach(o=>{if(o.type==='POWERARMOR_FRAME')o.equipped=false;});
     it.equipped=true;
     char.powerArmor=true;
@@ -973,8 +973,8 @@ async function paRemovePiece(frameIdx,slotKey){
 }
 async function paInstallCore(frameIdx){
   const frame=char.inventory[frameIdx];if(!frame||frame.type!=='POWERARMOR_FRAME')return;
-  const ci=char.inventory.findIndex((x,j)=>j!==frameIdx&&x.name==='Cellule de fusion'&&(x.qty||1)>0);
-  if(ci<0){alert('Aucune cellule de fusion dans l\'inventaire.');return;}
+  const ci=char.inventory.findIndex((x,j)=>j!==frameIdx&&fpIsFusionCore(x.name)&&(x.qty||1)>0);
+  if(ci<0){alert('Aucun cœur de fusion dans l\'inventaire.');return;}
   frame.core=true;
   const cell=char.inventory[ci];
   if((cell.qty||1)>1)cell.qty--;else char.inventory.splice(ci,1);
@@ -983,10 +983,10 @@ async function paInstallCore(frameIdx){
 async function paRemoveCore(frameIdx){
   const frame=char.inventory[frameIdx];if(!frame||frame.type!=='POWERARMOR_FRAME'||!frame.core)return;
   frame.core=false;
-  // Rendre la cellule à l'inventaire
-  const ex=char.inventory.find((x,j)=>j!==frameIdx&&x.name==='Cellule de fusion');
+  // Rendre le cœur à l'inventaire
+  const ex=char.inventory.find((x,j)=>j!==frameIdx&&fpIsFusionCore(x.name));
   if(ex)ex.qty=(ex.qty||1)+1;
-  else char.inventory.push({name:'Cellule de fusion',type:'STUFF',qty:1,w:1,equipped:false});
+  else char.inventory.push({name:FP_FUSION_CORE,type:'STUFF',qty:1,w:1,equipped:false});
   saveToFirebase();rInvArmor();
 }
 function toggleAtout(name){const it=char.inventory.find(i=>i.name===name&&i.type==='WEAPON');if(it)it.persoBonus=!it.persoBonus;rAll();}

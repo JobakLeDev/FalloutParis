@@ -65,8 +65,8 @@ const ALL_ITEMS=[
   {n:'Bras X-01',t:'POWERARMOR',w:22,z:'Arm'},{n:'Jambes X-01',t:'POWERARMOR',w:24,z:'Leg'},
   // Frame Power Armor (un seul modèle générique — les pièces sont interchangeables)
   {n:'Frame Power Armor',t:'POWERARMOR_FRAME',w:10},
-  // Cellule
-  {n:'Cellule de fusion',t:'STUFF',w:1},
+  // Cœur de fusion (alimente les Power Armor)
+  {n:'Cœur de fusion',t:'STUFF',w:1},
   // Aide
   {n:'Stimpak',t:'DRUGS',w:0.05},{n:'Super Stimpak',t:'DRUGS',w:0.05},
   {n:'RadAway',t:'DRUGS',w:0.05},{n:'Rad-X',t:'DRUGS',w:0.05},
@@ -281,7 +281,7 @@ function _paFrameHtml(it,i){
   return `<div class="pa-frame-card">
     <div class="pa-frame-head">
       <span class="pa-frame-title">🦾 ${it.name}</span>
-      <label class="pa-core-lbl"><input type="checkbox" ${it.core?'checked':''} onchange="paToggleCore(${i})"> Cellule de fusion</label>
+      <label class="pa-core-lbl"><input type="checkbox" ${it.core?'checked':''} onchange="paToggleCore(${i})"> Cœur de fusion</label>
       <button class="inv-btn" style="color:var(--rd)" onclick="rmInvItem(${i})">✕</button>
     </div>
     <div class="pa-slots">${slotRows}</div>

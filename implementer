@@ -1,4 +1,11 @@
 Liste des truc à implémenter :
+-dans la fiche joueur, le bloc de carte ne doit pas dépasser du bas de l'écran. pas de scroll sur l'onglet carte.
+-dans l'onglet general, toujours pas d'affichage de la power armor. à vérifier et corriger
+-dans l'inventaire, la liste déroulante pour les pieces d'armure est trop large, il faut rétrécir de moitié en largeur. ça donnera l'espace pour un bouton équiper lisible. 
+-quand une piece d'armure est équipée, dans la liste on doit avoir une coche pour comprendre que c'est la piece équipée.
+-quand on équipe une piece d'armure sur une frame depuis l'inventaire, il faut que la pièce soit enlevée de l'inventaire (elle doit apparaitre uniquement dans le bloc de la frame)
+-dans l'onglet "tout" de l'inventaire, faire en sorte que "POWERARMOR" rentre dans le cadre (comme stuff, drink armor etc) en rétrécissant la taille des caractères
+-lorsque je veux laisser un equipement sur place, j'ai une erreur viewerId is not defined
 --- Fait ---
 -[OK] inventaire : barre « objets récents » refaite (pills propres : 🆕 Récents avec badge compteur rouge + on=ambre, « Tout marquer vu » en ghost ; libellés lisibles). fiche css v86, fiche v100.
 -[OK] pop-ups uniformisées : confirm()/prompt() natifs remplacés par fpConfirm/fpPrompt (Promise, modale stylée app — input + Annuler/OK, Entrée/Échap) dans shared.js. 45 sites convertis en await (fonctions passées async) sur 9 pages. shared v84, style v84.

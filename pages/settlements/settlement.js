@@ -781,7 +781,7 @@ function armorStandBody(site){
   if(stored && stored.frame){
     const f = stored.frame;
     const slots = f.slots || {};
-    h += `<div class="s-note">🦾 <b>${esc(f.name)}</b>${f.core ? ' · Cellule OK' : ' · <span style="color:var(--am)">⚠ sans cellule</span>'}</div>`;
+    h += `<div class="s-note">🦾 <b>${esc(f.name)}</b>${f.core ? ' · Cœur OK' : ' · <span style="color:var(--am)">⚠ sans cœur</span>'}</div>`;
     // Gestion des slots : installer / retirer des pièces sans prendre la frame
     const safeKey = key.replace(',', '-');
     h += '<div class="pa-stand-slots">';
@@ -816,14 +816,14 @@ function armorStandBody(site){
       }
     });
     h += '</div>';
-    // Cellule de fusion
-    const hasCell = (me.inventory||[]).some(it => it.name==='Cellule de fusion' && (it.qty||1)>0);
+    // Cœur de fusion
+    const hasCell = (me.inventory||[]).some(it => fpIsFusionCore(it.name) && (it.qty||1)>0);
     if(f.core){
-      h += `<div class="pa-stand-row" style="margin-top:4px"><span class="pa-stand-lbl">Cellule</span><span class="pa-stand-name">✅ installée</span><button class="bp-mini" onclick="paStandRemoveCore('${key}')">⏏ Retirer</button></div>`;
+      h += `<div class="pa-stand-row" style="margin-top:4px"><span class="pa-stand-lbl">Cœur</span><span class="pa-stand-name">✅ installé</span><button class="bp-mini" onclick="paStandRemoveCore('${key}')">⏏ Retirer</button></div>`;
     } else if(hasCell){
-      h += `<div class="pa-stand-row" style="margin-top:4px"><span class="pa-stand-lbl">Cellule</span><span style="font-size:8px;color:var(--am)">⚠ vide</span><button class="bp-mini" style="border-color:var(--g);color:var(--g)" onclick="paStandInstallCore('${key}')">🔋 Installer</button></div>`;
+      h += `<div class="pa-stand-row" style="margin-top:4px"><span class="pa-stand-lbl">Cœur</span><span style="font-size:8px;color:var(--am)">⚠ vide</span><button class="bp-mini" style="border-color:var(--g);color:var(--g)" onclick="paStandInstallCore('${key}')">🔋 Installer</button></div>`;
     } else {
-      h += `<div class="pa-stand-row" style="margin-top:4px"><span class="pa-stand-lbl">Cellule</span><span style="font-size:8px;color:var(--rd)" title="Aucune cellule de fusion dans l\'inventaire">⚠ vide — aucune cellule</span></div>`;
+      h += `<div class="pa-stand-row" style="margin-top:4px"><span class="pa-stand-lbl">Cœur</span><span style="font-size:8px;color:var(--rd)" title="Aucun cœur de fusion dans l\'inventaire">⚠ vide — aucun cœur</span></div>`;
     }
     h += `<button class="sbtn add" style="margin-top:8px" onclick="takeFrame()">⬆ Entrer dans la frame</button>`;
   } else {
@@ -890,8 +890,8 @@ async function paStandInstallCore(standKey){
   const stands = site.armorStands||{};
   const stored = stands[standKey]; if(!stored || !stored.frame){ alert('Support vide.'); return; }
   const inv = (me.inventory||[]).map(x=>({...x}));
-  const ci = inv.findIndex(x => x.name==='Cellule de fusion' && (x.qty||1)>0);
-  if(ci<0){ alert('Aucune cellule de fusion dans l\'inventaire.'); return; }
+  const ci = inv.findIndex(x => fpIsFusionCore(x.name) && (x.qty||1)>0);
+  if(ci<0){ alert('Aucun cœur de fusion dans l\'inventaire.'); return; }
   if((inv[ci].qty||1)>1) inv[ci].qty--; else inv.splice(ci,1);
   try {
     await fdb.collection('joueurs').doc(viewerId).update({ inventory:inv, lastUpdate:Date.now() });
@@ -909,9 +909,9 @@ async function paStandRemoveCore(standKey){
   const stored = stands[standKey]; if(!stored || !stored.frame || !stored.frame.core){ return; }
   stored.frame.core = false;
   const inv = (me.inventory||[]).map(x=>({...x}));
-  const ex = inv.find(x => x.name==='Cellule de fusion');
+  const ex = inv.find(x => fpIsFusionCore(x.name));
   if(ex) ex.qty=(ex.qty||1)+1;
-  else inv.push({name:'Cellule de fusion',type:'STUFF',qty:1,w:1,equipped:false});
+  else inv.push({name:FP_FUSION_CORE,type:'STUFF',qty:1,w:1,equipped:false});
   try {
     await fdb.collection('joueurs').doc(viewerId).update({ inventory:inv, lastUpdate:Date.now() });
     me.inventory = inv;
