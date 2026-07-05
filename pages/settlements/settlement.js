@@ -131,7 +131,7 @@ function canAccess(site){
   return Array.isArray(site.allies) && site.allies.includes(me.id);
 }
 // Le joueur doit être PHYSIQUEMENT à proximité du lieu sur la carte principale pour agir/apparaître.
-const ON_SITE_M = 150;   // distance max (mètres) entre le jeton du joueur et le POI
+const ON_SITE_M = 300;   // distance max (mètres) entre le jeton du joueur et le POI
 function _distM(a, b){   // haversine (mètres) — identique à L.latLng.distanceTo de la carte
   if(!a || !b || a.lat == null || b.lat == null) return Infinity;
   const R = 6371000, toR = x => x * Math.PI / 180;
