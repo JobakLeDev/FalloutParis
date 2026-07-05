@@ -261,8 +261,16 @@ function buildMap() {
   });
   // La fiche joueur (iframe) demande un recentrage à chaque réaffichage de l'onglet CARTE
   window.addEventListener('message', e => {
+    if (e.data?.type === 'embed-h' && embed) {
+      const tabsH = (document.getElementById('map-tabs') || {}).offsetHeight || 0;
+      const mh = Math.max((e.data.h || 0) - tabsH, 0);
+      if (mh > 0) {
+        const m = document.getElementById('map'); if (m) m.style.height = mh + 'px';
+        const mm = document.getElementById('map-metro'); if (mm) mm.style.height = mh + 'px';
+        if (map) { map.invalidateSize(); lockParis(true); }
+      }
+    }
     if (e.data === 'carte-recenter' && viewerId) {
-      if (embed) _embedSetMapHeight();
       if (currentTab === 'paris' && map) { map.invalidateSize(); lockParis(false); }
       if (currentTab === 'metro' && metroMap) metroMap.invalidateSize();
       setTimeout(centerOnViewer, 60);
