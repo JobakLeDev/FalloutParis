@@ -1218,39 +1218,64 @@ function donnerXPCombat(xp){
 // ============================================================
 // DÉPLACEMENT
 // ============================================================
+const WALK_KMH = 5;   // vitesse de marche (km/h) → temps de trajet depuis la distance carte
+
+// Fait avancer l'horloge des groupes des joueurs sélectionnés (bouton du déplacement)
+function avancerHorlogeSelection(mins){
+  if(!mins) return;
+  const parties = new Set();
+  (selected||[]).forEach(pid => { const p = (tempsData.parties||[]).find(pt => (pt.players||[]).includes(pid)); if(p) parties.add(p); });
+  if(!parties.size){ showMsg('Aucun groupe pour la sélection', true); return; }
+  parties.forEach(p => { p.minutes = Math.max(0,(p.minutes||0)+mins); });
+  saveTemps(); renderParties();
+  showMsg(`Horloge avancée de ${mins} min (${parties.size} groupe(s))`);
+  logAction(`Déplacement : +${mins} min pour ${parties.size} groupe(s)`);
+}
+
+// Déplacement piloté par la DISTANCE (km) : 1 jet de rencontre par km parcouru
+// (plus la route est longue/dangereuse, plus il y a de rencontres) + temps de trajet.
 function genDeplacement(){
-  const unite = parseInt(document.getElementById('nb-unites').value)||1;
+  const km = Math.max(0, parseFloat(String(document.getElementById('nb-km')?.value||'').replace(',','.')) || 0);
+  if(km<=0){ showMsg('Indique une distance (km)', true); return; }
   const opts = getRencontreOpts();
   const zoneLabel = window.ZONES_DB?.[opts.zone]?.label || opts.zone;
   const danger = THREAT_DANGER[opts.threat] || 2;
   const panel = document.getElementById('rencontre-panel');
 
-  // Probabilité d'événement augmente avec distance et niveau de menace
-  const pctEvent = Math.min(95, 20 + (unite*5) + (danger*8));
-  const roll = Math.random()*100;
+  // Un jet par km (min 1, cap 30) ; probabilité d'événement PAR KM selon la menace
+  const segments = Math.min(30, Math.max(1, Math.round(km)));
+  const pKm = Math.min(80, 4 + danger*7);   // calme 11% · normal 18% · élevé 25% · extrême 32% /km
+  const nonCalme = EVENEMENTS_DEPLACEMENT.filter(e => e.type!=='calme');
+  const totW = nonCalme.reduce((a,e)=>a+e.pct,0);
+  const events = [];
+  for(let s=0;s<segments;s++){
+    if(Math.random()*100 > pKm) continue;                 // tronçon calme
+    let r = Math.random()*totW, evt = nonCalme[0];
+    for(const e of nonCalme){ r-=e.pct; if(r<=0){ evt=e; break; } }
+    events.push(evt);
+  }
+
+  const mins = Math.round(km / WALK_KMH * 60);
+  const timeTxt = mins>=60 ? `${Math.floor(mins/60)} h ${String(mins%60).padStart(2,'0')}` : `${mins} min`;
 
   let html = `<div class="rencontre-header">🚶 DÉPLACEMENT — ${zoneLabel}</div>
-    <div class="rencontre-sub">${unite} unité(s)${opts.threat&&opts.threat!=='normal'?' · '+(THREAT_LABELS[opts.threat]||opts.threat):''} · Risque calculé : <b>${pctEvent}%</b></div>
-    <div class="deplacement-roll">Jet : <b>${Math.round(roll)}</b> / 100</div>`;
+    <div class="rencontre-sub">${km.toFixed(1)} km · ${segments} tronçon(s)${opts.threat&&opts.threat!=='normal'?' · '+(THREAT_LABELS[opts.threat]||opts.threat):''} · risque ${pKm}%/km</div>
+    <div class="deplacement-roll">⏱ Trajet estimé : <b>${timeTxt}</b> (${WALK_KMH} km/h)${(selected&&selected.size)?` <button class="r-btn" style="display:inline-block;width:auto;padding:2px 8px;margin-left:8px" onclick="avancerHorlogeSelection(${mins})">⏱ Avancer l'horloge</button>`:''}</div>`;
 
-  if(roll > pctEvent){
+  const hasCombat = events.some(e => e.type==='combat' || e.type==='danger');
+  if(!events.length){
     html += `<div class="event-calme">✓ DÉPLACEMENT SANS ENCOMBRE<br><span>Le groupe arrive à destination.</span></div>`;
     document.getElementById('btn-combat-wrap').style.display='none';
   } else {
-    const r2 = Math.random()*100;
-    let cumul=0, evt=EVENEMENTS_DEPLACEMENT[0];
-    for(const e of EVENEMENTS_DEPLACEMENT){
-      cumul+=e.pct;
-      if(r2<=cumul){ evt=e; break; }
-    }
-
-    const color = evt.type==='calme'?'var(--g)':evt.type==='combat'||evt.type==='danger'?'var(--rd)':'var(--am)';
-    html += `<div class="event-card" style="border-color:${color}">
-      <div class="event-type" style="color:${color}">⚡ ${evt.label.toUpperCase()}</div>
-      <div class="event-desc">${evt.desc}</div>
-    </div>`;
-
-    if(evt.type==='combat'||evt.type==='danger'){
+    html += `<div class="rencontre-sub" style="margin-top:6px">${events.length} événement(s) sur la route</div>`;
+    html += events.map((evt,i)=>{
+      const color = (evt.type==='combat'||evt.type==='danger')?'var(--rd)':'var(--am)';
+      return `<div class="event-card" style="border-color:${color}">
+        <div class="event-type" style="color:${color}">⚡ ${i+1}. ${evt.label.toUpperCase()}</div>
+        <div class="event-desc">${evt.desc}</div>
+      </div>`;
+    }).join('');
+    if(hasCombat){
       html += `<button class="r-btn" onclick="genRencontre()" style="margin-top:8px">⚔ Générer la rencontre</button>`;
     }
   }
