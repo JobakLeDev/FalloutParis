@@ -768,7 +768,7 @@ function renderGroundItems() {
   (mapData.groundItems || []).forEach(item => {
     const m = L.marker([item.lat, item.lng], {
       icon: L.divIcon({ className: 'ground-item-pin',
-        html: `<img src="../../img/ground_armor.svg" class="gi-img" title="${item.name}">`,
+        html: `<img src="../../img/${item.type==='POWERARMOR_FRAME'?'ground_pa_frame.png':'ground_armor.svg'}" class="gi-img" title="${item.name}">`,
         iconSize: [28, 28], iconAnchor: [14, 20] })
     });
     const myTok = viewerId ? mapData.tokens?.[viewerId] : null;
