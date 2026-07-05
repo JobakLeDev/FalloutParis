@@ -75,6 +75,7 @@ async function prendre(i){
   } else {
     const inv = Array.isArray(d.inventory) ? d.inventory : [];
     const item = buildInvItem(loot.name) || { name: loot.name, type: loot.type||'STUFF', qty:0, w: loot.w||0, equipped:false };
+    if(loot.postcard) item.postcard = loot.postcard;   // carte postale → image affichable
     if(item.type==='POWERARMOR_FRAME'){
       // On entre dans la frame, pas dans la poche
       inv.forEach(it=>{ if(it.type==='POWERARMOR_FRAME') it.equipped=false; });
@@ -125,6 +126,7 @@ async function prendreTout(){
       if (ex) ex.qty = (ex.qty||0) + n; else ammo.push({ cal: loot.name, qty: n });
     } else {
       const item = buildInvItem(loot.name) || { name: loot.name, type: loot.type||'STUFF', qty:0, w: loot.w||0, equipped:false };
+      if(loot.postcard) item.postcard = loot.postcard;   // carte postale → image affichable
       if(item.type==='POWERARMOR_FRAME'){
         inv.forEach(it=>{ if(it.type==='POWERARMOR_FRAME') it.equipped=false; });
         item.qty=1; item.equipped=true; inv.push(item);
