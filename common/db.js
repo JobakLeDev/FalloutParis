@@ -8,7 +8,7 @@ const _dataBase = (() => {
   return src.replace(/common\/db\.js.*$/, 'data/');
 })();
 
-const _DATA_VER = '26';   // bump quand un /data/*.json ou une image de bloc change (force le rechargement)
+const _DATA_VER = '27';   // bump quand un /data/*.json ou une image de bloc change (force le rechargement)
 function _fetch(file) {
   return fetch(_dataBase + file + '?v=' + _DATA_VER).then(r => {
     if (!r.ok) throw new Error('DB: impossible de charger ' + file + ' (' + r.status + ')');
@@ -40,7 +40,8 @@ window.DB_READY = Promise.all([
   _fetch('build_blocks.json').catch(() => ({})),
   _fetch('junk.json').catch(() => ({})),
   _fetch('companions.json').catch(() => ({})),
-]).then(([weapons, armor, items, enemies, perks, npc, ammo, ammoLoot, npcXp, zones, zoneVariations, zoneOccupation, zoneThreat, factions, npcRoles, lootProfiles, weaponMods, armorMods, ency, profiles, buildBlocks, junk, companions]) => {
+  _fetch('postcards.json').catch(() => ({})),
+]).then(([weapons, armor, items, enemies, perks, npc, ammo, ammoLoot, npcXp, zones, zoneVariations, zoneOccupation, zoneThreat, factions, npcRoles, lootProfiles, weaponMods, armorMods, ency, profiles, buildBlocks, junk, companions, postcards]) => {
 
   window.DB = {
     weapons,
@@ -73,6 +74,7 @@ window.DB_READY = Promise.all([
   window.JUNK            = (junk && Array.isArray(junk.junk)) ? junk.junk : [];
   window.MAT_LABELS      = (junk && junk.materialLabels) ? junk.materialLabels : {};
   window.COMPANIONS      = (companions && Array.isArray(companions.companions)) ? companions.companions : [];
+  window.POSTCARDS       = (postcards && Array.isArray(postcards.postcards)) ? postcards.postcards : [];
 
   // WEAPONS_DB : format objet keyed par nom (accès O(1) dans les pages combat)
   window.WEAPONS_DB = {};
@@ -90,5 +92,5 @@ window.DB_READY = Promise.all([
   window.NPC_XP = {perLevel:[], above20:{normal:7,mighty:14,legendary:21}};
   window.ZONES_DB = {}; window.ZONE_VARIATIONS = {}; window.ZONE_OCCUPATION = {}; window.ZONE_THREAT = {}; window.FACTIONS = {}; window.NPC_ROLES = {}; window.LOOT_PROFILES = {}; window.WEAPON_MODS = {}; window.ARMOR_MODS = {};
   window.ENCY = { lieux:[], personnages:[], bestiaire:[], evenements:[] };
-  window.PROFILES = []; window.BUILD_BLOCKS = []; window.BUILD_MATS = {}; window.JUNK = []; window.MAT_LABELS = {}; window.COMPANIONS = [];
+  window.PROFILES = []; window.BUILD_BLOCKS = []; window.BUILD_MATS = {}; window.JUNK = []; window.MAT_LABELS = {}; window.COMPANIONS = []; window.POSTCARDS = [];
 });

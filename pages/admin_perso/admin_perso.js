@@ -346,7 +346,15 @@ function setItemMod(i, slot, val){
 }
 function chInvQty(i,n){editInventory[i].qty=Math.max(0,editInventory[i].qty+n);renderInventory();}
 function rmInvItem(i){editInventory.splice(i,1);renderInventory();}
+// Ajoute les cartes postales (data/postcards.json) au catalogue (idempotent)
+function _ensurePostcards(){
+  (window.POSTCARDS||[]).forEach(p=>{
+    const n='Carte postale — '+p.name;
+    if(!ALL_ITEMS.some(it=>it.n===n)) ALL_ITEMS.push({n,t:'STUFF',w:0,postcard:p.id});
+  });
+}
 function populateInvSelect(){
+  _ensurePostcards();
   const sel=document.getElementById('inv-add-sel');
   sel.innerHTML='<option value="">+ Ajouter un objet...</option>';
   ALL_ITEMS.forEach(it=>sel.innerHTML+=`<option value="${it.n}">${it.n} (${it.t})</option>`);
@@ -360,6 +368,7 @@ function addInvItem(){
   if(exist&&!isFrame){exist.qty++;renderInventory();return;}
   const item={name,type:db2.t,qty:1,w:db2.w||0,equipped:false};
   if(db2.z)item.zone=db2.z;
+  if(db2.postcard)item.postcard=db2.postcard;   // carte postale → image affichable dans la fiche
   if(db2.t==='WEAPON')item.persoBonus=false;
   if(isFrame)item.slots={head:null,torso:null,armL:null,armR:null,legL:null,legR:null},item.core=false;
   editInventory.push(item);
