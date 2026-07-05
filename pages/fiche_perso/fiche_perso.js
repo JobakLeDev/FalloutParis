@@ -143,12 +143,20 @@ function sw(tab){
   // Charger la carte (iframe) à la première ouverture de l'onglet ; sinon recentrer sur le joueur
   if(tab==='carte'){
     const f=document.getElementById('carte-frame');
-    const _sendH=()=>{ if(f.contentWindow) f.contentWindow.postMessage({type:'embed-h',h:f.clientHeight},'*'); };
+    const bodyEl=document.querySelector('.body');
+    // Lire clientHeight avant de toucher l'iframe : force un reflow synchrone et
+    // garantit que l'iframe reçoit une hauteur px définie au moment où le browser
+    // crée son viewport (sinon window.innerHeight vaut 0 dans l'iframe).
+    const _syncH=()=>{ f.style.height=(bodyEl?bodyEl.clientHeight:window.innerHeight)+'px'; };
+    _syncH();
     if(f && !f.src){
       f.src='../carte/carte.html?id='+encodeURIComponent(id)+'&embed=1&camp='+encodeURIComponent((char&&char.campaign)||'data');
-      f.addEventListener('load', ()=>{ requestAnimationFrame(()=>{ _sendH(); setTimeout(_sendH,200); }); }, {once:true});
+      f.addEventListener('load', ()=>{ requestAnimationFrame(()=>{
+        _syncH();
+        if(f.contentWindow) f.contentWindow.postMessage('carte-recenter','*');
+      }); }, {once:true});
     } else if(f && f.contentWindow){
-      _sendH();
+      _syncH();
       f.contentWindow.postMessage('carte-recenter','*');
     }
   }
