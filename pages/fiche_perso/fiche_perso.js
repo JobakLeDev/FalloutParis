@@ -616,10 +616,15 @@ function rInvArmor(){
     const slots=it.slots||{};
     const filled=_PA_SLOTS.filter(s=>slots[s.k]).length;
     const coreOk=it.core;
+    const hasCell=char.inventory.some((x,j)=>j!==i&&x.name==='Cellule de fusion'&&(x.qty||1)>0);
+    const coreBtn=coreOk
+      ?`<button class="ieq-btn off" style="font-size:7px;padding:2px 4px" onclick="paRemoveCore(${i})">⏏ Cellule</button>`
+      :(hasCell?`<button class="ieq-btn off" style="font-size:7px;padding:2px 4px;border-color:var(--g);color:var(--g)" onclick="paInstallCore(${i})">🔋 Installer</button>`
+               :`<span style="font-size:8px;color:var(--rd)" title="Aucune cellule de fusion dans l'inventaire">⚠ core</span>`);
     el.innerHTML+=`<div class="irow pa-frame-fiche${it.equipped?' equipped-row':''}">
       <span class="itag POWERARMOR" style="font-size:7px;padding:1px 3px">FRAME</span>
       <span class="iname${it.equipped?' eq':''}" style="flex:2">${it.name}</span>
-      <span style="font-size:8px;color:${coreOk?'var(--g)':'var(--rd)'}">${coreOk?'🔋':'⚠'}</span>
+      ${coreBtn}
       <span style="font-size:8px;color:var(--td)">${filled}/6 pièces</span>
       <button class="ieq-btn ${it.equipped?'on':'off'}" onclick="tEquipFrame(${i})">${it.equipped?'● ACTIVE':'○ Activer'}</button>
       <button class="idel-btn" onclick="jetItem(${i})" title="Jeter">🗑</button>
@@ -844,6 +849,24 @@ async function paRemovePiece(frameIdx,slotKey){
   const db=DB.armor.find(a=>a.n===cur.name)||{};
   char.inventory.push({name:cur.name,type:'POWERARMOR',qty:1,w:db.w||0,equipped:false,zone:db.z||''});
   frame.slots[slotKey]=null;
+  await sauvegarder();rInvArmor();
+}
+async function paInstallCore(frameIdx){
+  const frame=char.inventory[frameIdx];if(!frame||frame.type!=='POWERARMOR_FRAME')return;
+  const ci=char.inventory.findIndex((x,j)=>j!==frameIdx&&x.name==='Cellule de fusion'&&(x.qty||1)>0);
+  if(ci<0){alert('Aucune cellule de fusion dans l\'inventaire.');return;}
+  frame.core=true;
+  const cell=char.inventory[ci];
+  if((cell.qty||1)>1)cell.qty--;else char.inventory.splice(ci,1);
+  await sauvegarder();rInvArmor();
+}
+async function paRemoveCore(frameIdx){
+  const frame=char.inventory[frameIdx];if(!frame||frame.type!=='POWERARMOR_FRAME'||!frame.core)return;
+  frame.core=false;
+  // Rendre la cellule à l'inventaire
+  const ex=char.inventory.find((x,j)=>j!==frameIdx&&x.name==='Cellule de fusion');
+  if(ex)ex.qty=(ex.qty||1)+1;
+  else char.inventory.push({name:'Cellule de fusion',type:'STUFF',qty:1,w:1,equipped:false});
   await sauvegarder();rInvArmor();
 }
 function toggleAtout(name){const it=char.inventory.find(i=>i.name===name&&i.type==='WEAPON');if(it)it.persoBonus=!it.persoBonus;rAll();}
