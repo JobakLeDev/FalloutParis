@@ -366,5 +366,16 @@ html, body { overflow-x: hidden !important; overflow-y: auto !important; height:
 .inv-pill.on .ip-badge.show{background:#1a1200;color:var(--am);}
 .itag.AMMO{background:#3a2a0a;color:var(--am);}
 /* Frame PA */
-.pa-frame-fiche{ border-color:var(--am) !important; }
-.pa-slot-fiche{ padding-left:10px; border-color:transparent !important; background:#060d06; }
+.pa-frame-block{ border:1px solid var(--am); margin-bottom:3px; }
+.pa-frame-block.equipped-row{ border-color:var(--am); background:#0a140a; }
+.pa-frame-hdr{ display:flex; align-items:center; gap:5px; padding:4px 8px; flex-wrap:nowrap; }
+.pa-frame-hdr .iname{ font-size:0.65rem; }
+.pa-toggle{ padding:1px 5px !important; font-size:10px !important; }
+.pa-slots-list{ border-top:1px solid var(--b); }
+.pa-slot-row{ display:flex; align-items:center; gap:6px; padding:3px 10px; border-bottom:1px solid transparent; }
+.pa-slot-row:hover{ background:#080f08; }
+.pa-sl-lbl{ font-size:7px; color:var(--am); letter-spacing:1px; min-width:42px; }
+.pa-sl-name{ font-size:8px; color:var(--t); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.pa-sl-rd{ font-size:7px; color:var(--td); white-space:nowrap; }
+.pa-sl-empty{ font-size:7px; color:var(--b2); }
+.pa-sl-sel{ flex:1; background:#060d06; border:1px solid var(--b2); color:var(--t); font-family:'Share Tech Mono',monospace; font-size:8px; padding:1px 3px; }

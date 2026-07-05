@@ -79,6 +79,8 @@ const _PA_SLOTS=[
   {k:'armL',label:'Bras G',zone:'Arm'},{k:'armR',label:'Bras D',zone:'Arm'},
   {k:'legL',label:'Jambe G',zone:'Leg'},{k:'legR',label:'Jambe D',zone:'Leg'},
 ];
+const _paExpanded=new Set();
+function togglePaExpand(i){if(_paExpanded.has(i))_paExpanded.delete(i);else _paExpanded.add(i);rInvArmor();}
 function getActiveFrame(){
   return char.inventory.find(it=>it.type==='POWERARMOR_FRAME'&&it.equipped)||null;
 }
@@ -630,44 +632,45 @@ function rInvArmor(){
       ?`<button class="ieq-btn off" style="font-size:7px;padding:2px 4px" onclick="paRemoveCore(${i})">⏏ Cellule</button>`
       :(hasCell?`<button class="ieq-btn off" style="font-size:7px;padding:2px 4px;border-color:var(--g);color:var(--g)" onclick="paInstallCore(${i})">🔋 Installer</button>`
                :`<span style="font-size:8px;color:var(--rd)" title="Aucune cellule de fusion dans l'inventaire">⚠ core</span>`);
-    el.innerHTML+=`<div class="irow pa-frame-fiche${it.equipped?' equipped-row':''}">
-      <span class="itag POWERARMOR" style="font-size:7px;padding:1px 3px">FRAME</span>
-      <span class="iname${it.equipped?' eq':''}" style="flex:2">${it.name}</span>
-      ${coreBtn}
-      <span style="font-size:8px;color:var(--td)">${filled}/6 pièces</span>
-      <button class="ieq-btn ${it.equipped?'on':'off'}" onclick="tEquipFrame(${i})">${it.equipped?'● ACTIVE':'○ Activer'}</button>
-      <button class="idel-btn" onclick="jetItem(${i})" title="Jeter">🗑</button>
-    </div>`;
-    if(it.equipped){
-      const slotsHtml=_PA_SLOTS.map(s=>{
+    const open=_paExpanded.has(i);
+    el.innerHTML+=`<div class="pa-frame-block${it.equipped?' equipped-row':''}">
+      <div class="pa-frame-hdr">
+        <span class="itag POWERARMOR" style="font-size:7px;padding:1px 3px">FRAME</span>
+        <span class="iname${it.equipped?' eq':''}" style="flex:1;min-width:0">${it.name}</span>
+        <span style="font-size:8px;color:var(--td);white-space:nowrap">${filled}/6</span>
+        ${coreBtn}
+        <button class="ieq-btn ${it.equipped?'on':'off'}" onclick="tEquipFrame(${i})">${it.equipped?'● ACTIVE':'○ Activer'}</button>
+        ${it.equipped?`<button class="ieq-btn off pa-toggle" onclick="togglePaExpand(${i})" title="Détail pièces">${open?'▲':'▼'}</button>`:''}
+        <button class="idel-btn" onclick="jetItem(${i})" title="Jeter">🗑</button>
+      </div>
+      ${open&&it.equipped?`<div class="pa-slots-list">`+_PA_SLOTS.map(s=>{
         const p=slots[s.k];
         if(p){
           const db=DB.armor.find(a=>a.n===p.name)||{};
-          return `<div class="irow pa-slot-fiche">
-            <span style="min-width:46px;font-size:8px;color:var(--am)">${s.label}</span>
-            <span class="iname" style="font-size:9px;flex:1">${p.name}</span>
-            <span style="font-size:8px;color:var(--td)">Ph:${db.ph||0} En:${db.en||0}${db.rad?' Rad:'+db.rad:''}</span>
-            <button class="ieq-btn off" style="font-size:7px;padding:2px 4px" onclick="paRemovePiece(${i},'${s.k}')">↩ Retirer</button>
+          return `<div class="pa-slot-row">
+            <span class="pa-sl-lbl">${s.label}</span>
+            <span class="pa-sl-name">${p.name}</span>
+            <span class="pa-sl-rd">Ph:${db.ph||0} En:${db.en||0}${db.rad?' Rad:'+db.rad:''}</span>
+            <button class="ieq-btn off" style="font-size:7px;padding:1px 4px" onclick="paRemovePiece(${i},'${s.k}')">↩</button>
           </div>`;
         }
         const avail=char.inventory.filter((it2,j)=>j!==i&&it2.type==='POWERARMOR'&&_paZone(it2)===s.zone);
         if(!avail.length)
-          return `<div class="irow pa-slot-fiche">
-            <span style="min-width:46px;font-size:8px;color:var(--am)">${s.label}</span>
-            <span style="font-size:8px;color:var(--td)">— vide — <small>(pas de pièce ${s.zone})</small></span>
+          return `<div class="pa-slot-row">
+            <span class="pa-sl-lbl">${s.label}</span>
+            <span class="pa-sl-empty">— vide</span>
           </div>`;
         const selId=`pa-sel-${i}-${s.k}`;
         const opts=avail.map(it2=>`<option value="${it2.name.replace(/"/g,'&quot;')}">${it2.name}</option>`).join('');
-        return `<div class="irow pa-slot-fiche">
-          <span style="min-width:46px;font-size:8px;color:var(--am)">${s.label}</span>
-          <select id="${selId}" style="flex:1;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:8px;padding:1px 3px">
+        return `<div class="pa-slot-row">
+          <span class="pa-sl-lbl">${s.label}</span>
+          <select id="${selId}" class="pa-sl-sel">
             <option value="">— choisir —</option>${opts}
           </select>
-          <button class="ieq-btn off" style="font-size:7px;padding:2px 4px" onclick="paEquipPiece(${i},'${s.k}',document.getElementById('${selId}').value)">+ Inst.</button>
+          <button class="ieq-btn off" style="font-size:7px;padding:1px 4px" onclick="paEquipPiece(${i},'${s.k}',document.getElementById('${selId}').value)">+</button>
         </div>`;
-      }).join('');
-      el.innerHTML+=slotsHtml;
-    }
+      }).join('')+`</div>`:''}
+    </div>`;
   });
   char.inventory.filter(it=>['ARMOR','POWERARMOR','CLOTHING','OUTFIT'].includes(it.type)).forEach((it)=>{
     const i=char.inventory.indexOf(it);
