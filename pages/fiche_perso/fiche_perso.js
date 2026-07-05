@@ -747,6 +747,7 @@ async function leaveHere(i,skipConfirm=false){
     if(it.mods&&Object.keys(it.mods).length)drop.mods=it.mods;
     if(it.slots)drop.slots=it.slots;
     if(it.core!=null)drop.core=it.core;
+    if(it.postcard)drop.postcard=it.postcard;   // carte postale : préserver l'image
     // Vérifier proximité d'un refuge
     const ss=await db.collection('settlements').doc(campId).get();
     const sd=ss.exists?ss.data():{};

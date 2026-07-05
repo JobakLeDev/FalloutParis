@@ -14,6 +14,7 @@ let isMJ = !viewerId && sessionStorage.getItem('mj_auth') === '1';
 let fdb;
 let joueurs = {};
 let qData = { quests: [] };
+let POSTCARDS = [];   // data/postcards.json (chargé au init) — pour la quête « Un bon gros touriste »
 let filter = 'all';
 let typeFilter = 'all';   // MJ : 'all' | 'principale' | 'annexe'
 // Repli individuel des quêtes (mémorisé en localStorage)
@@ -33,6 +34,10 @@ function init() {
   if (embed) document.body.classList.add('embed');
   fdb = firebase.initializeApp(firebaseConfig).firestore();
   updateModeUI();
+  // Liste des cartes postales (pour la quête spéciale, vue joueur uniquement)
+  fetch('../../data/postcards.json').then(r => r.json())
+    .then(d => { POSTCARDS = Array.isArray(d.postcards) ? d.postcards : []; render(); })
+    .catch(() => {});
   fdb.collection('joueurs').onSnapshot(s => {
     joueurs = {}; s.forEach(d => joueurs[d.id] = { ...d.data(), _id: d.id });
     render();
@@ -252,9 +257,36 @@ const STATUTS = { active: { l: 'EN COURS', c: 'var(--am)' }, done: { l: 'TERMIN�
 function esc(s) { return (s == null ? '' : '' + s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 function escAttr(s) { return esc(s).replace(/"/g, '&quot;'); }
 
+// Quête spéciale « Un bon gros touriste » : auto-révélée au joueur dès qu'il possède
+// une carte postale. Objectif chiffré X/total + checklist des lieux (calculée depuis
+// SON inventaire, donc par joueur — pas stockée dans /quetes/data).
+function _postcardQuest() {
+  if (isMJ || !viewerId) return null;
+  const inv = (joueurs[viewerId] || {}).inventory || [];
+  const owned = new Set(inv.filter(it => it && it.postcard).map(it => it.postcard));
+  if (!owned.size) return null;
+  const all = POSTCARDS || [];
+  if (!all.length) return null;
+  const total = all.length;
+  const have = all.filter(p => owned.has(p.id)).length;
+  return {
+    id: '__postcards__',
+    title: 'Un bon gros touriste',
+    desc: 'Collectionne les cartes postales des lieux emblématiques de Paris.',
+    status: (total > 0 && have >= total) ? 'done' : 'active',
+    reward: 'Le respect des vrais touristes.',
+    objectives: [
+      { id: '__pc_count__', text: 'Cartes postales collectionnées', count: have, target: total },
+      ...all.map(p => ({ id: '__pc_' + p.id, text: p.name, done: owned.has(p.id) })),
+    ],
+  };
+}
+
 function render() {
   const el = document.getElementById('quetes-list'); if (!el) return;
   let quests = qData.quests.filter(questVisible);
+  const pcq = _postcardQuest();
+  if (pcq) quests = [pcq, ...quests];
   if (filter !== 'all') quests = quests.filter(q => (q.status || 'active') === filter);
   if (isMJ && typeFilter !== 'all') quests = quests.filter(q => (q.qtype || 'annexe') === typeFilter);
   if (!quests.length) { el.innerHTML = `<div class="q-empty">${isMJ ? 'Aucune quête — clique « + Nouvelle quête ».' : 'Aucune quête pour l\'instant.'}</div>`; return; }
