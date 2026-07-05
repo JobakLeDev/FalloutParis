@@ -143,12 +143,13 @@ function sw(tab){
   // Charger la carte (iframe) à la première ouverture de l'onglet ; sinon recentrer sur le joueur
   if(tab==='carte'){
     const f=document.getElementById('carte-frame');
+    const _sendH=()=>{ if(f.contentWindow) f.contentWindow.postMessage({type:'embed-h',h:f.clientHeight},'*'); };
     if(f && !f.src){
       f.src='../carte/carte.html?id='+encodeURIComponent(id)+'&embed=1&camp='+encodeURIComponent((char&&char.campaign)||'data');
-      // invalidateSize après chargement initial (Leaflet mesure avant que la CSS soit stable)
-      f.addEventListener('load', ()=>{ setTimeout(()=>{ if(f.contentWindow) f.contentWindow.postMessage('carte-recenter','*'); },150); }, {once:true});
+      f.addEventListener('load', ()=>{ requestAnimationFrame(()=>{ _sendH(); setTimeout(_sendH,200); }); }, {once:true});
     } else if(f && f.contentWindow){
-      f.contentWindow.postMessage('carte-recenter','*');   // déjà chargée → recentrer
+      _sendH();
+      f.contentWindow.postMessage('carte-recenter','*');
     }
   }
   // Charger les quêtes (iframe) ; sinon rafraîchir
