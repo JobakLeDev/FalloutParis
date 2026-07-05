@@ -808,9 +808,39 @@ function renderMetroEntrances() {
       const r = isIntraMuros(lat, lng) ? FOG_RADIUS_CITY_M : FOG_RADIUS_RURAL_M;
       if (!pts.some(p => L.latLng(p.lat, p.lng).distanceTo(L.latLng(lat, lng)) < r)) return;
     }
-    L.marker([lat, lng], { title: 'Métro — ' + nom, riseOnHover: true, icon: L.divIcon({ className: 'metro-entrance',
+    const mk = L.marker([lat, lng], { title: 'Métro — ' + nom, riseOnHover: true, icon: L.divIcon({ className: 'metro-entrance',
       html: `<img src="../../img/metro_bouche.png" class="me-img" alt=""><span class="me-label">${nom}</span>`, iconSize: [36, 38], iconAnchor: [18, 36] }) }).addTo(metroEntranceLayer);
+    mk.bindPopup(() => _metroEntrancePopup(lat, lng, nom));
   });
+}
+// Popup d'une bouche de métro : propose au JOUEUR de descendre s'il est à portée
+function _metroEntrancePopup(lat, lng, nom) {
+  let h = `<div class="zpop"><div class="zpop-title">🚇 ${nom}</div>`;
+  if (viewerId && !isMJ) {
+    const t = mapData.tokens?.[viewerId];
+    const d = t ? L.latLng(t.lat, t.lng).distanceTo(L.latLng(lat, lng)) : Infinity;
+    if (!t) h += `<div class="zpop-pool" style="color:var(--td)">Ton personnage n'est pas localisé sur la carte.</div>`;
+    else if (d <= METRO_DESCEND_M) h += `<div class="tok-actions"><button onclick="descendreMetroIci(${lat},${lng})">🚇 Descendre dans le métro</button></div>`;
+    else h += `<div class="zpop-pool" style="color:var(--td)">Trop loin (${Math.round(d)} m) — approche-toi de la bouche.</div>`;
+  } else {
+    h += `<div class="zpop-pool" style="color:var(--td)">Bouche de métro — point d'accès.</div>`;
+  }
+  return h + '</div>';
+}
+// Le joueur descend dans le métro par cette bouche (jeton à ≤ METRO_DESCEND_M)
+function descendreMetroIci(lat, lng) {
+  const id = viewerId; if (!id) return;
+  const t = mapData.tokens?.[id];
+  if (!t) { alert('Ton personnage n\'est pas localisé sur la carte.'); return; }
+  if (L.latLng(t.lat, t.lng).distanceTo(L.latLng(lat, lng)) > METRO_DESCEND_M) { alert('Tu es trop loin de cette bouche de métro.'); return; }
+  mapData.underground = mapData.underground || {};
+  mapData.metroTokens = mapData.metroTokens || {};
+  mapData.underground[id] = true;
+  mapData.metroTokens[id] = { lat, lng };
+  if (typeof recordMetroFog === 'function') recordMetroFog(id, lat, lng);
+  saveData();
+  if (map) map.closePopup();
+  if (typeof switchMapTab === 'function') switchMapTab('metro');   // bascule sur la vue métro
 }
 
 function renderGroundItems() {
