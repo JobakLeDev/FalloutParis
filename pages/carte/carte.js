@@ -65,7 +65,7 @@ let metroVertexFlat = [];                          // [{lat,lng,line,lk}] — so
 let metroMoveMode = false, movingMetroToken = null;
 let editMode = false, addingPOI = false, drawingZone = null;
 let pendingPoiType = 'other';   // type de POI sélectionné dans le picker
-let mapData = { pois: [], zones: [], tokens: {}, fog: {}, geoReveal: {}, geoVisited: {}, ping: null, metroTokens: {}, metroFog: {}, underground: {}, beacons: {} };
+let mapData = { pois: [], zones: [], tokens: {}, fog: {}, geoReveal: {}, geoVisited: {}, ping: null, metroTokens: {}, metroFog: {}, underground: {}, beacons: {}, groundItems: [] };
 const geoMarkerRefs = {};                          // nom → layer (pour réouverture popup)
 let lieux = [];            // [{id, name, image, pois:[]}] — plans de bâtiments
 let lieuActif = null;      // lieu sélectionné dans l'onglet LIEUX
@@ -270,7 +270,7 @@ function buildMap() {
     });
     fdb.collection('carte').doc(fpCampId()).onSnapshot(s => {
       const d = s.exists ? s.data() : {};
-      mapData = { pois: d.pois || [], zones: normZones(d.zones), tokens: d.tokens || {}, fog: d.fog || {}, geoReveal: d.geoReveal || {}, geoVisited: d.geoVisited || {}, ping: d.ping || null, metroTokens: d.metroTokens || {}, metroFog: d.metroFog || {}, underground: d.underground || {}, beacons: d.beacons || {} };
+      mapData = { pois: d.pois || [], zones: normZones(d.zones), tokens: d.tokens || {}, fog: d.fog || {}, geoReveal: d.geoReveal || {}, geoVisited: d.geoVisited || {}, ping: d.ping || null, metroTokens: d.metroTokens || {}, metroFog: d.metroFog || {}, underground: d.underground || {}, beacons: d.beacons || {}, groundItems: d.groundItems || [] };
       renderAll();
       tryCenterPlayer();   // au 1er chargement : centrer sur le jeton du joueur
       // Si le joueur est sous terre au 1er chargement → ouvrir directement le métro centré sur lui
