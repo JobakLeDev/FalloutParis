@@ -144,8 +144,19 @@ function geoZoneGenQuery(props) {
   return new URLSearchParams({ zone: 'rues', occ, var: variation, threat }).toString();
 }
 
+function _embedSetMapHeight() {
+  const tabsH = (document.getElementById('map-tabs') || {}).offsetHeight || 0;
+  const h = window.innerHeight - tabsH;
+  const m = document.getElementById('map'); if (m) m.style.height = h + 'px';
+  const mm = document.getElementById('map-metro'); if (mm) mm.style.height = h + 'px';
+}
+
 function init() {
-  if (embed) document.body.classList.add('embed');
+  if (embed) {
+    document.body.classList.add('embed');
+    _embedSetMapHeight();
+    window.addEventListener('resize', _embedSetMapHeight);
+  }
   fdb = firebase.initializeApp(firebaseConfig).firestore();
   buildMap();
 }
