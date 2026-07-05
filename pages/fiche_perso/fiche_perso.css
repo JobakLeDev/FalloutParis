@@ -110,6 +110,33 @@ html, body { height: 100%; overflow: hidden; }
 .eff-purge:hover{ border-color:var(--am); color:var(--am); }
 
 /* ============================================================
+   MODE POWER ARMOR (onglet Général) — affichage distinct
+   ============================================================ */
+.pa-banner{
+  display:flex; align-items:center; gap:0.5rem;
+  margin:0.15rem 0 0.6rem; padding:0.35rem 0.7rem;
+  border:1px solid var(--am);
+  background:linear-gradient(90deg,rgba(232,168,32,.18),rgba(232,168,32,.03));
+  color:var(--am); font-family:'Share Tech Mono',monospace;
+  font-size:0.62rem; letter-spacing:2px; text-transform:uppercase;
+  box-shadow:inset 0 0 12px rgba(232,168,32,.2);
+  animation:paglow 2.2s ease-in-out infinite;
+}
+.pa-ban-ic{ font-size:0.95rem; filter:drop-shadow(0 0 4px rgba(232,168,32,.6)); }
+@keyframes paglow{ 0%,100%{box-shadow:inset 0 0 12px rgba(232,168,32,.18);} 50%{box-shadow:inset 0 0 18px rgba(232,168,32,.34);} }
+/* Halo ambre autour du corps + image PA bien visible (bat l'opacity:.28 inline) */
+.body-cross-wrap.pa-on{ position:relative; }
+.body-cross-wrap.pa-on::after{
+  content:''; position:absolute; inset:-4px; z-index:0; pointer-events:none;
+  border:1px solid var(--am); border-radius:6px;
+  box-shadow:0 0 20px rgba(232,168,32,.28), inset 0 0 24px rgba(232,168,32,.08);
+}
+.body-cross-wrap.pa-on #vaultboy-img{
+  opacity:.5 !important;
+  filter:brightness(1.15) drop-shadow(0 0 9px rgba(232,168,32,.55)) !important;
+}
+
+/* ============================================================
    LANCER DE DÉS PUBLIC (joueur)
    ============================================================ */
 #roll-box{
