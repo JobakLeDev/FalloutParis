@@ -372,7 +372,6 @@ function armorNamesFor(k){
   return arms.map(a=>a.name);
 }
 function rLocsGen(){
-  const ZM={head:'Head',torso:'Torso',armL:'Arm',armR:'Arm',legL:'Leg',legR:'Leg'};
   const LOCS={
     head:{l:'TÊTE',el:'loc-head'},
     torso:{l:'BUSTE',el:'loc-torso'},
@@ -381,11 +380,21 @@ function rLocsGen(){
     legL:{l:'JAMBE G.',el:'loc-legL'},
     legR:{l:'JAMBE D.',el:'loc-legR'},
   };
+  const frame=char.powerArmor?getActiveFrame():null;
+  // Swap vaultboy image selon mode PA
+  const vbImg=document.getElementById('vaultboy-img');
+  if(vbImg) vbImg.src=frame?'../../img/VaultBoyPA.png':'../../img/VaultBoy.png';
   Object.entries(LOCS).forEach(([k,loc])=>{
     const el=document.getElementById(loc.el);if(!el)return;
     const rd=getLocRD(k);
     const center=k==='torso';
-    const names=armorNamesFor(k);
+    let names;
+    if(frame){
+      const piece=frame.slots?.[k];
+      names=piece?[piece.name]:[];
+    } else {
+      names=armorNamesFor(k);
+    }
     el.innerHTML=`<div class="loc-card-cross${char.wounds[k]?' hurt':''}${center?' center-loc':''}">
       <span class="lcc-name">${loc.l}</span>
       <span class="lcc-arm">${names.length?names.join('<br>'):'—'}</span>
