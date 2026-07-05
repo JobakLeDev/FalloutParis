@@ -145,6 +145,8 @@ function sw(tab){
     const f=document.getElementById('carte-frame');
     if(f && !f.src){
       f.src='../carte/carte.html?id='+encodeURIComponent(id)+'&embed=1&camp='+encodeURIComponent((char&&char.campaign)||'data');
+      // invalidateSize après chargement initial (Leaflet mesure avant que la CSS soit stable)
+      f.addEventListener('load', ()=>{ setTimeout(()=>{ if(f.contentWindow) f.contentWindow.postMessage('carte-recenter','*'); },150); }, {once:true});
     } else if(f && f.contentWindow){
       f.contentWindow.postMessage('carte-recenter','*');   // déjà chargée → recentrer
     }
