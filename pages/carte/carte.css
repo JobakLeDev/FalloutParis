@@ -196,8 +196,8 @@ img.land-icon-img{
 .leaflet-control-zoom a:hover{background:var(--gk);}
 
 /* Bouches de métro (points d'accès) sur la carte principale — image détourée (Guimard) */
-.metro-entrance{display:flex;flex-direction:column;align-items:center;}
-.metro-entrance .me-img{width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 0 3px rgba(93,255,93,.55));}
+.metro-entrance{display:flex;flex-direction:column;align-items:center;background:none;border:none;cursor:pointer;}
+.metro-entrance .me-img{width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 0 3px rgba(93,255,93,.55));cursor:pointer;}
 .metro-entrance .me-label{margin-top:-1px;font-family:'Share Tech Mono',monospace;font-size:6.5px;color:var(--tb);letter-spacing:.3px;white-space:nowrap;text-shadow:0 0 3px #000,0 0 2px #000;opacity:0;transition:opacity .12s;pointer-events:none;}
 .metro-entrance:hover{z-index:1000;}
 .metro-entrance:hover .me-img{filter:drop-shadow(0 0 5px rgba(93,255,93,.9)) brightness(1.2);}
