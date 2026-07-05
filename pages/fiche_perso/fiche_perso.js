@@ -674,7 +674,7 @@ function rInvArmor(){
         <span class="iname${it.equipped?' eq':''}" style="flex:1;min-width:0">${it.name}</span>
         <span style="font-size:8px;color:var(--td);white-space:nowrap">${filled}/6</span>
         ${coreBtn}
-        <button class="ieq-btn ${it.equipped?'on':'off'}" onclick="tEquipFrame(${i})">${it.equipped?'● ACTIVE':'○ Activer'}</button>
+        <button class="ieq-btn on" onclick="tEquipFrame(${i})" title="Sortir de l'armure et la laisser sur place">🚪 Sortir</button>
         ${it.equipped?`<button class="ieq-btn off pa-toggle" onclick="togglePaExpand(${i})" title="Détail pièces">${open?'▲':'▼'}</button>`:''}
         <button class="idel-btn" onclick="jetItem(${i})" title="Jeter">🗑</button>
       </div>
@@ -910,6 +910,19 @@ function addXP(n){
 function setMom(i){char.momentum=(i<char.momentum)?i:i+1;rMom();}
 function tWound(k){char.wounds[k]=!char.wounds[k];rLocs();}
 function cyclePerk(n){char.perks[n]=((char.perks[n]||0)+1)%((PERKS_DEF[n]?.max||1)+1);rAll();}
+// Invariant : toute frame présente dans l'inventaire est ÉQUIPÉE (le joueur est
+// dedans) et la Power Armor est ACTIVE. On ne « ramasse » pas une frame, on y
+// « rentre » — l'équipement est donc automatique. Sortir = la laisser au sol
+// (leaveHere), ce qui la retire de l'inventaire. Retourne true si l'état a changé.
+function fpNormalizePAFrames(){
+  if(!char||!Array.isArray(char.inventory))return false;
+  let changed=false;
+  const frames=char.inventory.filter(it=>it&&it.type==='POWERARMOR_FRAME');
+  frames.forEach((f,idx)=>{ const want=(idx===0); if(!!f.equipped!==want){f.equipped=want;changed=true;} });
+  const hasFrame=frames.length>0;
+  if(!!char.powerArmor!==hasFrame){char.powerArmor=hasFrame;changed=true;}
+  return changed;
+}
 async function togglePA(){
   if(!char.powerArmor){
     const f=getActiveFrame();
@@ -925,32 +938,25 @@ async function togglePA(){
     else { char.powerArmor=false; saveToFirebase(); rAll(); }
   }
 }
+// Une frame est TOUJOURS portée (on y « rentre » automatiquement) → cette action
+// ne sert qu'à en SORTIR : on la laisse sur place (retirée de l'inventaire).
 async function tEquipFrame(i){
   const it=char.inventory[i];if(!it||it.type!=='POWERARMOR_FRAME')return;
-  if(it.equipped){
-    if(!await fpConfirm(`Sortir de la frame "${it.name}" et la laisser sur place ?`))return;
-    const nom=it.name;
-    it.equipped=false;
-    char.powerArmor=false;
-    const dest=await leaveHere(i,true);
-    if(dest){
-      alert(dest.type==='refuge'
-        ? `"${nom}" laissée au refuge « ${dest.name} » (voir « Objets au sol »).`
-        : `"${nom}" laissée au sol sur la carte, à ta position (icône armure).`);
-    } else {
-      // Non déposée (pas de jeton sur la carte) → on la GARDE dans l'inventaire, PA désactivée
-      saveToFirebase();
-      alert(`Tu n'es pas localisé sur la carte : "${nom}" reste dans ton inventaire (Power Armor désactivée).`);
-    }
-    rAll();
+  if(!await fpConfirm(`Sortir de la frame "${it.name}" et la laisser sur place ?`))return;
+  const nom=it.name;
+  it.equipped=false;
+  char.powerArmor=false;
+  const dest=await leaveHere(i,true);
+  if(dest){
+    alert(dest.type==='refuge'
+      ? `"${nom}" laissée au refuge « ${dest.name} » (voir « Objets au sol »).`
+      : `"${nom}" laissée au sol sur la carte, à ta position (icône armure).`);
   } else {
-    if(!it.core){alert('La frame n\'a pas de cœur de fusion. Installe un cœur avant d\'entrer.');return;}
-    char.inventory.forEach(o=>{if(o.type==='POWERARMOR_FRAME')o.equipped=false;});
-    it.equipped=true;
-    char.powerArmor=true;
-    saveToFirebase();
-    rAll();
+    // Non déposée (pas de jeton sur la carte) : impossible de sortir sans un
+    // endroit où poser l'armure → tu restes dedans (l'invariant la ré-équipe).
+    alert(`Tu n'es pas localisé sur la carte : impossible de poser l'armure ici, tu restes dedans.`);
   }
+  rAll();
 }
 function _paZone(it){ return it.zone||(DB.armor.find(a=>a.n===it.name)||{}).z||''; }
 async function paEquipPiece(frameIdx,slotKey,pieceName){

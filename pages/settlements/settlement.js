@@ -400,7 +400,7 @@ function renderGround(site){
     // Éviter la redondance (ex. "FRAME" + "Frame Power Armor") : masquer le tag si le nom le contient déjà
     if(tag && new RegExp('\\b'+tag+'\\b','i').test(it.name||'')) tag='';
     const tagHtml=tag?`<span class="pa-sl-lbl" style="min-width:36px">${tag}</span>`:'';
-    const pickBtn=onSite?`<button class="bp-mini" onclick="ramasserGroundItemS(${i})">⬆ Ramasser</button>`:'';
+    const pickBtn=onSite?`<button class="bp-mini" onclick="ramasserGroundItemS(${i})">${it.type==='POWERARMOR_FRAME'?'🦾 Rentrer dans l\'armure':'⬆ Ramasser'}</button>`:'';
     const delBtn=isMJ?`<button class="bp-mini" style="color:var(--rd)" onclick="supprimerGroundItemS(${i})">🗑</button>`:'';
     return `<div class="pa-slot-row">${tagHtml}<span class="pa-sl-name">${esc(it.name)} ×${it.qty||1}</span><span style="font-size:7px;color:var(--td)">${esc(it.droppedBy||'?')}</span>${pickBtn}${delBtn}</div>`;
   }).join('');
@@ -413,9 +413,16 @@ async function ramasserGroundItemS(idx){
   gi.splice(idx,1);
   const inv=(me.inventory||[]).map(x=>({...x}));
   const{id,droppedBy,ts,...clean}=it;
+  const upd={inventory:inv,lastUpdate:Date.now()};
+  if(clean.type==='POWERARMOR_FRAME'){
+    // On ne « ramasse » pas une frame : on RENTRE dedans → équipée + PA active
+    inv.forEach(o=>{if(o.type==='POWERARMOR_FRAME')o.equipped=false;});
+    clean.equipped=true;
+    upd.powerArmor=true;
+  }
   inv.push(clean);
   try{
-    await fdb.collection('joueurs').doc(viewerId).update({inventory:inv,lastUpdate:Date.now()});
+    await fdb.collection('joueurs').doc(viewerId).update(upd);
     me.inventory=inv;
   }catch(e){alert('Erreur : '+e.message);return;}
   site.groundItems=gi;
