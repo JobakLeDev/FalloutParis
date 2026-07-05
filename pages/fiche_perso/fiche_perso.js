@@ -689,9 +689,9 @@ function rInvArmor(){
     </div>`;
   });
 }
-async function leaveHere(i){
+async function leaveHere(i,skipConfirm=false){
   const it=char.inventory[i]; if(!it)return;
-  if(!await fpConfirm(`Laisser "${it.name}" sur place ?\nL'objet apparaîtra sur la carte ou dans le lieu.`))return;
+  if(!skipConfirm&&!await fpConfirm(`Laisser "${it.name}" sur place ?\nL'objet apparaîtra sur la carte ou dans le lieu.`))return;
   try{
     const campId=(typeof fpCampId==='function')?fpCampId():'data';
     const cs=await db.collection('carte').doc(campId).get();
@@ -871,14 +871,15 @@ function togglePA(){
 async function tEquipFrame(i){
   const it=char.inventory[i];if(!it||it.type!=='POWERARMOR_FRAME')return;
   if(it.equipped){
-    if(!await fpConfirm('Sortir de la frame et la laisser sur place ?'))return;
-    char.inventory.splice(i,1);
+    if(!await fpConfirm(`Sortir de la frame "${it.name}" et la laisser sur place ?`))return;
     char.powerArmor=false;
+    await leaveHere(i,true);
+    rAll();
   } else {
     char.inventory.forEach(o=>{if(o.type==='POWERARMOR_FRAME')o.equipped=false;});
     it.equipped=true;
+    rAll();
   }
-  rAll();
 }
 function _paZone(it){ return it.zone||(DB.armor.find(a=>a.n===it.name)||{}).z||''; }
 async function paEquipPiece(frameIdx,slotKey,pieceName){
