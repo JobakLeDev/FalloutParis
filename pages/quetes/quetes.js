@@ -277,7 +277,6 @@ function _postcardQuest() {
     reward: 'Le respect des vrais touristes.',
     objectives: [
       { id: '__pc_count__', text: 'Cartes postales collectionnées', count: have, target: total },
-      ...all.map(p => ({ id: '__pc_' + p.id, text: p.name, done: owned.has(p.id) })),
     ],
   };
 }
