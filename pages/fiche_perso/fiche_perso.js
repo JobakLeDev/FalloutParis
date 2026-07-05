@@ -695,7 +695,7 @@ async function leaveHere(i){
   if(!await fpConfirm(`Laisser "${it.name}" sur place ?\nL'objet apparaîtra sur la carte ou dans le lieu.`))return;
   try{
     const campId=(typeof fpCampId==='function')?fpCampId():'data';
-    const cs=await fdb.collection('carte').doc(campId).get();
+    const cs=await db.collection('carte').doc(campId).get();
     const cd=cs.exists?cs.data():{};
     const tok=(cd.tokens||{})[viewerId];
     if(!tok||tok.lat==null){alert('Ton personnage n\'est pas localisé sur la carte.');return;}
@@ -706,7 +706,7 @@ async function leaveHere(i){
     if(it.slots)drop.slots=it.slots;
     if(it.core!=null)drop.core=it.core;
     // Vérifier proximité d'un refuge
-    const ss=await fdb.collection('settlements').doc(campId).get();
+    const ss=await db.collection('settlements').doc(campId).get();
     const sd=ss.exists?ss.data():{};
     let siteDrop=null;
     for(const[sid,s] of Object.entries(sd.sites||{})){
@@ -720,10 +720,10 @@ async function leaveHere(i){
     }
     if(siteDrop){
       const gi=[...(sd.sites[siteDrop].groundItems||[]),drop];
-      await fdb.collection('settlements').doc(campId).update({[`sites.${siteDrop}.groundItems`]:gi});
+      await db.collection('settlements').doc(campId).update({[`sites.${siteDrop}.groundItems`]:gi});
     } else {
       const gi=[...(cd.groundItems||[]),{...drop,lat:tok.lat,lng:tok.lng}];
-      await fdb.collection('carte').doc(campId).update({groundItems:gi});
+      await db.collection('carte').doc(campId).update({groundItems:gi});
     }
     char.inventory.splice(i,1);
     await sauvegarder();
