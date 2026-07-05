@@ -809,7 +809,7 @@ function renderMetroEntrances() {
       if (!pts.some(p => L.latLng(p.lat, p.lng).distanceTo(L.latLng(lat, lng)) < r)) return;
     }
     L.marker([lat, lng], { title: 'Métro — ' + nom, riseOnHover: true, icon: L.divIcon({ className: 'metro-entrance',
-      html: `<img src="../../img/metro_bouche.png" class="me-img" alt=""><span class="me-label">${nom}</span>`, iconSize: [24, 26], iconAnchor: [12, 24] }) }).addTo(metroEntranceLayer);
+      html: `<img src="../../img/metro_bouche.png" class="me-img" alt=""><span class="me-label">${nom}</span>`, iconSize: [36, 38], iconAnchor: [18, 36] }) }).addTo(metroEntranceLayer);
   });
 }
 
@@ -820,7 +820,7 @@ function renderGroundItems() {
     const m = L.marker([item.lat, item.lng], {
       icon: L.divIcon({ className: 'ground-item-pin',
         html: `<img src="../../img/${item.type==='POWERARMOR_FRAME'?'ground_pa_frame.png':'ground_armor.svg'}" class="gi-img" title="${item.name}">`,
-        iconSize: [28, 28], iconAnchor: [14, 20] })
+        iconSize: [42, 42], iconAnchor: [21, 30] })
     });
     const myTok = viewerId ? mapData.tokens?.[viewerId] : null;
     const dist = myTok ? L.latLng(myTok.lat, myTok.lng).distanceTo(L.latLng(item.lat, item.lng)) : Infinity;
@@ -892,14 +892,17 @@ function renderPOIs() {
     const hasType = !!POI_TYPES[p.type];
     const t = POI_TYPES[p.type] || POI_TYPES.other;
     const dim = isMJ && !anyRevealed(p);
+    // Settlements/refuges (type settlement OU POI lié à un refuge) → icône agrandie
+    const isRefuge = p.type === 'settlement' || !!restRefugeAt(p.name);
     // POI sans type défini → simple pastille verte lumineuse (pas d'icône)
     const dotHtml = hasType
-      ? `<span class="poi-dot" style="background:${t.color}">${t.icon}</span>`
+      ? `<span class="poi-dot${isRefuge ? ' poi-big' : ''}" style="background:${t.color}">${t.icon}</span>`
       : `<span class="poi-dot glow"></span>`;
+    const sz = isRefuge ? 28 : 16;
     const m = L.marker([p.lat, p.lng], {
       draggable: isMJ && editMode, opacity: dim ? 0.5 : 1,
       icon: L.divIcon({ className: 'poi-pin', html: dotHtml,
-        iconSize: [16, 16], iconAnchor: [8, 8] }),
+        iconSize: [sz, sz], iconAnchor: [sz / 2, sz / 2] }),
     }).addTo(poiLayer);
     m.bindTooltip(p.name + (restRefugeAt(p.name) ? ' 🛏' : '') + (dim ? ' 🔒' : ''), { className: 'map-tip', direction: 'top', offset: [0, -8] });
     m.bindPopup(poiPopup(p, t));
