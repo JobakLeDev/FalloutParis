@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Sol / ombre -->
+  <ellipse cx="16" cy="28" rx="10" ry="3" fill="rgba(0,0,0,0.35)"/>
+  <!-- Corps de l'armure -->
+  <rect x="9" y="10" width="14" height="14" rx="2" fill="#2a4a2a" stroke="#5aaa5a" stroke-width="1.5"/>
+  <!-- Épaulières -->
+  <rect x="5" y="7" width="7" height="6" rx="1.5" fill="#1e3a1e" stroke="#5aaa5a" stroke-width="1.2"/>
+  <rect x="20" y="7" width="7" height="6" rx="1.5" fill="#1e3a1e" stroke="#5aaa5a" stroke-width="1.2"/>
+  <!-- Détail central -->
+  <circle cx="16" cy="17" r="2.5" fill="none" stroke="#5aaa5a" stroke-width="1.2"/>
+  <line x1="16" y1="13" x2="16" y2="21" stroke="#3a7a3a" stroke-width="1"/>
+  <!-- Surbrillance -->
+  <rect x="10" y="11" width="6" height="3" rx="1" fill="rgba(90,170,90,0.15)"/>
+</svg>

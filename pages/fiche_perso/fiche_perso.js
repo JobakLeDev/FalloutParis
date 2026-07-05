@@ -685,9 +685,49 @@ function rInvArmor(){
       <span class="ipw">${((it.qty||1)*(it.w||0)).toFixed(2)}kg</span>
       <span style="font-size:8px;color:${rdMod?'var(--am)':'var(--td)'}">${base.z||'—'} Ph:${db.ph||0} En:${db.en||0}${db.rad?' Rad:'+db.rad:''}</span>
       <button class="ieq-btn ${it.equipped?'on':'off'}" onclick="tEquip(${i})">${it.equipped?'● ÉQUIPÉ':'○ Équiper'}</button>
-      <button class="idel-btn" onclick="jetItem(${i})" title="Jeter">🗑</button>
+      <span style="display:flex;gap:2px"><button class="idel-btn" onclick="leaveHere(${i})" title="Laisser sur place">📍</button><button class="idel-btn" onclick="jetItem(${i})" title="Jeter (définitif)">🗑</button></span>
     </div>`;
   });
+}
+async function leaveHere(i){
+  const it=char.inventory[i]; if(!it)return;
+  if(!await fpConfirm(`Laisser "${it.name}" sur place ?\nL'objet apparaîtra sur la carte ou dans le lieu.`))return;
+  try{
+    const campId=(typeof fpCampId==='function')?fpCampId():'data';
+    const cs=await fdb.collection('carte').doc(campId).get();
+    const cd=cs.exists?cs.data():{};
+    const tok=(cd.tokens||{})[viewerId];
+    if(!tok||tok.lat==null){alert('Ton personnage n\'est pas localisé sur la carte.');return;}
+    const uid=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+    const drop={id:uid,name:it.name,type:it.type,qty:it.qty||1,w:it.w||0,droppedBy:char.name||viewerId,ts:Date.now()};
+    if(it.zone)drop.zone=it.zone;
+    if(it.mods&&Object.keys(it.mods).length)drop.mods=it.mods;
+    if(it.slots)drop.slots=it.slots;
+    if(it.core!=null)drop.core=it.core;
+    // Vérifier proximité d'un refuge
+    const ss=await fdb.collection('settlements').doc(campId).get();
+    const sd=ss.exists?ss.data():{};
+    let siteDrop=null;
+    for(const[sid,s] of Object.entries(sd.sites||{})){
+      if(!s.poi)continue;
+      const p=(cd.pois||[]).find(p=>p.name===s.poi);
+      if(!p||p.lat==null)continue;
+      const dlat=tok.lat-p.lat,dlng=tok.lng-p.lng;
+      const cos=Math.cos(tok.lat*Math.PI/180);
+      const dist=Math.sqrt(dlat*dlat*111320*111320+dlng*dlng*111320*cos*111320*cos);
+      if(dist<=150){siteDrop=sid;break;}
+    }
+    if(siteDrop){
+      const gi=[...(sd.sites[siteDrop].groundItems||[]),drop];
+      await fdb.collection('settlements').doc(campId).update({[`sites.${siteDrop}.groundItems`]:gi});
+    } else {
+      const gi=[...(cd.groundItems||[]),{...drop,lat:tok.lat,lng:tok.lng}];
+      await fdb.collection('carte').doc(campId).update({groundItems:gi});
+    }
+    char.inventory.splice(i,1);
+    await sauvegarder();
+    rInventory();
+  }catch(e){alert('Erreur : '+e.message);}
 }
 
 function rInvAid(){
