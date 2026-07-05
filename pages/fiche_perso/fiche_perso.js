@@ -400,9 +400,24 @@ function rLocsGen(){
     legR:{l:'JAMBE D.',el:'loc-legR'},
   };
   const frame=char.powerArmor?getActiveFrame():null;
-  // Swap vaultboy image + bouton PA selon mode
+  // Swap vaultboy image + halo ambre + bandeau selon mode Power Armor
   const vbImg=document.getElementById('vaultboy-img');
-  if(vbImg) vbImg.src=frame?'../../img/VaultBoyPA.png':'../../img/VaultBoy.png';
+  if(vbImg){
+    vbImg.src=frame?'../../img/VaultBoyPA.png':'../../img/VaultBoy.png';
+    const wrap=vbImg.closest('.body-cross-wrap');
+    if(wrap) wrap.classList.toggle('pa-on',!!frame);
+  }
+  const paBanner=document.getElementById('pa-banner');
+  if(paBanner){
+    if(frame){
+      paBanner.className='pa-banner';
+      paBanner.style.display='flex';
+      paBanner.innerHTML=`<span class="pa-ban-ic">🦾</span><span>Servo-armure active — ${frame.name}${!frame.core?' · <b style="color:var(--rd)">⚠ CORE VIDE</b>':''}</span>`;
+    } else {
+      paBanner.style.display='none';
+      paBanner.innerHTML='';
+    }
+  }
   const paBtn=document.getElementById('pa-btn');
   if(paBtn) paBtn.textContent='Power Armor : '+(char.powerArmor?'ON':'OFF');
   Object.entries(LOCS).forEach(([k,loc])=>{
