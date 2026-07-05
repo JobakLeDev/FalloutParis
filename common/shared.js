@@ -57,6 +57,40 @@ const FP_FUSION_CORE = 'Cœur de fusion';
 function fpIsFusionCore(name){ return name === FP_FUSION_CORE || name === 'Cellule de fusion'; }
 
 // ============================================================
+// DÉPLACEMENT / rencontres aléatoires sur trajet (partagé carte + dashboard MJ)
+// ============================================================
+const FP_WALK_KMH = 5;   // vitesse de marche (km/h) → temps de trajet depuis la distance
+const FP_THREAT_DANGER = { calme:1, normal:2, eleve:3, extreme:4 };
+const FP_EVENEMENTS_DEPLACEMENT = [
+  {pct:40, type:'calme',    label:'Calme',      desc:'Le groupe se déplace sans encombre.'},
+  {pct:20, type:'combat',   label:'Combat !',   desc:'Rencontre hostile sur la route.'},
+  {pct:15, type:'piege',    label:'Piège',      desc:'Zone piégée. Test PER+Discrétion D2 pour éviter.'},
+  {pct:10, type:'ressource',label:'Ressource',  desc:'Le groupe trouve des ressources en chemin.'},
+  {pct:10, type:'pnj',      label:'Rencontre PNJ', desc:'Un personnage non-hostile croise la route du groupe.'},
+  {pct:5,  type:'danger',   label:'Grand danger !', desc:'Menace majeure. Ennemi puissant ou situation critique.'},
+];
+// km + menace → {segments, pKm, events[], mins, hasCombat} : 1 jet de rencontre par km
+// (proba/km = 4 + menace×7), événements non-calme pondérés, temps de trajet à FP_WALK_KMH.
+function fpRollDeplacement(km, threat){
+  km = Math.max(0, +km || 0);
+  const danger = FP_THREAT_DANGER[threat] || 2;
+  const segments = Math.min(30, Math.max(1, Math.round(km)));
+  const pKm = Math.min(80, 4 + danger*7);
+  const nonCalme = FP_EVENEMENTS_DEPLACEMENT.filter(e => e.type!=='calme');
+  const totW = nonCalme.reduce((a,e)=>a+e.pct,0);
+  const events = [];
+  for(let s=0;s<segments;s++){
+    if(Math.random()*100 > pKm) continue;
+    let r = Math.random()*totW, evt = nonCalme[0];
+    for(const e of nonCalme){ r-=e.pct; if(r<=0){ evt=e; break; } }
+    events.push(evt);
+  }
+  const mins = Math.round(km / FP_WALK_KMH * 60);
+  return { segments, pKm, events, mins, hasCombat: events.some(e=>e.type==='combat'||e.type==='danger'), danger };
+}
+function fpFmtDuree(mins){ return mins>=60 ? `${Math.floor(mins/60)} h ${String(mins%60).padStart(2,'0')}` : `${mins} min`; }
+
+// ============================================================
 // MODS D'ARMES / D'ARMURES (window.WEAPON_MODS / ARMOR_MODS chargés par db.js)
 // item.mods = { receiver:'hardened', barrel:'long', ... } (ids de mods par emplacement)
 // ============================================================
