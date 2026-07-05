@@ -143,12 +143,6 @@ function sw(tab){
   // Charger la carte (iframe) à la première ouverture de l'onglet ; sinon recentrer sur le joueur
   if(tab==='carte'){
     const f=document.getElementById('carte-frame');
-    // Hauteur calculée : espace dispo sous les tabs jusqu'au bas de la fenêtre
-    const body=document.querySelector('.body');
-    if(f&&body){
-      const top=body.getBoundingClientRect().top;
-      f.style.height=Math.max(200,window.innerHeight-top-18)+'px';
-    }
     if(f && !f.src){
       f.src='../carte/carte.html?id='+encodeURIComponent(id)+'&embed=1&camp='+encodeURIComponent((char&&char.campaign)||'data');
     } else if(f && f.contentWindow){
