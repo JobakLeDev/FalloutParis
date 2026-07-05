@@ -144,19 +144,8 @@ function geoZoneGenQuery(props) {
   return new URLSearchParams({ zone: 'rues', occ, var: variation, threat }).toString();
 }
 
-function _embedSetMapHeight() {
-  const tabsH = (document.getElementById('map-tabs') || {}).offsetHeight || 0;
-  const h = window.innerHeight - tabsH;
-  const m = document.getElementById('map'); if (m) m.style.height = h + 'px';
-  const mm = document.getElementById('map-metro'); if (mm) mm.style.height = h + 'px';
-}
-
 function init() {
-  if (embed) {
-    document.body.classList.add('embed');
-    _embedSetMapHeight();
-    window.addEventListener('resize', _embedSetMapHeight);
-  }
+  if (embed) document.body.classList.add('embed');
   fdb = firebase.initializeApp(firebaseConfig).firestore();
   buildMap();
 }
@@ -254,23 +243,14 @@ function buildMap() {
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (moveMode) endMoveMode(); if (pingMode) endPingMode(); } });
 
   lockParis(true);
-  setTimeout(() => { if (embed) _embedSetMapHeight(); lockParis(true); }, 300);
+  setTimeout(() => lockParis(true), 300);
   window.addEventListener('resize', () => {
     if (currentTab === 'paris') lockParis(false);
     else if (currentTab === 'metro' && metroMap) lockMetro();
   });
   // La fiche joueur (iframe) demande un recentrage à chaque réaffichage de l'onglet CARTE
   window.addEventListener('message', e => {
-    if (e.data?.type === 'embed-h' && embed) {
-      const tabsH = (document.getElementById('map-tabs') || {}).offsetHeight || 0;
-      const mh = Math.max((e.data.h || 0) - tabsH, 0);
-      if (mh > 0) {
-        const m = document.getElementById('map'); if (m) m.style.height = mh + 'px';
-        const mm = document.getElementById('map-metro'); if (mm) mm.style.height = mh + 'px';
-        if (map) { map.invalidateSize(); lockParis(true); }
-      }
-    }
-    if (e.data === 'carte-recenter' && viewerId) {
+    if ((e.data === 'carte-recenter' || e.data?.type === 'embed-h') && viewerId) {
       if (currentTab === 'paris' && map) { map.invalidateSize(); lockParis(false); }
       if (currentTab === 'metro' && metroMap) metroMap.invalidateSize();
       setTimeout(centerOnViewer, 60);
