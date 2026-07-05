@@ -1232,6 +1232,23 @@ function avancerHorlogeSelection(mins){
   logAction(`Déplacement : +${mins} min pour ${parties.size} groupe(s)`);
 }
 
+// Report auto de la distance depuis la carte (localStorage 'fp_lastMoveKm', écrit
+// par carte_edition.js showMoveResult) vers le champ « Distance (km) ».
+function _applyLastMoveKm(fromEvent){
+  try{
+    const raw = localStorage.getItem('fp_lastMoveKm'); if(!raw) return;
+    const d = JSON.parse(raw); if(!d || !d.km) return;
+    const el = document.getElementById('nb-km'); if(!el) return;
+    // Au chargement : seulement si le report est récent (<10 min). Sur événement live : toujours.
+    if(!fromEvent && (Date.now() - (d.ts||0) > 600000)) return;
+    el.value = d.km;
+    if(fromEvent && typeof showMsg==='function') showMsg(`📍 Distance reportée : ${d.km} km (${d.name||'jeton'})`);
+  }catch(e){}
+}
+// Live si carte + dashboard sont dans deux onglets du même navigateur
+window.addEventListener('storage', e => { if(e.key==='fp_lastMoveKm') _applyLastMoveKm(true); });
+window.addEventListener('DOMContentLoaded', () => _applyLastMoveKm(false));
+
 // Déplacement piloté par la DISTANCE (km) : 1 jet de rencontre par km parcouru
 // (plus la route est longue/dangereuse, plus il y a de rencontres) + temps de trajet.
 function genDeplacement(){

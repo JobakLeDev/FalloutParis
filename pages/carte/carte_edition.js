@@ -112,6 +112,8 @@ function showMoveResult(id, dist, zones) {
   const el = document.getElementById('move-result'); if (!el) return;
   const nom = joueurs[id]?.nom || id;
   const distTxt = dist < 1000 ? Math.round(dist) + ' m' : (dist / 1000).toFixed(2) + ' km';
+  // Report auto vers le dashboard MJ (champ « Distance (km) » du panneau Rencontres)
+  try { localStorage.setItem('fp_lastMoveKm', JSON.stringify({ km: +(dist / 1000).toFixed(2), name: nom, ts: Date.now() })); } catch (e) {}
   el.innerHTML = `<div class="mjp-section">
     <div class="mjp-title">Déplacement</div>
     <div class="pz-row"><span class="pz-nom">${nom}</span><span class="pz-zone" style="color:var(--am)">${distTxt}</span></div>
