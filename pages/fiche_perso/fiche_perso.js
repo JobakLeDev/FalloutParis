@@ -611,7 +611,7 @@ function rInvAll(){
       <span class="iname${it.equipped?' eq':''}">${isNew?'<span class="inew" title="Acquis récemment">🆕</span> ':''}${it.equipped?'<span style="color:var(--g);font-size:9px">✓</span> ':''}${it.name}</span>
       <span class="iqval">${it.qty}</span>
       <span class="ipw">${((it.qty||1)*(it.w||0)).toFixed(2)}kg</span>
-      <span></span>
+      <span>${it.postcard?`<button class="qu-btn" style="flex:none;padding:1px 5px;font-size:8px" onclick="voirPostcard('${it.postcard}')" title="Voir la carte postale">📷</button>`:''}</span>
     </div>`;
   });
   // Munitions (char.ammo) — affichées dans TOUT comme les autres objets (hors filtre "récents")
@@ -810,7 +810,9 @@ function rInvMisc(){
     const bp=isBackpack(it);
     // Sac à dos : bouton Équiper (un seul à la fois) à la place de la colonne effet
     const isCont = db.cap != null;
-    const effCell=bp
+    const effCell=it.postcard
+      ? `<button class="qu-btn" style="flex:none;padding:2px 8px;font-size:8px" onclick="voirPostcard('${it.postcard}')">📷 Voir</button>`
+      : bp
       ? `<button class="ieq-btn ${it.equipped?'on':'off'}" onclick="tEquip(${i})">${it.equipped?'● ÉQUIPÉ':'○ Équiper'}</button>`
       : isCont
       ? `<span class="ieff">💧 ${(it.water||0)}/${db.cap}${(it.water>0)?` <button class="qu-btn" style="flex:none;padding:1px 6px;font-size:8px" onclick="boireEau(${i})">Boire</button>`:''}</span>`
@@ -825,6 +827,16 @@ function rInvMisc(){
     </div>`;
   });
 }
+
+// Carte postale : affiche l'image en grand (modale)
+function voirPostcard(id){
+  const p=(window.POSTCARDS||[]).find(x=>x.id===id);
+  if(!p){alert('Carte postale introuvable.');return;}
+  const t=document.getElementById('pc-title'); if(t)t.textContent='Carte postale — '+p.name;
+  const img=document.getElementById('pc-img'); if(img)img.src='../../img/postcards/'+p.img;
+  const mo=document.getElementById('postcard-modal'); if(mo)mo.classList.add('on');
+}
+function closePostcard(){ const mo=document.getElementById('postcard-modal'); if(mo)mo.classList.remove('on'); }
 
 function rInvAmmo(){
   const el=document.getElementById('inv-ammo-list');if(!el)return;

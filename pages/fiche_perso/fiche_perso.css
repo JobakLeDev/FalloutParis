@@ -1,5 +1,17 @@
 /* Styles spécifiques fiche_perso — voir common/style.css pour les styles partagés */
 
+/* ===== Modale CARTE POSTALE ===== */
+.pc-modal{ position:fixed; inset:0; z-index:500; display:none; align-items:center; justify-content:center;
+  background:rgba(6,12,6,.92); padding:1.2rem; }
+.pc-modal.on{ display:flex; }
+.pc-box{ display:flex; flex-direction:column; align-items:center; gap:.6rem; max-width:min(1100px,94vw); max-height:92vh; }
+.pc-title{ font-family:'Oswald',sans-serif; letter-spacing:2px; color:var(--g); font-size:1rem; text-transform:uppercase; text-shadow:0 0 6px rgba(93,190,93,.5); }
+.pc-img{ max-width:100%; max-height:78vh; object-fit:contain; border:2px solid var(--b2);
+  box-shadow:0 0 30px rgba(0,0,0,.7), 0 0 0 1px #060d06; background:#060d06; }
+.pc-close{ background:var(--gk); border:1px solid var(--b2); color:var(--t); font-family:'Share Tech Mono',monospace;
+  font-size:.75rem; letter-spacing:1px; padding:.4rem 1rem; cursor:pointer; }
+.pc-close:hover{ border-color:var(--am); color:var(--am); }
+
 /* La fiche tient dans la hauteur de l'écran : aucune barre de défilement
    navigateur. Le scroll éventuel d'un onglet se fait À L'INTÉRIEUR du cadre.
    (scopé à la fiche — les autres pages gardent leur scroll normal) */

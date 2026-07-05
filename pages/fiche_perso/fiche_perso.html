@@ -7,7 +7,7 @@
   <title>Fallout Paris — Fiche Personnage</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css?v=0053a05a">
-  <link rel="stylesheet" href="fiche_perso.css?v=1008440c">
+  <link rel="stylesheet" href="fiche_perso.css?v=236d18b2">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
@@ -437,10 +437,19 @@
   </div>
 </div>
 
+<!-- MODALE CARTE POSTALE -->
+<div id="postcard-modal" class="pc-modal" onclick="closePostcard()">
+  <div class="pc-box" onclick="event.stopPropagation()">
+    <div class="pc-title" id="pc-title"></div>
+    <img id="pc-img" class="pc-img" alt="Carte postale">
+    <button class="pc-close" onclick="closePostcard()">✕ Fermer</button>
+  </div>
+</div>
+
   <script src="../../common/shared.js?v=b728d214"></script>
-  <script src="../../common/db.js?v=38da093a"></script>
+  <script src="../../common/db.js?v=b29f9c67"></script>
   <script src="../../common/survie.js?v=31a541f2"></script>
-  <script src="fiche_perso.js?v=86b435a1"></script>
+  <script src="fiche_perso.js?v=5ebe6080"></script>
   <script src="../../common/firebase.js?v=93adafa3"></script>
   <script src="../../common/responsive.js?v=f2bdcb93"></script>
 </body>

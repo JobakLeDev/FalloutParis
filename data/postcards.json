@@ -1,0 +1,15 @@
+{
+  "postcards": [
+    { "id": "toureiffel",       "name": "La Tour Eiffel",        "img": "toureiffel.jpg" },
+    { "id": "louvre",           "name": "Le Louvre",             "img": "louvre.jpg" },
+    { "id": "notredame",        "name": "Notre-Dame",            "img": "notredame.jpg" },
+    { "id": "etoile",           "name": "Place de l'Étoile",     "img": "etoile.jpg" },
+    { "id": "invalides",        "name": "Les Invalides",         "img": "invalides.jpg" },
+    { "id": "maisondelaradio",  "name": "Maison de la Radio",    "img": "maisondelaradio.jpg" },
+    { "id": "parcdesprinces",   "name": "Parc des Princes",      "img": "parcdesprinces.jpg" },
+    { "id": "tourmontparnasse", "name": "Tour Montparnasse",     "img": "tourmontparnasse.jpg" },
+    { "id": "beaugrenelle",     "name": "Beaugrenelle",          "img": "beaugrenelle.jpg" },
+    { "id": "bourgdebois",      "name": "Bourg-de-Bois",         "img": "bourgdebois.jpg" },
+    { "id": "abbegroult",       "name": "Rue de l'Abbé Groult",  "img": "abbegroult.jpg" }
+  ]
+}
