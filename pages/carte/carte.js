@@ -74,7 +74,7 @@ let mapLieu = null;        // instance Leaflet pour les lieux
 let settlementsData = { sites: {} };   // refuges (/settlements/<camp>) — affichés dans LIEUX selon la position
 let _openRefuge = null;    // id du refuge ouvert dans l'onglet LIEUX
 let joueurs = {};
-let zoneLayer, poiLayer, tokenLayer, groundLayer;
+let zoneLayer, poiLayer, tokenLayer, groundLayer, metroEntranceLayer;
 const poiMarkers = {}, zonePolys = {};
 let openItem = null, reopening = false;            // popup ouvert (pour le réouvrir après render)
 let zoneFormCtx = null;                            // {polygon} (création) ou {zone} (édition)
@@ -236,6 +236,7 @@ function buildMap() {
   geoMarkerLayer = L.layerGroup().addTo(map);
   zoneLayer  = L.layerGroup().addTo(map);
   poiLayer   = L.layerGroup().addTo(map);
+  metroEntranceLayer = L.layerGroup().addTo(map);   // bouches de métro (points d'accès) sur la carte principale
   groundLayer = L.layerGroup().addTo(map);
   tokenLayer = L.layerGroup().addTo(map);
 
@@ -332,6 +333,7 @@ async function loadGeoJsonLayers() {
   catch(e){ console.warn('marqueurs.geojson non chargé', e); }
   try { metroStationsData = await fetch(GEOJSON_BASE + 'stations_metro.geojson').then(r => r.json()); }
   catch(e){ console.warn('stations_metro.geojson non chargé', e); }
+  renderMetroEntrances();   // bouches de métro dès que les stations sont chargées
   renderGeoLayers();
   renderMJPanel();                         // positions à jour dès que les marqueurs sont chargés
   // Couches visuelles (plus lourdes) — chargées après
@@ -756,6 +758,7 @@ function renderAll() {
   renderGeoLayers();   // réagit aussi aux changements de geoReveal
   renderTokens();
   renderGroundItems();
+  renderMetroEntrances();
   renderFog();
   renderPing();
   renderMJPanel();
@@ -777,6 +780,37 @@ function normZones(z) {
     polygon: v.polygon || [], revealedFor: v.revealedFor || [],
     baseZone: key, occupation: 'neutral', variation: '', threat: 'normal',
   }));
+}
+
+// Points explorés en surface par le viewer (mêmes sources que le brouillard)
+function _viewerSurfacePoints() {
+  const pts = (mapData.fog?.[viewerId] || []).slice();
+  const myPos = mapData.tokens?.[viewerId]; if (myPos) pts.push(myPos);
+  if (geoMarkersData) geoMarkersData.features.forEach(f => {
+    if (geoMarkerVisitedFor(f.properties.nom)) { const c = f.geometry.coordinates; pts.push({ lat: c[1], lng: c[0] }); }
+  });
+  return pts;
+}
+// Bouches de métro (points d'accès) sur la carte principale.
+// MJ : toutes ; joueur : seulement celles dans son brouillard exploré (comme sur la carte métro).
+function renderMetroEntrances() {
+  if (!metroEntranceLayer) return;
+  metroEntranceLayer.clearLayers();
+  if (!metroStationsData) return;
+  const pts = (!isMJ && viewerId) ? _viewerSurfacePoints() : null;
+  const seen = new Set();
+  metroStationsData.features.forEach(f => {
+    const nom = f.properties.nom_gares || f.properties.nom_zdc || '';
+    if (seen.has(nom)) return; seen.add(nom);
+    const c = f.geometry?.coordinates; if (!c) return;
+    const lat = c[1], lng = c[0];
+    if (pts) {
+      const r = isIntraMuros(lat, lng) ? FOG_RADIUS_CITY_M : FOG_RADIUS_RURAL_M;
+      if (!pts.some(p => L.latLng(p.lat, p.lng).distanceTo(L.latLng(lat, lng)) < r)) return;
+    }
+    L.marker([lat, lng], { title: 'Métro — ' + nom, riseOnHover: true, icon: L.divIcon({ className: 'metro-entrance',
+      html: `<img src="../../img/metro_bouche.png" class="me-img" alt=""><span class="me-label">${nom}</span>`, iconSize: [24, 26], iconAnchor: [12, 24] }) }).addTo(metroEntranceLayer);
+  });
 }
 
 function renderGroundItems() {
