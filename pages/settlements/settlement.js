@@ -777,6 +777,15 @@ function armorStandBody(site){
       }
     });
     h += '</div>';
+    // Cellule de fusion
+    const hasCell = (me.inventory||[]).some(it => it.name==='Cellule de fusion' && (it.qty||1)>0);
+    if(f.core){
+      h += `<div class="pa-stand-row" style="margin-top:4px"><span class="pa-stand-lbl">Cellule</span><span class="pa-stand-name">✅ installée</span><button class="bp-mini" onclick="paStandRemoveCore('${key}')">⏏ Retirer</button></div>`;
+    } else if(hasCell){
+      h += `<div class="pa-stand-row" style="margin-top:4px"><span class="pa-stand-lbl">Cellule</span><span style="font-size:8px;color:var(--am)">⚠ vide</span><button class="bp-mini" style="border-color:var(--g);color:var(--g)" onclick="paStandInstallCore('${key}')">🔋 Installer</button></div>`;
+    } else {
+      h += `<div class="pa-stand-row" style="margin-top:4px"><span class="pa-stand-lbl">Cellule</span><span style="font-size:8px;color:var(--rd)" title="Aucune cellule de fusion dans l\'inventaire">⚠ vide — aucune cellule</span></div>`;
+    }
     h += `<button class="sbtn add" style="margin-top:8px" onclick="takeFrame()">⬆ Entrer dans la frame</button>`;
   } else {
     h += '<div class="s-note">Support vide.</div>';
@@ -828,6 +837,42 @@ async function paStandRemovePiece(standKey, slotKey){
   const inv = (me.inventory||[]).map(x=>({...x}));
   inv.push({name:cur.name,type:'POWERARMOR',qty:1,w:db.w||0,equipped:false,zone:db.z||''});
   stored.frame.slots[slotKey] = null;
+  try {
+    await fdb.collection('joueurs').doc(viewerId).update({ inventory:inv, lastUpdate:Date.now() });
+    me.inventory = inv;
+  } catch(e){ alert('Erreur : '+e.message); return; }
+  site.armorStands = stands;
+  save();
+  renderPop(site);
+}
+async function paStandInstallCore(standKey){
+  const site = data.sites[selSite]; if(!site || !me) return;
+  if(!canAccess(site) || !_onSite(site)){ alert('Tu dois être sur place.'); return; }
+  const stands = site.armorStands||{};
+  const stored = stands[standKey]; if(!stored || !stored.frame){ alert('Support vide.'); return; }
+  const inv = (me.inventory||[]).map(x=>({...x}));
+  const ci = inv.findIndex(x => x.name==='Cellule de fusion' && (x.qty||1)>0);
+  if(ci<0){ alert('Aucune cellule de fusion dans l\'inventaire.'); return; }
+  if((inv[ci].qty||1)>1) inv[ci].qty--; else inv.splice(ci,1);
+  try {
+    await fdb.collection('joueurs').doc(viewerId).update({ inventory:inv, lastUpdate:Date.now() });
+    me.inventory = inv;
+  } catch(e){ alert('Erreur : '+e.message); return; }
+  stored.frame.core = true;
+  site.armorStands = stands;
+  save();
+  renderPop(site);
+}
+async function paStandRemoveCore(standKey){
+  const site = data.sites[selSite]; if(!site || !me) return;
+  if(!canAccess(site) || !_onSite(site)){ alert('Tu dois être sur place.'); return; }
+  const stands = site.armorStands||{};
+  const stored = stands[standKey]; if(!stored || !stored.frame || !stored.frame.core){ return; }
+  stored.frame.core = false;
+  const inv = (me.inventory||[]).map(x=>({...x}));
+  const ex = inv.find(x => x.name==='Cellule de fusion');
+  if(ex) ex.qty=(ex.qty||1)+1;
+  else inv.push({name:'Cellule de fusion',type:'STUFF',qty:1,w:1,equipped:false});
   try {
     await fdb.collection('joueurs').doc(viewerId).update({ inventory:inv, lastUpdate:Date.now() });
     me.inventory = inv;
