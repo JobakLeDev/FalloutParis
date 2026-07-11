@@ -611,7 +611,7 @@ function rInvAll(){
       <span class="iname${it.equipped?' eq':''}">${isNew?'<span class="inew" title="Acquis récemment">🆕</span> ':''}${it.equipped?'<span style="color:var(--g);font-size:9px">✓</span> ':''}${it.name}</span>
       <span class="iqval">${it.qty}</span>
       <span class="ipw">${((it.qty||1)*(it.w||0)).toFixed(2)}kg</span>
-      <span>${it.postcard?`<button class="qu-btn" style="flex:none;padding:1px 5px;font-size:8px" onclick="voirPostcard('${it.postcard}')" title="Voir la carte postale">📷</button>`:''}</span>
+      <span>${it.postcard?`<button class="qu-btn" style="flex:none;padding:1px 5px;font-size:8px" onclick="voirPostcard('${it.postcard}')" title="Voir la carte postale">📷</button>`:it.mtgcard?`<button class="qu-btn" style="flex:none;padding:1px 5px;font-size:8px" onclick="voirMtgCard('${it.mtgcard}')" title="Voir la carte">🃏</button>`:''}</span>
     </div>`;
   });
   // Munitions (char.ammo) — affichées dans TOUT comme les autres objets (hors filtre "récents")
@@ -748,6 +748,7 @@ async function leaveHere(i,skipConfirm=false){
     if(it.slots)drop.slots=it.slots;
     if(it.core!=null)drop.core=it.core;
     if(it.postcard)drop.postcard=it.postcard;   // carte postale : préserver l'image
+    if(it.mtgcard)drop.mtgcard=it.mtgcard;      // carte MTG : préserver l'image
     // Vérifier proximité d'un refuge
     const ss=await db.collection('settlements').doc(campId).get();
     const sd=ss.exists?ss.data():{};
@@ -813,6 +814,8 @@ function rInvMisc(){
     const isCont = db.cap != null;
     const effCell=it.postcard
       ? `<button class="qu-btn" style="flex:none;padding:2px 8px;font-size:8px" onclick="voirPostcard('${it.postcard}')">📷 Voir</button>`
+      : it.mtgcard
+      ? `<button class="qu-btn" style="flex:none;padding:2px 8px;font-size:8px" onclick="voirMtgCard('${it.mtgcard}')">🃏 Voir</button>`
       : bp
       ? `<button class="ieq-btn ${it.equipped?'on':'off'}" onclick="tEquip(${i})">${it.equipped?'● ÉQUIPÉ':'○ Équiper'}</button>`
       : isCont
@@ -838,6 +841,15 @@ function voirPostcard(id){
   const mo=document.getElementById('postcard-modal'); if(mo)mo.classList.add('on');
 }
 function closePostcard(){ const mo=document.getElementById('postcard-modal'); if(mo)mo.classList.remove('on'); }
+const _MTG_RAR_LBL={common:'Commune',uncommon:'Peu commune',rare:'Rare',mythic:'Mythique'};
+// Carte MTG (collectible) : affiche l'image en grand (même modale)
+function voirMtgCard(id){
+  const c=(window.MTG_CARDS||[]).find(x=>x.id===id);
+  if(!c){alert('Carte introuvable.');return;}
+  const t=document.getElementById('pc-title'); if(t)t.textContent=c.name+(c.rarity?' — '+(_MTG_RAR_LBL[c.rarity]||c.rarity):'');
+  const img=document.getElementById('pc-img'); if(img)img.src='../../img/collectibles/mtg/'+c.img;
+  const mo=document.getElementById('postcard-modal'); if(mo)mo.classList.add('on');
+}
 
 function rInvAmmo(){
   const el=document.getElementById('inv-ammo-list');if(!el)return;
