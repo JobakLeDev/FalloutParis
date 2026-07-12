@@ -1328,13 +1328,22 @@ function genDeplacement(){
   const zoneLabel = window.ZONES_DB?.[opts.zone]?.label || opts.zone;
   const panel = document.getElementById('rencontre-panel');
 
-  const res = fpRollDeplacement(km, opts.threat);   // moteur partagé (shared.js)
+  // Allure = celle du plus lent des joueurs SÉLECTIONNÉS (aucune sélection → allure de référence)
+  const membres = [...(selected||[])]
+    .map(pid => ({ id:pid, nom: joueurs[pid]?.nom || pid, char: joueurs[pid] }))
+    .filter(m => m.char);
+  const vit = fpVitesseGroupe(membres);
+
+  const res = fpRollDeplacement(km, opts.threat, vit.kmh);   // moteur partagé (shared.js)
   const { segments, pKm, events, mins, hasCombat } = res;
   const timeTxt = fpFmtDuree(mins);
+  const allure = vit.slowest && vit.slowest.cause
+    ? ` <span style="color:${vit.slowest.surcharge?'var(--rd)':'var(--am)'}">🐢 allure de ${vit.slowest.nom} — ${vit.slowest.cause}</span>`
+    : '';
 
   let html = `<div class="rencontre-header">🚶 DÉPLACEMENT — ${zoneLabel}</div>
     <div class="rencontre-sub">${km.toFixed(1)} km · ${segments} tronçon(s)${opts.threat&&opts.threat!=='normal'?' · '+(THREAT_LABELS[opts.threat]||opts.threat):''} · risque ${pKm}%/km</div>
-    <div class="deplacement-roll">⏱ Trajet estimé : <b>${timeTxt}</b> (${FP_WALK_KMH} km/h)${(selected&&selected.size)?` <button class="r-btn" style="display:inline-block;width:auto;padding:2px 8px;margin-left:8px" onclick="avancerHorlogeSelection(${mins})">⏱ Avancer l'horloge</button>`:''}</div>`;
+    <div class="deplacement-roll">⏱ Trajet estimé : <b>${timeTxt}</b> (${res.kmh} km/h)${allure}${(selected&&selected.size)?` <button class="r-btn" style="display:inline-block;width:auto;padding:2px 8px;margin-left:8px" onclick="avancerHorlogeSelection(${mins})">⏱ Avancer l'horloge</button>`:''}</div>`;
 
   if(!events.length){
     html += `<div class="event-calme">✓ DÉPLACEMENT SANS ENCOMBRE<br><span>Le groupe arrive à destination.</span></div>`;
