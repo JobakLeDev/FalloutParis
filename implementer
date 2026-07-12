@@ -11,6 +11,7 @@ dans la partie claude generale : après chaque opération que tu réalises, cons
 (rien en attente)
 
 --- Fait ---
+-[OK] battlemap : sprites de murs et de fenetres (img/tiles/walls/, decoupes de la planche fournie, miroir pour un raccord sans couture). Aretes epaissies 3px -> 9px + noeud d angle a 9px, sinon la texture ne se lit pas et les coins sont troues. Fenetre gardee cyan (elle laisse voir/tirer : info de jeu). Geometrie inchangee. Refuges non touches.
 -[OK] combat joueur : numerotation des ennemis homonymes (#1, #2...) partout — jeton (badge rouge), info-bulle, tracker et selecteur de cible, via enemyNum/enemyLabel (source unique). Avant, seul le selecteur numerotait : impossible de savoir quelle goule etait la #2 sur la carte.
 -[OK] ecran de combat joueur : carte et actions inversees (actions en haut, Terminer mon tour, puis la carte) + habillage des panneaux (bandeau a barre d accent, lisere, relief), boutons d action et Terminer mon tour retravailles.
 -[OK] habillage visuel des blocs des colonnes laterales MJ (col-side + col-right) : bandeau de titre full-bleed avec barre d accent verte, chevron de repli a droite, lisere superieur, relief et survol.
