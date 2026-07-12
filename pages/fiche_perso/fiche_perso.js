@@ -898,16 +898,30 @@ window.addEventListener('resize', ()=>{
     if(m && m.classList.contains('on')) _fitCardBox(s);
   });
 });
+// Tri de la collection (mémorisé)
+const _MTG_RAR_ORD={mythic:4,rare:3,uncommon:2,common:1};
+let _colSort=(()=>{ try{ return localStorage.getItem('fp_colSort')||'rarity'; }catch(e){ return 'rarity'; } })();
+function setColSort(m){ _colSort=m; try{ localStorage.setItem('fp_colSort',m); }catch(e){} voirCollection(); }
+function _sortCollection(cards){
+  const byName=(a,b)=>a.name.localeCompare(b.name,'fr');
+  if(_colSort==='qty')  return cards.sort((a,b)=> b.q-a.q || byName(a,b));
+  if(_colSort==='name') return cards.sort(byName);
+  // défaut : par rareté (mythique d'abord), puis quantité, puis nom
+  return cards.sort((a,b)=> (_MTG_RAR_ORD[b.rarity]||0)-(_MTG_RAR_ORD[a.rarity]||0) || b.q-a.q || byName(a,b));
+}
 // Popup de consultation de la collection
 function voirCollection(){
   const col=_mtgCollectionItem(false);
   const g=document.getElementById('col-grid'); if(!g)return;
-  const cards=Object.entries((col&&col.cards)||{})
+  const cards=_sortCollection(Object.entries((col&&col.cards)||{})
     .map(([id,q])=>{ const c=(window.MTG_CARDS||[]).find(x=>x.id===id); return c?{...c,q}:null; })
-    .filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name,'fr'));
+    .filter(Boolean));
   const tot=cards.reduce((a,c)=>a+c.q,0);
   const n=document.getElementById('col-count');
   if(n)n.textContent=cards.length?`${cards.length} carte(s) différente(s) · ${tot} au total`:'';
+  const sb=document.getElementById('col-sort');
+  if(sb) sb.innerHTML=[['rarity','★ Rareté'],['qty','# Quantité'],['name','A-Z Nom']]
+    .map(([k,l])=>`<button class="bo-sort-btn${_colSort===k?' on':''}" onclick="setColSort('${k}')">${l}</button>`).join('');
   g.innerHTML=cards.length?cards.map(c=>`<div class="bo-card" onclick="voirMtgCard('${c.id}')" title="${c.name}">
       <img src="../../img/collectibles/mtg/${c.img}" alt="" loading="lazy">
       <span class="bo-rar" style="color:${_MTG_RAR_COL[c.rarity]||'#ccc'}">${_MTG_RAR_LBL[c.rarity]||c.rarity}${c.q>1?' ×'+c.q:''}</span>

@@ -1,12 +1,25 @@
+Chaque point traité suite à la lecture de ce fichier doit faire l'objet d'une mise à jour de ce fichier pour passer le point en "traité"
+
+
+
+
 Liste des truc à implémenter :
--dans la fiche joueur, le bloc de carte ne doit pas dépasser du bas de l'écran. pas de scroll sur l'onglet carte.
--dans l'onglet general, toujours pas d'affichage de la power armor. à vérifier et corriger
--dans l'inventaire, la liste déroulante pour les pieces d'armure est trop large, il faut rétrécir de moitié en largeur. ça donnera l'espace pour un bouton équiper lisible. 
--quand une piece d'armure est équipée, dans la liste on doit avoir une coche pour comprendre que c'est la piece équipée.
--quand on équipe une piece d'armure sur une frame depuis l'inventaire, il faut que la pièce soit enlevée de l'inventaire (elle doit apparaitre uniquement dans le bloc de la frame)
--dans l'onglet "tout" de l'inventaire, faire en sorte que "POWERARMOR" rentre dans le cadre (comme stuff, drink armor etc) en rétrécissant la taille des caractères
--lorsque je veux laisser un equipement sur place, j'ai une erreur viewerId is not defined
+
+dans la partie claude generale : après chaque opération que tu réalises, consulte ce fichier (implementer) afin de voir s'il y a des nouvelles choses à mettre en place
+  -> [NOTÉ] règle ajoutée dans CLAUDE.md (« Règle Claude ») + mémoire projet : je consulte `implementer` après chaque opération.
+
+(rien en attente)
+
 --- Fait ---
+-[OK] tri de la collection de cartes : barre de tri dans la modale (★ Rareté / # Quantité / A-Z Nom), choix mémorisé en localStorage (fp_colSort). Défaut = par rareté (mythiques d'abord), puis quantité, puis nom. fiche_perso _sortCollection/setColSort.
+-[OK] les 10 cartes les plus rares du set Fallout : réponse fournie (calcul depuis les vraies odds MTGJSON). CONTRE-INTUITIF : les cartes les plus DURES à tirer sont les communes/peu communes (1 sur 1 162, 28 ex æquo) car elles n'existent que dans les 4 slots de decks, alors que les mythiques trustent les slots premium (extended art/showcase/finale) qui leur sont réservés → une mythique précise est 4-5× plus probable qu'une commune précise. Classement de prestige = les 13 mythiques, de la plus dure à la plus facile : Mechanized Production (1/301), Preston Garvey (1/295), Liberty Prime Recharged (1/295), Mr. House (1/294), The Master Transcendent (1/293), Crucible of Worlds (1/281), Grave Titan (1/281), Ravages of War (1/281), Tarmogoyf (1/281), Dogmeat Ever Loyal (1/218), Dr. Madison Li (1/218), Caesar Legion's Emperor (1/217), The Wise Mothman (1/217).
+-[OK] fiche joueur : le bloc carte ne déborde plus du bas de l'écran, pas de scroll sur l'onglet CARTE. Cause = deux déclarations .pip contradictoires (height:100vh écrasé par height:auto du bloc « écran 27" ») → .body s'écrasait à 0 car #tc-carte était hors flux. Corrigé : #tc-carte dans le flux + hauteur d'iframe calculée en coordonnées de layout (offsetTop, insensible au zoom).
+-[OK] onglet Général : affichage Power Armor. Le swap VaultBoy→VaultBoyPA existait mais était imperceptible (opacity .28). Ajout d'un mode PA franchement distinct : bandeau ambre « Servo-armure active — <frame> » (+ ⚠ CORE VIDE), halo/bordure ambre autour du corps, image PA visible (opacity .5 + glow). rLocsGen/#pa-banner/.body-cross-wrap.pa-on.
+-[OK] inventaire : liste déroulante des pièces d'armure rétrécie de moitié → place pour un bouton Équiper lisible.
+-[OK] inventaire : coche ✓ sur la pièce d'armure équipée dans la liste.
+-[OK] inventaire : une pièce d'armure équipée sur une frame est RETIRÉE de l'inventaire (elle n'apparaît plus que dans le bloc de la frame). paEquipPiece splice la pièce.
+-[OK] inventaire onglet TOUT : le tag « POWERARMOR » rentre dans le cadre (tag court PA / FRAME, taille de caractères réduite).
+-[OK] « laisser un équipement sur place » : erreur `viewerId is not defined` corrigée (playerId lu depuis URLSearchParams). Au passage : leaveHere ne perd plus jamais l'objet (si le jeton n'est pas sur la carte → l'objet reste dans l'inventaire) et indique où il atterrit (carte / refuge).
 -[OK] inventaire : barre « objets récents » refaite (pills propres : 🆕 Récents avec badge compteur rouge + on=ambre, « Tout marquer vu » en ghost ; libellés lisibles). fiche css v86, fiche v100.
 -[OK] pop-ups uniformisées : confirm()/prompt() natifs remplacés par fpConfirm/fpPrompt (Promise, modale stylée app — input + Annuler/OK, Entrée/Échap) dans shared.js. 45 sites convertis en await (fonctions passées async) sur 9 pages. shared v84, style v84.
 -[OK] coffre du settlement : le joueur sur place dépose/retire des objets (site.inv) via le pop-up de la Réserve 📦 (storeBody/depositItem/withdrawItem, contenants d'eau préservés par exemplaire, mods conservés). settlement v16/css v12.

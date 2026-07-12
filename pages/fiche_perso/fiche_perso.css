@@ -13,6 +13,13 @@
 .bo-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(112px,1fr)); gap:.5rem;
   flex:1 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden; padding:.3rem; width:100%; }
 .bo-box .pc-close{ flex:none; }
+/* Barre de tri de la collection */
+.bo-sort{ flex:none; display:flex; gap:.3rem; }
+.bo-sort-btn{ background:var(--gk); border:1px solid var(--b2); color:var(--td);
+  font-family:'Share Tech Mono',monospace; font-size:.58rem; letter-spacing:1px;
+  padding:.25rem .6rem; cursor:pointer; text-transform:uppercase; }
+.bo-sort-btn:hover{ border-color:var(--am); color:var(--am); }
+.bo-sort-btn.on{ border-color:var(--am); color:#1a1200; background:var(--am); }
 .bo-card{ display:flex; flex-direction:column; align-items:center; gap:2px; cursor:pointer;
   transition:transform .12s; animation:boIn .35s ease-out backwards; }
 .bo-card:nth-child(n){ animation-delay:calc(var(--i,0) * 40ms); }
