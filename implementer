@@ -11,6 +11,7 @@ dans la partie claude generale : après chaque opération que tu réalises, cons
 (rien en attente)
 
 --- Fait ---
+-[OK] habillage visuel des blocs des colonnes laterales MJ (col-side + col-right) : bandeau de titre full-bleed avec barre d accent verte, chevron de repli a droite, lisere superieur, relief et survol.
 -[OK] page MJ : switch Liste / Details pour l apercu des joueurs (sel-bar, memorise dans localStorage.fp_vueJoueurs). Liste = coche + nom + bouton Fiche uniquement ; Details = les cartes actuelles.
 -[OK] vitesse de deplacement par joueur (stats + encombrement), groupe = le plus lent. 3 etapes : (1) derives de fiche hisses dans shared.js (fpChargeMax/fpChargePortee/fpSpecial/fpHpMax/fpForEff) car ils etaient en fermeture sur char ; (2) modele fpVitesse/fpVitesseGroupe + fpRollDeplacement(km,threat,kmh) ; (3) branche sur la carte (groupe du jeton) et le dashboard MJ (joueurs selectionnes), avec affichage de QUI impose le rythme et pourquoi. Surcharge = allure /2 => un joueur trop charge double le trajet du groupe.
 -[OK] refonte UI MJ : Terminal + Crochetage deplaces dans le bandeau gauche sous Actions rapides (nouveau .col-side, 1re colonne de la grille #app) ; jour ajoute dans les lignes de calendrier repliees (fmtJourMini, ex. "14 juil." ambre + heure) ; bandeau d en-tete refait (boutons .hbtn icone-au-dessus-du-label, groupes campagne/outils/navigation/sortie avec separateurs, selecteur de campagne .hsel).
