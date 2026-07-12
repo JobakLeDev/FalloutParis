@@ -11,6 +11,7 @@ dans la partie claude generale : après chaque opération que tu réalises, cons
 (rien en attente)
 
 --- Fait ---
+-[OK] carcasse : taille calee sur la maquette — sprite re-detoure au ras de la carrosserie (62x96 portrait, le halo rendait le cadrage carre) et pose en contain sur l emprise 2x2 ; bordures et fond des 4 cases supprimes (le lisere vert decoupait la voiture en quartiers).
 -[OK] carcasse de voiture sur 2x2 cases (une voiture n a pas la taille d un homme), sprite remplissant les 2/3 de l emprise. Les 4 cases portent le terrain (donc bloquent le passage) ; seule l ANCRE (coin haut-gauche, grid.anchors) dessine le sprite, qui deborde sur les 4 cases. Effacer une case couverte retire la voiture ENTIERE (pas d amputation) ; pose refusee si ca deborde de la grille ou tombe sur un jeton. Helpers partages : BLOCK_SPAN/gridPaintBlock/gridEraseBlock/gridBlockRole. Compat : une carcasse 1x1 deja posee garde son sprite (role solo). Le generateur de decor aleatoire passe par gridPaintBlock.
 -[OK] carte non assombrie pendant la declaration d un deplacement : le voile plein ecran de la popup (box-shadow 0 0 0 9999px) eteignait la carte au moment precis ou le joueur doit la lire pour choisir sa case. Classe .no-veil posee sur .act-draft-pop quand la declaration est un Move/Sprint sur grille.
 -[OK] sprite des debris (img/tiles/blocks/rubble.png, detoure du rendu fourni) sur le bloc Debris, teinte plus terreuse pour le distinguer de la carcasse. Meme regle : bloque le passage, pas la visee.
