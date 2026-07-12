@@ -1,5 +1,24 @@
 /* Styles spécifiques fiche_perso — voir common/style.css pour les styles partagés */
 
+/* ===== Modale OUVERTURE DE BOOSTER (z sous la modale carte, pour cliquer une carte) ===== */
+.bo-modal{ position:fixed; inset:0; z-index:480; display:none; align-items:center; justify-content:center;
+  background:rgba(6,12,6,.94); padding:1rem; }
+.bo-modal.on{ display:flex; }
+.bo-box{ display:flex; flex-direction:column; align-items:center; gap:.5rem; max-width:min(1200px,96vw); max-height:94vh; }
+.bo-title{ font-family:'Oswald',sans-serif; letter-spacing:2px; color:var(--am); font-size:1.05rem; text-transform:uppercase;
+  text-shadow:0 0 8px rgba(232,168,32,.5); }
+.bo-hint{ font-size:.6rem; letter-spacing:1px; color:var(--td); text-transform:uppercase; }
+.bo-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(112px,1fr)); gap:.5rem;
+  overflow:auto; padding:.3rem; width:100%; }
+.bo-card{ display:flex; flex-direction:column; align-items:center; gap:2px; cursor:pointer;
+  transition:transform .12s; animation:boIn .35s ease-out backwards; }
+.bo-card:nth-child(n){ animation-delay:calc(var(--i,0) * 40ms); }
+.bo-card:hover{ transform:translateY(-3px) scale(1.04); }
+.bo-card img{ width:100%; border:1px solid var(--b2); box-shadow:0 0 10px rgba(0,0,0,.6); display:block; }
+.bo-card:hover img{ border-color:var(--am); box-shadow:0 0 14px rgba(232,168,32,.45); }
+.bo-rar{ font-family:'Share Tech Mono',monospace; font-size:.55rem; letter-spacing:1px; text-transform:uppercase; }
+@keyframes boIn{ from{ opacity:0; transform:translateY(10px) scale(.94); } to{ opacity:1; transform:none; } }
+
 /* ===== Modale CARTE POSTALE ===== */
 .pc-modal{ position:fixed; inset:0; z-index:500; display:none; align-items:center; justify-content:center;
   background:rgba(6,12,6,.92); padding:1.2rem; }
