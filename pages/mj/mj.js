@@ -106,6 +106,12 @@ function startSync(){
     renderParties();
   });
   populateLootCats();
+  // Carte : positions des jetons + POI (pour les « points chauds » à boosters, cf. boosterShare)
+  db.collection('carte').doc(fpCampId()).onSnapshot(s => {
+    const d = s.exists ? s.data() : {};
+    carteData = { tokens: d.tokens || {}, pois: Array.isArray(d.pois) ? d.pois : [] };
+    renderLootHotspot();
+  }, e => console.warn('carte (hotspots):', e && e.code));
   db.collection('butin').doc(fpCampId()).onSnapshot(s => {
     const d = s.exists ? s.data() : {};
     butinData = { items: Array.isArray(d.items) ? d.items : [], caps: d.caps || 0, players: Array.isArray(d.players) ? d.players : [] };
@@ -563,13 +569,50 @@ function _postcardLootList(){ return (window.POSTCARDS||[]).map(p=>({n:'Carte po
 // ont en repli la proba d'une commune moyenne pour rester lootables.
 const _MTG_RARITY_R = { common:1, uncommon:3, rare:4, mythic:5 };
 const MTG_BOOSTER_ITEM = 'Booster scellé — Fallout';
-const MTG_BOOSTER_SHARE = 0.05;   // ~5 % des tirages « Cartes MTG » sont un booster scellé
+let carteData = { tokens:{}, pois:[] };   // rempli par le listener /carte
+function _esc(s){ return (s==null?'':''+s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// « Points chauds » : part de boosters selon la proximité des joueurs SÉLECTIONNÉS d'une
+// boutique de cartes (POI type 'cardshop'). On prend le joueur le PLUS PROCHE d'une boutique
+// (celui qui fouille sur place en fait profiter le groupe). Sans sélection / sans boutique
+// placée / sans jeton → part de base (5 %).
+function boosterHotspot(){
+  const pois = carteData.pois || [];
+  if(!pois.some(p => p && p.type === 'cardshop')) return { dist:null, share:MTG_HOTSPOT_BASE, shop:null };
+  let best = Infinity, shop = null;
+  (selected && selected.size ? [...selected] : []).forEach(pid => {
+    const t = (carteData.tokens || {})[pid]; if(!t) return;
+    pois.forEach(p => {
+      if(!p || p.type !== 'cardshop') return;
+      const d = fpDistM(t, p);
+      if(d < best){ best = d; shop = p; }
+    });
+  });
+  if(!isFinite(best)) return { dist:null, share:MTG_HOTSPOT_BASE, shop:null };
+  return { dist:best, share:fpBoosterShare(best), shop };
+}
+// Bandeau d'info sous les catégories de butin
+function renderLootHotspot(){
+  const el = document.getElementById('loot-hotspot'); if(!el) return;
+  const h = boosterHotspot();
+  if(h.shop == null){
+    const none = !(carteData.pois||[]).some(p => p && p.type === 'cardshop');
+    el.innerHTML = `<span style="color:var(--td)">🃏 Boosters : <b>${Math.round(MTG_HOTSPOT_BASE*100)} %</b> des tirages MTG`
+      + (none ? ' — place des POI « Boutique de cartes » sur la carte pour créer des points chauds' : ' — aucun joueur sélectionné localisé') + '</span>';
+    return;
+  }
+  const km = h.dist < 1000 ? Math.round(h.dist)+' m' : (h.dist/1000).toFixed(1)+' km';
+  const pct = Math.round(h.share*100);
+  el.innerHTML = `<span style="color:var(--am)">🃏 Point chaud : <b>${_esc(h.shop.name||'Boutique')}</b> à <b>${km}</b>`
+    + ` → <b>${pct} %</b> de boosters dans les tirages MTG</span>`;
+}
 function _mtgLootList(){
   const cards = (window.MTG_CARDS||[]).map(c=>({n:c.name, t:'STUFF', w:0, r:_MTG_RARITY_R[c.rarity]||3, pw:c.p, mtgcard:c.id}));
   if(!cards.length) return cards;
-  // Booster scellé : objet à ouvrir par le joueur (15 cartes). Part fixe des tirages.
+  // Booster scellé : part variable selon la proximité d'une boutique de cartes
+  const share = boosterHotspot().share;
   const totP = cards.reduce((a,c)=>a+(c.pw||0),0);
-  const bw = totP * MTG_BOOSTER_SHARE / (1 - MTG_BOOSTER_SHARE);
+  const bw = totP * share / (1 - share);
   return [...cards, {n:MTG_BOOSTER_ITEM, t:'STUFF', w:0.05, r:4, pw:bw, booster:'pip'}];
 }
 
@@ -1053,7 +1096,7 @@ function renderJoueurs(){
 // ============================================================
 // SELECTION
 // ============================================================
-function toggleSel(id){ selected.has(id)?selected.delete(id):selected.add(id); renderJoueurs(); }
+function toggleSel(id){ selected.has(id)?selected.delete(id):selected.add(id); renderJoueurs(); renderLootHotspot(); }
 function selTous(){ selected = new Set(Object.keys(joueurs)); renderJoueurs(); }
 function selAucun(){ selected.clear(); renderJoueurs(); }
 
