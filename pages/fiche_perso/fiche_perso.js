@@ -885,6 +885,19 @@ function fpNormalizeMtgCards(){
   return true;
 }
 function _mtgTotal(col){ return Object.values((col&&col.cards)||{}).reduce((a,n)=>a+n,0); }
+// Le body est zoomé (responsive.js) → un max-height en vh déborde de l'écran.
+// On fixe la hauteur de la boîte en pixels RÉELS divisés par le zoom.
+function _fitCardBox(modalSel){
+  const z = parseFloat(getComputedStyle(document.body).zoom) || 1;
+  const box = document.querySelector(modalSel + ' .bo-box');
+  if (box) box.style.maxHeight = Math.round(0.92 * window.innerHeight / z) + 'px';
+}
+window.addEventListener('resize', ()=>{
+  ['#collection-modal','#booster-modal'].forEach(s=>{
+    const m=document.querySelector(s);
+    if(m && m.classList.contains('on')) _fitCardBox(s);
+  });
+});
 // Popup de consultation de la collection
 function voirCollection(){
   const col=_mtgCollectionItem(false);
@@ -900,6 +913,7 @@ function voirCollection(){
       <span class="bo-rar" style="color:${_MTG_RAR_COL[c.rarity]||'#ccc'}">${_MTG_RAR_LBL[c.rarity]||c.rarity}${c.q>1?' ×'+c.q:''}</span>
     </div>`).join(''):'<div style="color:var(--td);font-size:.7rem;padding:1.2rem">Aucune carte pour l\'instant.</div>';
   const mo=document.getElementById('collection-modal'); if(mo)mo.classList.add('on');
+  _fitCardBox('#collection-modal');
 }
 function closeCollection(){ const m=document.getElementById('collection-modal'); if(m)m.classList.remove('on'); }
 
@@ -936,6 +950,7 @@ async function ouvrirBooster(i){
       <span class="bo-rar" style="color:${_MTG_RAR_COL[c.rarity]||'#ccc'}">${_MTG_RAR_LBL[c.rarity]||c.rarity}${c.foil?' ✨':''}</span>
     </div>`).join('');
   const mo=document.getElementById('booster-modal'); if(mo)mo.classList.add('on');
+  _fitCardBox('#booster-modal');
 }
 function closeBooster(){ const m=document.getElementById('booster-modal'); if(m)m.classList.remove('on'); }
 

@@ -25,6 +25,9 @@ html,body{margin:0;background:var(--bg);color:var(--t);font-family:'Share Tech M
 .ex-line button{background:none;border:1px solid var(--gd);color:var(--g);font-family:'Share Tech Mono',monospace;font-size:8px;padding:2px 7px;cursor:pointer;}
 .ex-line button:hover{border-color:var(--g);background:var(--gk);}
 .ex-sec{font-size:7px;letter-spacing:2px;color:var(--td);text-transform:uppercase;margin:7px 0 2px;opacity:.8;}
+/* Section repliable (collection de cartes : peut faire des centaines de lignes) */
+.ex-sec-tog{cursor:pointer;user-select:none;opacity:1;color:var(--am);padding:3px 4px;border:1px solid var(--b);background:#0a140a;}
+.ex-sec-tog:hover{border-color:var(--am);background:#0e1a0e;}
 .ex-caps{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--am);margin:6px 0;padding:5px;background:#0e160e;border:1px solid var(--b);}
 .ex-caps b{font-family:'Oswald',sans-serif;font-size:13px;}
 .ex-mini{color:var(--td);font-size:8px;text-align:center;padding:8px 0;}
