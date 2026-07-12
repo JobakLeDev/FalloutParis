@@ -5,7 +5,6 @@ Chaque point traité suite à la lecture de ce fichier doit faire l'objet d'une 
 
 Liste des truc à implémenter :
 
-pendant le déplacement (via move, en combat) la carte ne doit pas être assombrie comme le reste de la page car on va la regarder
 ajouter l'image chatgpt des debris pour le bloc débris
 dans la partie claude generale : après chaque opération que tu réalises, consulte ce fichier (implementer) afin de voir s'il y a des nouvelles choses à mettre en place
   -> [NOTÉ] règle ajoutée dans CLAUDE.md (« Règle Claude ») + mémoire projet : je consulte `implementer` après chaque opération.
@@ -13,6 +12,8 @@ dans la partie claude generale : après chaque opération que tu réalises, cons
 (rien en attente)
 
 --- Fait ---
+-[OK] carte non assombrie pendant la declaration d un deplacement : le voile plein ecran de la popup (box-shadow 0 0 0 9999px) eteignait la carte au moment precis ou le joueur doit la lire pour choisir sa case. Classe .no-veil posee sur .act-draft-pop quand la declaration est un Move/Sprint sur grille.
+-[OK] sprite des debris (img/tiles/blocks/rubble.png, detoure du rendu fourni) sur le bloc Debris, teinte plus terreuse pour le distinguer de la carcasse. Meme regle : bloque le passage, pas la visee.
 -[OK] bloc « Mur » (terrain) remplace par CARCASSE DE VOITURE (sprite detoure, img/tiles/blocks/carcasse.png). Bloque le passage, pas la visee — ce qui etait DEJA le comportement (solid ne gouverne que le passage ; la vue ne depend que des aretes) : l ancien nom etait mensonger. Compat : blockSolid("wall") reste true pour les cartes deja enregistrees ; le generateur de decor aleatoire pose des carcasses.
 -[OK] deplacement declare : clic sur Move/Sprint -> choix de la case AVANT declaration -> trait vert pointille + case cible sur la carte joueur + popup de validation (envoi bloque sans destination). Ecran MJ : meme trait du jeton vers la destination voulue + bandeau de validation. Le jeton ne bouge QU A la validation (validerAction applique grid.pos, comme p.doorKey pour les portes). renderActionExec saute les actions de deplacement en mode grille (sinon on redemandait au joueur de bouger apres validation).
 -[OK] actions de combat en une seule fois (plus de "je veux viser"/ok/"je vise cet ennemi"/ok) : la popup de declaration collecte arme + cible + zone + note et envoie le tout d un coup (submitActionDeclaree). Aim et Attack restent 2 actions distinctes (RAW : mineure + majeure), mais Attack reutilise la visee (reuseAim) sans resaisie.

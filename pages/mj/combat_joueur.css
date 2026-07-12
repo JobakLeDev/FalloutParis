@@ -226,6 +226,11 @@
   animation:declPop .14s ease-out;
 }
 @keyframes declPop{ from{ opacity:0; transform:translate(-50%,-50%) scale(.96); } to{ opacity:1; transform:translate(-50%,-50%) scale(1); } }
+/* Déclaration d'un DÉPLACEMENT : on retire le voile plein écran (le 0 0 0 9999px), sinon on assombrit
+   la carte au moment précis où le joueur doit la lire pour choisir sa case. */
+.act-draft-pop.no-veil{
+  box-shadow:0 12px 34px rgba(0,0,0,.7), 0 0 22px rgba(212,160,23,.22);
+}
 
 /* ---- Formulaire de déclaration d'action → MJ ---- */
 .decl-box{ font-size:9px; }

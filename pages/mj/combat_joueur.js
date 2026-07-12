@@ -1541,7 +1541,10 @@ function renderActionsDeclarees(){
   }
 
   // Box de paramètres en POPUP superposé au bloc (ne décale plus les boutons)
-  if(draftHtml) html += '<div class="act-draft-pop">' + draftHtml + '</div>';
+  // Déclaration d'un déplacement : PAS de voile d'assombrissement — la carte est justement
+  // ce qu'on doit regarder (choix de la case, trajet pointillé).
+  const _mvDecl = selectedActionDraft && _isMoveType(selectedActionDraft.type) && !!combatState?.grid?.pos?.[joueurId];
+  if(draftHtml) html += '<div class="act-draft-pop' + (_mvDecl ? ' no-veil' : '') + '">' + draftHtml + '</div>';
 
   el.innerHTML = html;
   el.style.display = html ? 'block' : 'none';
