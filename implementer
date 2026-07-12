@@ -4,7 +4,6 @@ Chaque point traité suite à la lecture de ce fichier doit faire l'objet d'une 
 
 
 Liste des truc à implémenter :
-ajouter l'image chatgpt des debris pour le bloc débris
 dans la partie claude generale : après chaque opération que tu réalises, consulte ce fichier (implementer) afin de voir s'il y a des nouvelles choses à mettre en place
   -> [NOTÉ] règle ajoutée dans CLAUDE.md (« Règle Claude ») + mémoire projet : je consulte `implementer` après chaque opération.
 
