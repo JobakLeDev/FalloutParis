@@ -24,25 +24,13 @@ const char = {
 // ============================================================
 // CALCULS
 // ============================================================
-// Bobbleheads (cartes MTG) : comme dans Fallout, en posséder une donne +1 au SPECIAL
-// correspondant. Bonus DÉRIVÉ de la collection (pas stocké dans char.special) : si la
-// carte est échangée, le bonus est perdu. Les doublons ne cumulent PAS (+1 max par stat).
-const MTG_BOBBLEHEADS = {
-  'strength-bobblehead':'S', 'perception-bobblehead':'P', 'endurance-bobblehead':'E',
-  'charisma-bobblehead':'C', 'intelligence-bobblehead':'I', 'agility-bobblehead':'A',
-  'luck-bobblehead':'L',
-};
-function _bobbleheadBonus(){
-  const col = (char.inventory||[]).find(it => it && it.collection === 'mtg');
-  const owned = (col && col.cards) || {};
-  const b = {};
-  for(const id in MTG_BOBBLEHEADS) if((owned[id]||0) > 0) b[MTG_BOBBLEHEADS[id]] = 1;
-  return b;
-}
+// Bonus de collection (bobbleheads + mythiques) — définis dans shared.js (fpMtgBonuses).
+// Dérivés de la POSSESSION : doublons non cumulés, carte échangée = bonus perdu.
+function mtgBonus(){ return (typeof fpMtgBonuses==='function') ? fpMtgBonuses(char) : {special:{},rd:{phys:0,en:0,rad:0},skill:{},luckMax:0,shopDiscount:0,farmBonus:0,actives:[]}; }
 const SP = () => {
   const s = {...char.special};
-  const bb = _bobbleheadBonus();
-  for(const k in bb) s[k] = Math.min(10, (s[k]||1) + bb[k]);
+  const bs = mtgBonus().special;
+  for(const k in bs) s[k] = Math.min(10, (s[k]||1) + bs[k]);
   if(char.powerArmor && char.inventory.find(it=>it.type==='POWERARMOR_FRAME'&&it.equipped))
     s.S = Math.min(10, (s.S||1) + 2);
   return s;
@@ -54,6 +42,7 @@ const SP = () => {
 // ============================================================
 
 function effSum(key){return (typeof fpEffSum==='function')?fpEffSum(char.activeEffects,key):0;}
+function luckMax(){return SP().L + mtgBonus().luckMax;}   // The Wise Mothman : +1 point de Chance max
 function hpMax(){return SP().L+SP().E+Math.max(0,char.niveau-1)+(char.perks['Life Giver']||0)*SP().E+(char.survie?.wellRested?2:0)+effSum('hpMax');}
 function forEff(){return (char.perks['Adrenalin Rush']>0&&char.hp<hpMax())?10:SP().S;}
 // Sacs à dos : bonus de charge max = multiplicateur × FOR (un seul sac équipé à la fois)
@@ -85,9 +74,10 @@ function xpNext(){return XP_TABLE[Math.min(char.niveau,20)]||21000;}
 function rdP(type){
   const p=char.perks,s=SP();
   const nerd=p['Nerd Rage!']>0&&char.hp<hpMax()*0.4;
-  if(type==='phys'){let r=(p['Toughness']||0);if(p['Barbarian']>0&&!char.powerArmor)r+=s.S>=11?3:s.S>=9?2:s.S>=7?1:0;if(nerd)r+=p['Nerd Rage!'];return r;}
-  if(type==='en'){let r=(p['Refractor']||0);if(nerd)r+=p['Nerd Rage!'];return r;}
-  if(type==='rad')return p['Rad Resistance']||0;
+  const cb=mtgBonus().rd;   // Liberty Prime (+2 phys) / The Master (+3 rad)
+  if(type==='phys'){let r=(p['Toughness']||0)+(cb.phys||0);if(p['Barbarian']>0&&!char.powerArmor)r+=s.S>=11?3:s.S>=9?2:s.S>=7?1:0;if(nerd)r+=p['Nerd Rage!'];return r;}
+  if(type==='en'){let r=(p['Refractor']||0)+(cb.en||0);if(nerd)r+=p['Nerd Rage!'];return r;}
+  if(type==='rad')return (p['Rad Resistance']||0)+(cb.rad||0);
   if(type==='poison')return (p['Snake Eater']||0)*2;
   return 0;
 }
@@ -320,13 +310,13 @@ function rSpecial(){
   const ORDER=['S','P','E','C','I','A','L'];
   const N={S:'STRENGTH',P:'PERCEPTION',E:'ENDURANCE',C:'CHARISMA',I:'INTELLIGENCE',A:'AGILITY',L:'LUCK'};
   const g=document.getElementById('sg');if(!g)return;
-  const eff=SP(), fe=forEff(), bb=_bobbleheadBonus();
+  const eff=SP(), fe=forEff(), bs=mtgBonus().special;
   g.innerHTML='';
   ORDER.forEach(k=>{
     const base=char.special[k];
-    const disp=(k==='S')?fe:eff[k];        // valeur EFFECTIVE (bobblehead + Power Armor + perks)
+    const disp=(k==='S')?fe:eff[k];        // valeur EFFECTIVE (collection + Power Armor + perks)
     const m=disp!==base;                   // différente de la base → mise en évidence
-    const bh=bb[k]?`<span class="sbh" title="Bobblehead ${N[k]} — +1 (carte de la collection)">🎎</span>`:'';
+    const bh=bs[k]?`<span class="sbh" title="Bonus de collection : +${bs[k]} ${N[k]}">🎎</span>`:'';
     g.innerHTML+=`<div class="srow">
       <span class="sk">${k}</span>
       <span class="sn">${N[k]}${bh}</span>
@@ -336,13 +326,18 @@ function rSpecial(){
 }
 
 
+// Valeur d'attribut d'une compétence. ⚠ SKILLS_DEF.attr vaut 'FOR'/'PER'/'INT'… alors que
+// SP() est indexé par lettre (S/P/E/C/I/A/L) → il FAUT passer par FP_ATTR_LETTER.
+// (Bug historique : le lookup direct renvoyait undefined → tous les TN utilisaient 5.)
+function skAttrVal(sk){ const s=SP(); return s[FP_ATTR_LETTER[sk.attr]] ?? 5; }
+function skBonus(key){ return mtgBonus().skill[key] || 0; }   // Dr. Madison Li, Caesar…
 function rGeneralSkills(){
   const el=document.getElementById('sg-skills');if(!el)return;
   el.innerHTML='';
   SKILLS_DEF.forEach(sk=>{
     const rg=char.skills[sk.key]||0,tg=char.taggedSkills.includes(sk.key);
-    const av={S:SP().S,P:SP().P,E:SP().E,C:SP().C,I:SP().I,A:SP().A,L:SP().L}[sk.attr]||5;
-    el.innerHTML+=`<div class="skrow" style="cursor:default"><span class="sk-star">${tg?'★':''}</span><span class="sk-nm">${sk.name}</span><span class="sk-rg${tg?' tg':rg===0?' z':''}">${rg||'—'}</span><span class="sk-tn">TN ${av+rg}</span></div>`;
+    const bo=skBonus(sk.key), tn=skAttrVal(sk)+rg+bo;
+    el.innerHTML+=`<div class="skrow" style="cursor:default"><span class="sk-star">${tg?'★':''}</span><span class="sk-nm">${sk.name}</span><span class="sk-rg${tg?' tg':rg===0?' z':''}">${rg||'—'}</span><span class="sk-tn${bo?' m':''}">TN ${tn}</span></div>`;
   });
 }
 
@@ -474,7 +469,7 @@ function rHP(){
   const rt=document.getElementById('rad-t');if(rt)rt.textContent=char.rad+'/'+max;
   const mr=document.getElementById('mini-rad');if(mr)mr.textContent=char.rad;
   const ml=document.getElementById('mini-luck');if(ml)ml.textContent=char.luck_points||0;
-  const mlm=document.getElementById('mini-luck-max');if(mlm)mlm.textContent=SP().L;
+  const mlm=document.getElementById('mini-luck-max');if(mlm)mlm.textContent=luckMax();   // + The Wise Mothman
   const xn=xpNext(),xpct=Math.round(char.xp/xn*100);
   const xf=document.getElementById('xp-f');if(xf)xf.style.width=Math.min(100,xpct)+'%';
   const xt=document.getElementById('xp-t');if(xt)xt.textContent=char.xp+'/'+xn;
@@ -942,6 +937,12 @@ function voirCollection(){
   const sb=document.getElementById('col-sort');
   if(sb) sb.innerHTML=[['rarity','★ Rareté'],['qty','# Quantité'],['name','A-Z Nom']]
     .map(([k,l])=>`<button class="bo-sort-btn${_colSort===k?' on':''}" onclick="setColSort('${k}')">${l}</button>`).join('');
+  // Bonus actifs procurés par les cartes possédées
+  const bx=document.getElementById('col-bonus'), act=mtgBonus().actives;
+  if(bx) bx.innerHTML=act.length
+    ? `<div class="col-bon-t">Bonus actifs (${act.length})</div>`
+      + act.map(a=>`<span class="col-bon">${a.bobble?'🎎':'🃏'} <b>${a.label}</b> — ${a.effet}</span>`).join('')
+    : '';
   g.innerHTML=cards.length?cards.map(c=>`<div class="bo-card" onclick="voirMtgCard('${c.id}')" title="${c.name}">
       <img src="../../img/collectibles/mtg/${c.img}" alt="" loading="lazy">
       <span class="bo-rar" style="color:${_MTG_RAR_COL[c.rarity]||'#ccc'}">${_MTG_RAR_LBL[c.rarity]||c.rarity}${c.q>1?' ×'+c.q:''}</span>
@@ -1014,8 +1015,9 @@ function rSkills(){
     el.innerHTML='';
     SKILLS_DEF.slice(side*half,(side+1)*half).forEach(sk=>{
       const rg=char.skills[sk.key]||0,tg=char.taggedSkills.includes(sk.key);
-      const av={S:SP().S,P:SP().P,E:SP().E,C:SP().C,I:SP().I,A:SP().A,L:SP().L}[sk.attr]||5;
-      el.innerHTML+=`<div class="skrow" style="cursor:default"><span class="sk-star">${tg?'★':''}</span><span class="sk-nm">${sk.name}</span><span class="sk-at">[${sk.attr}]</span><span class="sk-rg${tg?' tg':rg===0?' z':''}">${rg||'—'}</span><span class="sk-tn">TN ${av+rg+(tg?2:0)}</span></div>`;
+      const bo=skBonus(sk.key), tn=skAttrVal(sk)+rg+(tg?2:0)+bo;
+      const bt=bo?` title="Bonus de collection : +${bo}"`:'';
+      el.innerHTML+=`<div class="skrow" style="cursor:default"${bt}><span class="sk-star">${tg?'★':''}</span><span class="sk-nm">${sk.name}${bo?' 🃏':''}</span><span class="sk-at">[${sk.attr}]</span><span class="sk-rg${tg?' tg':rg===0?' z':''}">${rg||'—'}</span><span class="sk-tn${bo?' m':''}">TN ${tn}</span></div>`;
     });
   });
 }
