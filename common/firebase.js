@@ -481,11 +481,12 @@ function rollPublicLocal(r){
     const dice = Array.from({length: r.n}, () => 1 + Math.floor(Math.random() * r.faces));
     return { nom, dice, total: dice.reduce((a,b)=>a+b,0) };
   }
-  // test 2D20
+  // test 2D20 — SPECIAL EFFECTIF (SP() : inclut bobbleheads + Power Armor), pas la base
+  const _sp = (typeof SP === 'function') ? SP() : (char.special || {});
   let tn, rang = 0, tag = false;
-  if(r.isAttr){ tn = char.special?.[r.skillKey] || 5; }
+  if(r.isAttr){ tn = _sp[r.skillKey] || 5; }
   else {
-    const attrVal = char.special?.[_skillAttrLetter(r.skillKey)] || 5;
+    const attrVal = _sp[_skillAttrLetter(r.skillKey)] || 5;
     rang = char.skills?.[r.skillKey] || 0;
     tag = (char.taggedSkills||[]).includes(r.skillKey);
     tn = attrVal + rang + (tag ? 2 : 0);

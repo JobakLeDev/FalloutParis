@@ -1,5 +1,8 @@
 /* Styles spécifiques fiche_perso — voir common/style.css pour les styles partagés */
 
+/* Bobblehead possédé (carte MTG) : +1 au SPECIAL correspondant */
+.sbh{ margin-left:.25rem; font-size:.7rem; filter:drop-shadow(0 0 3px rgba(232,168,32,.7)); cursor:help; }
+
 /* ===== Modale OUVERTURE DE BOOSTER (z sous la modale carte, pour cliquer une carte) ===== */
 .bo-modal{ position:fixed; inset:0; z-index:480; display:none; align-items:center; justify-content:center;
   background:rgba(6,12,6,.94); padding:1rem; }
