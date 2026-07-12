@@ -24,8 +24,25 @@ const char = {
 // ============================================================
 // CALCULS
 // ============================================================
+// Bobbleheads (cartes MTG) : comme dans Fallout, en posséder une donne +1 au SPECIAL
+// correspondant. Bonus DÉRIVÉ de la collection (pas stocké dans char.special) : si la
+// carte est échangée, le bonus est perdu. Les doublons ne cumulent PAS (+1 max par stat).
+const MTG_BOBBLEHEADS = {
+  'strength-bobblehead':'S', 'perception-bobblehead':'P', 'endurance-bobblehead':'E',
+  'charisma-bobblehead':'C', 'intelligence-bobblehead':'I', 'agility-bobblehead':'A',
+  'luck-bobblehead':'L',
+};
+function _bobbleheadBonus(){
+  const col = (char.inventory||[]).find(it => it && it.collection === 'mtg');
+  const owned = (col && col.cards) || {};
+  const b = {};
+  for(const id in MTG_BOBBLEHEADS) if((owned[id]||0) > 0) b[MTG_BOBBLEHEADS[id]] = 1;
+  return b;
+}
 const SP = () => {
   const s = {...char.special};
+  const bb = _bobbleheadBonus();
+  for(const k in bb) s[k] = Math.min(10, (s[k]||1) + bb[k]);
   if(char.powerArmor && char.inventory.find(it=>it.type==='POWERARMOR_FRAME'&&it.equipped))
     s.S = Math.min(10, (s.S||1) + 2);
   return s;
@@ -303,13 +320,16 @@ function rSpecial(){
   const ORDER=['S','P','E','C','I','A','L'];
   const N={S:'STRENGTH',P:'PERCEPTION',E:'ENDURANCE',C:'CHARISMA',I:'INTELLIGENCE',A:'AGILITY',L:'LUCK'};
   const g=document.getElementById('sg');if(!g)return;
-  const fe=forEff();g.innerHTML='';
+  const eff=SP(), fe=forEff(), bb=_bobbleheadBonus();
+  g.innerHTML='';
   ORDER.forEach(k=>{
-    const v=char.special[k];
-    const disp=k==='S'?fe:v,m=k==='S'&&fe!==v;
+    const base=char.special[k];
+    const disp=(k==='S')?fe:eff[k];        // valeur EFFECTIVE (bobblehead + Power Armor + perks)
+    const m=disp!==base;                   // différente de la base → mise en évidence
+    const bh=bb[k]?`<span class="sbh" title="Bobblehead ${N[k]} — +1 (carte de la collection)">🎎</span>`:'';
     g.innerHTML+=`<div class="srow">
       <span class="sk">${k}</span>
-      <span class="sn">${N[k]}</span>
+      <span class="sn">${N[k]}${bh}</span>
       <span class="sv${m?' m':''}">${disp}</span>
     </div>`;
   });
