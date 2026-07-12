@@ -318,7 +318,15 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .cedge{ position:absolute; border-radius:1px; }
 .cedge-v{ width:3px; }
 .cedge-h{ height:3px; }
-.cedge.e-wall{ background:var(--g); box-shadow:0 0 5px rgba(93,190,93,.85); }
+/* MURS EN SPRITES (img/tiles/walls/) — le trait plein de 3px est remplacé par une texture.
+   Les arêtes sont ÉPAISSIES à 9px (une texture ne se lit pas sur 3px) et recentrées par une marge
+   négative de (9−3)/2 = 3px, pour que le mur reste posé sur la même ligne qu'avant.
+   Le sprite est un miroir de lui-même → il se répète sans couture visible. */
+.cedge.e-wall{ background:none; box-shadow:0 0 7px rgba(93,190,93,.45); border-radius:0; image-rendering:pixelated; }
+.cedge-h.e-wall{ height:9px; margin-top:-3px;
+  background:url('../../img/tiles/walls/wall_h.png') repeat-x center / auto 100%; }
+.cedge-v.e-wall{ width:9px; margin-left:-3px;
+  background:url('../../img/tiles/walls/wall_v.png') repeat-y center / 100% auto; }
 .cedge.e-door{ background:var(--am); box-shadow:0 0 5px rgba(232,168,32,.8); }
 /* Porte ouverte : le battant pivote de 90° autour de son gond */
 .cedge.e-doorOpen{ background:var(--am); opacity:.85; border-radius:2px; box-shadow:0 0 5px rgba(232,168,32,.7);
@@ -333,14 +341,21 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   background:rgba(232,168,32,.12); border:1px solid rgba(232,168,32,.5); border-radius:2px; }
 .cdoor-hot:hover{ background:rgba(232,168,32,.5); box-shadow:0 0 7px rgba(232,168,32,.7); }
 .cdoor-hot::after{ content:'🚪'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:10px; }
-.cedge-v.e-window{ background:repeating-linear-gradient(0deg,#5fd0e6 0 4px,transparent 4px 7px); }
-.cedge-h.e-window{ background:repeating-linear-gradient(90deg,#5fd0e6 0 4px,transparent 4px 7px); }
+/* FENÊTRES : même épaisseur que les murs, mais sprite ajouré teinté cyan — elle laisse VOIR et TIRER
+   (gridEdgeBlocksSight), la distinction d'un coup d'œil avec le mur est donc une info de jeu. */
+.cedge.e-window{ box-shadow:0 0 7px rgba(95,208,230,.45); image-rendering:pixelated; }
+.cedge-h.e-window{ height:9px; margin-top:-3px;
+  background:url('../../img/tiles/walls/window_h.png') repeat-x center / auto 100%; }
+.cedge-v.e-window{ width:9px; margin-left:-3px;
+  background:url('../../img/tiles/walls/window_v.png') repeat-y center / 100% auto; }
 .cedge-hot{ position:absolute; z-index:6; cursor:pointer; pointer-events:auto; background:rgba(232,168,32,.10); }
 .cedge-hot:hover{ background:rgba(232,168,32,.5); }
 .cmap-brush.ce-wall{ color:var(--g); } .cmap-brush.ce-door{ color:var(--am); } .cmap-brush.ce-window{ color:#5fd0e6; }
-/* Noeud arrondi aux angles simples (L) des murs */
-.cedge-knee{ position:absolute; width:4px; height:4px; border-radius:50%; z-index:5;
-  background:var(--g); box-shadow:0 0 5px rgba(93,190,93,.85); }
+/* Noeud d'angle simple (L) des murs — porté à l'épaisseur du mur (9px), sinon le coin est troué.
+   Le JS le pose en (cx−2, cy−2) pour une pastille de 4px ; la marge −2.5px le recentre sur le sommet. */
+.cedge-knee{ position:absolute; width:9px; height:9px; margin:-2.5px 0 0 -2.5px; border-radius:2px; z-index:5;
+  background:url('../../img/tiles/walls/wall_h.png') center / cover; image-rendering:pixelated;
+  box-shadow:0 0 6px rgba(93,190,93,.45); }
 /* Étranger Mystérieux — bouton (joueur) + overlay de ciblage (MJ) */
 .mj-stranger-btn{ display:block; width:100%; margin-top:6px; background:#1a1206; border:1px solid var(--am); color:var(--am);
   font-family:'Share Tech Mono',monospace; font-size:9px; padding:6px; cursor:pointer; letter-spacing:1px; border-radius:3px; }
