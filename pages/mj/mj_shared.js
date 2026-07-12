@@ -84,14 +84,24 @@ function gridManhattan(a, b){ return Math.abs(a.x - b.x) + Math.abs(a.y - b.y); 
 // distance en cases → bande (0 Contact, 1 Moyenne, 2 Longue, 3 Extrême)
 function gridBand(cells){ if(cells <= 1) return 0; if(cells <= 6) return 1; if(cells <= 11) return 2; return 3; }
 // Types de blocs de terrain (MJ peut les peindre). solid = bloque le passage/placement.
+// `solid` = bloque le PASSAGE uniquement (reachableCells / gridOccupied). La VUE ne dépend que des
+// ARÊTES (gridEdgeBlocksSight) : un bloc de terrain ne coupe jamais la ligne de vue. L'ancien bloc
+// « Mur » portait donc un nom mensonger — on tire à travers. Il devient la CARCASSE DE VOITURE :
+// on la contourne, mais on voit et on tire par-dessus.
 const BLOCK_TYPES = [
-  { id:'wall',   label:'Mur',        icon:'▦', solid:true  },
-  { id:'rubble', label:'Débris',     icon:'⛰', solid:true  },
-  { id:'cover',  label:'Couverture', icon:'◫', solid:false },
-  { id:'hazard', label:'Danger',     icon:'☢', solid:false },
-  { id:'water',  label:'Eau',        icon:'≈', solid:false },
+  { id:'carcasse', label:'Carcasse de voiture', icon:'🚗', solid:true  },
+  { id:'rubble',   label:'Débris',              icon:'⛰', solid:true  },
+  { id:'cover',    label:'Couverture',          icon:'◫', solid:false },
+  { id:'hazard',   label:'Danger',              icon:'☢', solid:false },
+  { id:'water',    label:'Eau',                 icon:'≈', solid:false },
 ];
-function blockSolid(id){ const b = BLOCK_TYPES.find(t=>t.id===id); return !!(b && b.solid); }
+// 'wall' n'est plus proposé dans la palette, mais reste SOLIDE : les cartes déjà enregistrées
+// (et les obstacles[] hérités, que gridTerrainAt traduit en 'wall') ne doivent pas devenir franchissables.
+const BLOCK_LEGACY_SOLID = ['wall'];
+function blockSolid(id){
+  if(BLOCK_LEGACY_SOLID.includes(id)) return true;
+  const b = BLOCK_TYPES.find(t=>t.id===id); return !!(b && b.solid);
+}
 // Lignes de bord (sur les arêtes entre cases) : murs / portes / fenêtres
 const EDGE_TYPES = [
   { id:'wall',   label:'Mur',     icon:'┃' },
