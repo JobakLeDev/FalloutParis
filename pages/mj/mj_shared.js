@@ -156,13 +156,20 @@ function reachableCells(grid, start, range){
 }
 // grid.edges = { "V,x,y":type (arête verticale à gauche de la case x,y) , "H,x,y":type (arête horizontale en haut de x,y) }
 // Rendu des lignes existantes (HTML d'overlay), cs = taille de case en px
-function gridEdgesHtml(grid, cs){
+// `vis` (optionnel) : fn(x,y)->bool de visibilité des CASES (brouillard joueur). Une arête est
+// affichée si AU MOINS UNE des deux cases qu'elle sépare est connue — on voit la face d'un mur
+// depuis le côté où l'on se trouve, sans pour autant révéler la pièce d'en face.
+// Omis (écran MJ) → tout est visible.
+function gridEdgesHtml(grid, cs, vis){
   const pad = 5, gap = 1, pitch = cs + gap; const E = grid.edges || {}; let h = '';
   const isWall = (o,x,y)=> E[o+','+x+','+y] === 'wall';
+  const seenC  = (x,y) => !vis || vis(x,y);
+  const edgeSeen = (o,x,y) => (o === 'V') ? (seenC(x-1,y) || seenC(x,y)) : (seenC(x,y-1) || seenC(x,y));
   // Segments — étendus de `gap` à chaque extrémité pour se rejoindre aux sommets (lignes continues)
   const isDoorK = k => E[k] === 'door' || E[k] === 'doorOpen';
   for(const key in E){
     const p = key.split(','); const o = p[0], x = +p[1], y = +p[2], type = E[key];
+    if(!edgeSeen(o, x, y)) continue;                 // brouillard : arête jamais approchée
     // Porte ouverte : gond choisi pour que deux portes côte à côte s'ouvrent sur des gonds OPPOSÉS (ouverture large)
     let hinge = '';
     if(type === 'doorOpen'){
@@ -180,7 +187,9 @@ function gridEdgesHtml(grid, cs){
     for(let vy=0; vy<=grid.h; vy++){
       const nv = (isWall('V',vx,vy-1)?1:0) + (isWall('V',vx,vy)?1:0);
       const nh = (isWall('H',vx-1,vy)?1:0) + (isWall('H',vx,vy)?1:0);
-      if(nv===1 && nh===1){
+      // le sommet n'est arrondi que si une des 4 cases qui l'entourent est connue (sinon il trahirait un mur non découvert)
+      const vtxSeen = seenC(vx-1,vy-1) || seenC(vx,vy-1) || seenC(vx-1,vy) || seenC(vx,vy);
+      if(nv===1 && nh===1 && vtxSeen){
         const cx = pad + vx*pitch - gap/2, cy = pad + vy*pitch - gap/2;
         h += '<div class="cedge-knee" style="left:'+(cx-2)+'px;top:'+(cy-2)+'px"></div>';
       }
