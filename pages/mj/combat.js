@@ -761,7 +761,8 @@ function genCombatMap(){
   for(let k=0;k<n;k++){
     const ox = 3 + Math.floor(Math.random()*(w-6));
     const oy = Math.floor(Math.random()*h);
-    if(!Object.values(map.pos).some(p=>p.x===ox&&p.y===oy)) map.terrain[ox+','+oy] = deco[Math.floor(Math.random()*deco.length)];
+    // gridPaintBlock gère l'emprise (la carcasse fait 2×2) et refuse si ça déborde ou tombe sur un jeton
+    gridPaintBlock(map, ox, oy, deco[Math.floor(Math.random()*deco.length)]);
   }
   combatMap = map;
   recomputeBandsFromMap();
@@ -831,8 +832,9 @@ function mapCellClick(x, y){
   const key = x+','+y;
   if(_blockSel){   // pinceau de terrain actif : peindre / effacer
     if(Object.values(combatMap.pos).some(p=>p.x===x&&p.y===y)) return;   // pas sur un jeton
-    if(_blockSel === 'erase' || combatMap.terrain[key] === _blockSel) delete combatMap.terrain[key];
-    else combatMap.terrain[key] = _blockSel;
+    // Effacer (ou re-cliquer le même bloc) retire le bloc ENTIER — une carcasse fait 2×2, on ne l'ampute pas
+    if(_blockSel === 'erase' || combatMap.terrain[key] === _blockSel) gridEraseBlock(combatMap, x, y);
+    else if(!gridPaintBlock(combatMap, x, y, _blockSel)) return;   // ne rentre pas (bord de grille / jeton dessous)
     recomputeBandsFromMap(); renderCombatMap(); syncCombatToFirebase(); return;
   }
   if(_mapSel){
@@ -913,7 +915,7 @@ function renderCombatMap(){
     const t = tid ? toks.find(z=>z.id===tid) : null;
     const terr = gridTerrainAt(combatMap, x, y);
     let cls = 'cmap-cell';
-    if(terr) cls += ' b-' + terr;
+    if(terr) cls += ' b-' + terr + ' bk-' + gridBlockRole(combatMap, x, y, terr);   // span = porte le sprite 2×2
     if(t && tid===_mapSel) cls += ' sel';
     const bt = BLOCK_TYPES.find(b=>b.id===terr);
     let inner;

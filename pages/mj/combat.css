@@ -239,10 +239,22 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .cmap-cell[data-eid]{ cursor:help; }
 /* Types de blocs */
 /* Carcasse de voiture : bloque le passage, PAS la visée (on tire par-dessus l'épave).
-   font-size:0 → l'emoji 🚗 du BLOCK_TYPE reste dans la palette mais ne double pas le sprite dans la case. */
-.cmap-cell.b-carcasse{
-  background:#0b1a12 url('../../img/tiles/blocks/carcasse.png') center / 88% no-repeat;
-  border-color:var(--gd); font-size:0; image-rendering:pixelated;
+   Une voiture n'a pas la taille d'un homme → elle occupe 2×2 cases. Les 4 cases portent le terrain
+   (donc bloquent le passage), mais SEULE l'ancre (bk-span, coin haut-gauche) dessine le sprite,
+   qui déborde sur les 4 cases via ::after. font-size:0 → l'emoji 🚗 reste dans la palette, pas dans la case. */
+.cmap-cell.b-carcasse{ background:#0b1a12; border-color:var(--gd); font-size:0; image-rendering:pixelated; }
+.cmap-cell.b-carcasse.bk-span{ z-index:3; }        /* le sprite passe au-dessus des cases voisines */
+.cmap-cell.b-carcasse.bk-span::after{
+  content:''; position:absolute; left:0; top:0; pointer-events:none;
+  width:calc(var(--cs,22px)*2 + 1px);              /* 2 cases + le gap de la grille */
+  height:calc(var(--cs,22px)*2 + 1px);
+  background:url('../../img/tiles/blocks/carcasse.png') center / 66% no-repeat;   /* remplit les 2/3 */
+  filter:drop-shadow(0 0 3px rgba(93,190,93,.35));
+}
+/* Carcasse posée AVANT le passage en 2×2 (1 seule case) : on garde son sprite, sinon elle disparaîtrait */
+.cmap-cell.b-carcasse.bk-solo::after{
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:url('../../img/tiles/blocks/carcasse.png') center / 88% no-repeat;
   filter:drop-shadow(0 0 3px rgba(93,190,93,.35));
 }
 /* Ancien bloc « Mur » : plus proposé, mais les cartes déjà enregistrées doivent rester lisibles */
