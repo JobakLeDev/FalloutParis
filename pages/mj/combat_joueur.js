@@ -1382,14 +1382,17 @@ function renderActionsDeclarees(){
     }
     body += '<input type="text" id="j-action-details" class="decl-in" placeholder="Precisions optionnelles (note...)">';
 
+    const catCls = (selectedActionDraft.category === 'majeure') ? 'maj' : 'min';
     draftHtml = '<div class="decl-box">'
-      + '<div style="color:var(--am);margin-bottom:3px;letter-spacing:1px">' + selectedActionDraft.type
-      + ' <span style="color:var(--td);font-size:8px">(' + selectedActionDraft.category + ')</span></div>'
-      + '<div style="color:var(--td);font-size:8px;line-height:1.4;margin-bottom:8px">' + selectedActionDraft.desc + '</div>'
-      + body
+      + '<div class="decl-head">'
+      +   '<span class="decl-type">' + selectedActionDraft.type + '</span>'
+      +   '<span class="decl-cat ' + catCls + '">' + selectedActionDraft.category + '</span>'
+      + '</div>'
+      + '<div class="decl-desc">' + selectedActionDraft.desc + '</div>'
+      + '<div class="decl-body">' + body + '</div>'
       + '<div class="decl-btns">'
-      + '<button class="decl-send" onclick="submitActionDeclaree()">→ Envoyer au MJ</button>'
-      + '<button class="decl-cancel" onclick="cancelActionDeclaree()">✕</button>'
+      + '<button class="decl-send" onclick="submitActionDeclaree()"><span>Envoyer au MJ</span><b>➜</b></button>'
+      + '<button class="decl-cancel" onclick="cancelActionDeclaree()" title="Annuler">✕</button>'
       + '</div>'
       + '</div>';
   }
