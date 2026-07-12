@@ -211,8 +211,54 @@ function fpChargePortee(c){
 // ============================================================
 // DÉPLACEMENT / rencontres aléatoires sur trajet (partagé carte + dashboard MJ)
 // ============================================================
-const FP_WALK_KMH = 5;   // vitesse de marche (km/h) → temps de trajet depuis la distance
+const FP_WALK_KMH = 5;   // vitesse de marche de référence (km/h) — perso « moyen », sac à moitié plein
 const FP_THREAT_DANGER = { calme:1, normal:2, eleve:3, extreme:4 };
+
+// ---- Vitesse de marche PAR JOUEUR (stats + encombrement) -------------------
+// Les jets de rencontre de fpRollDeplacement sont PAR KILOMÈTRE : ralentir un groupe
+// allonge son trajet sans le rendre plus dangereux — il arrive juste plus tard (et la
+// survie, faim/soif/sommeil, encaisse la différence).
+const FP_ENC_FREE   = 0.50;   // jusqu'à 50 % de la charge max : aucune pénalité
+const FP_ENC_FULL   = 0.75;   // à 100 % de la charge max : on marche à 75 % de l'allure
+const FP_ENC_OVER   = 0.50;   // en surcharge (>100 %) : on traîne, 50 %
+const FP_SPEED_MIN  = 1.5;    // plancher (km/h) — même écrasé de barda, on avance
+
+// Encombrement → facteur d'allure. Progressif entre FP_ENC_FREE et 100 %, palier en surcharge.
+function fpEncFactor(ratio){
+  if(!isFinite(ratio) || ratio <= FP_ENC_FREE) return 1;
+  if(ratio >= 1) return FP_ENC_OVER;
+  return 1 - (1 - FP_ENC_FULL) * (ratio - FP_ENC_FREE) / (1 - FP_ENC_FREE);
+}
+// Stats → facteur d'allure. AGI mène (l'allure), END suit (tenir la distance). Écart à la moyenne (5).
+function fpStatFactor(sp){
+  const f = 1 + (((sp && sp.A) || 5) - 5) * 0.04 + (((sp && sp.E) || 5) - 5) * 0.02;
+  return Math.max(0.75, Math.min(1.25, f));
+}
+// Vitesse d'un joueur → {kmh, ratio, enc, stat, surcharge, cause}
+// `cause` = ce qui le ralentit le plus, pour que le MJ puisse le DIRE à la table.
+function fpVitesse(c){
+  const max   = fpChargeMax(c) || 1;
+  const ratio = fpChargePortee(c) / max;
+  const enc   = fpEncFactor(ratio);
+  const stat  = fpStatFactor(fpSpecial(c));
+  const kmh   = Math.max(FP_SPEED_MIN, Math.round(FP_WALK_KMH * enc * stat * 10) / 10);
+  let cause = '';
+  if(ratio > 1)          cause = 'surchargé (' + Math.round(ratio*100) + ' %)';
+  else if(enc < 0.95)    cause = 'chargé (' + Math.round(ratio*100) + ' %)';
+  else if(stat < 0.95)   cause = 'peu agile';
+  return { kmh, ratio, enc, stat, surcharge: ratio > 1, cause };
+}
+// Vitesse d'un groupe = celle du plus lent (on ne laisse personne derrière).
+// → {kmh, slowest:{id,nom,...}} ; liste vide / inconnue → allure de référence.
+function fpVitesseGroupe(membres){
+  let best = null;
+  (membres||[]).forEach(m => {
+    if(!m || !m.char) return;
+    const v = fpVitesse(m.char);
+    if(!best || v.kmh < best.kmh) best = Object.assign({ id:m.id, nom:m.nom }, v);
+  });
+  return best ? { kmh: best.kmh, slowest: best } : { kmh: FP_WALK_KMH, slowest: null };
+}
 const FP_EVENEMENTS_DEPLACEMENT = [
   {pct:40, type:'calme',    label:'Calme',      desc:'Le groupe se déplace sans encombre.'},
   {pct:20, type:'combat',   label:'Combat !',   desc:'Rencontre hostile sur la route.'},
@@ -221,10 +267,12 @@ const FP_EVENEMENTS_DEPLACEMENT = [
   {pct:10, type:'pnj',      label:'Rencontre PNJ', desc:'Un personnage non-hostile croise la route du groupe.'},
   {pct:5,  type:'danger',   label:'Grand danger !', desc:'Menace majeure. Ennemi puissant ou situation critique.'},
 ];
-// km + menace → {segments, pKm, events[], mins, hasCombat} : 1 jet de rencontre par km
-// (proba/km = 4 + menace×7), événements non-calme pondérés, temps de trajet à FP_WALK_KMH.
-function fpRollDeplacement(km, threat){
+// km + menace [+ vitesse km/h] → {segments, pKm, events[], mins, kmh, hasCombat}
+// 1 jet de rencontre PAR KILOMÈTRE (proba/km = 4 + menace×7) : la vitesse n'influe donc que
+// sur la DURÉE, pas sur le nombre de rencontres. `kmh` omis → allure de référence (FP_WALK_KMH).
+function fpRollDeplacement(km, threat, kmh){
   km = Math.max(0, +km || 0);
+  const vit = Math.max(FP_SPEED_MIN, +kmh || FP_WALK_KMH);
   const danger = FP_THREAT_DANGER[threat] || 2;
   const segments = Math.min(30, Math.max(1, Math.round(km)));
   const pKm = Math.min(80, 4 + danger*7);
@@ -237,8 +285,8 @@ function fpRollDeplacement(km, threat){
     for(const e of nonCalme){ r-=e.pct; if(r<=0){ evt=e; break; } }
     events.push(evt);
   }
-  const mins = Math.round(km / FP_WALK_KMH * 60);
-  return { segments, pKm, events, mins, hasCombat: events.some(e=>e.type==='combat'||e.type==='danger'), danger };
+  const mins = Math.round(km / vit * 60);
+  return { segments, pKm, events, mins, kmh: vit, hasCombat: events.some(e=>e.type==='combat'||e.type==='danger'), danger };
 }
 function fpFmtDuree(mins){ return mins>=60 ? `${Math.floor(mins/60)} h ${String(mins%60).padStart(2,'0')}` : `${mins} min`; }
 
