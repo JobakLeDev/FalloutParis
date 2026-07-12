@@ -4,2119 +4,2490 @@
    "id": "abundant-growth",
    "name": "Abundant Growth",
    "img": "pip/Abundant Growth.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.01377866
   },
   {
    "id": "acquired-mutation",
    "name": "Acquired Mutation",
    "img": "pip/Acquired Mutation.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01377866
   },
   {
    "id": "agent-frank-horrigan",
    "name": "Agent Frank Horrigan",
    "img": "pip/Agent Frank Horrigan.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05726142
   },
   {
    "id": "agility-bobblehead",
    "name": "Agility Bobblehead",
    "img": "pip/Agility Bobblehead.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01449295
   },
   {
    "id": "alien",
    "name": "Alien",
    "img": "tpip/Alien.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.05601627,
+   "noBooster": true
   },
   {
    "id": "all-that-glitters",
    "name": "All That Glitters",
    "img": "pip/All That Glitters.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.01377866
   },
   {
    "id": "almost-perfect",
    "name": "Almost Perfect",
    "img": "pip/Almost Perfect.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05686538
   },
   {
    "id": "alpha-deathclaw",
    "name": "Alpha Deathclaw",
    "img": "pip/Alpha Deathclaw.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.07647974
   },
   {
    "id": "anguished-unmaking",
    "name": "Anguished Unmaking",
    "img": "pip/Anguished Unmaking.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05593004
   },
   {
    "id": "animal-friend",
    "name": "Animal Friend",
    "img": "pip/Animal Friend.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05686538
   },
   {
    "id": "aradesh-the-founder",
    "name": "Aradesh, the Founder",
    "img": "pip/Aradesh, the Founder.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05712635
   },
   {
    "id": "arcade-gannon",
    "name": "Arcade Gannon",
    "img": "pip/Arcade Gannon.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05699438
   },
   {
    "id": "arcane-signet",
    "name": "Arcane Signet",
    "img": "pip/Arcane Signet.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.10543797
   },
   {
    "id": "armory-paladin",
    "name": "Armory Paladin",
    "img": "pip/Armory Paladin.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0760837
   },
   {
    "id": "ash-barrens",
    "name": "Ash Barrens",
    "img": "pip/Ash Barrens.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.04843797
   },
   {
    "id": "assaultron-dominator",
    "name": "Assaultron Dominator",
    "img": "pip/Assaultron Dominator.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05699438
   },
   {
    "id": "assemble-the-legion",
    "name": "Assemble the Legion",
    "img": "pip/Assemble the Legion.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05593004
   },
   {
    "id": "atomize",
    "name": "Atomize",
    "img": "pip/Atomize.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.07647974
   },
   {
    "id": "austere-command",
    "name": "Austere Command",
    "img": "pip/Austere Command.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05828563
   },
   {
    "id": "automated-assembly-line",
    "name": "Automated Assembly Line",
    "img": "pip/Automated Assembly Line.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05699438
   },
   {
    "id": "ayula-queen-among-bears",
    "name": "Ayula, Queen Among Bears",
    "img": "pip/Ayula, Queen Among Bears.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.057
   },
   {
    "id": "basilisk-collar",
    "name": "Basilisk Collar",
    "img": "pip/Basilisk Collar.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05566907
   },
   {
    "id": "bastion-of-remembrance",
    "name": "Bastion of Remembrance",
    "img": "pip/Bastion of Remembrance.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01403963
   },
   {
    "id": "battle-of-hoover-dam",
    "name": "Battle of Hoover Dam",
    "img": "pip/Battle of Hoover Dam.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05712635
   },
   {
    "id": "behemoth-of-vault-0",
    "name": "Behemoth of Vault 0",
    "img": "pip/Behemoth of Vault 0.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01390766
   },
   {
    "id": "behemoth-sledge",
    "name": "Behemoth Sledge",
    "img": "pip/Behemoth Sledge.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01377866
   },
   {
    "id": "bighorner-rancher",
    "name": "Bighorner Rancher",
    "img": "pip/Bighorner Rancher.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01377866
   },
   {
    "id": "biomass-mutation",
    "name": "Biomass Mutation",
    "img": "pip/Biomass Mutation.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0560651
   },
   {
    "id": "black-market",
    "name": "Black Market",
    "img": "pip/Black Market.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05593004
   },
   {
    "id": "blasphemous-act",
    "name": "Blasphemous Act",
    "img": "pip/Blasphemous Act.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05566907
   },
   {
    "id": "bloatfly-swarm",
    "name": "Bloatfly Swarm",
    "img": "pip/Bloatfly Swarm.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.0141747
   },
   {
    "id": "bloodforged-battle-axe",
    "name": "Bloodforged Battle-Axe",
    "img": "pip/Bloodforged Battle-Axe.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05566907
   },
   {
    "id": "boomer-scrapper",
    "name": "Boomer Scrapper",
    "img": "pip/Boomer Scrapper.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05712635
   },
   {
    "id": "bottle-cap-blast",
    "name": "Bottle-Cap Blast",
    "img": "pip/Bottle-Cap Blast.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01390766
   },
   {
    "id": "branching-evolution",
    "name": "Branching Evolution",
    "img": "pip/Branching Evolution.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0560651
   },
   {
    "id": "brass-knuckles",
    "name": "Brass Knuckles",
    "img": "pip/Brass Knuckles.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01377866
   },
   {
    "id": "break-down",
    "name": "Break Down",
    "img": "pip/Break Down.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01377866
   },
   {
    "id": "brotherhood-outcast",
    "name": "Brotherhood Outcast",
    "img": "pip/Brotherhood Outcast.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01377866
   },
   {
    "id": "brotherhood-scribe",
    "name": "Brotherhood Scribe",
    "img": "pip/Brotherhood Scribe.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05699438
   },
   {
    "id": "brotherhood-vertibird",
    "name": "Brotherhood Vertibird",
    "img": "pip/Brotherhood Vertibird.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05699438
   },
   {
    "id": "buried-ruin",
    "name": "Buried Ruin",
    "img": "pip/Buried Ruin.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.02519876
   },
   {
    "id": "butch-deloria-tunnel-snake",
    "name": "Butch DeLoria, Tunnel Snake",
    "img": "pip/Butch DeLoria, Tunnel Snake.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01403963
   },
   {
    "id": "c-a-m-p",
    "name": "C.A.M.P.",
    "img": "pip/C.A.M.P..webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01390766
   },
   {
    "id": "caesar-legion-s-emperor",
    "name": "Caesar, Legion's Emperor",
    "img": "pip/Caesar, Legion's Emperor.webp",
-   "rarity": "mythic"
+   "rarity": "mythic",
+   "p": 0.07369215
   },
   {
    "id": "cait-cage-brawler",
    "name": "Cait, Cage Brawler",
    "img": "pip/Cait, Cage Brawler.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05686538
   },
   {
    "id": "canopy-vista",
    "name": "Canopy Vista",
    "img": "pip/Canopy Vista.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05566907
   },
   {
    "id": "canyon-slough",
    "name": "Canyon Slough",
    "img": "pip/Canyon Slough.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05593004
   },
   {
    "id": "captain-of-the-watch",
    "name": "Captain of the Watch",
    "img": "pip/Captain of the Watch.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05593004
   },
   {
    "id": "cass-hand-of-vengeance",
    "name": "Cass, Hand of Vengeance",
    "img": "pip/Cass, Hand of Vengeance.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05686538
   },
   {
    "id": "casualties-of-war",
    "name": "Casualties of War",
    "img": "pip/Casualties of War.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0560651
   },
   {
    "id": "cathedral-acolyte",
    "name": "Cathedral Acolyte",
    "img": "pip/Cathedral Acolyte.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.0141747
   },
   {
    "id": "champion-s-helm",
    "name": "Champion's Helm",
    "img": "pip/Champion's Helm.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05566907
   },
   {
    "id": "chaos-warp",
    "name": "Chaos Warp",
    "img": "pip/Chaos Warp.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05566907
   },
   {
    "id": "charisma-bobblehead",
    "name": "Charisma Bobblehead",
    "img": "pip/Charisma Bobblehead.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01475392
   },
   {
    "id": "cinder-glade",
    "name": "Cinder Glade",
    "img": "pip/Cinder Glade.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05566907
   },
   {
    "id": "clifftop-retreat",
    "name": "Clifftop Retreat",
    "img": "pip/Clifftop Retreat.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.07864124
   },
   {
    "id": "clue",
    "name": "Clue",
    "img": "tpip/Clue.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.05601627,
+   "noBooster": true
   },
   {
    "id": "codsworth-handy-helper",
    "name": "Codsworth, Handy Helper",
    "img": "pip/Codsworth, Handy Helper.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05686538
   },
   {
    "id": "colonel-autumn",
    "name": "Colonel Autumn",
    "img": "pip/Colonel Autumn.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05712635
   },
   {
    "id": "command-tower",
    "name": "Command Tower",
    "img": "pip/Command Tower.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.10543797
   },
   {
    "id": "commander-sofia-daguerre",
    "name": "Commander Sofia Daguerre",
    "img": "pip/Commander Sofia Daguerre.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01377866
   },
   {
    "id": "contagion-clasp",
    "name": "Contagion Clasp",
    "img": "pip/Contagion Clasp.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.0141747
   },
   {
    "id": "contaminated-drink",
    "name": "Contaminated Drink",
    "img": "pip/Contaminated Drink.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.0141747
   },
   {
    "id": "copy",
    "name": "Copy",
    "img": "tpip/Copy.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.05601627,
+   "noBooster": true
   },
   {
    "id": "corpsejack-menace",
    "name": "Corpsejack Menace",
    "img": "pip/Corpsejack Menace.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.0141747
   },
   {
    "id": "craig-boone-novac-guard",
    "name": "Craig Boone, Novac Guard",
    "img": "pip/Craig Boone, Novac Guard.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01403963
   },
   {
    "id": "crimson-caravaneer",
    "name": "Crimson Caravaneer",
    "img": "pip/Crimson Caravaneer.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01377866
   },
   {
    "id": "crucible-of-worlds",
    "name": "Crucible of Worlds",
    "img": "pip/Crucible of Worlds.webp",
-   "rarity": "mythic"
+   "rarity": "mythic",
+   "p": 0.057
   },
   {
    "id": "crush-contraband",
    "name": "Crush Contraband",
    "img": "pip/Crush Contraband.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01390766
   },
   {
    "id": "cultivate",
    "name": "Cultivate",
    "img": "pip/Cultivate.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.0141747
   },
   {
    "id": "curie-emergent-intelligence",
    "name": "Curie, Emergent Intelligence",
    "img": "pip/Curie, Emergent Intelligence.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05699438
   },
   {
    "id": "darkwater-catacombs",
    "name": "Darkwater Catacombs",
    "img": "pip/Darkwater Catacombs.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0560651
   },
   {
    "id": "deadly-dispute",
    "name": "Deadly Dispute",
    "img": "pip/Deadly Dispute.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.01403963
   },
   {
    "id": "desdemona-freedom-s-edge",
    "name": "Desdemona, Freedom's Edge",
    "img": "pip/Desdemona, Freedom's Edge.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05712635
   },
   {
    "id": "desolate-mire",
    "name": "Desolate Mire",
    "img": "pip/Desolate Mire.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05712635
   },
   {
    "id": "diamond-city",
    "name": "Diamond City",
    "img": "pip/Diamond City.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05712635
   },
   {
    "id": "dispatch",
    "name": "Dispatch",
    "img": "pip/Dispatch.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01390766
   },
   {
    "id": "dogmeat-ever-loyal",
    "name": "Dogmeat, Ever Loyal",
    "img": "pip/Dogmeat, Ever Loyal.webp",
-   "rarity": "mythic"
+   "rarity": "mythic",
+   "p": 0.07343118
   },
   {
    "id": "dr-madison-li",
    "name": "Dr. Madison Li",
    "img": "pip/Dr. Madison Li.webp",
-   "rarity": "mythic"
+   "rarity": "mythic",
+   "p": 0.07356018
   },
   {
    "id": "dragonskull-summit",
    "name": "Dragonskull Summit",
    "img": "pip/Dragonskull Summit.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05593004
   },
   {
    "id": "drowned-catacomb",
    "name": "Drowned Catacomb",
    "img": "pip/Drowned Catacomb.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0560651
   },
   {
    "id": "duchess-wayward-tavernkeep",
    "name": "Duchess, Wayward Tavernkeep",
    "img": "pip/Duchess, Wayward Tavernkeep.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05686538
   },
   {
    "id": "ed-e-lonesome-eyebot",
    "name": "ED-E, Lonesome Eyebot",
    "img": "pip/ED-E, Lonesome Eyebot.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05712635
   },
   {
    "id": "elder-arthur-maxson",
    "name": "Elder Arthur Maxson",
    "img": "pip/Elder Arthur Maxson.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05712635
   },
   {
    "id": "elder-owyn-lyons",
    "name": "Elder Owyn Lyons",
    "img": "pip/Elder Owyn Lyons.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01390766
   },
   {
    "id": "electrosiphon",
    "name": "Electrosiphon",
    "img": "pip/Electrosiphon.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05699438
   },
   {
    "id": "endurance-bobblehead",
    "name": "Endurance Bobblehead",
    "img": "pip/Endurance Bobblehead.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01462194
   },
   {
    "id": "energy-reserve",
    "name": "Energy Reserve",
    "img": "tpip/Energy Reserve.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.05601627,
+   "noBooster": true
   },
   {
    "id": "entrapment-maneuver",
    "name": "Entrapment Maneuver",
    "img": "pip/Entrapment Maneuver.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05593004
   },
   {
    "id": "everflowing-chalice",
    "name": "Everflowing Chalice",
    "img": "pip/Everflowing Chalice.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01390766
   },
   {
    "id": "evolving-wilds",
    "name": "Evolving Wilds",
    "img": "pip/Evolving Wilds.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.04843797
   },
   {
    "id": "exotic-orchard",
    "name": "Exotic Orchard",
    "img": "pip/Exotic Orchard.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0787763
   },
   {
    "id": "expert-level-safe",
    "name": "Expert-Level Safe",
    "img": "pip/Expert-Level Safe.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01390766
   },
   {
    "id": "explorer-s-scope",
    "name": "Explorer's Scope",
    "img": "pip/Explorer's Scope.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.01377866
   },
   {
    "id": "farewell",
    "name": "Farewell",
    "img": "pip/Farewell.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.057
   },
   {
    "id": "farseek",
    "name": "Farseek",
    "img": "pip/Farseek.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.0141747
   },
   {
    "id": "feral-ghoul",
    "name": "Feral Ghoul",
    "img": "pip/Feral Ghoul.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05726142
   },
   {
    "id": "ferrous-lake",
    "name": "Ferrous Lake",
    "img": "pip/Ferrous Lake.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05699438
   },
   {
    "id": "fertile-ground",
    "name": "Fertile Ground",
    "img": "pip/Fertile Ground.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.01377866
   },
   {
    "id": "fervent-charge",
    "name": "Fervent Charge",
    "img": "pip/Fervent Charge.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05593004
   },
   {
    "id": "fetid-pools",
    "name": "Fetid Pools",
    "img": "pip/Fetid Pools.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0560651
   },
   {
    "id": "find-finality",
    "name": "Find // Finality",
    "img": "pip/Find -- Finality.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.01947974
   },
   {
    "id": "fireshrieker",
    "name": "Fireshrieker",
    "img": "pip/Fireshrieker.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01377866
   },
   {
    "id": "forest",
    "name": "Forest",
    "img": "pip/Forest.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.20432546
   },
   {
    "id": "fraying-sanity",
    "name": "Fraying Sanity",
    "img": "pip/Fraying Sanity.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0560651
   },
   {
    "id": "gary-clone",
    "name": "Gary Clone",
    "img": "pip/Gary Clone.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01403963
   },
   {
    "id": "gemrazer",
    "name": "Gemrazer",
    "img": "pip/Gemrazer.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.057
   },
   {
    "id": "general-s-enforcer",
    "name": "General's Enforcer",
    "img": "pip/General's Enforcer.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01403963
   },
   {
    "id": "glacial-fortress",
    "name": "Glacial Fortress",
    "img": "pip/Glacial Fortress.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05579806
   },
   {
    "id": "glimmer-of-genius",
    "name": "Glimmer of Genius",
    "img": "pip/Glimmer of Genius.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01390766
   },
   {
    "id": "glowing-one",
    "name": "Glowing One",
    "img": "pip/Glowing One.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.0141747
   },
   {
    "id": "grave-titan",
    "name": "Grave Titan",
    "img": "pip/Grave Titan.webp",
-   "rarity": "mythic"
+   "rarity": "mythic",
+   "p": 0.057
   },
   {
    "id": "grim-reaper-s-sprint",
    "name": "Grim Reaper's Sprint",
    "img": "pip/Grim Reaper's Sprint.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05686538
   },
   {
    "id": "guardian-project",
    "name": "Guardian Project",
    "img": "pip/Guardian Project.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0560651
   },
   {
    "id": "gunner-conscript",
    "name": "Gunner Conscript",
    "img": "pip/Gunner Conscript.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01377866
   },
   {
    "id": "hancock-ghoulish-mayor",
    "name": "Hancock, Ghoulish Mayor",
    "img": "pip/Hancock, Ghoulish Mayor.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05726142
   },
   {
    "id": "hardened-scales",
    "name": "Hardened Scales",
    "img": "pip/Hardened Scales.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0560651
   },
   {
    "id": "harmonize",
    "name": "Harmonize",
    "img": "pip/Harmonize.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.0141747
   },
   {
    "id": "harold-and-bob-first-numens",
    "name": "Harold and Bob, First Numens",
    "img": "pip/Harold and Bob, First Numens.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05726142
   },
   {
    "id": "helios-one",
    "name": "HELIOS One",
    "img": "pip/HELIOS One.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05699438
   },
   {
    "id": "heroic-intervention",
    "name": "Heroic Intervention",
    "img": "pip/Heroic Intervention.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05566907
   },
   {
    "id": "heroic-reinforcements",
    "name": "Heroic Reinforcements",
    "img": "pip/Heroic Reinforcements.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01403963
   },
   {
    "id": "hinterland-harbor",
    "name": "Hinterland Harbor",
    "img": "pip/Hinterland Harbor.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0560651
   },
   {
    "id": "hornet-queen",
    "name": "Hornet Queen",
    "img": "pip/Hornet Queen.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.057
   },
   {
    "id": "hour-of-reckoning",
    "name": "Hour of Reckoning",
    "img": "pip/Hour of Reckoning.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05593004
   },
   {
    "id": "hullbreaker-horror",
    "name": "Hullbreaker Horror",
    "img": "pip/Hullbreaker Horror.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.057
   },
   {
    "id": "human-knight",
    "name": "Human Knight",
    "img": "tpip/Human Knight.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.05601627,
+   "noBooster": true
   },
   {
    "id": "human-soldier",
    "name": "Human Soldier",
    "img": "tpip/Human Soldier.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.05601627,
+   "noBooster": true
   },
   {
    "id": "ian-the-reckless",
    "name": "Ian the Reckless",
    "img": "pip/Ian the Reckless.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01377866
   },
   {
    "id": "idolized",
    "name": "Idolized",
    "img": "pip/Idolized.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0760837
   },
   {
    "id": "impassioned-orator",
    "name": "Impassioned Orator",
    "img": "pip/Impassioned Orator.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.01403963
   },
   {
    "id": "inexorable-tide",
    "name": "Inexorable Tide",
    "img": "pip/Inexorable Tide.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0560651
   },
   {
    "id": "infesting-radroach",
    "name": "Infesting Radroach",
    "img": "pip/Infesting Radroach.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.0141747
   },
   {
    "id": "inspiring-call",
    "name": "Inspiring Call",
    "img": "pip/Inspiring Call.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.0141747
   },
   {
    "id": "intangible-virtue",
    "name": "Intangible Virtue",
    "img": "pip/Intangible Virtue.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01403963
   },
   {
    "id": "intelligence-bobblehead",
    "name": "Intelligence Bobblehead",
    "img": "pip/Intelligence Bobblehead.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01462194
   },
   {
    "id": "inventory-management",
    "name": "Inventory Management",
    "img": "pip/Inventory Management.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0760837
   },
   {
    "id": "irrigated-farmland",
    "name": "Irrigated Farmland",
    "img": "pip/Irrigated Farmland.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05579806
   },
   {
    "id": "island",
    "name": "Island",
    "img": "pip/Island.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.20434834
   },
   {
    "id": "isolated-chapel",
    "name": "Isolated Chapel",
    "img": "pip/Isolated Chapel.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05593004
   },
   {
    "id": "james-wandering-dad-follow-him",
    "name": "James, Wandering Dad // Follow Him",
    "img": "pip/James, Wandering Dad -- Follow Him.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05699438
   },
   {
    "id": "jason-bright-glowing-prophet",
    "name": "Jason Bright, Glowing Prophet",
    "img": "pip/Jason Bright, Glowing Prophet.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05726142
   },
   {
    "id": "jungle-shrine",
    "name": "Jungle Shrine",
    "img": "pip/Jungle Shrine.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01377866
   },
   {
    "id": "junk",
    "name": "Junk",
    "img": "tpip/Junk.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.05601627,
+   "noBooster": true
   },
   {
    "id": "junk-jet",
    "name": "Junk Jet",
    "img": "pip/Junk Jet.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05686538
   },
   {
    "id": "junktown",
    "name": "Junktown",
    "img": "pip/Junktown.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05686538
   },
   {
    "id": "keeper-of-the-accord",
    "name": "Keeper of the Accord",
    "img": "pip/Keeper of the Accord.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05593004
   },
   {
    "id": "kellogg-dangerous-mind",
    "name": "Kellogg, Dangerous Mind",
    "img": "pip/Kellogg, Dangerous Mind.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05712635
   },
   {
    "id": "legate-lanius-caesar-s-ace",
    "name": "Legate Lanius, Caesar's Ace",
    "img": "pip/Legate Lanius, Caesar's Ace.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01403963
   },
   {
    "id": "lethal-scheme",
    "name": "Lethal Scheme",
    "img": "pip/Lethal Scheme.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05593004
   },
   {
    "id": "liberty-prime-recharged",
    "name": "Liberty Prime, Recharged",
    "img": "pip/Liberty Prime, Recharged.webp",
-   "rarity": "mythic"
+   "rarity": "mythic",
+   "p": 0.05434186
   },
   {
    "id": "lightning-greaves",
    "name": "Lightning Greaves",
    "img": "pip/Lightning Greaves.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01390766
   },
   {
    "id": "lily-bowen-raging-grandma",
    "name": "Lily Bowen, Raging Grandma",
    "img": "pip/Lily Bowen, Raging Grandma.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05726142
   },
   {
    "id": "lord-of-the-undead",
    "name": "Lord of the Undead",
    "img": "pip/Lord of the Undead.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.057
   },
   {
    "id": "loyal-apprentice",
    "name": "Loyal Apprentice",
    "img": "pip/Loyal Apprentice.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01390766
   },
   {
    "id": "luck-bobblehead",
    "name": "Luck Bobblehead",
    "img": "pip/Luck Bobblehead.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01475392
   },
   {
    "id": "lumbering-megasloth",
    "name": "Lumbering Megasloth",
    "img": "pip/Lumbering Megasloth.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.0141747
   },
   {
    "id": "maccready-lamplight-mayor",
    "name": "MacCready, Lamplight Mayor",
    "img": "pip/MacCready, Lamplight Mayor.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05712635
   },
   {
    "id": "mantle-of-the-ancients",
    "name": "Mantle of the Ancients",
    "img": "pip/Mantle of the Ancients.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05566907
   },
   {
    "id": "marcus-mutant-mayor",
    "name": "Marcus, Mutant Mayor",
    "img": "pip/Marcus, Mutant Mayor.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05726142
   },
   {
    "id": "mariposa-military-base",
    "name": "Mariposa Military Base",
    "img": "pip/Mariposa Military Base.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05726142
   },
   {
    "id": "marshal-s-anthem",
    "name": "Marshal's Anthem",
    "img": "pip/Marshal's Anthem.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05593004
   },
   {
    "id": "martial-coup",
    "name": "Martial Coup",
    "img": "pip/Martial Coup.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05593004
   },
   {
    "id": "masterwork-of-ingenuity",
    "name": "Masterwork of Ingenuity",
    "img": "pip/Masterwork of Ingenuity.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05566907
   },
   {
    "id": "mechanized-production",
    "name": "Mechanized Production",
    "img": "pip/Mechanized Production.webp",
-   "rarity": "mythic"
+   "rarity": "mythic",
+   "p": 0.05314554
   },
   {
    "id": "megaton-s-fate",
    "name": "Megaton's Fate",
    "img": "pip/Megaton's Fate.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05686538
   },
   {
    "id": "memorial-to-glory",
    "name": "Memorial to Glory",
    "img": "pip/Memorial to Glory.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01403963
   },
   {
    "id": "mind-stone",
    "name": "Mind Stone",
    "img": "pip/Mind Stone.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01390766
   },
   {
    "id": "mirelurk-queen",
    "name": "Mirelurk Queen",
    "img": "pip/Mirelurk Queen.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05726142
   },
   {
    "id": "mister-gutsy",
    "name": "Mister Gutsy",
    "img": "pip/Mister Gutsy.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05686538
   },
   {
    "id": "moira-brown-guide-author",
    "name": "Moira Brown, Guide Author",
    "img": "pip/Moira Brown, Guide Author.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05686538
   },
   {
    "id": "morbid-opportunist",
    "name": "Morbid Opportunist",
    "img": "pip/Morbid Opportunist.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01403963
   },
   {
    "id": "mortuary-mire",
    "name": "Mortuary Mire",
    "img": "pip/Mortuary Mire.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.0141747
   },
   {
    "id": "mossfire-valley",
    "name": "Mossfire Valley",
    "img": "pip/Mossfire Valley.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05566907
   },
   {
    "id": "mountain",
    "name": "Mountain",
    "img": "pip/Mountain.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.20645211
   },
   {
    "id": "mr-house-president-and-ceo",
    "name": "Mr. House, President and CEO",
    "img": "pip/Mr. House, President and CEO.webp",
-   "rarity": "mythic"
+   "rarity": "mythic",
+   "p": 0.05447383
   },
   {
    "id": "mutational-advantage",
    "name": "Mutational Advantage",
    "img": "pip/Mutational Advantage.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05726142
   },
   {
    "id": "myriad-landscape",
    "name": "Myriad Landscape",
    "img": "pip/Myriad Landscape.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.02545973
   },
   {
    "id": "mysterious-stranger",
    "name": "Mysterious Stranger",
    "img": "pip/Mysterious Stranger.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.07634467
   },
   {
    "id": "mystic-forge",
    "name": "Mystic Forge",
    "img": "pip/Mystic Forge.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05579806
   },
   {
    "id": "mystic-monastery",
    "name": "Mystic Monastery",
    "img": "pip/Mystic Monastery.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01390766
   },
   {
    "id": "nerd-rage",
    "name": "Nerd Rage",
    "img": "pip/Nerd Rage.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01390766
   },
   {
    "id": "nesting-grounds",
    "name": "Nesting Grounds",
    "img": "pip/Nesting Grounds.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0560651
   },
   {
    "id": "nick-valentine-private-eye",
    "name": "Nick Valentine, Private Eye",
    "img": "pip/Nick Valentine, Private Eye.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05699438
   },
   {
    "id": "nightkin-ambusher",
    "name": "Nightkin Ambusher",
    "img": "pip/Nightkin Ambusher.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.0141747
   },
   {
    "id": "nomad-outpost",
    "name": "Nomad Outpost",
    "img": "pip/Nomad Outpost.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01403963
   },
   {
    "id": "nuclear-fallout",
    "name": "Nuclear Fallout",
    "img": "pip/Nuclear Fallout.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.07647974
   },
   {
    "id": "nuka-cola-vending-machine",
    "name": "Nuka-Cola Vending Machine",
    "img": "pip/Nuka-Cola Vending Machine.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.07090766
   },
   {
    "id": "nuka-nuke-launcher",
    "name": "Nuka-Nuke Launcher",
    "img": "pip/Nuka-Nuke Launcher.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05726142
   },
   {
    "id": "one-with-the-machine",
    "name": "One with the Machine",
    "img": "pip/One with the Machine.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05579806
   },
   {
    "id": "open-the-vaults",
    "name": "Open the Vaults",
    "img": "pip/Open the Vaults.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05579806
   },
   {
    "id": "opulent-palace",
    "name": "Opulent Palace",
    "img": "pip/Opulent Palace.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.0141747
   },
   {
    "id": "overencumbered",
    "name": "Overencumbered",
    "img": "pip/Overencumbered.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05699438
   },
   {
    "id": "overflowing-basin",
    "name": "Overflowing Basin",
    "img": "pip/Overflowing Basin.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05726142
   },
   {
    "id": "overseer-of-vault-76",
    "name": "Overseer of Vault 76",
    "img": "pip/Overseer of Vault 76.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05712635
   },
   {
    "id": "paladin-danse-steel-maverick",
    "name": "Paladin Danse, Steel Maverick",
    "img": "pip/Paladin Danse, Steel Maverick.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01390766
   },
   {
    "id": "paladin-elizabeth-taggerdy",
    "name": "Paladin Elizabeth Taggerdy",
    "img": "pip/Paladin Elizabeth Taggerdy.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05712635
   },
   {
    "id": "panharmonicon",
    "name": "Panharmonicon",
    "img": "pip/Panharmonicon.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05579806
   },
   {
    "id": "path-of-ancestry",
    "name": "Path of Ancestry",
    "img": "pip/Path of Ancestry.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.04843797
   },
   {
    "id": "path-to-exile",
    "name": "Path to Exile",
    "img": "pip/Path to Exile.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01377866
   },
   {
    "id": "perception-bobblehead",
    "name": "Perception Bobblehead",
    "img": "pip/Perception Bobblehead.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01449295
   },
   {
    "id": "pip-boy-3000",
    "name": "Pip-Boy 3000",
    "img": "pip/Pip-Boy 3000.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05686538
   },
   {
    "id": "piper-wright-publick-reporter",
    "name": "Piper Wright, Publick Reporter",
    "img": "pip/Piper Wright, Publick Reporter.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05726142
   },
   {
    "id": "pitiless-plunderer",
    "name": "Pitiless Plunderer",
    "img": "pip/Pitiless Plunderer.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01403963
   },
   {
    "id": "plains",
    "name": "Plains",
    "img": "pip/Plains.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.20645211
   },
   {
    "id": "plasma-caster",
    "name": "Plasma Caster",
    "img": "pip/Plasma Caster.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05699438
   },
   {
    "id": "powder-ganger",
    "name": "Powder Ganger",
    "img": "pip/Powder Ganger.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05712635
   },
   {
    "id": "power-fist",
    "name": "Power Fist",
    "img": "pip/Power Fist.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05726142
   },
   {
    "id": "prairie-stream",
    "name": "Prairie Stream",
    "img": "pip/Prairie Stream.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05579806
   },
   {
    "id": "pre-war-formalwear",
    "name": "Pre-War Formalwear",
    "img": "pip/Pre-War Formalwear.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05686538
   },
   {
    "id": "preston-garvey-minuteman",
    "name": "Preston Garvey, Minuteman",
    "img": "pip/Preston Garvey, Minuteman.webp",
-   "rarity": "mythic"
+   "rarity": "mythic",
+   "p": 0.05421286
   },
   {
    "id": "puresteel-paladin",
    "name": "Puresteel Paladin",
    "img": "pip/Puresteel Paladin.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05566907
   },
   {
    "id": "putrefy",
    "name": "Putrefy",
    "img": "pip/Putrefy.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.0141747
   },
   {
    "id": "radiation",
    "name": "Radiation",
    "img": "tpip/Radiation.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.05601627,
+   "noBooster": true
   },
   {
    "id": "radstorm",
    "name": "Radstorm",
    "img": "pip/Radstorm.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.07647974
   },
   {
    "id": "rampaging-yao-guai",
    "name": "Rampaging Yao Guai",
    "img": "pip/Rampaging Yao Guai.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05726142
   },
   {
    "id": "rampant-growth",
    "name": "Rampant Growth",
    "img": "pip/Rampant Growth.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.0141747
   },
   {
    "id": "rancor",
    "name": "Rancor",
    "img": "pip/Rancor.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01377866
   },
   {
    "id": "raul-trouble-shooter",
    "name": "Raul, Trouble Shooter",
    "img": "pip/Raul, Trouble Shooter.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.0141747
   },
   {
    "id": "ravages-of-war",
    "name": "Ravages of War",
    "img": "pip/Ravages of War.webp",
-   "rarity": "mythic"
+   "rarity": "mythic",
+   "p": 0.057
   },
   {
    "id": "razortide-bridge",
    "name": "Razortide Bridge",
    "img": "pip/Razortide Bridge.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.01390766
   },
   {
    "id": "recon-craft-theta",
    "name": "Recon Craft Theta",
    "img": "pip/Recon Craft Theta.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05726142
   },
   {
    "id": "red-death-shipwrecker",
    "name": "Red Death, Shipwrecker",
    "img": "pip/Red Death, Shipwrecker.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05699438
   },
   {
    "id": "rex-cyber-hound",
    "name": "Rex, Cyber-Hound",
    "img": "pip/Rex, Cyber-Hound.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05699438
   },
   {
    "id": "roadside-reliquary",
    "name": "Roadside Reliquary",
    "img": "pip/Roadside Reliquary.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01377866
   },
   {
    "id": "robobrain-war-mind",
    "name": "Robobrain War Mind",
    "img": "pip/Robobrain War Mind.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01390766
   },
   {
    "id": "robot",
    "name": "Robot",
    "img": "tpip/Robot.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.05601627,
+   "noBooster": true
   },
   {
    "id": "rogue-s-passage",
    "name": "Rogue's Passage",
    "img": "pip/Rogue's Passage.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01377866
   },
   {
    "id": "rootbound-crag",
    "name": "Rootbound Crag",
    "img": "pip/Rootbound Crag.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05566907
   },
   {
    "id": "rose-cutthroat-raider",
    "name": "Rose, Cutthroat Raider",
    "img": "pip/Rose, Cutthroat Raider.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05712635
   },
   {
    "id": "ruinous-ultimatum",
    "name": "Ruinous Ultimatum",
    "img": "pip/Ruinous Ultimatum.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05593004
   },
   {
    "id": "rustvale-bridge",
    "name": "Rustvale Bridge",
    "img": "pip/Rustvale Bridge.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.01390766
   },
   {
    "id": "ruthless-radrat",
    "name": "Ruthless Radrat",
    "img": "pip/Ruthless Radrat.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01403963
   },
   {
    "id": "scattered-groves",
    "name": "Scattered Groves",
    "img": "pip/Scattered Groves.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05566907
   },
   {
    "id": "scavenger-grounds",
    "name": "Scavenger Grounds",
    "img": "pip/Scavenger Grounds.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05566907
   },
   {
    "id": "screeching-scorchbeast",
    "name": "Screeching Scorchbeast",
    "img": "pip/Screeching Scorchbeast.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.07647974
   },
   {
    "id": "secure-the-wastes",
    "name": "Secure the Wastes",
    "img": "pip/Secure the Wastes.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05593004
   },
   {
    "id": "securitron-squadron",
    "name": "Securitron Squadron",
    "img": "pip/Securitron Squadron.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.07634467
   },
   {
    "id": "sentinel-sarah-lyons",
    "name": "Sentinel Sarah Lyons",
    "img": "pip/Sentinel Sarah Lyons.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05699438
   },
   {
    "id": "sentry-bot",
    "name": "Sentry Bot",
    "img": "pip/Sentry Bot.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05699438
   },
   {
    "id": "settlement",
    "name": "Settlement",
    "img": "tpip/Settlement.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.05601627,
+   "noBooster": true
   },
   {
    "id": "shadowblood-ridge",
    "name": "Shadowblood Ridge",
    "img": "pip/Shadowblood Ridge.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05593004
   },
   {
    "id": "shaun-father-of-synths",
    "name": "Shaun, Father of Synths",
    "img": "pip/Shaun, Father of Synths.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05699438
   },
   {
    "id": "sheltered-thicket",
    "name": "Sheltered Thicket",
    "img": "pip/Sheltered Thicket.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05566907
   },
   {
    "id": "sierra-nuka-s-biggest-fan",
    "name": "Sierra, Nuka's Biggest Fan",
    "img": "pip/Sierra, Nuka's Biggest Fan.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05712635
   },
   {
    "id": "silver-shroud-costume",
    "name": "Silver Shroud Costume",
    "img": "pip/Silver Shroud Costume.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01377866
   },
   {
    "id": "silverbluff-bridge",
    "name": "Silverbluff Bridge",
    "img": "pip/Silverbluff Bridge.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.01390766
   },
   {
    "id": "single-combat",
    "name": "Single Combat",
    "img": "pip/Single Combat.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05566907
   },
   {
    "id": "skullclamp",
    "name": "Skullclamp",
    "img": "pip/Skullclamp.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01403963
   },
   {
    "id": "skycloud-expanse",
    "name": "Skycloud Expanse",
    "img": "pip/Skycloud Expanse.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05579806
   },
   {
    "id": "smoldering-marsh",
    "name": "Smoldering Marsh",
    "img": "pip/Smoldering Marsh.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05593004
   },
   {
    "id": "sol-ring",
    "name": "Sol Ring",
    "img": "pip/Sol Ring.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.10543797
   },
   {
    "id": "soldier",
    "name": "Soldier",
    "img": "tpip/Soldier.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.05601627,
+   "noBooster": true
   },
   {
    "id": "solemn-simulacrum",
    "name": "Solemn Simulacrum",
    "img": "pip/Solemn Simulacrum.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05579806
   },
   {
    "id": "spire-of-industry",
    "name": "Spire of Industry",
    "img": "pip/Spire of Industry.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05579806
   },
   {
    "id": "squirrel",
    "name": "Squirrel",
    "img": "tpip/Squirrel.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.05601627,
+   "noBooster": true
   },
   {
    "id": "squirrel-nest",
    "name": "Squirrel Nest",
    "img": "pip/Squirrel Nest.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01377866
   },
   {
    "id": "steel-overseer",
    "name": "Steel Overseer",
    "img": "pip/Steel Overseer.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05579806
   },
   {
    "id": "sticky-fingers",
    "name": "Sticky Fingers",
    "img": "pip/Sticky Fingers.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.01377866
   },
   {
    "id": "stolen-strategy",
    "name": "Stolen Strategy",
    "img": "pip/Stolen Strategy.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05593004
   },
   {
    "id": "strength-bobblehead",
    "name": "Strength Bobblehead",
    "img": "pip/Strength Bobblehead.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01488898
   },
   {
    "id": "strong-back",
    "name": "Strong Back",
    "img": "pip/Strong Back.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05686538
   },
   {
    "id": "strong-the-brutish-thespian",
    "name": "Strong, the Brutish Thespian",
    "img": "pip/Strong, the Brutish Thespian.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05726142
   },
   {
    "id": "struggle-for-project-purity",
    "name": "Struggle for Project Purity",
    "img": "pip/Struggle for Project Purity.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05726142
   },
   {
    "id": "sulfur-falls",
    "name": "Sulfur Falls",
    "img": "pip/Sulfur Falls.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05579806
   },
   {
    "id": "sungrass-prairie",
    "name": "Sungrass Prairie",
    "img": "pip/Sungrass Prairie.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05566907
   },
   {
    "id": "sunken-hollow",
    "name": "Sunken Hollow",
    "img": "pip/Sunken Hollow.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0560651
   },
   {
    "id": "sunpetal-grove",
    "name": "Sunpetal Grove",
    "img": "pip/Sunpetal Grove.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05566907
   },
   {
    "id": "sunscorched-divide",
    "name": "Sunscorched Divide",
    "img": "pip/Sunscorched Divide.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05686538
   },
   {
    "id": "super-mutant-scavenger",
    "name": "Super Mutant Scavenger",
    "img": "pip/Super Mutant Scavenger.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01377866
   },
   {
    "id": "survivor-s-med-kit",
    "name": "Survivor's Med Kit",
    "img": "pip/Survivor's Med Kit.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01403963
   },
   {
    "id": "swamp",
    "name": "Swamp",
    "img": "pip/Swamp.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.20437172
   },
   {
    "id": "swiftfoot-boots",
    "name": "Swiftfoot Boots",
    "img": "pip/Swiftfoot Boots.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01377866
   },
   {
    "id": "swords-to-plowshares",
    "name": "Swords to Plowshares",
    "img": "pip/Swords to Plowshares.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01390766
   },
   {
    "id": "synth-eradicator",
    "name": "Synth Eradicator",
    "img": "pip/Synth Eradicator.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05699438
   },
   {
    "id": "synth-infiltrator",
    "name": "Synth Infiltrator",
    "img": "pip/Synth Infiltrator.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0762127
   },
   {
    "id": "t-45-power-armor",
    "name": "T-45 Power Armor",
    "img": "pip/T-45 Power Armor.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05699438
   },
   {
    "id": "tainted-field",
    "name": "Tainted Field",
    "img": "pip/Tainted Field.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01403963
   },
   {
    "id": "tainted-isle",
    "name": "Tainted Isle",
    "img": "pip/Tainted Isle.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.0141747
   },
   {
    "id": "tainted-peak",
    "name": "Tainted Peak",
    "img": "pip/Tainted Peak.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01403963
   },
   {
    "id": "tainted-wood",
    "name": "Tainted Wood",
    "img": "pip/Tainted Wood.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.0141747
   },
   {
    "id": "talisman-of-conviction",
    "name": "Talisman of Conviction",
    "img": "pip/Talisman of Conviction.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.02545973
   },
   {
    "id": "talisman-of-creativity",
    "name": "Talisman of Creativity",
    "img": "pip/Talisman of Creativity.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01390766
   },
   {
    "id": "talisman-of-curiosity",
    "name": "Talisman of Curiosity",
    "img": "pip/Talisman of Curiosity.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.0141747
   },
   {
    "id": "talisman-of-dominance",
    "name": "Talisman of Dominance",
    "img": "pip/Talisman of Dominance.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.0141747
   },
   {
    "id": "talisman-of-hierarchy",
    "name": "Talisman of Hierarchy",
    "img": "pip/Talisman of Hierarchy.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01403963
   },
   {
    "id": "talisman-of-indulgence",
    "name": "Talisman of Indulgence",
    "img": "pip/Talisman of Indulgence.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01403963
   },
   {
    "id": "talisman-of-progress",
    "name": "Talisman of Progress",
    "img": "pip/Talisman of Progress.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01390766
   },
   {
    "id": "talisman-of-resilience",
    "name": "Talisman of Resilience",
    "img": "pip/Talisman of Resilience.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.0141747
   },
   {
    "id": "tarmogoyf",
    "name": "Tarmogoyf",
    "img": "pip/Tarmogoyf.webp",
-   "rarity": "mythic"
+   "rarity": "mythic",
+   "p": 0.057
   },
   {
    "id": "tato-farmer",
    "name": "Tato Farmer",
    "img": "pip/Tato Farmer.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05726142
   },
   {
    "id": "temple-of-abandon",
    "name": "Temple of Abandon",
    "img": "pip/Temple of Abandon.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05566907
   },
   {
    "id": "temple-of-deceit",
    "name": "Temple of Deceit",
    "img": "pip/Temple of Deceit.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0560651
   },
   {
    "id": "temple-of-enlightenment",
    "name": "Temple of Enlightenment",
    "img": "pip/Temple of Enlightenment.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05579806
   },
   {
    "id": "temple-of-epiphany",
    "name": "Temple of Epiphany",
    "img": "pip/Temple of Epiphany.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05579806
   },
   {
    "id": "temple-of-malady",
    "name": "Temple of Malady",
    "img": "pip/Temple of Malady.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0560651
   },
   {
    "id": "temple-of-malice",
    "name": "Temple of Malice",
    "img": "pip/Temple of Malice.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05593004
   },
   {
    "id": "temple-of-mystery",
    "name": "Temple of Mystery",
    "img": "pip/Temple of Mystery.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0560651
   },
   {
    "id": "temple-of-plenty",
    "name": "Temple of Plenty",
    "img": "pip/Temple of Plenty.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05566907
   },
   {
    "id": "temple-of-silence",
    "name": "Temple of Silence",
    "img": "pip/Temple of Silence.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05593004
   },
   {
    "id": "temple-of-the-false-god",
    "name": "Temple of the False God",
    "img": "pip/Temple of the False God.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.0254658
   },
   {
    "id": "temple-of-triumph",
    "name": "Temple of Triumph",
    "img": "pip/Temple of Triumph.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.06722114
   },
   {
    "id": "terramorphic-expanse",
    "name": "Terramorphic Expanse",
    "img": "pip/Terramorphic Expanse.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.04843797
   },
   {
    "id": "the-master-transcendent",
    "name": "The Master, Transcendent",
    "img": "pip/The Master, Transcendent.webp",
-   "rarity": "mythic"
+   "rarity": "mythic",
+   "p": 0.0546089
   },
   {
    "id": "the-motherlode-excavator",
    "name": "The Motherlode, Excavator",
    "img": "pip/The Motherlode, Excavator.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05699438
   },
   {
    "id": "the-nipton-lottery",
    "name": "The Nipton Lottery",
    "img": "pip/The Nipton Lottery.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05712635
   },
   {
    "id": "the-prydwen-steel-flagship",
    "name": "The Prydwen, Steel Flagship",
    "img": "pip/The Prydwen, Steel Flagship.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05699438
   },
   {
    "id": "the-wise-mothman",
    "name": "The Wise Mothman",
    "img": "pip/The Wise Mothman.webp",
-   "rarity": "mythic"
+   "rarity": "mythic",
+   "p": 0.07382722
   },
   {
    "id": "thirst-for-knowledge",
    "name": "Thirst for Knowledge",
    "img": "pip/Thirst for Knowledge.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01390766
   },
   {
    "id": "thopter",
    "name": "Thopter",
    "img": "tpip/Thopter.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.05601627,
+   "noBooster": true
   },
   {
    "id": "thought-vessel",
    "name": "Thought Vessel",
    "img": "pip/Thought Vessel.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.01390766
   },
   {
    "id": "three-dog-galaxy-news-dj",
    "name": "Three Dog, Galaxy News DJ",
    "img": "pip/Three Dog, Galaxy News DJ.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05686538
   },
   {
    "id": "thrill-kill-disciple",
    "name": "Thrill-Kill Disciple",
    "img": "pip/Thrill-Kill Disciple.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05712635
   },
   {
    "id": "tireless-tracker",
    "name": "Tireless Tracker",
    "img": "pip/Tireless Tracker.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0560651
   },
   {
    "id": "treasure",
    "name": "Treasure",
    "img": "tpip/Treasure.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.05601627,
+   "noBooster": true
   },
   {
    "id": "treasure-vault",
    "name": "Treasure Vault",
    "img": "pip/Treasure Vault.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05579806
   },
   {
    "id": "unexpected-windfall",
    "name": "Unexpected Windfall",
    "img": "pip/Unexpected Windfall.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.01390766
   },
   {
    "id": "v-a-t-s",
    "name": "V.A.T.S.",
    "img": "pip/V.A.T.S..webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.07634467
   },
   {
    "id": "valorous-stance",
    "name": "Valorous Stance",
    "img": "pip/Valorous Stance.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01377866
   },
   {
    "id": "vandalblast",
    "name": "Vandalblast",
    "img": "pip/Vandalblast.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.057
   },
   {
    "id": "vault-101-birthday-party",
    "name": "Vault 101: Birthday Party",
    "img": "pip/Vault 101- Birthday Party.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0190837
   },
   {
    "id": "vault-11-voter-s-dilemma",
    "name": "Vault 11: Voter's Dilemma",
    "img": "pip/Vault 11- Voter's Dilemma.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.01934467
   },
   {
    "id": "vault-112-sadistic-simulation",
    "name": "Vault 112: Sadistic Simulation",
    "img": "pip/Vault 112- Sadistic Simulation.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0192127
   },
   {
    "id": "vault-12-the-necropolis",
    "name": "Vault 12: The Necropolis",
    "img": "pip/Vault 12- The Necropolis.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.01947974
   },
   {
    "id": "vault-13-dweller-s-journey",
    "name": "Vault 13: Dweller's Journey",
    "img": "pip/Vault 13- Dweller's Journey.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0192127
   },
   {
    "id": "vault-21-house-gambit",
    "name": "Vault 21: House Gambit",
    "img": "pip/Vault 21- House Gambit.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0190837
   },
   {
    "id": "vault-75-middle-school",
    "name": "Vault 75: Middle School",
    "img": "pip/Vault 75- Middle School.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.01934467
   },
   {
    "id": "vault-87-forced-evolution",
    "name": "Vault 87: Forced Evolution",
    "img": "pip/Vault 87- Forced Evolution.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.01947974
   },
   {
    "id": "veronica-dissident-scribe",
    "name": "Veronica, Dissident Scribe",
    "img": "pip/Veronica, Dissident Scribe.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05686538
   },
   {
    "id": "vexing-radgull",
    "name": "Vexing Radgull",
    "img": "pip/Vexing Radgull.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.0141747
   },
   {
    "id": "vigor",
    "name": "Vigor",
    "img": "pip/Vigor.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.057
   },
   {
    "id": "viridescent-bog",
    "name": "Viridescent Bog",
    "img": "pip/Viridescent Bog.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05726142
   },
   {
    "id": "wake-the-past",
    "name": "Wake the Past",
    "img": "pip/Wake the Past.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05579806
   },
   {
    "id": "walking-ballista",
    "name": "Walking Ballista",
    "img": "pip/Walking Ballista.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.057
   },
   {
    "id": "war-room",
    "name": "War Room",
    "img": "pip/War Room.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05601627,
+   "noBooster": true
   },
   {
    "id": "warrior",
    "name": "Warrior",
    "img": "tpip/Warrior.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.05601627,
+   "noBooster": true
   },
   {
    "id": "wasteland",
    "name": "Wasteland",
    "img": "pip/Wasteland.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.057
   },
   {
    "id": "wasteland-raider",
    "name": "Wasteland Raider",
    "img": "pip/Wasteland Raider.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05712635
   },
   {
    "id": "wasteland-survival-guide",
    "name": "Wasteland Survival Guide",
    "img": "tpip/Wasteland Survival Guide.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.05601627,
+   "noBooster": true
   },
   {
    "id": "watchful-radstag",
    "name": "Watchful Radstag",
    "img": "pip/Watchful Radstag.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.07647974
   },
   {
    "id": "wayfarer-s-bauble",
    "name": "Wayfarer's Bauble",
    "img": "pip/Wayfarer's Bauble.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.01390766
   },
   {
    "id": "wear-tear",
    "name": "Wear // Tear",
    "img": "pip/Wear -- Tear.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01403963
   },
   {
    "id": "well-rested",
    "name": "Well Rested",
    "img": "pip/Well Rested.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01377866
   },
   {
    "id": "whirler-rogue",
    "name": "Whirler Rogue",
    "img": "pip/Whirler Rogue.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01390766
   },
   {
    "id": "white-glove-gourmand",
    "name": "White Glove Gourmand",
    "img": "pip/White Glove Gourmand.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.01403963
   },
   {
    "id": "wild-growth",
    "name": "Wild Growth",
    "img": "pip/Wild Growth.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.01377866
   },
   {
    "id": "wild-wasteland",
    "name": "Wild Wasteland",
    "img": "pip/Wild Wasteland.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05712635
   },
   {
    "id": "windbrisk-heights",
    "name": "Windbrisk Heights",
    "img": "pip/Windbrisk Heights.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05593004
   },
   {
    "id": "winding-constrictor",
    "name": "Winding Constrictor",
    "img": "pip/Winding Constrictor.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.0141747
   },
   {
    "id": "woodland-cemetery",
    "name": "Woodland Cemetery",
    "img": "pip/Woodland Cemetery.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.0560651
   },
   {
    "id": "yes-man-personal-securitron",
    "name": "Yes Man, Personal Securitron",
    "img": "pip/Yes Man, Personal Securitron.webp",
-   "rarity": "rare"
+   "rarity": "rare",
+   "p": 0.05712635
   },
   {
    "id": "young-deathclaws",
    "name": "Young Deathclaws",
    "img": "pip/Young Deathclaws.webp",
-   "rarity": "uncommon"
+   "rarity": "uncommon",
+   "p": 0.0141747
   },
   {
    "id": "zombie-mutant",
    "name": "Zombie Mutant",
    "img": "tpip/Zombie Mutant.webp",
-   "rarity": "common"
+   "rarity": "common",
+   "p": 0.05601627,
+   "noBooster": true
   }
  ]
 }

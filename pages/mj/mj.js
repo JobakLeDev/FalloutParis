@@ -557,10 +557,12 @@ const LOOT_CATS = [
 const CAT_ICON = {weapons:'🔫',armor:'🛡',ammo:'▪',food:'🍖',drinks:'🥤',drugs:'💊',stuff:'🔧',junk:'🔩',postcards:'📷',mtg:'🃏'};
 // Cartes postales comme objets lootables (data/postcards.json → window.POSTCARDS)
 function _postcardLootList(){ return (window.POSTCARDS||[]).map(p=>({n:'Carte postale — '+p.name, t:'STUFF', w:0, r:4, postcard:p.id})); }
-// Cartes MTG lootables (data/mtg_cards.json → window.MTG_CARDS), pondérées par rareté
-// via le champ `r` (weightedPick : poids = 6−r). common fréquent → mythic rare.
+// Cartes MTG lootables (data/mtg_cards.json → window.MTG_CARDS).
+// Tirage aux VRAIES probabilités du Collector Booster Fallout (champ `p`, extrait de
+// MTGJSON : sheets × contents), passé à weightedPick via `pw`. Les tokens (hors booster)
+// ont en repli la proba d'une commune moyenne pour rester lootables.
 const _MTG_RARITY_R = { common:1, uncommon:3, rare:4, mythic:5 };
-function _mtgLootList(){ return (window.MTG_CARDS||[]).map(c=>({n:c.name, t:'STUFF', w:0, r:_MTG_RARITY_R[c.rarity]||3, mtgcard:c.id})); }
+function _mtgLootList(){ return (window.MTG_CARDS||[]).map(c=>({n:c.name, t:'STUFF', w:0, r:_MTG_RARITY_R[c.rarity]||3, pw:c.p, mtgcard:c.id})); }
 
 function populateLootCats(){
   const el = document.getElementById('loot-cats'); if(!el) return;
@@ -569,9 +571,10 @@ function populateLootCats(){
   ).join('');
 }
 function lootSource(cat){ return ({weapons:DB.weapons,armor:DB.armor,food:DB.food,drinks:DB.drinks,drugs:DB.drugs,stuff:DB.stuff,junk:(window.JUNK||[]),postcards:_postcardLootList(),mtg:_mtgLootList()})[cat] || []; }
-// Tirage pondéré par rareté (commun r1 = plus fréquent, légendaire r5 = rare)
+// Tirage pondéré par rareté (commun r1 = plus fréquent, légendaire r5 = rare).
+// `pw` = poids explicite (probabilité réelle) — prioritaire sur `r` s'il est présent.
 function weightedPick(list){
-  let tot=0; const w=list.map(it=>{ const x=Math.max(1,6-(it.r||3)); tot+=x; return x; });
+  let tot=0; const w=list.map(it=>{ const x=(it.pw!=null&&it.pw>0)?it.pw:Math.max(1,6-(it.r||3)); tot+=x; return x; });
   let r=Math.random()*tot;
   for(let i=0;i<list.length;i++){ r-=w[i]; if(r<=0) return list[i]; }
   return list[list.length-1];
