@@ -247,7 +247,17 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 }
 /* Ancien bloc « Mur » : plus proposé, mais les cartes déjà enregistrées doivent rester lisibles */
 .cmap-cell.b-wall{ background:repeating-linear-gradient(45deg,#1c3a24,#1c3a24 3px,#12281a 3px,#12281a 6px); color:#7ed87e; border-color:var(--gd); }
-.cmap-cell.b-rubble{ background:radial-gradient(circle at 50% 50%, #2a3a1e, #16240f); color:#b9c98a; border-color:#5a6a3a; }
+/* Débris : bloque le passage, pas la visée (même règle que la carcasse) */
+.cmap-cell.b-rubble{
+  background:radial-gradient(circle at 50% 50%, #2a3a1e, #16240f) center / cover no-repeat;
+  border-color:#5a6a3a; font-size:0; image-rendering:pixelated;
+}
+.cmap-cell.b-rubble::after{                       /* le sprite par-dessus le fond terreux */
+  content:''; position:absolute; inset:0;
+  background:url('../../img/tiles/blocks/rubble.png') center / 92% no-repeat;
+  filter:sepia(.35) hue-rotate(-18deg) saturate(.85) drop-shadow(0 0 3px rgba(185,201,138,.3));
+  pointer-events:none;
+}
 .cmap-cell.b-cover{ background:#0e2416; color:#9be6c0; border:1px dashed var(--g); }
 .cmap-cell.b-hazard{ background:repeating-linear-gradient(45deg,#2a2206,#2a2206 4px,#1a1604 4px,#1a1604 8px); color:var(--am); border-color:var(--am); text-shadow:0 0 5px rgba(232,168,32,.8); }
 .cmap-cell.b-water{ background:linear-gradient(180deg,#0a2630,#08303a); color:#6fd3e6; border-color:#2a6a7a; }
