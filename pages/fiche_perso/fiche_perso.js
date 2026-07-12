@@ -206,7 +206,7 @@ function sw(tab){
 
 function swInv(sub){
   document.querySelectorAll('.inv-tab').forEach((el,i)=>{
-    el.classList.toggle('on',['all','weap','armor','aid','misc','ammo'][i]===sub);
+    el.classList.toggle('on',['all','weap','armor','aid','misc','junk','ammo'][i]===sub);
   });
   document.querySelectorAll('.inv-content').forEach(el=>el.classList.remove('on'));
   document.getElementById('inv-'+sub).classList.add('on');
@@ -559,7 +559,7 @@ function rLocs(){
 // --- INVENTAIRE ---
 function rInventory(){
   populateSelects();
-  rInvAll();rInvWeap();rInvArmor();rInvAid();rInvMisc();rInvAmmo();rCharge();
+  rInvAll();rInvWeap();rInvArmor();rInvAid();rInvMisc();rInvJunk();rInvAmmo();rCharge();
 }
 
 function populateSelects(){
@@ -988,6 +988,44 @@ async function ouvrirBooster(i){
   _fitCardBox('#booster-modal');
 }
 function closeBooster(){ const m=document.getElementById('booster-modal'); if(m)m.classList.remove('on'); }
+
+// ---- RÉCUP (junk) : objets à démonter en matériaux dans un refuge ----
+const _MAT_AB={common:'C',uncommon:'PC',rare:'R'};
+const _MAT_CO={common:'#cfcfcf',uncommon:'#8fb4dd',rare:'#e0bd5e'};
+function _junkYield(name){ return ((window.JUNK||[]).find(d=>d.n===name)||{}).yield || {}; }
+function rInvJunk(){
+  const el=document.getElementById('inv-junk-list'), sm=document.getElementById('junk-summary');
+  if(!el)return;
+  const list=char.inventory.filter(it=>it.type==='JUNK');
+  if(!list.length){
+    el.innerHTML='<div style="font-size:9px;color:var(--td);padding:14px;text-align:center;line-height:1.7">Aucun objet de récupération.<br><span style="color:var(--gd)">Le junk se ramasse en fouillant (butin « Récup ») et se démonte au refuge, sur le bloc Réserve 📦, pour produire des matériaux de construction.</span></div>';
+    if(sm) sm.innerHTML='';
+    return;
+  }
+  // Total des matériaux si TOUT était démonté
+  const tot={common:0,uncommon:0,rare:0};
+  list.forEach(it=>{ const y=_junkYield(it.name); const q=it.qty||1;
+    ['common','uncommon','rare'].forEach(k=>{ tot[k]+=(y[k]||0)*q; }); });
+  const poids=list.reduce((a,it)=>a+((it.qty||1)*(it.w||0)),0);
+  if(sm) sm.innerHTML=`<span class="js-t">Si tu démontes tout :</span>`
+    + ['common','uncommon','rare'].map(k=>`<span class="js-m" style="color:${_MAT_CO[k]}"><b>${tot[k]}</b> ${((window.MAT_LABELS||{})[k]||{}).label||k}</span>`).join('')
+    + `<span class="js-w">${list.length} objet(s) · ${poids.toFixed(1)} kg</span>`;
+  el.innerHTML='';
+  list.forEach(it=>{
+    const i=char.inventory.indexOf(it);
+    const y=_junkYield(it.name);
+    const rend=['common','uncommon','rare'].filter(k=>y[k]>0)
+      .map(k=>`<span style="color:${_MAT_CO[k]}">${y[k]}${_MAT_AB[k]}</span>`).join(' · ') || '—';
+    el.innerHTML+=`<div class="irow junk-cols">
+      <span class="itag JUNK">RÉCUP</span>
+      <span class="iname" title="${it.name}">${it.name}</span>
+      <span class="ieff" title="Rendement au démontage (par unité)">${rend}</span>
+      <span class="iqval">${it.qty}</span>
+      <span class="ipw">${((it.qty||1)*(it.w||0)).toFixed(2)}kg</span>
+      <span style="display:flex;gap:2px"><button class="idel-btn" onclick="leaveHere(${i})" title="Laisser sur place">📍</button><button class="idel-btn" onclick="jetItem(${i})" title="Jeter (définitif)">🗑</button></span>
+    </div>`;
+  });
+}
 
 function rInvAmmo(){
   const el=document.getElementById('inv-ammo-list');if(!el)return;
