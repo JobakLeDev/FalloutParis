@@ -1252,6 +1252,8 @@ function openEchange(){
 }
 // La page d'échange demande la fermeture (créateur a fermé / membre a quitté)
 window.addEventListener('message', e=>{ if(e.data==='echange-close') closeMo('mo-echange'); });
+// L'initiateur a lancé un échange depuis la carte (iframe) → on lui ouvre le pool direct
+window.addEventListener('message', e=>{ if(e.data==='open-echange') openEchange(); });
 
 // ============================================================
 // COMPAGNONS — PNJ alliés (créés par le MJ, schéma enemies.json)

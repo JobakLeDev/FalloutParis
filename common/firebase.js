@@ -183,6 +183,25 @@ function startSync() {
       (err) => console.warn('echanges indisponible:', err && err.code)
     );
   } catch(e){ console.warn('echanges listener KO:', e); }
+  // Pool d'échange ouvert où je suis membre → bandeau d'alerte (clic = ouvrir le pool)
+  try {
+    db.collection('poolsEchange').where('members','array-contains',JOUEUR_ID).onSnapshot(
+      (s) => {
+        const al = document.getElementById('echange-alert'); if(!al) return;
+        if (s.empty){ al.style.display = 'none'; return; }
+        const d = s.docs[0].data();
+        const others = (d.members||[]).filter(m => m !== JOUEUR_ID).length;
+        const who = document.getElementById('echange-who');
+        if (who) {
+          if (d.creator && d.creator !== JOUEUR_ID && d.creatorNom) who.textContent = '(' + d.creatorNom + ')';
+          else if (others) who.textContent = '(' + others + ' joueur' + (others > 1 ? 's' : '') + ')';
+          else who.textContent = '';
+        }
+        al.style.display = 'flex';
+      },
+      (err) => console.warn('poolsEchange indisponible:', err && err.code)
+    );
+  } catch(e){ console.warn('poolsEchange listener KO:', e); }
 }
 
 // Écouteurs des documents scopés par campagne — démarrés une fois la campagne du joueur connue (fpCampId() à jour)

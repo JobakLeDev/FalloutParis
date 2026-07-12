@@ -7,7 +7,7 @@
   <title>Fallout Paris — Fiche Personnage</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css?v=0053a05a">
-  <link rel="stylesheet" href="fiche_perso.css?v=25a2d157">
+  <link rel="stylesheet" href="fiche_perso.css?v=1f690e26">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
@@ -62,6 +62,12 @@
 <div id="prop-alert" onclick="openPropOnMap()">
   <span class="prop-ico">🤝</span>
   <span>UN JOUEUR TE FAIT UNE PROPOSITION <b id="prop-count"></b> — clique pour ouvrir la carte</span>
+</div>
+
+<!-- ALERTE ÉCHANGE (pool commun ouvert avec toi) -->
+<div id="echange-alert" onclick="openEchange()">
+  <span class="loot-ico">🔄</span>
+  <span>UN ÉCHANGE EST OUVERT AVEC TOI <b id="echange-who"></b> — clique pour déposer / prendre</span>
 </div>
 
 <!-- ALERTE BOUTIQUE -->
@@ -469,8 +475,8 @@
   <script src="../../common/shared.js?v=b728d214"></script>
   <script src="../../common/db.js?v=ba83522f"></script>
   <script src="../../common/survie.js?v=31a541f2"></script>
-  <script src="fiche_perso.js?v=69eb254c"></script>
-  <script src="../../common/firebase.js?v=0f40a89a"></script>
+  <script src="fiche_perso.js?v=614e8d3e"></script>
+  <script src="../../common/firebase.js?v=ac13e10a"></script>
   <script src="../../common/responsive.js?v=f2bdcb93"></script>
 </body>
 </html>
