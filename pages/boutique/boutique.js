@@ -60,7 +60,9 @@ function baseOf(item){ return (item.base != null) ? item.base : Math.round((RARI
 function barterScore(){ return ((me?.special?.C)||5) + ((me?.skills?.barter)||0); }
 function buyMult(){ return Math.max(0.70, Math.min(1.25, 1.25 - 0.03 * barterScore())); }
 function sellMult(){ return Math.max(0.30, Math.min(0.70, 0.30 + 0.03 * barterScore())); }
-function buyPrice(item){ return Math.max(1, Math.round(baseOf(item) * (shop?.markup||1) * buyMult())); }
+// Mr. House, President and CEO (carte de collection) : −15 % sur les prix d'achat
+function collecDiscount(){ return (typeof fpMtgBonuses==='function') ? (fpMtgBonuses(me).shopDiscount || 0) : 0; }
+function buyPrice(item){ return Math.max(1, Math.round(baseOf(item) * (shop?.markup||1) * buyMult() * (1 - collecDiscount()))); }
 function sellPrice(item){ return Math.max(1, Math.round(baseOf(item) * sellMult())); }
 
 // ---- Reconstruit un objet d'inventaire (cf. butin.js) ----
@@ -107,7 +109,9 @@ function render(){
   const nm = document.getElementById('sh-name'); if (nm) nm.textContent = shop?.name || 'Boutique';
   const cp = document.getElementById('sh-caps'); if (cp) cp.textContent = (me?.caps||0).toLocaleString('fr-FR');
   const bt = document.getElementById('sh-barter');
-  if (bt) bt.innerHTML = `Marchandage — Charisme <b>${(me?.special?.C)||5}</b> + Troc <b>${(me?.skills?.barter)||0}</b> · achat ×<b>${buyMult().toFixed(2)}</b>, revente <b>${Math.round(sellMult()*100)}%</b> de la valeur`;
+  const disc = collecDiscount();
+  if (bt) bt.innerHTML = `Marchandage — Charisme <b>${(me?.special?.C)||5}</b> + Troc <b>${(me?.skills?.barter)||0}</b> · achat ×<b>${buyMult().toFixed(2)}</b>, revente <b>${Math.round(sellMult()*100)}%</b> de la valeur`
+    + (disc ? ` · <span style="color:var(--am)">🃏 Mr. House : −${Math.round(disc*100)} % sur les achats</span>` : '');
   renderBuy(); renderSell();
 }
 

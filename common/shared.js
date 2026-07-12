@@ -74,6 +74,60 @@ const FP_FUSION_CORE = 'Cœur de fusion';
 function fpIsFusionCore(name){ return name === FP_FUSION_CORE || name === 'Cellule de fusion'; }
 
 // ============================================================
+// BONUS DE COLLECTION (cartes MTG) — dérivés de la POSSESSION
+// Les cartes vivent dans l'objet « Collection de cartes » (collection:'mtg', cards:{id:qty}).
+// RÈGLES : les doublons NE cumulent PAS (posséder 3× la carte = 1 bonus) ; sortir la carte
+// de l'inventaire (échange) fait PERDRE le bonus — rien n'est jamais gravé dans la fiche.
+// ============================================================
+// SKILLS_DEF.attr vaut 'FOR'/'PER'/… → lettre SPECIAL correspondante
+const FP_ATTR_LETTER = { FOR:'S', PER:'P', END:'E', CHR:'C', INT:'I', AGI:'A', LCK:'L' };
+// Bobbleheads : +1 au SPECIAL correspondant (comme dans Fallout)
+const FP_MTG_BOBBLEHEADS = {
+  'strength-bobblehead':'S', 'perception-bobblehead':'P', 'endurance-bobblehead':'E',
+  'charisma-bobblehead':'C', 'intelligence-bobblehead':'I', 'agility-bobblehead':'A',
+  'luck-bobblehead':'L',
+};
+// Mythiques Fallout : chaque effet découle de l'identité du personnage
+const FP_MTG_LEGENDARIES = {
+  'dogmeat-ever-loyal':         { label:'Dogmeat, Ever Loyal',          effet:'+1 PER — il flaire le danger',    special:{P:1} },
+  'liberty-prime-recharged':    { label:'Liberty Prime, Recharged',     effet:'+2 RD physique',                  rd:{phys:2} },
+  'the-master-transcendent':    { label:'The Master, Transcendent',     effet:'+3 RD radiations',                rd:{rad:3} },
+  'dr-madison-li':              { label:'Dr. Madison Li',               effet:'+2 Sciences',                     skill:{science:2} },
+  'caesar-legion-s-emperor':    { label:"Caesar, Legion's Emperor",     effet:'+2 Armes de CàC',                 skill:{cac_weapon:2} },
+  'the-wise-mothman':           { label:'The Wise Mothman',             effet:'+1 point de Chance max',          luckMax:1 },
+  'mr-house-president-and-ceo': { label:'Mr. House, President and CEO', effet:'−15 % sur les prix en boutique',  shopDiscount:0.15 },
+  'preston-garvey-minuteman':   { label:'Preston Garvey, Minuteman',    effet:'+1 potager productif au refuge',  farmBonus:1 },
+};
+// Cartes possédées d'un personnage (doc joueur ou objet char)
+function fpMtgOwned(c){
+  const col = ((c && c.inventory) || []).find(it => it && it.collection === 'mtg');
+  return (col && col.cards) || {};
+}
+// Agrège tous les bonus de collection → {special,rd,skill,luckMax,shopDiscount,farmBonus,actives[]}
+function fpMtgBonuses(c){
+  const owned = fpMtgOwned(c);
+  const b = { special:{}, rd:{phys:0,en:0,rad:0}, skill:{}, luckMax:0, shopDiscount:0, farmBonus:0, actives:[] };
+  for(const id in FP_MTG_BOBBLEHEADS){
+    if(!(owned[id] > 0)) continue;                                   // doublons : pas de cumul
+    const k = FP_MTG_BOBBLEHEADS[id];
+    b.special[k] = (b.special[k] || 0) + 1;
+    b.actives.push({ id, label:'Bobblehead ' + k, effet:'+1 ' + k, bobble:true });
+  }
+  for(const id in FP_MTG_LEGENDARIES){
+    if(!(owned[id] > 0)) continue;
+    const L = FP_MTG_LEGENDARIES[id];
+    if(L.special) for(const k in L.special) b.special[k] = (b.special[k] || 0) + L.special[k];
+    if(L.rd)      for(const k in L.rd)      b.rd[k]      = (b.rd[k]      || 0) + L.rd[k];
+    if(L.skill)   for(const k in L.skill)   b.skill[k]   = (b.skill[k]   || 0) + L.skill[k];
+    if(L.luckMax)      b.luckMax   += L.luckMax;
+    if(L.shopDiscount) b.shopDiscount = Math.max(b.shopDiscount, L.shopDiscount);   // non cumulable
+    if(L.farmBonus)    b.farmBonus += L.farmBonus;
+    b.actives.push({ id, label:L.label, effet:L.effet });
+  }
+  return b;
+}
+
+// ============================================================
 // DÉPLACEMENT / rencontres aléatoires sur trajet (partagé carte + dashboard MJ)
 // ============================================================
 const FP_WALK_KMH = 5;   // vitesse de marche (km/h) → temps de trajet depuis la distance

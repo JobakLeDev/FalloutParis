@@ -368,7 +368,24 @@ function populationCount(site){ return (site.settlers||0) + extVendorCount(site)
 function freeBeds(site){ return Math.max(0, bedCount(site) - populationCount(site)); }
 // Potagers : travaillés par des colons ANONYMES (site.farmers ⊆ settlers)
 function maxFarmers(site){ return Math.max(0, Math.min(countBlk(site,'farm'), site.settlers||0)); }
-function activeFarms(site){ return Math.max(0, Math.min(countBlk(site,'farm'), site.farmers||0)); }
+// Preston Garvey, Minuteman (carte de collection) : +1 potager productif si un joueur
+// ayant accès au refuge la possède. Non cumulable entre joueurs (+1 max par site), et
+// sans effet si le refuge n'a aucun potager (on ne cultive pas sans jardin).
+function _accessFor(site, id, p){
+  if(!p) return false;
+  if(site.faction) return p.faction === site.faction;
+  return Array.isArray(site.allies) && site.allies.includes(id);
+}
+function prestonBonus(site){
+  if(typeof fpMtgBonuses !== 'function' || !site) return 0;
+  if(countBlk(site,'farm') <= 0) return 0;
+  for(const id in (joueursCamp||{})){
+    if(_accessFor(site, id, joueursCamp[id]) && fpMtgBonuses(joueursCamp[id]).farmBonus > 0) return 1;
+  }
+  return 0;
+}
+// Potagers exploités = min(potagers, colons assignés), + le bonus Preston Garvey
+function activeFarms(site){ return Math.max(0, Math.min(countBlk(site,'farm'), site.farmers||0)) + prestonBonus(site); }
 function chFarmers(id, d){ if(!isMJ) return; const s = data.sites[id]; if(!s) return; s.farmers = Math.max(0, Math.min(maxFarmers(s), (s.farmers||0) + d)); save(); }
 function sTick(site){
   if(!isMJ || !site) return;

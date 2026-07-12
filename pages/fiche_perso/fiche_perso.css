@@ -2,6 +2,13 @@
 
 /* Bobblehead possédé (carte MTG) : +1 au SPECIAL correspondant */
 .sbh{ margin-left:.25rem; font-size:.7rem; filter:drop-shadow(0 0 3px rgba(232,168,32,.7)); cursor:help; }
+/* Bonus actifs procurés par la collection (modale) */
+.col-bonus{ flex:none; display:flex; flex-wrap:wrap; gap:.3rem; justify-content:center; max-width:100%; }
+.col-bon-t{ width:100%; text-align:center; font-size:.55rem; letter-spacing:2px; color:var(--td);
+  text-transform:uppercase; margin-bottom:.1rem; }
+.col-bon{ font-family:'Share Tech Mono',monospace; font-size:.58rem; color:var(--t);
+  border:1px solid var(--am); background:rgba(232,168,32,.10); padding:.2rem .5rem; }
+.col-bon b{ color:var(--am); }
 
 /* ===== Modale OUVERTURE DE BOOSTER (z sous la modale carte, pour cliquer une carte) ===== */
 .bo-modal{ position:fixed; inset:0; z-index:480; display:none; align-items:center; justify-content:center;
