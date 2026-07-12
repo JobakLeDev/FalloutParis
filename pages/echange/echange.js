@@ -83,6 +83,14 @@ async function fermerPool(){
         if (ex) ex.qty = (ex.qty||0) + (a.qty||0);
         else ammo.push({ cal:a.cal, qty:a.qty||0 });
       });
+      // Cartes restantes → dans la collection du créateur (sinon elles seraient perdues)
+      const pc = pool.cards||[];
+      if (pc.length){
+        let col = inv.find(it => it && it.collection === MTG_COL);
+        if (!col){ col = { name:'Collection de cartes', type:'STUFF', qty:1, w:0, equipped:false, collection:MTG_COL, cards:{} }; inv.push(col); }
+        if (!col.cards) col.cards = {};
+        pc.forEach(c => { if(c && c.id) col.cards[c.id] = (col.cards[c.id]||0) + (c.qty||0); });
+      }
       const caps = (cd.caps||0) + (pool.caps||0);
       tx.update(_charRef(), { inventory: inv, ammo, caps, lastUpdate: Date.now() });
     });
@@ -98,6 +106,61 @@ function _leave(){
 
 // Contenant d'eau (a une capacité) : l'eau est portée par EXEMPLAIRE → ne pas fusionner les piles
 function _isCont(name){ return (window.DB?.stuff||[]).some(s => s.n === name && s.cap != null); }
+
+// ---- CARTES MTG : elles vivent dans l'objet « Collection de cartes » (collection:'mtg',
+// cards:{id:qty}), pas en objets isolés. Le pool a sa propre section `cards:[{id,qty}]`. ----
+const MTG_COL = 'mtg';
+const _RAR_COL = { common:'#cfcfcf', uncommon:'#8fb4dd', rare:'#e0bd5e', mythic:'#f0813c' };
+function _mtgCard(id){ return (window.MTG_CARDS||[]).find(c => c.id === id) || null; }
+function _colItem(inv){ return (inv||[]).find(it => it && it.collection === MTG_COL) || null; }
+function _myCards(){
+  const col = _colItem(charData && charData.inventory);
+  return Object.entries((col && col.cards) || {})
+    .map(([id,q]) => { const c = _mtgCard(id); return c ? { ...c, q } : null; })
+    .filter(Boolean).sort((a,b) => a.name.localeCompare(b.name,'fr'));
+}
+async function deposerCarte(id, n){
+  n = Math.max(0, parseInt(n)||0); if(!n) return;
+  try {
+    await fdb.runTransaction(async tx => {
+      const [pS, cS] = await Promise.all([tx.get(_poolRef()), tx.get(_charRef())]);
+      if (!pS.exists) throw 'no-pool';
+      const pd = pS.data(), cd = cS.data();
+      const inv = cd.inventory||[];
+      const col = _colItem(inv);
+      if (!col || !col.cards || !col.cards[id]) return;
+      const give = Math.min(n, col.cards[id]); if(give<=0) return;
+      col.cards[id] -= give;
+      if (col.cards[id] <= 0) delete col.cards[id];
+      const cards = pd.cards||[];
+      const ex = cards.find(x => x.id === id);
+      if (ex) ex.qty = (ex.qty||0) + give; else cards.push({ id, qty:give });
+      tx.update(_poolRef(), { cards });
+      tx.update(_charRef(), { inventory: inv, lastUpdate: Date.now() });
+    });
+  } catch(e){ console.error('deposerCarte:', e); toast('Dépôt impossible.'); }
+}
+async function prendreCarte(id, n){
+  n = Math.max(0, parseInt(n)||0); if(!n) return;
+  try {
+    await fdb.runTransaction(async tx => {
+      const [pS, cS] = await Promise.all([tx.get(_poolRef()), tx.get(_charRef())]);
+      if (!pS.exists) throw 'no-pool';
+      const pd = pS.data(), cd = cS.data();
+      const cards = pd.cards||[];
+      const src = cards.find(x => x.id === id); if(!src) return;
+      const take = Math.min(n, src.qty||0); if(take<=0) return;
+      src.qty -= take;
+      const inv = cd.inventory||[];
+      let col = _colItem(inv);
+      if (!col){ col = { name:'Collection de cartes', type:'STUFF', qty:1, w:0, equipped:false, collection:MTG_COL, cards:{} }; inv.push(col); }
+      if (!col.cards) col.cards = {};
+      col.cards[id] = (col.cards[id]||0) + take;
+      tx.update(_poolRef(), { cards: cards.filter(x => (x.qty||0) > 0) });
+      tx.update(_charRef(), { inventory: inv, lastUpdate: Date.now() });
+    });
+  } catch(e){ console.error('prendreCarte:', e); toast('Retrait impossible.'); }
+}
 
 // ---- Dépôt (ma fiche → pool) ----
 async function deposerItem(invIdx, n){
@@ -224,9 +287,11 @@ function render(){
   }
 
   const isCreator = pool.creator === viewerId;
-  const inv  = (charData?.inventory||[]).map((it,idx)=>({it,idx})).filter(o => !o.it.equipped && (o.it.qty||0)>0);
+  // L'objet « Collection de cartes » est exclu : ses cartes s'échangent une par une (section Cartes)
+  const inv  = (charData?.inventory||[]).map((it,idx)=>({it,idx})).filter(o => !o.it.equipped && (o.it.qty||0)>0 && o.it.collection !== MTG_COL);
   const myAmmo = (charData?.ammo||[]).filter(a => (a.qty||0)>0);
   const myCaps = charData?.caps||0;
+  const myCards = _myCards();
 
   let h = '<div class="ex-head"><div class="ex-ginfo">🔄 '+esc(pool.partyName||'Groupe')
     + '<small>créé par '+esc(pool.creatorNom||'?')+' · '+(pool.members||[]).length+' membres</small></div>'
@@ -239,8 +304,8 @@ function render(){
 
   // --- Colonne POOL (zone commune) ---
   h += '<div class="ex-pool"><div class="ex-col-t">Zone commune</div>';
-  const pItems = pool.items||[], pAmmo = pool.ammo||[], pCaps = pool.caps||0;
-  if (!pItems.length && !pAmmo.length && !pCaps){ h += '<div class="ex-mini">Vide — déposez du butin ➡</div>'; }
+  const pItems = pool.items||[], pAmmo = pool.ammo||[], pCaps = pool.caps||0, pCards = pool.cards||[];
+  if (!pItems.length && !pAmmo.length && !pCaps && !pCards.length){ h += '<div class="ex-mini">Vide — déposez du butin ➡</div>'; }
   pItems.forEach((it,i) => {
     const wc = _isCont(it.name) ? ' <span class="qt" style="color:#2a9d8f">💧'+(it.water||0)+'</span>' : '';
     h += '<div class="ex-line"><span class="nm">'+esc(it.name)+wc+'</span><span class="qt">x'+(it.qty||0)+'</span>'
@@ -253,6 +318,13 @@ function render(){
       + '<input type="number" min="1" max="'+(a.qty||1)+'" value="1" id="pa-'+i+'">'
       + '<button onclick="prendreAmmo(\''+esc(a.cal)+'\',document.getElementById(\'pa-'+i+'\').value)">Prendre</button></div>';
   });
+  if (pCards.length){ h += '<div class="ex-sec">🃏 Cartes</div>'; }
+  pCards.forEach((c,i) => {
+    const card = _mtgCard(c.id); if(!card) return;
+    h += '<div class="ex-line"><span class="nm" style="color:'+(_RAR_COL[card.rarity]||'#ccc')+'" title="'+esc(card.name)+'">🃏 '+esc(card.name)+'</span><span class="qt">x'+(c.qty||0)+'</span>'
+      + '<input type="number" min="1" max="'+(c.qty||1)+'" value="1" id="pcd-'+i+'">'
+      + '<button onclick="prendreCarte(\''+c.id+'\',document.getElementById(\'pcd-'+i+'\').value)">Prendre</button></div>';
+  });
   if (pCaps>0){
     h += '<div class="ex-caps">💰 <b>'+pCaps+'</b> caps <input type="number" min="1" max="'+pCaps+'" value="'+pCaps+'" id="pc-take" style="width:60px"><button onclick="prendreCaps(document.getElementById(\'pc-take\').value)" style="border:1px solid var(--gd);color:var(--g);background:none;font-family:monospace;font-size:8px;padding:2px 7px;cursor:pointer">Prendre</button></div>';
   }
@@ -260,7 +332,7 @@ function render(){
 
   // --- Colonne MOI (mon inventaire) ---
   h += '<div class="ex-mine"><div class="ex-col-t">Mon inventaire</div>';
-  if (!inv.length && !myAmmo.length && !myCaps){ h += '<div class="ex-mini">Rien à déposer</div>'; }
+  if (!inv.length && !myAmmo.length && !myCaps && !myCards.length){ h += '<div class="ex-mini">Rien à déposer</div>'; }
   inv.forEach(o => {
     const wc = _isCont(o.it.name) ? ' <span class="qt" style="color:#2a9d8f">💧'+(o.it.water||0)+'</span>' : '';
     h += '<div class="ex-line"><span class="nm">'+esc(o.it.name)+wc+'</span><span class="qt">x'+(o.it.qty||1)+'</span>'
@@ -272,6 +344,12 @@ function render(){
     h += '<div class="ex-line"><span class="nm">▪ '+esc(a.cal)+'</span><span class="qt">x'+(a.qty||0)+'</span>'
       + '<input type="number" min="1" max="'+(a.qty||1)+'" value="1" id="ma-'+i+'">'
       + '<button onclick="deposerAmmo(\''+esc(a.cal)+'\',document.getElementById(\'ma-'+i+'\').value)">Déposer</button></div>';
+  });
+  if (myCards.length){ h += '<div class="ex-sec">🃏 Ma collection ('+myCards.reduce((a,c)=>a+c.q,0)+')</div>'; }
+  myCards.forEach((c,i) => {
+    h += '<div class="ex-line"><span class="nm" style="color:'+(_RAR_COL[c.rarity]||'#ccc')+'" title="'+esc(c.name)+'">🃏 '+esc(c.name)+'</span><span class="qt">x'+c.q+'</span>'
+      + '<input type="number" min="1" max="'+c.q+'" value="1" id="mcd-'+i+'">'
+      + '<button onclick="deposerCarte(\''+c.id+'\',document.getElementById(\'mcd-'+i+'\').value)">Déposer</button></div>';
   });
   if (myCaps>0){
     h += '<div class="ex-caps">💰 <b>'+myCaps+'</b> caps <input type="number" min="1" max="'+myCaps+'" value="'+myCaps+'" id="mc-dep" style="width:60px"><button onclick="deposerCaps(document.getElementById(\'mc-dep\').value)" style="border:1px solid var(--gd);color:var(--g);background:none;font-family:monospace;font-size:8px;padding:2px 7px;cursor:pointer">Déposer</button></div>';
