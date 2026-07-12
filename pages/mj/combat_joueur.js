@@ -108,15 +108,30 @@ let turnEnded = false;       // a cliqué « Terminer mon tour »
 let actionsExecuted = {};    // {type: nb} — actions à effet déjà exécutées ce tour
 
 // --- Ciblage par ID d'ennemi (les noms peuvent être en double : 3× Radroach…) ---
-function cibleNom(id){ const e = (combatState?.ennemis||[]).find(x => String(x.id) === String(id)); return e ? e.nom : ''; }
+// Numéro d'un ennemi parmi ses HOMONYMES (#1, #2…) — 0 s'il est seul de son nom.
+// Ordre stable = ordre de combatState.ennemis (le même partout : jeton, info-bulle, tracker, sélecteur),
+// sinon le « #2 » du sélecteur d'attaque ne désigne rien d'identifiable sur la carte.
+function enemyNum(e){
+  const list = combatState?.ennemis || [];
+  if(!e) return 0;
+  if(list.filter(x => x.nom === e.nom).length < 2) return 0;
+  let n = 0;
+  for(const x of list){
+    if(x.nom !== e.nom) continue;
+    n++;
+    if(String(x.id) === String(e.id)) return n;
+  }
+  return 0;
+}
+function enemyLabel(e){ if(!e) return ''; const n = enemyNum(e); return e.nom + (n ? ' #' + n : ''); }
+function enemyNumById(id){ return enemyNum(_enemyById(id)); }
+
+function cibleNom(id){ return enemyLabel(_enemyById(id)); }
 function enemyOptions(list, selectedId){
-  const counts = {}; list.forEach(e => counts[e.nom] = (counts[e.nom]||0) + 1);
-  const seen = {};
-  return list.map(e => {
-    seen[e.nom] = (seen[e.nom]||0) + 1;
-    const suf = counts[e.nom] > 1 ? ' #' + seen[e.nom] : '';
-    return '<option value="' + e.id + '"' + (String(e.id) === String(selectedId) ? ' selected' : '') + '>' + e.nom + suf + ' (' + e.pvCur + '/' + e.pvMax + ' PV)</option>';
-  }).join('');
+  return list.map(e =>
+    '<option value="' + e.id + '"' + (String(e.id) === String(selectedId) ? ' selected' : '') + '>'
+    + enemyLabel(e) + ' (' + e.pvCur + '/' + e.pvMax + ' PV)</option>'
+  ).join('');
 }
 let _turnKey = '';           // clé round:tourActif pour réinitialiser au changement de tour
 let _declWeaps = [];         // armes proposées dans la déclaration d'attaque (index → params)
@@ -400,7 +415,12 @@ function renderJMap(){
     } else inner = (bt?bt.icon:'');
     if(reach && reach[key]!=null && !t) inner += '<span class="snap-dot"></span>';   // point d'accroche souris
     const eAttr = (t && t.kind==='ennemi') ? ` data-eid="${t.id.slice(1)}"` : '';
-    html += `<div class="${cls}"${style?` style="${style}"`:''}${onclick?` onclick="${onclick}"`:''}${eAttr} title="${t?t.nom:(bt?bt.label:'')}">${inner}</div>`;
+    let tTitle = t ? t.nom : (bt ? bt.label : '');
+    if(t && t.kind==='ennemi' && !t.dead){
+      const _e = _enemyById(t.id.slice(1)), _n = _e ? enemyNum(_e) : 0;
+      if(_n){ inner += '<span class="cen-num">' + _n + '</span>'; tTitle = enemyLabel(_e); }   // badge : rend le « #2 » repérable sur la carte
+    }
+    html += `<div class="${cls}"${style?` style="${style}"`:''}${onclick?` onclick="${onclick}"`:''}${eAttr} title="${tTitle}">${inner}</div>`;
   }
   html += '<div class="cmap-edges">' + (typeof gridEdgesHtml==='function' ? gridEdgesHtml(grid, 30) : '') + '</div>';
   // Portes adjacentes à mon jeton → cliquables (déclare une action mineure) — seulement à mon tour
@@ -1057,9 +1077,10 @@ function renderTrackerJoueur(){
         +'</div></div>';
     }
     const eAttr = (c.type==='ennemi' && c.eid!=null) ? ' data-eid="'+c.eid+'"' : '';
+    const nomTrk = (c.type==='ennemi' && c.eid!=null) ? (enemyLabel(_enemyById(c.eid)) || c.nom) : c.nom;
     return '<div class="tracker-item'+(isActif?' actif':'')+(c.type==='ennemi'?' ennemi':'')+(isMe?' c-est-moi':'')+'"'+eAttr+'>'
       +'<div class="tracker-top">'
-      +'<span class="tracker-nom">'+(isActif?'▶ ':'')+c.nom+(isMe?' ◀':'')+' </span>'
+      +'<span class="tracker-nom">'+(isActif?'▶ ':'')+nomTrk+(isMe?' ◀':'')+' </span>'
       +'<span class="tracker-init">'+c.init+'</span>'
       +'</div></div>';
   }).join('');
@@ -1071,7 +1092,7 @@ function _enemyById(id){ return (combatState?.ennemis||[]).find(e => String(e.id
 function enemyTipText(e){
   if(!e) return '';
   const band = (enemyGridBand(e) ?? e.dist ?? 1);
-  return '☠ '+e.nom+' — PV '+e.pvCur+'/'+e.pvMax+' · ATQ '+e.atq+' DC · RD '+e.rd+' · '+(RANGE_LABELS[band]||'');
+  return '☠ '+enemyLabel(e)+' — PV '+e.pvCur+'/'+e.pvMax+' · ATQ '+e.atq+' DC · RD '+e.rd+' · '+(RANGE_LABELS[band]||'');
 }
 function _jEnTipShow(elT){
   const e = _enemyById(elT.getAttribute('data-eid')); if(!e) return;
