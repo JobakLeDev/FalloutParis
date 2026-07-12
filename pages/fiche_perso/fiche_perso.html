@@ -7,7 +7,7 @@
   <title>Fallout Paris — Fiche Personnage</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css?v=0053a05a">
-  <link rel="stylesheet" href="fiche_perso.css?v=8a6e48ee">
+  <link rel="stylesheet" href="fiche_perso.css?v=36d11e09">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
@@ -212,6 +212,7 @@
       <div class="inv-tab" onclick="swInv('armor')">ARMURE & TENUES</div>
       <div class="inv-tab" onclick="swInv('aid')">AIDE</div>
       <div class="inv-tab" onclick="swInv('misc')">DIVERS</div>
+      <div class="inv-tab" onclick="swInv('junk')">RÉCUP</div>
       <div class="inv-tab" onclick="swInv('ammo')">MUNITIONS</div>
     </div>
 
@@ -253,6 +254,13 @@
 
       <div class="inv-header stuff-cols" style="display:grid"><span>TYPE</span><span>NOM</span><span>EFFET</span><span>QTÉ</span><span>POIDS</span><span></span></div>
       <div class="scr" id="inv-misc-list"></div>
+    </div>
+
+    <!-- RÉCUP (junk) -->
+    <div class="inv-content" id="inv-junk">
+      <div id="junk-summary" class="junk-summary"></div>
+      <div class="inv-header junk-cols" style="display:grid"><span>TYPE</span><span>NOM</span><span>RENDEMENT</span><span>QTÉ</span><span>POIDS</span><span></span></div>
+      <div class="scr" id="inv-junk-list"></div>
     </div>
 
     <!-- MUNITIONS -->
@@ -477,7 +485,7 @@
   <script src="../../common/shared.js?v=3f654481"></script>
   <script src="../../common/db.js?v=ba83522f"></script>
   <script src="../../common/survie.js?v=31a541f2"></script>
-  <script src="fiche_perso.js?v=925b002c"></script>
+  <script src="fiche_perso.js?v=f5d5bc92"></script>
   <script src="../../common/firebase.js?v=bd7427d0"></script>
   <script src="../../common/responsive.js?v=f2bdcb93"></script>
 </body>
