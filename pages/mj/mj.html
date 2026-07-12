@@ -7,7 +7,7 @@
   <title>Fallout Paris — MJ</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css?v=0053a05a">
-  <link rel="stylesheet" href="mj.css?v=9b21fb47">
+  <link rel="stylesheet" href="mj.css?v=7bbe0409">
 </head>
 <body>
 
@@ -28,23 +28,51 @@
   <div class="hdr">
     <div><div class="hdr-title">FALLOUT PARIS<small>ÉCRAN MAÎTRE DU JEU</small></div></div>
     <div class="hdr-btns">
-      <select id="camp-sel" class="hbtn" onchange="switchCampaign(this.value)" title="Campagne active" style="max-width:170px;cursor:pointer"></select>
-      <button class="hbtn" onclick="gererCampagnes()" title="Gérer les campagnes (renommer / nouvelle / supprimer)">🗂</button>
-      <button class="hbtn mj-msg-btn" onclick="openMsgMJ()" title="Messagerie joueurs" style="position:relative">
-        <img src="../../img/messagerie.png?v=3" class="mj-msg-ico" alt="">Messagerie
-        <span id="mj-msg-dot" class="mj-msg-dot" style="display:none"></span>
-      </button>
-      <button class="hbtn" onclick="location.reload()">↻ Rafraîchir</button>
-      <a class="hbtn" href="../carte/carte.html">🗺 Carte</a>
-      <a class="hbtn" href="../quetes/quetes.html">📋 Quêtes</a>
-      <a class="hbtn" href="../journal/journal.html">📖 Journal</a>
-      <a class="hbtn" href="../encyclopedie/encyclopedie.html">📚 Encyclopédie</a>
-      <a class="hbtn" href="../settlements/settlement.html">🏚 Refuges</a>
-      <a class="hbtn" href="../pnj/pnj.html">🧑 PNJ</a>
-      <a class="hbtn" href="../admin_perso/admin_perso.html">⚙ Admin persos</a>
-      <a class="hbtn" href="../../index.html">← Accueil</a>
+
+      <!-- Campagne active -->
+      <div class="hdr-group">
+        <select id="camp-sel" class="hsel" onchange="switchCampaign(this.value)" title="Campagne active"></select>
+        <button class="hbtn hbtn-sq" onclick="gererCampagnes()" title="Gérer les campagnes (renommer / nouvelle / supprimer)">
+          <span class="hb-ic">🗂</span>
+        </button>
+      </div>
+
+      <span class="hdr-sep"></span>
+
+      <!-- Outils de session -->
+      <div class="hdr-group">
+        <button class="hbtn mj-msg-btn" onclick="openMsgMJ()" title="Messagerie joueurs">
+          <span class="hb-ic"><img src="../../img/messagerie.png?v=3" class="mj-msg-ico" alt=""></span>
+          <span class="hb-lb">Messagerie</span>
+          <span id="mj-msg-dot" class="mj-msg-dot" style="display:none"></span>
+        </button>
+        <button class="hbtn" onclick="location.reload()" title="Recharger le tableau de bord">
+          <span class="hb-ic">↻</span><span class="hb-lb">Rafraîchir</span>
+        </button>
+      </div>
+
+      <span class="hdr-sep"></span>
+
+      <!-- Navigation -->
+      <nav class="hdr-group">
+        <a class="hbtn" href="../carte/carte.html"><span class="hb-ic">🗺</span><span class="hb-lb">Carte</span></a>
+        <a class="hbtn" href="../quetes/quetes.html"><span class="hb-ic">📋</span><span class="hb-lb">Quêtes</span></a>
+        <a class="hbtn" href="../journal/journal.html"><span class="hb-ic">📖</span><span class="hb-lb">Journal</span></a>
+        <a class="hbtn" href="../encyclopedie/encyclopedie.html"><span class="hb-ic">📚</span><span class="hb-lb">Encyclopédie</span></a>
+        <a class="hbtn" href="../settlements/settlement.html"><span class="hb-ic">🏚</span><span class="hb-lb">Refuges</span></a>
+        <a class="hbtn" href="../pnj/pnj.html"><span class="hb-ic">🧑</span><span class="hb-lb">PNJ</span></a>
+        <a class="hbtn" href="../admin_perso/admin_perso.html"><span class="hb-ic">⚙</span><span class="hb-lb">Admin persos</span></a>
+      </nav>
+
+      <span class="hdr-sep"></span>
+
+      <a class="hbtn hbtn-out" href="../../index.html"><span class="hb-ic">←</span><span class="hb-lb">Accueil</span></a>
+
     </div>
   </div>
+
+  <!-- COLONNE LATÉRALE GAUCHE : Actions rapides → Terminal → Crochetage -->
+  <div class="col-side">
 
     <!-- ACTIONS -->
     <div class="actions-pnl" id="actions-pnl">
@@ -175,7 +203,52 @@
 
       </div>
     </div>
-  <!-- COLONNE GAUCHE -->
+
+    <!-- TERMINAL -->
+    <div class="rencontre-pnl" id="terminal-pnl">
+      <div class="pnl-title pnl-head">
+        <button class="pnl-toggle" onclick="togglePanel('terminal-pnl')">▾</button>
+        <span class="pnl-head-label">💻 Terminal</span>
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-lbl">Terminal</span>
+        <select class="ctrl-sel" id="term-sel" style="flex:1"></select>
+      </div>
+      <div class="gen-btns" style="margin-top:6px">
+        <button class="gen-btn" onclick="declencherTerminal()">💻 Ouvrir aux sélectionnés</button>
+        <button class="gen-btn dep" onclick="fermerTerminaux()">🔒 Fermer</button>
+      </div>
+      <div id="term-summary" style="margin-top:6px"></div>
+    </div>
+
+    <!-- CROCHETAGE -->
+    <div class="rencontre-pnl" id="crochetage-pnl">
+      <div class="pnl-title pnl-head">
+        <button class="pnl-toggle" onclick="togglePanel('crochetage-pnl')">▾</button>
+        <span class="pnl-head-label">🔓 Crochetage</span>
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-lbl">Serrure</span>
+        <input type="text" class="ctrl-sel" id="croch-label" placeholder="Porte du labo…" style="flex:1">
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-lbl">Difficulté</span>
+        <select class="ctrl-sel" id="croch-diff" style="flex:1">
+          <option value="1">D1 — Novice</option>
+          <option value="2" selected>D2 — Avancée</option>
+          <option value="3">D3 — Experte</option>
+          <option value="4">D4 — Maître</option>
+        </select>
+      </div>
+      <div class="gen-btns" style="margin-top:6px">
+        <button class="gen-btn" onclick="declencherCrochetage()">🔓 Lancer (sélectionnés)</button>
+        <button class="gen-btn dep" onclick="annulerCrochetage()">✕ Annuler</button>
+      </div>
+    </div>
+
+  </div><!-- /col-side -->
+
+  <!-- COLONNE CENTRALE -->
   <div class="col-left">
 
     <!-- SÉLECTION -->
@@ -313,48 +386,6 @@
           </div>
         </div>
 
-        <div class="pnl-row">
-        <div class="rencontre-pnl" id="terminal-pnl">
-          <div class="pnl-title pnl-head">
-            <button class="pnl-toggle" onclick="togglePanel('terminal-pnl')">▾</button>
-            <span class="pnl-head-label">💻 Terminal</span>
-          </div>
-          <div class="ctrl-row">
-            <span class="ctrl-lbl">Terminal</span>
-            <select class="ctrl-sel" id="term-sel" style="flex:1"></select>
-          </div>
-          <div class="gen-btns" style="margin-top:6px">
-            <button class="gen-btn" onclick="declencherTerminal()">💻 Ouvrir aux sélectionnés</button>
-            <button class="gen-btn dep" onclick="fermerTerminaux()">🔒 Fermer</button>
-          </div>
-          <div id="term-summary" style="margin-top:6px"></div>
-        </div>
-
-        <div class="rencontre-pnl" id="crochetage-pnl">
-          <div class="pnl-title pnl-head">
-            <button class="pnl-toggle" onclick="togglePanel('crochetage-pnl')">▾</button>
-            <span class="pnl-head-label">🔓 Crochetage</span>
-          </div>
-          <div class="ctrl-row">
-            <span class="ctrl-lbl">Serrure</span>
-            <input type="text" class="ctrl-sel" id="croch-label" placeholder="Porte du labo…" style="flex:1">
-          </div>
-          <div class="ctrl-row">
-            <span class="ctrl-lbl">Difficulté</span>
-            <select class="ctrl-sel" id="croch-diff" style="flex:1">
-              <option value="1">D1 — Novice</option>
-              <option value="2" selected>D2 — Avancée</option>
-              <option value="3">D3 — Experte</option>
-              <option value="4">D4 — Maître</option>
-            </select>
-          </div>
-          <div class="gen-btns" style="margin-top:6px">
-            <button class="gen-btn" onclick="declencherCrochetage()">🔓 Lancer (sélectionnés)</button>
-            <button class="gen-btn dep" onclick="annulerCrochetage()">✕ Annuler</button>
-          </div>
-        </div>
-        </div><!-- /pnl-row terminal+crochetage -->
-
       </div>
 
     </div>
@@ -491,7 +522,7 @@
   <script src="../../common/survie.js?v=31a541f2"></script>
   <script src="mj_shared.js?v=90209219"></script>
   <script src="zones.js?v=4b361af8"></script>
-  <script src="mj.js?v=d14454e4"></script>
+  <script src="mj.js?v=1a1ac28d"></script>
   <script src="../../common/responsive.js?v=f2bdcb93"></script>
 </body>
 </html>

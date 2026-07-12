@@ -942,6 +942,12 @@ function groupSolo(pid,val){
   else addPlayerToParty(val,pid);
 }
 
+// Jour compact affiché sur une ligne de calendrier REPLIÉE (« 14 juil. ») — l'année est dans la vue dépliée
+function fmtJourMini(min){
+  const d = tempsDate(min);
+  return `${d.getDate()} ${TEMPS_MOIS[d.getMonth()].slice(0,4)}.`;
+}
+
 function clockBtns(p){
   return `<div class="clock-btns">
     <button class="clock-btn" onclick="avanceParty('${p.id}',-60)">−1h</button>
@@ -973,7 +979,7 @@ function renderParties(){
       <div class="party-head">
         <button class="party-toggle" onclick="togglePartyCollapse('${p.id}')" title="${col?'Déplier':'Réduire'}">${col?'▸':'▾'}</button>
         <input class="party-name" value="${(p.name||'').replace(/"/g,'&quot;')}" onchange="setPartyName('${p.id}',this.value)">
-        ${col?`<span class="party-time-mini">${fmtHeure(p.minutes)}</span>`:''}
+        ${col?`<span class="party-day-mini">${fmtJourMini(p.minutes)}</span><span class="party-time-mini">${fmtHeure(p.minutes)}</span>`:''}
         <button class="party-del" onclick="delParty('${p.id}')">✕</button>
       </div>
       ${col ? '' : `<div class="party-date">📅 ${fmtDateLong(p.minutes)}</div>
@@ -992,7 +998,7 @@ function renderParties(){
         <div class="party-head">
           <button class="party-toggle" onclick="togglePartyCollapse('${p.id}')" title="${col?'Déplier':'Réduire'}">${col?'▸':'▾'}</button>
           <span class="solo-nom">🧍 ${joueurs[pid]?.nom||pid}</span>
-          ${col?`<span class="party-time-mini">${fmtHeure(p.minutes)}</span>`:''}
+          ${col?`<span class="party-day-mini">${fmtJourMini(p.minutes)}</span><span class="party-time-mini">${fmtHeure(p.minutes)}</span>`:''}
         </div>
         ${col ? '' : `<div class="party-date">📅 ${fmtDateLong(p.minutes)} · <span style="color:var(--am)">${fmtHeure(p.minutes)}</span></div>
         ${clockBtns(p)}
