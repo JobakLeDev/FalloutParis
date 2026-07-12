@@ -863,6 +863,27 @@ function ensureMapPositions(){
   Object.keys(combatMap.pos).forEach(id => { if(!ids.has(id)){ delete combatMap.pos[id]; changed = true; } });
   if(changed){ recomputeBandsFromMap(); syncCombatToFirebase(); }
 }
+// Trajets déclarés et NON ENCORE VALIDÉS : trait pointillé du jeton du joueur vers la case qu'il veut
+// atteindre (le jeton ne bouge qu'à la validation — cf. validerAction). Le MJ voit ce qu'il approuve.
+function _movePendingLines(cs){
+  if(!combatMap || !combatMap.pos) return '';
+  const pad = 5, pitch = cs + 1;
+  const cx = p => pad + p.x*pitch + cs/2, cy = p => pad + p.y*pitch + cs/2;
+  let h = '';
+  Object.entries(actionsJoueurs || {}).forEach(([jId, a]) => {
+    ['mineure','majeure'].forEach(cat => {
+      const p = a?.[cat]?.pending;
+      if(!p || p.status !== 'waiting' || !p.to) return;
+      const from = combatMap.pos[jId]; if(!from) return;
+      const x1 = cx(from), y1 = cy(from), x2 = cx(p.to), y2 = cy(p.to);
+      const len = Math.hypot(x2-x1, y2-y1), ang = Math.atan2(y2-y1, x2-x1)*180/Math.PI;
+      h += '<div class="cmap-moveline" style="left:'+x1+'px;top:'+y1+'px;width:'+len+'px;transform:rotate('+ang+'deg)"></div>';
+      h += '<div class="cmap-movedest" style="left:'+(pad+p.to.x*pitch)+'px;top:'+(pad+p.to.y*pitch)+'px;width:'+cs+'px;height:'+cs+'px"></div>';
+    });
+  });
+  return h;
+}
+
 function renderCombatMap(){
   const el = document.getElementById('combat-map'); if(!el) return;
   if(!combatMap){ el.innerHTML = '<span class="empty" style="font-size:8px;color:var(--td)">Pas de carte — clique « Générer ».</span>'; return; }
@@ -910,6 +931,7 @@ function renderCombatMap(){
   // Overlay des lignes d'arête (+ zones cliquables si pinceau d'arête actif ; sinon, portes ouvrables)
   const doorHot = (!_edgeSel && !_blockSel && !_mapSel) ? gridAllDoorHotspots(combatMap, cs, 'openDoorMJ') : '';
   html += '<div class="cmap-edges">' + gridEdgesHtml(combatMap, cs) + (_edgeSel ? edgeHotspots(combatMap, cs) : doorHot) + '</div>';
+  html += _movePendingLines(cs);    // trajets déclarés en attente de validation (jeton → destination voulue)
   html += '</div>';                 // /cmap
   html += mapSideMenu();            // bandeau vertical à droite (jeton sélectionné) — hors flux, ne décale pas la carte
   html += '</div>';                 // /cmap-wrap
@@ -1689,6 +1711,11 @@ async function validerAction(jId, cat){
   // Décrément ATOMIQUE du compteur (−1 sur la valeur serveur) — n'écrase pas une action bonus achetée par le joueur
   upd['actionsState.' + jId + '.' + cat] = firebase.firestore.FieldValue.increment(-1);
   if(isMovement) upd['actionsDeclarees.' + jId + '.mouvement_used'] = true;
+  // Déplacement déclaré avec sa destination → c'est la VALIDATION qui bouge le jeton (comme p.doorKey pour les portes)
+  if(isMovement && p.to){
+    upd['grid.pos.' + jId] = { x: p.to.x, y: p.to.y };
+    if(combatMap && combatMap.pos) combatMap.pos[jId] = { x: p.to.x, y: p.to.y };   // miroir local : trait effacé aussitôt
+  }
   try {
     await db.collection(COMBATS_COLL).doc(currentCombatId).update(upd);
     if(actionsState[jId]) actionsState[jId][cat] = Math.max(0, (actionsState[jId][cat]||1) - 1);   // miroir local pour le tracker

@@ -5,7 +5,6 @@ Chaque point traité suite à la lecture de ce fichier doit faire l'objet d'une 
 
 Liste des truc à implémenter :
 
--->dans le systeme d'action des joueurs lors d'un combat, il faut que le joueur effectue d'abord l'ensemble de l'action, pas diviser en "je veux viser"-"ok"-"je vise cet ennemis"-"ok". tu vois le truc?
 
 dans la partie claude generale : après chaque opération que tu réalises, consulte ce fichier (implementer) afin de voir s'il y a des nouvelles choses à mettre en place
   -> [NOTÉ] règle ajoutée dans CLAUDE.md (« Règle Claude ») + mémoire projet : je consulte `implementer` après chaque opération.
@@ -13,6 +12,8 @@ dans la partie claude generale : après chaque opération que tu réalises, cons
 (rien en attente)
 
 --- Fait ---
+-[OK] deplacement declare : clic sur Move/Sprint -> choix de la case AVANT declaration -> trait vert pointille + case cible sur la carte joueur + popup de validation (envoi bloque sans destination). Ecran MJ : meme trait du jeton vers la destination voulue + bandeau de validation. Le jeton ne bouge QU A la validation (validerAction applique grid.pos, comme p.doorKey pour les portes). renderActionExec saute les actions de deplacement en mode grille (sinon on redemandait au joueur de bouger apres validation).
+-[OK] actions de combat en une seule fois (plus de "je veux viser"/ok/"je vise cet ennemi"/ok) : la popup de declaration collecte arme + cible + zone + note et envoie le tout d un coup (submitActionDeclaree). Aim et Attack restent 2 actions distinctes (RAW : mineure + majeure), mais Attack reutilise la visee (reuseAim) sans resaisie.
 -[OK] battlemap : brouillard de guerre par joueur (memoire de terrain). Case jamais eue en ligne de vue = masquee (terrain + murs) ; une fois vue elle reste connue. Ennemis inchanges (enemyVisible, LOS temps reel). Persiste dans /combats/{id}.seen[joueurId], ecriture groupee. gridEdgesHtml accepte un predicat de visibilite optionnel (MJ = sans predicat = voit tout).
 -[OK] battlemap : sprites de murs et de fenetres (img/tiles/walls/, decoupes de la planche fournie, miroir pour un raccord sans couture). Aretes epaissies 3px -> 9px + noeud d angle a 9px, sinon la texture ne se lit pas et les coins sont troues. Fenetre gardee cyan (elle laisse voir/tirer : info de jeu). Geometrie inchangee. Refuges non touches.
 -[OK] combat joueur : numerotation des ennemis homonymes (#1, #2...) partout — jeton (badge rouge), info-bulle, tracker et selecteur de cible, via enemyNum/enemyLabel (source unique). Avant, seul le selecteur numerotait : impossible de savoir quelle goule etait la #2 sur la carte.

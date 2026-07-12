@@ -52,7 +52,13 @@ function renderActionExec(){
   for(const type in ACTION_EXEC){
     const cfg=ACTION_EXEC[type];
     const used=(as[cfg.cat]?.used||[]).filter(t=>t===type).length;
-    if(used > (actionsExecuted[type]||0)){ found={type,cfg}; break; }
+    if(used > (actionsExecuted[type]||0)){
+      // Déplacement SUR GRILLE : la destination était dans la déclaration et le MJ l'a appliquée en validant
+      // → plus rien à exécuter (sinon on redemanderait au joueur de se déplacer une 2e fois).
+      // Le mode « bandes » (sans grille) garde son bloc d'exécution.
+      if(cfg.move && combatState?.grid?.pos?.[joueurId]){ actionsExecuted[type]=used; continue; }
+      found={type,cfg}; break;
+    }
   }
   clearExec();
   if(!found) return;

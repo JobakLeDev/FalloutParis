@@ -260,6 +260,23 @@
 .decl-box .decl-in::placeholder{ color:#3d5a3d; }
 .decl-box .decl-in:focus{ border-color:var(--am); box-shadow:0 0 0 1px rgba(212,160,23,.25), inset 0 0 10px rgba(212,160,23,.07); }
 
+/* Déplacement : invite à choisir la case, puis rappel de la destination retenue */
+.decl-pick{ margin:0 0 7px; padding:7px 8px; font-size:9px; color:var(--am);
+  border:1px dashed rgba(212,160,23,.55); border-radius:2px; background:rgba(212,160,23,.06);
+  animation:declPick 1.1s ease-in-out infinite; }
+@keyframes declPick{ 0%,100%{ opacity:.65; } 50%{ opacity:1; } }
+.decl-dest{ display:flex; align-items:center; gap:6px; margin:0 0 7px; padding:7px 8px; font-size:9px;
+  color:var(--tb); border:1px solid var(--gd); border-radius:2px; background:rgba(93,190,93,.08); }
+.decl-dest b{ color:var(--g); }
+.decl-redo{ margin-left:auto; background:none; border:1px solid var(--b2); border-radius:2px; color:var(--td);
+  font-family:'Share Tech Mono',monospace; font-size:10px; padding:2px 7px; cursor:pointer; }
+.decl-redo:hover{ border-color:var(--am); color:var(--am); }
+/* Pas de destination → l'envoi est impossible (la déclaration serait vide de sens) */
+.decl-send:disabled{ opacity:.4; cursor:not-allowed; background:linear-gradient(180deg,#101a10,#0a140a);
+  box-shadow:none; border-color:var(--b2); color:var(--td); }
+.decl-send:disabled b{ color:var(--td); }
+.decl-send:disabled:hover b{ transform:none; }
+
 /* Actions : envoyer domine, annuler s'efface */
 .decl-btns{ display:flex; gap:7px; padding:3px 12px 12px; }
 .decl-send{
