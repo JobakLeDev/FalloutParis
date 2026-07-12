@@ -552,11 +552,15 @@ let butinData = { items: [], caps: 0, players: [] };
 const LOOT_CATS = [
   {k:'weapons',l:'Armes'},{k:'armor',l:'Armure'},{k:'ammo',l:'Munitions'},
   {k:'food',l:'Nourriture'},{k:'drinks',l:'Boissons'},{k:'drugs',l:'Chems'},
-  {k:'stuff',l:'Divers'},{k:'junk',l:'Récup (junk)'},{k:'postcards',l:'Cartes postales'},{k:'caps',l:'Caps'},
+  {k:'stuff',l:'Divers'},{k:'junk',l:'Récup (junk)'},{k:'postcards',l:'Cartes postales'},{k:'mtg',l:'Cartes MTG'},{k:'caps',l:'Caps'},
 ];
-const CAT_ICON = {weapons:'🔫',armor:'🛡',ammo:'▪',food:'🍖',drinks:'🥤',drugs:'💊',stuff:'🔧',junk:'🔩',postcards:'📷'};
+const CAT_ICON = {weapons:'🔫',armor:'🛡',ammo:'▪',food:'🍖',drinks:'🥤',drugs:'💊',stuff:'🔧',junk:'🔩',postcards:'📷',mtg:'🃏'};
 // Cartes postales comme objets lootables (data/postcards.json → window.POSTCARDS)
 function _postcardLootList(){ return (window.POSTCARDS||[]).map(p=>({n:'Carte postale — '+p.name, t:'STUFF', w:0, r:4, postcard:p.id})); }
+// Cartes MTG lootables (data/mtg_cards.json → window.MTG_CARDS), pondérées par rareté
+// via le champ `r` (weightedPick : poids = 6−r). common fréquent → mythic rare.
+const _MTG_RARITY_R = { common:1, uncommon:3, rare:4, mythic:5 };
+function _mtgLootList(){ return (window.MTG_CARDS||[]).map(c=>({n:c.name, t:'STUFF', w:0, r:_MTG_RARITY_R[c.rarity]||3, mtgcard:c.id})); }
 
 function populateLootCats(){
   const el = document.getElementById('loot-cats'); if(!el) return;
@@ -564,7 +568,7 @@ function populateLootCats(){
     `<label class="loot-cat"><input type="checkbox" class="loot-cat-cb" value="${c.k}" checked> ${c.l}</label>`
   ).join('');
 }
-function lootSource(cat){ return ({weapons:DB.weapons,armor:DB.armor,food:DB.food,drinks:DB.drinks,drugs:DB.drugs,stuff:DB.stuff,junk:(window.JUNK||[]),postcards:_postcardLootList()})[cat] || []; }
+function lootSource(cat){ return ({weapons:DB.weapons,armor:DB.armor,food:DB.food,drinks:DB.drinks,drugs:DB.drugs,stuff:DB.stuff,junk:(window.JUNK||[]),postcards:_postcardLootList(),mtg:_mtgLootList()})[cat] || []; }
 // Tirage pondéré par rareté (commun r1 = plus fréquent, légendaire r5 = rare)
 function weightedPick(list){
   let tot=0; const w=list.map(it=>{ const x=Math.max(1,6-(it.r||3)); tot+=x; return x; });
@@ -603,6 +607,7 @@ function genButin(){
     const it = weightedPick(src);
     const pool = {name:it.n, type:it.t||(cat==='junk'?'JUNK':cat), cat, qty:1, w:it.w||0, r:it.r||3};
     if(it.postcard) pool.postcard = it.postcard;
+    if(it.mtgcard) pool.mtgcard = it.mtgcard;
     addToPool(pool);
     added++;
   }
@@ -626,7 +631,7 @@ const CATALOGUE_CATS = [
   {k:'weapons',l:'Armes',type:'WEAPON'},{k:'armor',l:'Armure',type:'ARMOR'},
   {k:'food',l:'Nourriture',type:'FOOD'},{k:'drinks',l:'Boissons',type:'DRINK'},
   {k:'drugs',l:'Chems',type:'DRUGS'},{k:'stuff',l:'Divers',type:'STUFF'},
-  {k:'junk',l:'Récup',type:'JUNK'},{k:'postcards',l:'Cartes postales',type:'STUFF'},{k:'ammo',l:'Munitions',type:'AMMO'},
+  {k:'junk',l:'Récup',type:'JUNK'},{k:'postcards',l:'Cartes postales',type:'STUFF'},{k:'mtg',l:'Cartes MTG',type:'STUFF'},{k:'ammo',l:'Munitions',type:'AMMO'},
 ];
 let _catCat = 'weapons';
 const CAT_AMMO_QTY = 10;   // quantité de munitions ajoutée par clic
@@ -634,6 +639,7 @@ function _catList(cat){
   if(cat==='ammo') return (DB.ammo||[]).map(n=>({n}));
   if(cat==='junk') return (window.JUNK||[]);
   if(cat==='postcards') return _postcardLootList();
+  if(cat==='mtg') return _mtgLootList();
   return ({weapons:DB.weapons,armor:DB.armor,food:DB.food,drinks:DB.drinks,drugs:DB.drugs,stuff:DB.stuff})[cat]||[];
 }
 function _catInfo(it,cat){
@@ -648,12 +654,13 @@ function _catInfo(it,cat){
 }
 function _catBuildInv(name,cat){
   const def=_catList(cat).find(x=>x.n===name)||{};
-  let type=({weapons:'WEAPON',food:'FOOD',drinks:'DRINK',drugs:'DRUGS',stuff:'STUFF',junk:'JUNK',postcards:'STUFF'})[cat]||'STUFF';
+  let type=({weapons:'WEAPON',food:'FOOD',drinks:'DRINK',drugs:'DRUGS',stuff:'STUFF',junk:'JUNK',postcards:'STUFF',mtg:'STUFF'})[cat]||'STUFF';
   if(cat==='armor') type=def.t||'ARMOR';
   const item={name, type, qty:1, w:def.w||0, equipped:false};
   if(type==='ARMOR'||type==='POWERARMOR') item.zone=def.z||'';
   if(type==='WEAPON') item.persoBonus=false;
   if(def.postcard) item.postcard=def.postcard;   // carte postale → image affichable
+  if(def.mtgcard) item.mtgcard=def.mtgcard;       // carte MTG → image affichable
   return item;
 }
 function renderCatTabs(){
@@ -702,6 +709,7 @@ function catToPool(name,cat){
   const qty = cat==='ammo' ? CAT_AMMO_QTY : 1;
   const pool = {name, type, cat, qty, w:def.w||0, r:def.r||3};
   if(def.postcard) pool.postcard = def.postcard;
+  if(def.mtgcard) pool.mtgcard = def.mtgcard;
   addToPool(pool);
   saveButin();
   if(typeof showMsg==='function') showMsg(`+ ${name} → pool de butin`);
