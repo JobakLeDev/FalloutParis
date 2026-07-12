@@ -22,6 +22,8 @@ const POI_TYPES = {
   faction:    { label: 'QG Faction', color: '#4a7ba6', icon: _pic('<path d="M6 3v18"/><path d="M6 4h12l-3 3 3 3H6"/>') },
   loot:       { label: 'Cache',      color: '#c8923a', icon: _pic('<path d="M4 8h16v11H4z"/><path d="M4 8l1.5-3h13L20 8"/><path d="M12 8v11"/><path d="M10 12h4"/>') },
   trader:     { label: 'Marchand (caps)', color: '#e8a820', icon: _pic('<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.4"/>') },
+  // Boutique de jeux d'avant-guerre : « point chaud » à boosters MTG (voir MTG_HOTSPOT_* dans shared.js)
+  cardshop:   { label: 'Boutique de cartes', color: '#b06fd8', icon: _pic('<path d="M4 5h11v14H4z"/><path d="M9 3h11v14"/><path d="M7 9h5"/><path d="M7 13h5"/>') },
   water:      { label: "Point d'eau",color: '#4a9bd5', icon: _pic('<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>') },
   camp:       { label: 'Campement',  color: '#d57b30', icon: _pic('<path d="M3 20L12 5l9 15z"/><path d="M12 5v15"/><path d="M9 20l3-5 3 5"/>') },
   quest:      { label: 'Objectif',   color: '#f1c40f', icon: _pic('<path d="M12 2.5l2.9 6 6.6.6-5 4.4 1.5 6.4L12 16.6 6 19.9l1.5-6.4-5-4.4 6.6-.6z"/>') },

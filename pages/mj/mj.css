@@ -312,3 +312,6 @@ html, body { overflow-x: hidden !important; overflow-y: auto !important; height:
 .pnl-row{ display:flex; gap:12px; align-items:flex-start; }
 .pnl-row > .rencontre-pnl{ flex:1 1 0; min-width:0; margin:0; }
 @media(max-width:680px){ .pnl-row{ flex-direction:column; } }
+
+/* Point chaud à boosters (proximité d'une boutique de cartes) */
+.loot-hotspot{font-size:9px;letter-spacing:.5px;margin-top:5px;padding:4px 6px;border:1px solid var(--b);background:#0a140a;line-height:1.5;}

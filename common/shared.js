@@ -128,6 +128,38 @@ function fpMtgBonuses(c){
 }
 
 // ============================================================
+// POINTS CHAUDS À BOOSTERS (boutiques de jeux d'avant-guerre)
+// Les POI de type 'cardshop' (Le Repaire du Dragon, Parkage, Magic Corporation,
+// Majestik Games…) « rayonnent » : plus un joueur en est proche, plus la part de
+// BOOSTERS SCELLÉS augmente dans le butin « Cartes MTG ». Au-delà du rayon → part de base.
+// ============================================================
+const MTG_HOTSPOT_R      = 3000;   // rayon d'influence (m)
+const MTG_HOTSPOT_BASE   = 0.05;   // part de boosters loin de tout (5 %)
+const MTG_HOTSPOT_MAX    = 0.60;   // part de boosters au pied de la boutique (60 %)
+// Décroissance quadratique : l'effet se concentre près de la boutique (plus « rayonnant »
+// qu'une décroissance linéaire, qui donnerait trop de boosters à mi-distance).
+function fpBoosterShare(distM){
+  if(distM == null || !isFinite(distM)) return MTG_HOTSPOT_BASE;
+  const t = Math.max(0, 1 - Math.min(distM, MTG_HOTSPOT_R) / MTG_HOTSPOT_R);   // 1 sur place → 0 au bord
+  return MTG_HOTSPOT_BASE + (MTG_HOTSPOT_MAX - MTG_HOTSPOT_BASE) * t * t;
+}
+// Distance (m) entre deux points lat/lng — haversine
+function fpDistM(a, b){
+  if(!a || !b || a.lat == null || b.lat == null) return Infinity;
+  const R = 6371000, rad = Math.PI/180;
+  const dLat = (b.lat-a.lat)*rad, dLng = (b.lng-a.lng)*rad;
+  const la1 = a.lat*rad, la2 = b.lat*rad;
+  const h = Math.sin(dLat/2)**2 + Math.cos(la1)*Math.cos(la2)*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+// Distance du point le plus proche parmi les boutiques (POI cardshop)
+function fpNearestCardshop(pos, pois){
+  let best = Infinity;
+  (pois||[]).forEach(p => { if(p && p.type === 'cardshop'){ const d = fpDistM(pos, p); if(d < best) best = d; } });
+  return best;
+}
+
+// ============================================================
 // DÉPLACEMENT / rencontres aléatoires sur trajet (partagé carte + dashboard MJ)
 // ============================================================
 const FP_WALK_KMH = 5;   // vitesse de marche (km/h) → temps de trajet depuis la distance
