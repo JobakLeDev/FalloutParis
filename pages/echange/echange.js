@@ -131,6 +131,11 @@ function _isCont(name){ return (window.DB?.stuff||[]).some(s => s.n === name && 
 // cards:{id:qty}), pas en objets isolés. Le pool a sa propre section `cards:[{id,qty}]`. ----
 const MTG_COL = 'mtg';
 const _RAR_COL = { common:'#cfcfcf', uncommon:'#8fb4dd', rare:'#e0bd5e', mythic:'#f0813c' };
+// Sections Cartes repliables (la collection peut faire des centaines de lignes)
+let _myCardsOpen = false;     // ma collection : repliée par défaut
+let _poolCardsOpen = true;    // cartes du pool : dépliées (généralement peu nombreuses)
+function toggleMyCards(){ _myCardsOpen = !_myCardsOpen; render(); }
+function togglePoolCards(){ _poolCardsOpen = !_poolCardsOpen; render(); }
 function _mtgCard(id){ return (window.MTG_CARDS||[]).find(c => c.id === id) || null; }
 function _colItem(inv){ return (inv||[]).find(it => it && it.collection === MTG_COL) || null; }
 function _myCards(){
@@ -336,13 +341,16 @@ function render(){
       + '<input type="number" min="1" max="'+(a.qty||1)+'" value="1" id="pa-'+i+'">'
       + '<button onclick="prendreAmmo(\''+esc(a.cal)+'\',document.getElementById(\'pa-'+i+'\').value)">Prendre</button></div>';
   });
-  if (pCards.length){ h += '<div class="ex-sec">🃏 Cartes</div>'; }
-  pCards.forEach((c,i) => {
-    const card = _mtgCard(c.id); if(!card) return;
-    h += '<div class="ex-line"><span class="nm" style="color:'+(_RAR_COL[card.rarity]||'#ccc')+'" title="'+esc(card.name)+'">🃏 '+esc(card.name)+'</span><span class="qt">x'+(c.qty||0)+'</span>'
-      + '<input type="number" min="1" max="'+(c.qty||1)+'" value="1" id="pcd-'+i+'">'
-      + '<button onclick="prendreCarte(\''+c.id+'\',document.getElementById(\'pcd-'+i+'\').value)">Prendre</button></div>';
-  });
+  if (pCards.length){
+    const nb = pCards.reduce((a,c)=>a+(c.qty||0),0);
+    h += '<div class="ex-sec ex-sec-tog" onclick="togglePoolCards()">'+(_poolCardsOpen?'▾':'▸')+' 🃏 Cartes ('+nb+')</div>';
+    if (_poolCardsOpen) pCards.forEach((c,i) => {
+      const card = _mtgCard(c.id); if(!card) return;
+      h += '<div class="ex-line"><span class="nm" style="color:'+(_RAR_COL[card.rarity]||'#ccc')+'" title="'+esc(card.name)+'">🃏 '+esc(card.name)+'</span><span class="qt">x'+(c.qty||0)+'</span>'
+        + '<input type="number" min="1" max="'+(c.qty||1)+'" value="1" id="pcd-'+i+'">'
+        + '<button onclick="prendreCarte(\''+c.id+'\',document.getElementById(\'pcd-'+i+'\').value)">Prendre</button></div>';
+    });
+  }
   if (pCaps>0){
     h += '<div class="ex-caps">💰 <b>'+pCaps+'</b> caps <input type="number" min="1" max="'+pCaps+'" value="'+pCaps+'" id="pc-take" style="width:60px"><button onclick="prendreCaps(document.getElementById(\'pc-take\').value)" style="border:1px solid var(--gd);color:var(--g);background:none;font-family:monospace;font-size:8px;padding:2px 7px;cursor:pointer">Prendre</button></div>';
   }
@@ -363,12 +371,15 @@ function render(){
       + '<input type="number" min="1" max="'+(a.qty||1)+'" value="1" id="ma-'+i+'">'
       + '<button onclick="deposerAmmo(\''+esc(a.cal)+'\',document.getElementById(\'ma-'+i+'\').value)">Déposer</button></div>';
   });
-  if (myCards.length){ h += '<div class="ex-sec">🃏 Ma collection ('+myCards.reduce((a,c)=>a+c.q,0)+')</div>'; }
-  myCards.forEach((c,i) => {
-    h += '<div class="ex-line"><span class="nm" style="color:'+(_RAR_COL[c.rarity]||'#ccc')+'" title="'+esc(c.name)+'">🃏 '+esc(c.name)+'</span><span class="qt">x'+c.q+'</span>'
-      + '<input type="number" min="1" max="'+c.q+'" value="1" id="mcd-'+i+'">'
-      + '<button onclick="deposerCarte(\''+c.id+'\',document.getElementById(\'mcd-'+i+'\').value)">Déposer</button></div>';
-  });
+  if (myCards.length){
+    const nb = myCards.reduce((a,c)=>a+c.q,0);
+    h += '<div class="ex-sec ex-sec-tog" onclick="toggleMyCards()">'+(_myCardsOpen?'▾':'▸')+' 🃏 Ma collection ('+myCards.length+' cartes · '+nb+')</div>';
+    if (_myCardsOpen) myCards.forEach((c,i) => {
+      h += '<div class="ex-line"><span class="nm" style="color:'+(_RAR_COL[c.rarity]||'#ccc')+'" title="'+esc(c.name)+'">🃏 '+esc(c.name)+'</span><span class="qt">x'+c.q+'</span>'
+        + '<input type="number" min="1" max="'+c.q+'" value="1" id="mcd-'+i+'">'
+        + '<button onclick="deposerCarte(\''+c.id+'\',document.getElementById(\'mcd-'+i+'\').value)">Déposer</button></div>';
+    });
+  }
   if (myCaps>0){
     h += '<div class="ex-caps">💰 <b>'+myCaps+'</b> caps <input type="number" min="1" max="'+myCaps+'" value="'+myCaps+'" id="mc-dep" style="width:60px"><button onclick="deposerCaps(document.getElementById(\'mc-dep\').value)" style="border:1px solid var(--gd);color:var(--g);background:none;font-family:monospace;font-size:8px;padding:2px 7px;cursor:pointer">Déposer</button></div>';
   }

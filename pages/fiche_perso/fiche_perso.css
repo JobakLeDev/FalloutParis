@@ -4,12 +4,15 @@
 .bo-modal{ position:fixed; inset:0; z-index:480; display:none; align-items:center; justify-content:center;
   background:rgba(6,12,6,.94); padding:1rem; }
 .bo-modal.on{ display:flex; }
-.bo-box{ display:flex; flex-direction:column; align-items:center; gap:.5rem; max-width:min(1200px,96vw); max-height:94vh; }
-.bo-title{ font-family:'Oswald',sans-serif; letter-spacing:2px; color:var(--am); font-size:1.05rem; text-transform:uppercase;
+/* max-height posé en JS (px réels / zoom) car le body est zoomé → les vh débordent */
+.bo-box{ display:flex; flex-direction:column; align-items:center; gap:.5rem; max-width:min(1200px,96vw); max-height:92vh; min-height:0; }
+.bo-title{ flex:none; font-family:'Oswald',sans-serif; letter-spacing:2px; color:var(--am); font-size:1.05rem; text-transform:uppercase;
   text-shadow:0 0 8px rgba(232,168,32,.5); }
-.bo-hint{ font-size:.6rem; letter-spacing:1px; color:var(--td); text-transform:uppercase; }
+.bo-hint{ flex:none; font-size:.6rem; letter-spacing:1px; color:var(--td); text-transform:uppercase; }
+/* flex:1 + min-height:0 → la grille rétrécit et scrolle DANS la boîte au lieu de la faire déborder */
 .bo-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(112px,1fr)); gap:.5rem;
-  overflow:auto; padding:.3rem; width:100%; }
+  flex:1 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden; padding:.3rem; width:100%; }
+.bo-box .pc-close{ flex:none; }
 .bo-card{ display:flex; flex-direction:column; align-items:center; gap:2px; cursor:pointer;
   transition:transform .12s; animation:boIn .35s ease-out backwards; }
 .bo-card:nth-child(n){ animation-delay:calc(var(--i,0) * 40ms); }
