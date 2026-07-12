@@ -76,14 +76,7 @@ function blockIcoInner(def){ return def && def.img ? `<img class="bk-img" src=".
 function matsFor(block){ return (window.BUILD_MATS && window.BUILD_MATS[block.complexity]) || { common:0, uncommon:0, rare:0 }; }
 
 async function initSettlement(){
-  if (embed) {
-    document.body.classList.add('embed');
-    // Embarqué (iframe refuge DANS la carte, elle-même DANS la fiche) : chacune de ces
-    // pages applique html::before/::after de common/style.css → l'effet CRT et le voile
-    // vert se cumuleraient 3 fois. Le parent l'applique déjà par-dessus → on coupe le nôtre.
-    document.documentElement.style.setProperty('--crt-green', '0');
-    document.documentElement.style.setProperty('--crt-scan', '0');
-  }
+  if (embed) document.body.classList.add('embed');   // (le CRT des iframes est coupé dans shared.js)
   fdb = firebase.initializeApp(firebaseConfig).firestore();
   if (viewerId){
     try { const s = await fdb.collection('joueurs').doc(viewerId).get(); if (s.exists) me = { id: viewerId, ...s.data() }; } catch(e){}
