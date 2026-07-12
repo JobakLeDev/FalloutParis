@@ -858,7 +858,7 @@ function voirPostcard(id){
   const p=(window.POSTCARDS||[]).find(x=>x.id===id);
   if(!p){alert('Carte postale introuvable.');return;}
   const t=document.getElementById('pc-title'); if(t)t.textContent='Carte postale — '+p.name;
-  const img=document.getElementById('pc-img'); if(img)img.src='../../img/postcards/'+p.img;
+  const img=document.getElementById('pc-img'); if(img)img.src='../../img/collectibles/postcards/'+p.img;
   const mo=document.getElementById('postcard-modal'); if(mo)mo.classList.add('on');
 }
 function closePostcard(){ const mo=document.getElementById('postcard-modal'); if(mo)mo.classList.remove('on'); }
