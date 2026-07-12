@@ -344,7 +344,12 @@ html, body { overflow-x: hidden !important; overflow-y: auto !important; height:
 /* Bandeau gauche : Actions rapides + Terminal + Crochetage empilés */
 .col-side{ display:flex; flex-direction:column; gap:12px; align-self:start; min-width:0; }
 .col-side > .rencontre-pnl{ margin:0; }
-.col-side .ctrl-row{ flex-wrap:wrap; }
+/* Colonne étroite : label AU-DESSUS du champ, et le champ ne déborde jamais du bloc.
+   (un <select> prend sa largeur intrinsèque sur son option la plus longue : sans min-width:0
+   il refuse de se rétrécir dans le flex et sort du panneau — cas du nom de terminal) */
+.col-side .ctrl-row{ flex-direction:column; align-items:stretch; gap:3px; }
+.col-side .ctrl-lbl{ min-width:0; }
+.col-side .ctrl-sel{ flex:0 1 auto; width:100%; min-width:0; max-width:100%; box-sizing:border-box; text-overflow:ellipsis; }
 .col-side .gen-btns{ display:flex; flex-direction:column; gap:5px; }   /* colonne étroite → boutons empilés */
 #actions-pnl{ align-self:start; }
 /* Le panneau Actions s'empile verticalement dans le bandeau étroit */
