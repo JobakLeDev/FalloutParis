@@ -67,7 +67,7 @@ let lastRollTN = 0;
 let lastRollDiff = 1;         // difficulté du dernier jet d'attaque (1 + pénalité de portée) — pour recalculer après relance
 let aimRerolled = false;      // true si le re-roll Aim a déjà été utilisé ce lancer
 let sabotsRerolledLocal = false; // garde locale : Gros Sabots déjà utilisés ce combat (source de vérité = combatState.sabotsUsed)
-let cibleAttaque = '';        // nom de l'ennemi ciblé (sélecteur)
+let cibleAttaque = '';        // ID de l'ennemi ciblé (cf. cibleNom(id) et fxAttack toTok:'E'+id)
 const AIM_ZONES = ['', 'Tête', 'Torse', 'Bras G.', 'Bras D.', 'Jambe G.', 'Jambe D.'];  // '' = zone non ciblée
 let lastAttackResultTs = 0;   // dédup notification résultat attaque
 let lastFxTs = 0;             // dédup traceur/clignotement (fxAttack)
@@ -422,6 +422,7 @@ function renderJMap(){
   const reach = (_jMoveActive && myPos) ? reachableCells(grid, myPos, _jMoveRange) : null;
   const moving = !!reach;   // mode déplacement : on masque le quadrillage, on affiche bords de zone + points d'accroche
   const nbReach = (x,y) => reach && reach[x+','+y]!=null;
+  const _tgtId = _declTargetId();   // ennemi visé → halo sur son jeton
   let html = `<div class="cmap${moving?' moving':''}" style="grid-template-columns:repeat(${w},var(--cs,22px))">`;
   for(let y=0;y<h;y++) for(let x=0;x<w;x++){
     const key=x+','+y; const tid=byPos[key]; const t=tid?toks.find(z=>z.id===tid):null;
@@ -440,6 +441,8 @@ function renderJMap(){
       if(!nbReach(x,y+1)) style+='border-bottom:2px solid var(--g);';
       if(!nbReach(x-1,y)) style+='border-left:2px solid var(--g);';
     }
+    // Ennemi visé : halo rouge sur son jeton — sans ça, le « #2 » du sélecteur ne se repère pas sur le terrain
+    if(t && t.kind==='ennemi' && !t.dead && _tgtId && t.id === 'E'+_tgtId) cls += ' cen-target';
     let inner;
     if(t){
       const glow = (t.id===activeTok && !t.dead) ? ' turn-glow' : '';
@@ -1412,7 +1415,7 @@ function renderActionsDeclarees(){
         if(ennemisV.length){
           // La zone ne se choisit qu'en VISANT (Aim). Une attaque non visée → zone tirée au hasard.
           const showZone = (selectedActionDraft.type === 'Aim');
-          body += '<select id="j-act-cible" class="decl-in">'
+          body += '<select id="j-act-cible" class="decl-in" onchange="renderJMap()">'
             + enemyOptions(ennemisV, savedCible)
             + '</select>'
             + (showZone
@@ -1541,10 +1544,11 @@ function renderActionsDeclarees(){
   }
 
   // Box de paramètres en POPUP superposé au bloc (ne décale plus les boutons)
-  // Déclaration d'un déplacement : PAS de voile d'assombrissement — la carte est justement
-  // ce qu'on doit regarder (choix de la case, trajet pointillé).
-  const _mvDecl = selectedActionDraft && _isMoveType(selectedActionDraft.type) && !!combatState?.grid?.pos?.[joueurId];
-  if(draftHtml) html += '<div class="act-draft-pop' + (_mvDecl ? ' no-veil' : '') + '">' + draftHtml + '</div>';
+  // Déplacement OU attaque : PAS de voile d'assombrissement — dans les deux cas la carte est ce
+  // qu'on doit lire pendant la déclaration (case de destination / repérer la cible et sa ligne de vue).
+  const _tDraft = selectedActionDraft && selectedActionDraft.type;
+  const _mapDecl = !!_tDraft && (_isMoveType(_tDraft) || _isAtkType(_tDraft)) && !!combatState?.grid?.pos?.[joueurId];
+  if(draftHtml) html += '<div class="act-draft-pop' + (_mapDecl ? ' no-veil' : '') + '">' + draftHtml + '</div>';
 
   el.innerHTML = html;
   el.style.display = html ? 'block' : 'none';
@@ -1582,6 +1586,16 @@ function prepareAction(category, type){
   renderJMap();
 }
 function _isMoveType(t){ return t === 'Move' || t === 'Sprint'; }
+function _isAtkType(t){ return t === 'Attack' || t === 'Aim'; }
+// Ennemi actuellement ciblé : celui du sélecteur de la déclaration en cours, sinon la visée mémorisée
+function _declTargetId(){
+  if(selectedActionDraft && _isAtkType(selectedActionDraft.type)){
+    const el = document.getElementById('j-act-cible');
+    if(el && el.value) return el.value;
+  }
+  if(myAim && myAim.cible) return myAim.cible;
+  return cibleAttaque || null;
+}
 // Destination d'un déplacement en attente de validation MJ (pour tracer le trajet)
 function _pendingMoveTo(){
   for(const cat of ['mineure','majeure']){
