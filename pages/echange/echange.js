@@ -12,6 +12,7 @@ let myParty = null;     // groupe (party) du joueur, ou null
 let pool = null;        // doc du pool, ou null
 let charData = null;    // fiche du joueur
 let _poolUnsub = null;
+let poolId = null;      // id du doc poolsEchange où je suis membre
 
 document.addEventListener('DOMContentLoaded', () => {
   if (embed) document.body.classList.add('embed');
@@ -31,31 +32,39 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('message', e => { if (e.data === 'echange-refresh') render(); });
 });
 
+// Le pool n'est PLUS indexé par groupe : c'est un doc ad-hoc dont `members` liste
+// les joueurs concernés (échange à 2 depuis la carte, ou tout le groupe).
 function subscribePool(){
   if (_poolUnsub){ _poolUnsub(); _poolUnsub = null; }
-  if (!myParty){ pool = null; return; }
-  _poolUnsub = fdb.collection('poolsEchange').doc(myParty.id).onSnapshot(s => {
-    pool = s.exists ? s.data() : null;
-    render();
-  });
+  if (!viewerId){ pool = null; poolId = null; return; }
+  _poolUnsub = fdb.collection('poolsEchange').where('members','array-contains',viewerId).limit(1)
+    .onSnapshot(s => {
+      if (s.empty){ pool = null; poolId = null; }
+      else { const d = s.docs[0]; poolId = d.id; pool = d.data(); }
+      render();
+    }, e => { console.warn('poolsEchange:', e && e.code); pool = null; poolId = null; render(); });
 }
 
 function esc(s){ return (s==null?'':''+s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function toast(msg){ const t=document.getElementById('ex-toast'); if(!t)return; t.textContent=msg; t.style.display='block'; clearTimeout(toast._t); toast._t=setTimeout(()=>t.style.display='none',2200); }
 
-const _poolRef = () => fdb.collection('poolsEchange').doc(myParty.id);
+const _poolRef = () => fdb.collection('poolsEchange').doc(poolId);
 const _charRef = () => fdb.collection('joueurs').doc(viewerId);
 
 // ---- Ouvrir / fermer / quitter ----
+// Ouvre un pool ad-hoc : avec mon groupe si j'en ai un, sinon juste moi
+// (d'autres joueurs peuvent m'y rejoindre via « Proposer un échange » sur la carte).
 async function ouvrirPool(){
-  if (!myParty) return;
-  await _poolRef().set({
+  if (!viewerId) return;
+  const members = (myParty && Array.isArray(myParty.players) && myParty.players.length)
+    ? myParty.players.slice() : [viewerId];
+  const id = 'ex' + Date.now().toString(36) + Math.floor(Math.random()*999);
+  await fdb.collection('poolsEchange').doc(id).set({
     creator: viewerId,
     creatorNom: charData?.nom || viewerId,
-    partyId: myParty.id,
-    partyName: myParty.name || 'Groupe',
-    members: (myParty.players||[]).slice(),
-    items: [], ammo: [], caps: 0,
+    partyName: (myParty && myParty.name) || 'Échange',
+    members,
+    items: [], ammo: [], caps: 0, cards: [],
     createdAt: Date.now()
   });
 }
@@ -99,7 +108,18 @@ async function fermerPool(){
   _leave();
 }
 
-function quitterPool(){ _leave(); }
+// Quitter : je me retire des membres (le pool disparaît de ma vue). S'il ne reste
+// plus personne, le doc est supprimé (sinon il resterait orphelin).
+async function quitterPool(){
+  if (poolId && pool){
+    try {
+      const rest = (pool.members||[]).filter(m => m !== viewerId);
+      if (rest.length) await _poolRef().update({ members: rest });
+      else await _poolRef().delete();
+    } catch(e){ console.warn('quitterPool:', e); }
+  }
+  _leave();
+}
 function _leave(){
   if (embed && window.parent) window.parent.postMessage('echange-close','*');
 }
@@ -276,13 +296,11 @@ async function prendreCaps(n){
 function render(){
   const root = document.getElementById('ex-root'); if(!root) return;
   if (!viewerId){ root.innerHTML = '<div class="ex-empty">Vue joueur requise.</div>'; return; }
-  if (!myParty){
-    root.innerHTML = '<div class="ex-empty">Tu n\'es pas dans un groupe.<br>Rejoins un groupe (via le MJ ou la carte) pour ouvrir un pool d\'échange.</div>';
-    return;
-  }
   if (!pool){
-    root.innerHTML = '<div class="ex-empty">Aucun pool d\'échange ouvert pour <b style="color:var(--am)">'+esc(myParty.name||'ton groupe')+'</b>.</div>'
-      + '<button class="ex-open-btn" onclick="ouvrirPool()">＋ Ouvrir un pool d\'échange</button>';
+    root.innerHTML = '<div class="ex-empty">Aucun échange en cours.<br>'
+      + 'Sur la carte, clique le jeton d\'un joueur proche → <b style="color:var(--am)">🔄 Proposer un échange</b>.'
+      + (myParty ? '<br>Ou ouvre un pool avec tout ton groupe :' : '') + '</div>'
+      + '<button class="ex-open-btn" onclick="ouvrirPool()">＋ Ouvrir un pool d\'échange'+(myParty?' (groupe)':'')+'</button>';
     return;
   }
 

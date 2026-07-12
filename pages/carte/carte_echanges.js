@@ -1,12 +1,13 @@
 // ============================================================
-// carte_echanges.js — Échanges entre joueurs (don d'objets, groupes,
+// carte_echanges.js — Échanges entre joueurs (pool commun, groupes,
 // numéros, balises GPS). Extrait de carte.js (scope global partagé :
 // chargé APRÈS carte.js, appels résolus au runtime).
 // ============================================================
 // ============================================================
 // ÉCHANGES ENTRE JOUEURS (proximité sur la carte)
 // Proposition → /echanges/{id} {from,fromNom,to,toNom,type,items?,ts,status}
-//   type: 'group' | 'numbers' | 'give'  ;  status: pending|accepted|declined
+//   type: 'group' | 'numbers' | 'beacon'  ;  status: pending|accepted|declined
+// (le don unilateral a ete SUPPRIME : les echanges passent par un POOL commun)
 // Côté cible : modale accepter/refuser → applique l'effet + journalise (MJ notifié).
 // La portée est déjà garantie : le jeton d'un autre joueur n'est cliquable
 // que s'il est dans VISION_RADIUS_M (renderTokens). _inRange revérifie à l'envoi.
@@ -25,14 +26,14 @@ function _inRange(otherId){
   if(!my || !ot) return false;
   return L.latLng(my.lat, my.lng).distanceTo(L.latLng(ot.lat, ot.lng)) <= VISION_RADIUS_M;
 }
-// Boutons d'interaction de proximité (groupe / numéros / don / balise GPS)
+// Boutons d'interaction de proximité (groupe / numéros / échange / balise GPS)
 function _interactBtns(id){
   const shared = (mapData.beacons?.[viewerId] || []).includes(id);
   const inGroup = !!groupOf(id);
   return '<div class="tok-actions">'
     + `<button onclick="propGroup('${id}')">👥 ${inGroup ? 'Proposer de rejoindre le groupe' : 'Proposer de grouper'}</button>`
     + `<button onclick="propNumbers('${id}')">📟 Échanger les numéros</button>`
-    + `<button onclick="openGive('${id}')">🎁 Donner des objets</button>`
+    + `<button onclick="propEchange('${id}')">🔄 Proposer un échange</button>`
     + (shared ? '<button disabled style="opacity:.6;cursor:default">📡 Balise GPS partagée ✓</button>'
               : `<button onclick="propBeacon('${id}')">📡 Échanger les balises GPS</button>`)
     + '</div>';
@@ -64,57 +65,40 @@ async function propGroup(to){
 function propNumbers(to){ _sendProposal(to, 'numbers'); }
 function propBeacon(to){ _sendProposal(to, 'beacon'); }
 
-// ---- Don d'objets (sens unique) ----
-let _giveTo = null;
-function openGive(to){
+// ---- Échange : POOL COMMUN (remplace l'ancien don unilatéral) ----
+// L'initiateur crée un pool vide (ou rajoute la cible à son pool existant) et l'ouvre
+// aussitôt chez lui. La cible n'a rien à accepter : elle voit une ALERTE sur sa fiche
+// (bandeau « échange en cours ») et ouvre le pool quand elle veut. Les deux déposent
+// et prennent librement (transactions Firestore côté page Échange).
+async function propEchange(to){
+  if(!fdb || !viewerId) return;
   if(!_inRange(to)){ carteToast('Trop loin — rapprochez-vous.'); return; }
-  _giveTo = to;
-  const myInv = joueurs[viewerId]?.inventory || [];
-  const myAmmo = (joueurs[viewerId]?.ammo || []).filter(a => (a.qty||0) > 0);
-  const giveable = myInv.filter(it => !it.equipped && (it.qty||1) > 0);
-  document.getElementById('give-sub').textContent = 'À donner à ' + (joueurs[to]?.nom || to) + ' :';
-  const list = document.getElementById('give-list');
-  let h = '';
-  if(giveable.length){
-    h += giveable.map(it => {
-      const i = myInv.indexOf(it);
-      const isC = (window.DB?.stuff||[]).some(s => s.n === it.name && s.cap != null);
-      const wc = isC ? ` <span style="color:#2a9d8f">💧${it.water||0}</span>` : '';
-      return `<div class="ex-row"><span class="ex-name">${_exEsc(it.name)}${wc}</span><span class="ex-have">x${it.qty||1}</span>`
-        + `<input type="number" min="0" max="${it.qty||1}" value="0" data-inv="${i}" data-max="${it.qty||1}"></div>`;
-    }).join('');
-  }
-  if(myAmmo.length){
-    h += '<div class="ex-empty" style="text-align:left;opacity:.7;margin:4px 0 2px">Munitions</div>';
-    h += myAmmo.map(a =>
-      `<div class="ex-row"><span class="ex-name">▪ ${_exEsc(a.cal)}</span><span class="ex-have">x${a.qty||0}</span>`
-      + `<input type="number" min="0" max="${a.qty||0}" value="0" data-ammo="${_exEsc(a.cal)}" data-max="${a.qty||0}"></div>`
-    ).join('');
-  }
-  list.innerHTML = h || '<div class="ex-empty">Aucun objet transférable (les objets équipés ne peuvent pas être donnés).</div>';
-  if (map) map.closePopup();
-  document.getElementById('give-mo').classList.add('on');
-}
-function closeGive(){ document.getElementById('give-mo').classList.remove('on'); _giveTo = null; }
-function confirmGive(){
-  if(!_giveTo) return;
-  const myInv = joueurs[viewerId]?.inventory || [];
-  const items = [];
-  document.querySelectorAll('#give-list input').forEach(inp => {
-    const max = parseInt(inp.dataset.max)||0;
-    let n = Math.max(0, Math.min(parseInt(inp.value)||0, max));
-    if(n<=0) return;
-    if(inp.dataset.ammo != null){            // munitions
-      items.push({ ammo: true, cal: inp.dataset.ammo, n });
-    } else {
-      const it = myInv[parseInt(inp.dataset.inv)];
-      if(it) items.push({ name: it.name, type: it.type, w: it.w||0, n, water: it.water });
+  try{
+    const q = await fdb.collection('poolsEchange').where('members','array-contains',viewerId).limit(1).get();
+    if(!q.empty){                                   // j'ai déjà un pool → j'y ajoute la cible
+      const d = q.docs[0], mem = d.data().members || [];
+      if(!mem.includes(to)) await d.ref.update({ members: [...mem, to] });
+    } else {                                        // sinon → nouveau pool vide à deux
+      const id = 'ex' + Date.now().toString(36) + Math.floor(Math.random()*999);
+      await fdb.collection('poolsEchange').doc(id).set({
+        creator: viewerId, creatorNom: joueurs[viewerId]?.nom || viewerId,
+        partyName: 'Échange', members: [viewerId, to],
+        items: [], ammo: [], caps: 0, cards: [], createdAt: Date.now()
+      });
     }
-  });
-  if(!items.length){ carteToast('Sélectionne au moins 1 objet.'); return; }
-  const to = _giveTo;
-  closeGive();
-  _sendProposal(to, 'give', { items });
+    const nom = joueurs[to]?.nom || to;
+    carteToast('🔄 Échange ouvert avec ' + nom);
+    if(map) map.closePopup();
+    _logEchangeOuvert(to);
+    // La carte tourne en iframe dans la fiche → demander l'ouverture du pool chez moi
+    if(window.parent && window.parent !== window) window.parent.postMessage('open-echange','*');
+  }catch(e){ console.error('propEchange', e); carteToast("Échec de l'ouverture de l'échange."); }
+}
+function _logEchangeOuvert(to){
+  const a = joueurs[viewerId]?.nom || viewerId, b = joueurs[to]?.nom || to;
+  const txt = `${a} a ouvert un échange avec ${b}.`;
+  if(typeof logJournal === 'function') logJournal({ type:'info', title:'Échange entre joueurs', text: txt, revealedFor: [], src: 'echange:' + Date.now() });
+  if(typeof fpLogAction === 'function') fpLogAction(fdb, a, txt);
 }
 
 // ---- Réception des propositions ----
@@ -142,13 +126,8 @@ function showProp(p){
     : `<b>${_exEsc(p.fromNom)}</b> te propose de rejoindre le groupe <b>« ${_exEsc(p.groupName || 'Groupe')} »</b> (vous partagerez le même temps de jeu).`;
   if(p.type === 'numbers') body = `<b>${_exEsc(p.fromNom)}</b> veut <b>échanger vos numéros</b> (vous pourrez vous envoyer des messages).`;
   if(p.type === 'beacon')  body = `<b>${_exEsc(p.fromNom)}</b> veut <b>échanger vos balises GPS</b> (vous vous verrez en permanence sur la carte, même à distance).`;
-  if(p.type === 'give'){
-    const lst = (p.items||[]).map(it => `${it.n}× ${_exEsc(it.ammo ? ('▪ '+it.cal) : it.name)}${(it.water!=null) ? ' (💧'+it.water+')' : ''}`).join(', ');
-    body = `<b>${_exEsc(p.fromNom)}</b> veut te <b>donner</b> : ${lst || '—'}.`;
-  }
   document.getElementById('prop-title').textContent =
-    p.type === 'give' ? '🎁 Don proposé'
-    : p.type === 'group' ? '👥 Proposition de groupe'
+    p.type === 'group' ? '👥 Proposition de groupe'
     : p.type === 'beacon' ? '📡 Balises GPS'
     : '📟 Échange de numéros';
   document.getElementById('prop-body').innerHTML = body;
@@ -170,7 +149,6 @@ async function acceptProp(){
     if(p.type === 'numbers')     await _applyNumbers(p);
     else if(p.type === 'group')  await _applyGroup(p);
     else if(p.type === 'beacon') await _applyBeacon(p);
-    else if(p.type === 'give')   await _applyGive(p);
     await fdb.collection('echanges').doc(p.id).update({ status:'accepted' });
     _logMJ(p);
     carteToast('✓ Accepté.');
@@ -219,54 +197,11 @@ async function _applyBeacon(p){
   add(p.from, p.to); add(p.to, p.from);
   await ref.set({ beacons }, { merge: true });
 }
-async function _applyGive(p){
-  const fromRef = fdb.collection('joueurs').doc(p.from);
-  const toRef   = fdb.collection('joueurs').doc(p.to);
-  const [fs, ts] = await Promise.all([fromRef.get(), toRef.get()]);
-  const fromInv  = (fs.exists && Array.isArray(fs.data().inventory)) ? fs.data().inventory : [];
-  const toInv    = (ts.exists && Array.isArray(ts.data().inventory)) ? ts.data().inventory : [];
-  const fromAmmo = (fs.exists && Array.isArray(fs.data().ammo)) ? fs.data().ammo : [];
-  const toAmmo   = (ts.exists && Array.isArray(ts.data().ammo)) ? ts.data().ammo : [];
-  (p.items||[]).forEach(gi => {
-    if(gi.ammo){            // munitions
-      const src = fromAmmo.find(a => a.cal === gi.cal);
-      if(!src) return;
-      const give = Math.min(gi.n, src.qty || 0);
-      if(give<=0) return;
-      src.qty = (src.qty || 0) - give;
-      const dst = toAmmo.find(a => a.cal === gi.cal);
-      if(dst) dst.qty = (dst.qty || 0) + give;
-      else toAmmo.push({ cal: gi.cal, qty: give });
-      return;
-    }
-    const isCont = (window.DB?.stuff||[]).some(s => s.n === gi.name && s.cap != null);
-    // Contenant d'eau : on cible l'exemplaire ayant la bonne quantité d'eau, et on ne fusionne pas (eau par exemplaire)
-    const src = fromInv.find(it => it.name === gi.name && it.type === gi.type && (!isCont || (it.water||0) === (gi.water||0)))
-             || fromInv.find(it => it.name === gi.name && it.type === gi.type);
-    if(!src) return;
-    const give = Math.min(gi.n, src.qty || 1);
-    src.qty = (src.qty || 1) - give;
-    if(isCont){
-      for(let k=0;k<give;k++) toInv.push({ name: gi.name, type: gi.type, w: gi.w || 0, qty: 1, water: gi.water || 0 });
-    } else {
-      const dst = toInv.find(it => it.name === gi.name && it.type === gi.type && !it.equipped);
-      if(dst) dst.qty = (dst.qty || 1) + give;
-      else toInv.push({ name: gi.name, type: gi.type, w: gi.w || 0, qty: give });
-    }
-  });
-  const cleanFrom = fromInv.filter(it => (it.qty || 0) > 0);
-  const cleanFromAmmo = fromAmmo.filter(a => (a.qty || 0) > 0);
-  await Promise.all([
-    fromRef.set({ inventory: cleanFrom, ammo: cleanFromAmmo }, { merge:true }),
-    toRef.set({ inventory: toInv, ammo: toAmmo }, { merge:true })
-  ]);
-}
 function _logMJ(p){
   let txt = '';
   if(p.type === 'group')   txt = `${p.fromNom} et ${p.toNom} forment un groupe.`;
   if(p.type === 'numbers') txt = `${p.fromNom} et ${p.toNom} ont échangé leurs numéros.`;
   if(p.type === 'beacon')  txt = `${p.fromNom} et ${p.toNom} ont échangé leurs balises GPS (visibles en permanence sur la carte).`;
-  if(p.type === 'give'){ const lst = (p.items||[]).map(it => `${it.n}× ${it.name}`).join(', '); txt = `${p.fromNom} a donné à ${p.toNom} : ${lst}.`; }
   if(typeof logJournal === 'function') logJournal({ type:'info', title:'Échange entre joueurs', text: txt, revealedFor: [], src: 'echange:' + (p.ts || Date.now()) });
   if(typeof fpLogAction === 'function') fpLogAction(fdb, joueurs[viewerId]?.nom || viewerId, txt);
 }
