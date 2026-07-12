@@ -87,6 +87,9 @@ function appliquerDonnees(data) {
   // (équipée + PA active). Couvre toutes les provenances (carte, butin, boutique,
   // échange, admin). Persiste si l'état a été corrigé.
   if (typeof fpNormalizePAFrames === 'function' && fpNormalizePAFrames() && typeof saveToFirebase === 'function') saveToFirebase();
+  // Invariant Collection : toute carte MTG isolée (loot, MJ, sol…) est absorbée dans
+  // l'objet « Collection de cartes » — évite des centaines d'objets uniques.
+  if (typeof fpNormalizeMtgCards === 'function' && fpNormalizeMtgCards() && typeof saveToFirebase === 'function') saveToFirebase();
   // Clamp PV au max courant : si un buff de PV max a été retiré (purge MJ/joueur), hp ne doit pas rester au-dessus du nouveau max
   if (typeof hpMax === 'function') {
     const mx = hpMax();
