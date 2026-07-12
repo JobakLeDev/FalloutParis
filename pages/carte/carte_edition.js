@@ -111,6 +111,25 @@ function zonesAlongPath(from, to) {
 const _THREAT_ORDER = { calme: 0, normal: 1, eleve: 2, extreme: 3 };
 let _lastMove = null;   // {id, dist, zones} — pour relancer le générateur
 function rerollDeplacement() { if (_lastMove) showMoveResult(_lastMove.id, _lastMove.dist, _lastMove.zones); }
+
+// Allure du déplacement d'un jeton : s'il est en groupe, on prend le plus lent des membres
+// (personne n'est laissé derrière) ; sinon la sienne. Fiches complètes dans `joueurs`.
+function _vitesseDuDeplacement(id) {
+  if (typeof fpVitesseGroupe !== 'function') return { kmh: (typeof FP_WALK_KMH !== 'undefined' ? FP_WALK_KMH : 5), slowest: null };
+  const party = (typeof groupOf === 'function') ? groupOf(id) : null;
+  const ids = (party && party.players && party.players.length) ? party.players : [id];
+  const membres = ids
+    .map(pid => ({ id: pid, nom: (joueurs[pid] && joueurs[pid].nom) || pid, char: joueurs[pid] }))
+    .filter(m => m.char);
+  return fpVitesseGroupe(membres);
+}
+// Qui impose le rythme, et pourquoi (n'affiche rien si personne ne ralentit le groupe)
+function _allureCause(vit) {
+  const s = vit && vit.slowest;
+  if (!s || !s.cause) return '';
+  const col = s.surcharge ? 'var(--rd)' : 'var(--am)';
+  return `<div class="pz-row"><span class="pz-nom" style="color:${col}">🐢 ${s.nom} — ${s.cause}</span></div>`;
+}
 function showMoveResult(id, dist, zones) {
   const el = document.getElementById('move-result'); if (!el) return;
   _lastMove = { id, dist, zones };
@@ -122,14 +141,18 @@ function showMoveResult(id, dist, zones) {
   // Menace la plus élevée parmi les zones traversées → générateur de déplacement
   let threat = 'normal';
   zones.forEach(z => { if ((_THREAT_ORDER[z.threat] ?? 1) > (_THREAT_ORDER[threat] ?? 1)) threat = z.threat || 'normal'; });
-  const res = (typeof fpRollDeplacement === 'function') ? fpRollDeplacement(dist / 1000, threat) : null;
+  // Allure : celle du plus lent du groupe (ou du joueur seul) — stats + encombrement
+  const vit = _vitesseDuDeplacement(id);
+  const res = (typeof fpRollDeplacement === 'function') ? fpRollDeplacement(dist / 1000, threat, vit.kmh) : null;
   const menaceLbl = (typeof THREAT_LABELS !== 'undefined' && THREAT_LABELS[threat]) || threat;
 
   let gen = '';
   if (res) {
     const timeTxt = fpFmtDuree(res.mins);
     gen = `<div class="mjp-title" style="margin-top:8px">🎲 Déplacement <span style="color:var(--td);font-weight:normal">· ${menaceLbl} · ${res.pKm}%/km</span></div>
-      <div class="pz-row"><span class="pz-nom">⏱ Trajet</span><span class="pz-zone" style="color:var(--am)">${timeTxt}</span></div>`;
+      <div class="pz-row"><span class="pz-nom">⏱ Trajet</span><span class="pz-zone" style="color:var(--am)">${timeTxt}</span></div>
+      <div class="pz-row"><span class="pz-nom">🚶 Allure</span><span class="pz-zone">${res.kmh} km/h</span></div>
+      ${_allureCause(vit)}`;
     if (!res.events.length) {
       gen += `<div class="pz-row"><span class="pz-nom" style="color:var(--g)">✓ Sans encombre</span></div>`;
     } else {
