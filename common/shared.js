@@ -44,6 +44,23 @@ function fpLogAction(dbInst, who, text){
 // État de santé selon le % de PV restant (graduel) — partagé fiche joueur + tableau MJ.
 // On n'est « blessé » qu'en dessous de 60 %, puis ça s'aggrave par paliers.
 //   sev 0 OK (≥60%) · 1 BLESSÉ (35–59%) · 2 GRAVEMENT BLESSÉ (15–34%) · 3 CRITIQUE (<15%)
+// ============================================================
+// EFFET CRT — anti-cumul dans les iframes
+// Le CRT (scanlines + voile phosphore vert) vient de html::before/::after de
+// common/style.css : CHAQUE page l'applique donc sur toute sa surface. Une page
+// affichée en iframe se retrouve avec le CRT du parent PAR-DESSUS le sien → cumul
+// (×2 pour quêtes/journal/butin/boutique…, ×3 pour le refuge dans la carte dans la
+// fiche). Seul le document RACINE doit afficher l'effet : les pages embarquées coupent
+// le leur. (Cross-origin → l'accès à window.top jette : on suppose alors une iframe.)
+(function(){
+  var inIframe;
+  try { inIframe = (window.self !== window.top); } catch(e){ inIframe = true; }
+  if (inIframe && document.documentElement){
+    document.documentElement.style.setProperty('--crt-green', '0');
+    document.documentElement.style.setProperty('--crt-scan', '0');
+  }
+})();
+
 function fpHealthStatus(pct){
   if(pct >= 60) return { sev:0, label:'OK' };
   if(pct >= 35) return { sev:1, label:'BLESSÉ' };
