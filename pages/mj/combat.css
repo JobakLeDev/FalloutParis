@@ -380,6 +380,16 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   border-top:2px dashed rgba(232,168,32,.85); filter:drop-shadow(0 0 3px rgba(232,168,32,.6)); }
 .cmap-aimline.solid{ height:3px; border-top:none; border-radius:2px;
   background:linear-gradient(90deg, rgba(232,168,32,.5), var(--am)); box-shadow:0 0 7px rgba(232,168,32,.9); }
+/* Trajet de déplacement DÉCLARÉ, en attente de validation MJ (jeton → destination voulue).
+   Vert, pour ne pas se confondre avec la ligne de visée (ambre). Visible sur les 2 écrans. */
+.cmap-moveline{ position:absolute; height:0; transform-origin:0 50%; z-index:5; pointer-events:none;
+  border-top:2px dashed rgba(93,190,93,.9); filter:drop-shadow(0 0 3px rgba(93,190,93,.6));
+  animation:mvDash .9s linear infinite; }
+@keyframes mvDash{ from{ opacity:.55; } 50%{ opacity:1; } to{ opacity:.55; } }
+.cmap-movedest{ position:absolute; z-index:5; pointer-events:none; box-sizing:border-box;
+  border:2px dashed var(--g); border-radius:2px; background:rgba(93,190,93,.12);
+  box-shadow:0 0 10px rgba(93,190,93,.35) inset; }
+
 /* Clignotement « prend des dégâts » (style NES, on/off net) */
 .dmg-flash{ animation:dmgFlash .6s steps(1) 1; }
 @keyframes dmgFlash{

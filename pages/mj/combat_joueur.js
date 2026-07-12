@@ -475,6 +475,17 @@ function renderJMap(){
       html += '<div class="cmap-aimline'+(solid?' solid':'')+'" style="left:'+x1+'px;top:'+y1+'px;width:'+len+'px;transform:rotate('+ang+'deg)"></div>';
     }
   }
+  // Trajet de déplacement : destination choisie (brouillon) ou déjà envoyée au MJ (en attente de validation)
+  const mvTo = (selectedActionDraft && _isMoveType(selectedActionDraft.type) && selectedActionDraft.to)
+    ? selectedActionDraft.to : _pendingMoveTo();
+  if(mvTo && myPos){
+    const pad=5, cs=30, pitch=cs+1;
+    const cx=p=>pad+p.x*pitch+cs/2, cy=p=>pad+p.y*pitch+cs/2;
+    const x1=cx(myPos), y1=cy(myPos), x2=cx(mvTo), y2=cy(mvTo);
+    const len=Math.hypot(x2-x1,y2-y1), ang=Math.atan2(y2-y1,x2-x1)*180/Math.PI;
+    html += '<div class="cmap-moveline" style="left:'+x1+'px;top:'+y1+'px;width:'+len+'px;transform:rotate('+ang+'deg)"></div>';
+    html += '<div class="cmap-movedest" style="left:'+(pad+mvTo.x*pitch)+'px;top:'+(pad+mvTo.y*pitch)+'px;width:'+cs+'px;height:'+cs+'px"></div>';
+  }
   html += '</div>';
   el.innerHTML = html;
 }
@@ -515,7 +526,15 @@ function startJMove(type, range){ _jMoveActive = type; _jMoveRange = range; rend
   const pnl=document.getElementById('j-map-pnl'); if(pnl) pnl.scrollIntoView({behavior:'smooth',block:'nearest'}); }
 async function moveJSelf(x,y){
   if(!_jMoveActive || !combatState?.grid || !db) return;
-  const type = _jMoveActive; _jMoveActive = null; _jMoveRange = 0;
+  // Phase de DÉCLARATION : la destination rejoint le brouillon et la popup de validation s'ouvre.
+  // Le jeton NE BOUGE PAS encore — c'est le MJ qui l'appliquera en validant.
+  if(selectedActionDraft && selectedActionDraft.type === _jMoveActive){
+    selectedActionDraft.to = { x, y };
+    _jMoveActive = null; _jMoveRange = 0;
+    renderJMap(); renderActionsDeclarees();
+    return;
+  }
+  const type = _jMoveActive; _jMoveActive = null; _jMoveRange = 0;   // mode sans déclaration (secours)
   combatState.grid.pos = combatState.grid.pos || {};
   combatState.grid.pos[joueurId] = { x, y };
   try { await db.collection(COMBATS_COLL).doc(combatId).update({ ['grid.pos.'+joueurId]: { x, y } }); } catch(e){ console.error(e); }
@@ -1436,6 +1455,23 @@ function renderActionsDeclarees(){
         }
       }
     }
+
+    // Déplacement sur grille : la destination fait partie de la déclaration → pas d'envoi sans destination
+    const _gridMove = _isMoveType(selectedActionDraft.type) && !!combatState?.grid?.pos?.[joueurId];
+    let _needDest = false;
+    if(_gridMove){
+      const me = combatState.grid.pos[joueurId], to = selectedActionDraft.to;
+      const range = (selectedActionDraft.type === 'Sprint') ? GRID_SPRINT : GRID_MOVE;
+      if(to){
+        const d = gridManhattan(me, to);
+        body += '<div class="decl-dest">📍 Destination <b>(' + to.x + ',' + to.y + ')</b> · ' + d + ' case' + (d>1?'s':'')
+          + '<button class="decl-redo" onclick="reprendreDestination()" title="Choisir une autre case">↺</button></div>';
+      } else {
+        _needDest = true;
+        body += '<div class="decl-pick">📍 Clique ta destination sur la carte (≤ ' + range + ' cases)</div>';
+      }
+    }
+
     body += '<input type="text" id="j-action-details" class="decl-in" placeholder="Precisions optionnelles (note...)">';
 
     const catCls = (selectedActionDraft.category === 'majeure') ? 'maj' : 'min';
@@ -1447,7 +1483,7 @@ function renderActionsDeclarees(){
       + '<div class="decl-desc">' + selectedActionDraft.desc + '</div>'
       + '<div class="decl-body">' + body + '</div>'
       + '<div class="decl-btns">'
-      + '<button class="decl-send" onclick="submitActionDeclaree()"><span>Envoyer au MJ</span><b>➜</b></button>'
+      + '<button class="decl-send" onclick="submitActionDeclaree()"' + (_needDest ? ' disabled' : '') + '><span>Envoyer au MJ</span><b>➜</b></button>'
       + '<button class="decl-cancel" onclick="cancelActionDeclaree()" title="Annuler">✕</button>'
       + '</div>'
       + '</div>';
@@ -1533,7 +1569,23 @@ function prepareAction(category, type){
   const list = category === 'mineure' ? MINOR_ACTIONS : MAJOR_ACTIONS;
   const action = list.find(a => a.type === type); if(!action) return;
   selectedActionDraft = { category, type: action.type, desc: action.desc };
+  // Déplacement sur grille : on choisit la DESTINATION AVANT de déclarer — le MJ valide un trajet,
+  // pas une intention. La carte passe aussitôt en mode « clique ta case ».
+  if(_isMoveType(type) && combatState?.grid?.pos?.[joueurId]){
+    _jMoveActive = type;
+    _jMoveRange = (type === 'Sprint') ? GRID_SPRINT : GRID_MOVE;
+  }
   renderActionsDeclarees();
+  renderJMap();
+}
+function _isMoveType(t){ return t === 'Move' || t === 'Sprint'; }
+// Destination d'un déplacement en attente de validation MJ (pour tracer le trajet)
+function _pendingMoveTo(){
+  for(const cat of ['mineure','majeure']){
+    const p = actionState?.[cat]?.pending;
+    if(p && p.status === 'waiting' && _isMoveType(p.type) && p.to) return p.to;
+  }
+  return null;
 }
 
 async function submitActionDeclaree(){
@@ -1566,7 +1618,10 @@ async function submitActionDeclaree(){
     if(ci !== '' && ci != null) actLabel = await consumeChem(parseInt(ci));
   }
 
+  const moveTo = (_isMoveType(type) && selectedActionDraft.to) ? selectedActionDraft.to : null;
+
   let details = '';
+  if(moveTo) details = '📍 → (' + moveTo.x + ',' + moveTo.y + ')';
   if(cible) details = '🎯 ' + cibleNom(cible) + (zone ? ' — ' + zone : '');
   if(w)     details += (details ? ' · ' : '') + w.label;
   if(actLabel) details += (details ? ' · ' : '') + actLabel;
@@ -1576,7 +1631,9 @@ async function submitActionDeclaree(){
   // Attaque : appliquer l'arme choisie (sélectionnée à la déclaration ou héritée de l'Aim)
   if(type === 'Attack' && w) selArme(w.nom, w.tn, w.dmg, w.persoBonus);
   const upd = {};
-  upd['actionsDeclarees.' + joueurId + '.' + category + '.pending'] = { type, details, requestedAt: Date.now(), status: 'waiting' };
+  const pend = { type, details, requestedAt: Date.now(), status: 'waiting' };
+  if(moveTo) pend.to = moveTo;   // le MJ appliquera le déplacement en validant (comme p.doorKey pour les portes)
+  upd['actionsDeclarees.' + joueurId + '.' + category + '.pending'] = pend;
   // Fermer le bloc d'édition AVANT l'écriture (Firestore re-render en local immédiatement)
   selectedActionDraft = null;
   renderActionsDeclarees();
@@ -1587,6 +1644,17 @@ async function submitActionDeclaree(){
 
 function cancelActionDeclaree(){
   selectedActionDraft = null;
+  _jMoveActive = null; _jMoveRange = 0;
   renderActionsDeclarees();
+  renderJMap();
+}
+// Rechoisir la case de destination sans annuler la déclaration en cours
+function reprendreDestination(){
+  if(!selectedActionDraft || !_isMoveType(selectedActionDraft.type)) return;
+  selectedActionDraft.to = null;
+  _jMoveActive = selectedActionDraft.type;
+  _jMoveRange = (selectedActionDraft.type === 'Sprint') ? GRID_SPRINT : GRID_MOVE;
+  renderActionsDeclarees();
+  renderJMap();
 }
 
