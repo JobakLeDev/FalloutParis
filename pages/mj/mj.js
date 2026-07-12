@@ -1065,11 +1065,41 @@ function renderPublicRoll(r){
 // ============================================================
 // RENDER JOUEURS
 // ============================================================
+// Vue des joueurs : 'details' (cartes complètes) ou 'liste' (nom + coche + lien fiche). Mémorisée.
+let vueJoueurs = (()=>{ try{ return localStorage.getItem('fp_vueJoueurs') || 'details'; }catch(e){ return 'details'; } })();
+function setVueJoueurs(v){
+  vueJoueurs = (v === 'liste') ? 'liste' : 'details';
+  try{ localStorage.setItem('fp_vueJoueurs', vueJoueurs); }catch(e){}
+  renderJoueurs();
+}
+function _syncVueBtns(){
+  const l = document.getElementById('vue-liste'), d = document.getElementById('vue-details');
+  if(l) l.classList.toggle('on', vueJoueurs === 'liste');
+  if(d) d.classList.toggle('on', vueJoueurs === 'details');
+}
+
 function renderJoueurs(){
   const grid = document.getElementById('joueurs-grid');
   const ids = Object.keys(joueurs);
+  _syncVueBtns();
+  grid.classList.toggle('vue-liste', vueJoueurs === 'liste');
   if(!ids.length){ grid.innerHTML='<div style="font-size:9px;color:var(--td);padding:20px">Aucun personnage</div>'; return; }
   grid.innerHTML = '';
+
+  if(vueJoueurs === 'liste'){
+    grid.innerHTML = ids.map(id => {
+      const d = joueurs[id];
+      const sel = selected.has(id);
+      return `<div class="jl-row${sel?' selected':''}" onclick="toggleSel('${id}')">
+        <span class="sel-indicator"></span>
+        <span class="jl-nom">${(d.nom||id).toUpperCase()}</span>
+        <a class="jl-fiche" href="${FICHE_URL}?id=${id}" target="_blank" onclick="event.stopPropagation()" title="Ouvrir la fiche">↗ Fiche</a>
+      </div>`;
+    }).join('');
+    document.getElementById('sel-count').textContent = selected.size;
+    return;
+  }
+
   ids.forEach(id => {
     const d = joueurs[id];
     const hpMax = getHpMax(d);

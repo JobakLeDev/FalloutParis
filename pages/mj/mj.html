@@ -7,7 +7,7 @@
   <title>Fallout Paris — MJ</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css?v=0053a05a">
-  <link rel="stylesheet" href="mj.css?v=a8a4a6cf">
+  <link rel="stylesheet" href="mj.css?v=f7fd78d9">
 </head>
 <body>
 
@@ -256,6 +256,10 @@
       <span class="sel-lbl">SÉLECTION :</span>
       <button class="sel-btn" onclick="selTous()">Tous</button>
       <button class="sel-btn" onclick="selAucun()">Aucun</button>
+      <span class="vue-switch">
+        <button class="sel-btn vue-btn" id="vue-liste"   onclick="setVueJoueurs('liste')">☰ Liste</button>
+        <button class="sel-btn vue-btn" id="vue-details" onclick="setVueJoueurs('details')">▦ Détails</button>
+      </span>
       <span class="sel-count">Sélectionnés : <span id="sel-count">0</span></span>
     </div>
 
@@ -522,7 +526,7 @@
   <script src="../../common/survie.js?v=31a541f2"></script>
   <script src="mj_shared.js?v=90209219"></script>
   <script src="zones.js?v=4b361af8"></script>
-  <script src="mj.js?v=e98ea38f"></script>
+  <script src="mj.js?v=537a3eee"></script>
   <script src="../../common/responsive.js?v=f2bdcb93"></script>
 </body>
 </html>
