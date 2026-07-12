@@ -103,6 +103,30 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .sel-indicator{position:absolute;top:6px;left:6px;width:8px;height:8px;border:1px solid var(--b2);background:#060d06;border-radius:50%;}
 .joueur-card.selected .sel-indicator{background:var(--g);border-color:var(--g);}
 
+/* --- Switch de vue (Liste / Détails) --- */
+.vue-switch{display:flex;gap:0;margin-left:6px;}
+.vue-btn{border-radius:0;}
+.vue-btn + .vue-btn{border-left:none;}
+.vue-btn.on{border-color:var(--g);color:var(--am);background:#0d1f0d;}
+
+/* --- Vue LISTE : nom + coche + lien fiche, rien d'autre --- */
+.joueurs-grid.vue-liste{display:flex;flex-direction:column;gap:3px;}
+.jl-row{
+  display:flex;align-items:center;gap:9px;position:relative;
+  padding:6px 10px 6px 26px;                       /* place à gauche pour la coche */
+  background:var(--p2);border:1px solid var(--b);
+  cursor:pointer;user-select:none;transition:border-color .12s,background .12s;
+}
+.jl-row:hover{border-color:var(--b2);}
+.jl-row.selected{border-color:var(--g);background:#0d1f0d;}
+.jl-row .sel-indicator{top:50%;left:9px;transform:translateY(-50%);}
+.jl-row.selected .sel-indicator{background:var(--g);border-color:var(--g);}
+.jl-nom{flex:1;min-width:0;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:1px;color:var(--tb);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.jl-fiche{flex:0 0 auto;font-size:7px;color:var(--gd);text-decoration:none;border:1px solid var(--b);
+  padding:3px 8px;letter-spacing:1px;}
+.jl-fiche:hover{color:var(--g);border-color:var(--g);}
+
 /* ACTIONS */
 .actions-pnl{background:var(--p2);border:1px solid var(--b2);padding:10px;}
 .pnl-title{font-size:8px;letter-spacing:4px;color:var(--td);text-transform:uppercase;border-bottom:1px solid var(--b);padding-bottom:4px;margin-bottom:8px;}
