@@ -562,7 +562,16 @@ function _postcardLootList(){ return (window.POSTCARDS||[]).map(p=>({n:'Carte po
 // MTGJSON : sheets × contents), passé à weightedPick via `pw`. Les tokens (hors booster)
 // ont en repli la proba d'une commune moyenne pour rester lootables.
 const _MTG_RARITY_R = { common:1, uncommon:3, rare:4, mythic:5 };
-function _mtgLootList(){ return (window.MTG_CARDS||[]).map(c=>({n:c.name, t:'STUFF', w:0, r:_MTG_RARITY_R[c.rarity]||3, pw:c.p, mtgcard:c.id})); }
+const MTG_BOOSTER_ITEM = 'Booster scellé — Fallout';
+const MTG_BOOSTER_SHARE = 0.05;   // ~5 % des tirages « Cartes MTG » sont un booster scellé
+function _mtgLootList(){
+  const cards = (window.MTG_CARDS||[]).map(c=>({n:c.name, t:'STUFF', w:0, r:_MTG_RARITY_R[c.rarity]||3, pw:c.p, mtgcard:c.id}));
+  if(!cards.length) return cards;
+  // Booster scellé : objet à ouvrir par le joueur (15 cartes). Part fixe des tirages.
+  const totP = cards.reduce((a,c)=>a+(c.pw||0),0);
+  const bw = totP * MTG_BOOSTER_SHARE / (1 - MTG_BOOSTER_SHARE);
+  return [...cards, {n:MTG_BOOSTER_ITEM, t:'STUFF', w:0.05, r:4, pw:bw, booster:'pip'}];
+}
 
 function populateLootCats(){
   const el = document.getElementById('loot-cats'); if(!el) return;
@@ -611,6 +620,7 @@ function genButin(){
     const pool = {name:it.n, type:it.t||(cat==='junk'?'JUNK':cat), cat, qty:1, w:it.w||0, r:it.r||3};
     if(it.postcard) pool.postcard = it.postcard;
     if(it.mtgcard) pool.mtgcard = it.mtgcard;
+    if(it.booster) pool.booster = it.booster;
     addToPool(pool);
     added++;
   }
@@ -664,6 +674,7 @@ function _catBuildInv(name,cat){
   if(type==='WEAPON') item.persoBonus=false;
   if(def.postcard) item.postcard=def.postcard;   // carte postale → image affichable
   if(def.mtgcard) item.mtgcard=def.mtgcard;       // carte MTG → image affichable
+  if(def.booster) item.booster=def.booster;       // booster scellé → ouvrable par le joueur
   return item;
 }
 function renderCatTabs(){
@@ -713,6 +724,7 @@ function catToPool(name,cat){
   const pool = {name, type, cat, qty, w:def.w||0, r:def.r||3};
   if(def.postcard) pool.postcard = def.postcard;
   if(def.mtgcard) pool.mtgcard = def.mtgcard;
+  if(def.booster) pool.booster = def.booster;
   addToPool(pool);
   saveButin();
   if(typeof showMsg==='function') showMsg(`+ ${name} → pool de butin`);
