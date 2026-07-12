@@ -160,6 +160,55 @@ function fpNearestCardshop(pos, pois){
 }
 
 // ============================================================
+// FICHE : dérivés calculables pour N'IMPORTE QUELLE fiche (pas seulement celle ouverte)
+// fiche_perso.js les avait en fermeture sur sa globale `char` → inutilisables côté MJ,
+// qui a pourtant toutes les fiches (joueurs[id]). Ici : versions paramétrées ; la fiche
+// délègue à ces fonctions (une seule définition de chaque règle).
+// ============================================================
+const FP_BACKPACK_BONUS = { 'Backpack Small':5, 'Backpack Large':10 };   // × FOR, un seul sac équipé
+
+// SPECIAL effectif : base + bonus de collection MTG + 2 FOR si armure assistée portée
+function fpSpecial(c){
+  const s = Object.assign({}, (c && c.special) || {});
+  const bs = (fpMtgBonuses(c) || {}).special || {};
+  for(const k in bs) s[k] = Math.min(10, (s[k]||1) + bs[k]);
+  if(c && c.powerArmor && ((c.inventory||[]).some(it => it && it.type==='POWERARMOR_FRAME' && it.equipped)))
+    s.S = Math.min(10, (s.S||1) + 2);
+  return s;
+}
+function fpHpMax(c){
+  const sp = fpSpecial(c), pk = (c && c.perks) || {};
+  return (sp.L||0) + (sp.E||0) + Math.max(0, ((c && c.niveau)||1) - 1)
+       + (pk['Life Giver']||0) * (sp.E||0)
+       + ((c && c.survie && c.survie.wellRested) ? 2 : 0)
+       + fpEffSum(c && c.activeEffects, 'hpMax');
+}
+// FOR effective : Adrenalin Rush met FOR à 10 tant que le perso est blessé
+function fpForEff(c){
+  const sp = fpSpecial(c);
+  const rush = ((c && c.perks && c.perks['Adrenalin Rush']) > 0) && ((c && c.hp) < fpHpMax(c));
+  return rush ? 10 : (sp.S||0);
+}
+function fpBackpackMult(c){
+  const bp = ((c && c.inventory) || []).find(it => it && it.equipped && FP_BACKPACK_BONUS[it.name] != null);
+  return bp ? FP_BACKPACK_BONUS[bp.name] : 0;
+}
+// Charge maximale portable (kg)
+function fpChargeMax(c){
+  const f = fpForEff(c);
+  const b = (150 + f*10) / 2.2046;
+  const base = b * ((c && c.powerArmor) ? 1.5 : 1) + ((c && c.powerArmor) ? 200 : 0);
+  return Math.round((base + fpBackpackMult(c)*f + fpEffSum(c && c.activeEffects, 'charge')) * 10) / 10;
+}
+// Charge réellement portée (kg) — objets + munitions (20 g / cartouche)
+function fpChargePortee(c){
+  let t = 0;
+  ((c && c.inventory) || []).forEach(it => { t += (it.qty || 1) * (it.w || 0); });
+  ((c && c.ammo) || []).forEach(a => { t += (a.qty || 0) * 0.02; });
+  return Math.round(t * 100) / 100;
+}
+
+// ============================================================
 // DÉPLACEMENT / rencontres aléatoires sur trajet (partagé carte + dashboard MJ)
 // ============================================================
 const FP_WALK_KMH = 5;   // vitesse de marche (km/h) → temps de trajet depuis la distance

@@ -27,14 +27,8 @@ const char = {
 // Bonus de collection (bobbleheads + mythiques) — définis dans shared.js (fpMtgBonuses).
 // Dérivés de la POSSESSION : doublons non cumulés, carte échangée = bonus perdu.
 function mtgBonus(){ return (typeof fpMtgBonuses==='function') ? fpMtgBonuses(char) : {special:{},rd:{phys:0,en:0,rad:0},skill:{},luckMax:0,shopDiscount:0,farmBonus:0,actives:[]}; }
-const SP = () => {
-  const s = {...char.special};
-  const bs = mtgBonus().special;
-  for(const k in bs) s[k] = Math.min(10, (s[k]||1) + bs[k]);
-  if(char.powerArmor && char.inventory.find(it=>it.type==='POWERARMOR_FRAME'&&it.equipped))
-    s.S = Math.min(10, (s.S||1) + 2);
-  return s;
-};
+// Règles définies une seule fois, dans shared.js (le MJ en a besoin sur les fiches des AUTRES joueurs)
+const SP = () => fpSpecial(char);
 
 // ---- calculs.js ----
 // ============================================================
@@ -43,15 +37,14 @@ const SP = () => {
 
 function effSum(key){return (typeof fpEffSum==='function')?fpEffSum(char.activeEffects,key):0;}
 function luckMax(){return SP().L + mtgBonus().luckMax;}   // The Wise Mothman : +1 point de Chance max
-function hpMax(){return SP().L+SP().E+Math.max(0,char.niveau-1)+(char.perks['Life Giver']||0)*SP().E+(char.survie?.wellRested?2:0)+effSum('hpMax');}
-function forEff(){return (char.perks['Adrenalin Rush']>0&&char.hp<hpMax())?10:SP().S;}
+function hpMax(){return fpHpMax(char);}
+function forEff(){return fpForEff(char);}
 // Sacs à dos : bonus de charge max = multiplicateur × FOR (un seul sac équipé à la fois)
-const BACKPACK_BONUS={'Backpack Small':5,'Backpack Large':10};
-function isBackpack(it){return !!it && BACKPACK_BONUS[it.name]!=null;}
-function backpackMult(){const bp=char.inventory.find(it=>isBackpack(it)&&it.equipped);return bp?BACKPACK_BONUS[bp.name]:0;}
-function chargeMax(){const f=forEff(),b=(150+f*10)/2.2046;const base=b*(char.powerArmor?1.5:1)+(char.powerArmor?200:0);return Math.round((base+backpackMult()*f+effSum('charge'))*10)/10;}
+function isBackpack(it){return !!it && FP_BACKPACK_BONUS[it.name]!=null;}
+function backpackMult(){return fpBackpackMult(char);}
+function chargeMax(){return fpChargeMax(char);}
 const WATER_KG=0.5;   // poids d'1 charge d'eau (contenants)
-function chargeActuelle(){let t=0;char.inventory.forEach(it=>t+=(it.qty||1)*(it.w||0));char.ammo.forEach(a=>t+=a.qty*0.02);return Math.round(t*100)/100;}
+function chargeActuelle(){return fpChargePortee(char);}
 // Boire 1 charge d'un contenant d'eau → désaltère + allège le contenant
 function boireEau(i){
   const it=char.inventory[i]; if(!it) return;
@@ -844,7 +837,7 @@ function rInvMisc(){
       : `<span class="ieff" title="${db.eff||''}">${db.eff||'—'}</span>`;
     el.innerHTML+=`<div class="irow stuff-cols">
       <span class="itag STUFF">DIVERS</span>
-      <span class="iname${it.equipped?' eq':''}" title="${it.name}">${it.name}${it.equipped?' ●':''}${bp?` <span class="iname-cal">+${BACKPACK_BONUS[it.name]}×FOR</span>`:''}</span>
+      <span class="iname${it.equipped?' eq':''}" title="${it.name}">${it.name}${it.equipped?' ●':''}${bp?` <span class="iname-cal">+${FP_BACKPACK_BONUS[it.name]}×FOR</span>`:''}</span>
       ${effCell}
       <span class="iqval">${it.qty}</span>
       <span class="ipw">${((it.qty||1)*(it.w||0)).toFixed(2)}kg</span>
