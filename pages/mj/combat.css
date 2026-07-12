@@ -238,6 +238,14 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .cmap-cell:hover{ border-color:rgba(93,190,93,.4); box-shadow:inset 0 0 6px rgba(93,190,93,.22); }
 .cmap-cell[data-eid]{ cursor:help; }
 /* Types de blocs */
+/* Carcasse de voiture : bloque le passage, PAS la visée (on tire par-dessus l'épave).
+   font-size:0 → l'emoji 🚗 du BLOCK_TYPE reste dans la palette mais ne double pas le sprite dans la case. */
+.cmap-cell.b-carcasse{
+  background:#0b1a12 url('../../img/tiles/blocks/carcasse.png') center / 88% no-repeat;
+  border-color:var(--gd); font-size:0; image-rendering:pixelated;
+  filter:drop-shadow(0 0 3px rgba(93,190,93,.35));
+}
+/* Ancien bloc « Mur » : plus proposé, mais les cartes déjà enregistrées doivent rester lisibles */
 .cmap-cell.b-wall{ background:repeating-linear-gradient(45deg,#1c3a24,#1c3a24 3px,#12281a 3px,#12281a 6px); color:#7ed87e; border-color:var(--gd); }
 .cmap-cell.b-rubble{ background:radial-gradient(circle at 50% 50%, #2a3a1e, #16240f); color:#b9c98a; border-color:#5a6a3a; }
 .cmap-cell.b-cover{ background:#0e2416; color:#9be6c0; border:1px dashed var(--g); }
@@ -310,7 +318,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   font-family:'Share Tech Mono',monospace; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
 .cmap-brush:hover{ border-color:var(--g); }
 .cmap-brush.on{ border-color:var(--am); box-shadow:0 0 6px rgba(232,168,32,.5); }
-.cmap-brush.b-wall{ color:#7ed87e; } .cmap-brush.b-rubble{ color:#b9c98a; } .cmap-brush.b-cover{ color:#9be6c0; }
+.cmap-brush.b-carcasse{ color:#7ed87e; } .cmap-brush.b-wall{ color:#7ed87e; } .cmap-brush.b-rubble{ color:#b9c98a; } .cmap-brush.b-cover{ color:#9be6c0; }
 .cmap-brush.b-hazard{ color:var(--am); } .cmap-brush.b-water{ color:#6fd3e6; }
 .cmap-tip{ font-size:8px; color:var(--am); margin-top:4px; text-align:center; }
 /* Lignes d'arête (murs/portes/fenêtres) */
