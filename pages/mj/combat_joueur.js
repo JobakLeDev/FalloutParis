@@ -430,7 +430,7 @@ function renderJMap(){
     const bt = (typeof BLOCK_TYPES!=='undefined') ? BLOCK_TYPES.find(b=>b.id===terr) : null;
     let cls='cmap-cell';
     if(!vu) cls+=' cmap-fog';
-    if(terr) cls+=' b-'+terr;
+    if(terr) cls+=' b-'+terr+' bk-'+gridBlockRole(grid, x, y, terr);   // span = porte le sprite 2×2
     let onclick='', style='';
     if(reach && reach[key]!=null){
       cls+=' reach-snap'; onclick=`moveJSelf(${x},${y})`;

@@ -102,6 +102,56 @@ function blockSolid(id){
   if(BLOCK_LEGACY_SOLID.includes(id)) return true;
   const b = BLOCK_TYPES.find(t=>t.id===id); return !!(b && b.solid);
 }
+
+// ---- Blocs MULTI-CASES -------------------------------------------------------
+// Une voiture n'a pas la taille d'un homme : la carcasse occupe 2×2 cases. Chacune des 4 cases
+// reçoit le terrain (donc chacune bloque le passage — blockSolid/gridOccupied restent inchangés),
+// et grid.anchors mémorise le coin HAUT-GAUCHE, seul endroit où le sprite est dessiné (sur 2×2).
+const BLOCK_SPAN = { carcasse: { w:2, h:2 } };
+function blockSpan(id){ return BLOCK_SPAN[id] || { w:1, h:1 }; }
+// Ancre du bloc multi-cases qui couvre (x,y) → {x,y,id} ; null si aucune (case simple / vide)
+function gridBlockAnchorAt(grid, x, y){
+  const A = (grid && grid.anchors) || {};
+  for(const k in A){
+    const p = k.split(','), ax = +p[0], ay = +p[1], sp = blockSpan(A[k]);
+    if(x >= ax && x < ax+sp.w && y >= ay && y < ay+sp.h) return { x:ax, y:ay, id:A[k] };
+  }
+  return null;
+}
+// Efface le bloc présent en (x,y) — EN ENTIER s'il est multi-cases (on n'ampute pas une voiture)
+function gridEraseBlock(grid, x, y){
+  if(!grid) return;
+  grid.terrain = grid.terrain || {};
+  const a = gridBlockAnchorAt(grid, x, y);
+  if(a){
+    const sp = blockSpan(a.id);
+    for(let dy=0; dy<sp.h; dy++) for(let dx=0; dx<sp.w; dx++) delete grid.terrain[(a.x+dx)+','+(a.y+dy)];
+    delete grid.anchors[a.x+','+a.y];
+  } else delete grid.terrain[x+','+y];
+}
+// Pose un bloc, en (x,y) = coin haut-gauche. false si ça sort de la grille ou si un jeton est dessous.
+function gridPaintBlock(grid, x, y, id){
+  const sp = blockSpan(id);
+  if(x < 0 || y < 0 || x+sp.w > grid.w || y+sp.h > grid.h) return false;
+  const occupied = (cx,cy) => Object.values(grid.pos||{}).some(p => p.x===cx && p.y===cy);
+  for(let dy=0; dy<sp.h; dy++) for(let dx=0; dx<sp.w; dx++) if(occupied(x+dx, y+dy)) return false;
+  grid.terrain = grid.terrain || {};
+  grid.anchors = grid.anchors || {};
+  for(let dy=0; dy<sp.h; dy++) for(let dx=0; dx<sp.w; dx++){
+    gridEraseBlock(grid, x+dx, y+dy);                 // dégage ce qui traînait (y compris une autre voiture)
+    grid.terrain[(x+dx)+','+(y+dy)] = id;
+  }
+  if(sp.w > 1 || sp.h > 1) grid.anchors[x+','+y] = id;
+  return true;
+}
+// Classe de rendu d'une case de terrain : 'span' (ancre → porte le sprite), 'covered' (autre case
+// du même bloc → pas de sprite), 'solo' (bloc 1 case, ou carcasse héritée d'avant le passage en 2×2)
+function gridBlockRole(grid, x, y, terr){
+  if(!terr) return '';
+  const a = gridBlockAnchorAt(grid, x, y);
+  if(!a) return 'solo';
+  return (a.x === x && a.y === y) ? 'span' : 'covered';
+}
 // Lignes de bord (sur les arêtes entre cases) : murs / portes / fenêtres
 const EDGE_TYPES = [
   { id:'wall',   label:'Mur',     icon:'┃' },
