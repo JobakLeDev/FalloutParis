@@ -608,10 +608,10 @@ function rInvAll(){
     const _tlbl=it.type==='POWERARMOR'?'PA':it.type==='POWERARMOR_FRAME'?'FRAME':it.type;
     html+=`<div class="irow" style="grid-template-columns:44px 1fr 40px 42px 20px;gap:4px;${it.equipped?'border-color:var(--gd);background:#0a140a;':''}">
       <span class="itag ${it.type}">${_tlbl}</span>
-      <span class="iname${it.equipped?' eq':''}">${isNew?'<span class="inew" title="Acquis récemment">🆕</span> ':''}${it.equipped?'<span style="color:var(--g);font-size:9px">✓</span> ':''}${it.name}</span>
+      <span class="iname${it.equipped?' eq':''}">${isNew?'<span class="inew" title="Acquis récemment">🆕</span> ':''}${it.equipped?'<span style="color:var(--g);font-size:9px">✓</span> ':''}${it.name}${it.collection==='mtg'?` <small class="iname-cal">${_mtgTotal(it)} cartes</small>`:''}</span>
       <span class="iqval">${it.qty}</span>
       <span class="ipw">${((it.qty||1)*(it.w||0)).toFixed(2)}kg</span>
-      <span>${it.booster?`<button class="qu-btn" style="flex:none;padding:1px 5px;font-size:8px;border-color:var(--am);color:var(--am)" onclick="ouvrirBooster(${i})" title="Ouvrir le booster">🎁</button>`:it.postcard?`<button class="qu-btn" style="flex:none;padding:1px 5px;font-size:8px" onclick="voirPostcard('${it.postcard}')" title="Voir la carte postale">📷</button>`:it.mtgcard?`<button class="qu-btn" style="flex:none;padding:1px 5px;font-size:8px" onclick="voirMtgCard('${it.mtgcard}')" title="Voir la carte">🃏</button>`:''}</span>
+      <span>${it.collection==='mtg'?`<button class="qu-btn" style="flex:none;padding:1px 5px;font-size:8px;border-color:var(--am);color:var(--am)" onclick="voirCollection()" title="Consulter la collection">🃏</button>`:it.booster?`<button class="qu-btn" style="flex:none;padding:1px 5px;font-size:8px;border-color:var(--am);color:var(--am)" onclick="ouvrirBooster(${i})" title="Ouvrir le booster">🎁</button>`:it.postcard?`<button class="qu-btn" style="flex:none;padding:1px 5px;font-size:8px" onclick="voirPostcard('${it.postcard}')" title="Voir la carte postale">📷</button>`:it.mtgcard?`<button class="qu-btn" style="flex:none;padding:1px 5px;font-size:8px" onclick="voirMtgCard('${it.mtgcard}')" title="Voir la carte">🃏</button>`:''}</span>
     </div>`;
   });
   // Munitions (char.ammo) — affichées dans TOUT comme les autres objets (hors filtre "récents")
@@ -750,6 +750,7 @@ async function leaveHere(i,skipConfirm=false){
     if(it.postcard)drop.postcard=it.postcard;   // carte postale : préserver l'image
     if(it.mtgcard)drop.mtgcard=it.mtgcard;      // carte MTG : préserver l'image
     if(it.booster)drop.booster=it.booster;      // booster scellé : reste ouvrable
+    if(it.collection){drop.collection=it.collection;drop.cards=it.cards||{};}   // collection : garder les cartes
     // Vérifier proximité d'un refuge
     const ss=await db.collection('settlements').doc(campId).get();
     const sd=ss.exists?ss.data():{};
@@ -813,7 +814,9 @@ function rInvMisc(){
     const bp=isBackpack(it);
     // Sac à dos : bouton Équiper (un seul à la fois) à la place de la colonne effet
     const isCont = db.cap != null;
-    const effCell=it.booster
+    const effCell=it.collection==='mtg'
+      ? `<button class="qu-btn" style="flex:none;padding:2px 8px;font-size:8px;border-color:var(--am);color:var(--am)" onclick="voirCollection()">🃏 Consulter (${_mtgTotal(it)})</button>`
+      : it.booster
       ? `<button class="qu-btn" style="flex:none;padding:2px 8px;font-size:8px;border-color:var(--am);color:var(--am)" onclick="ouvrirBooster(${i})">🎁 Ouvrir</button>`
       : it.postcard
       ? `<button class="qu-btn" style="flex:none;padding:2px 8px;font-size:8px" onclick="voirPostcard('${it.postcard}')">📷 Voir</button>`
@@ -854,8 +857,53 @@ function voirMtgCard(id){
   const mo=document.getElementById('postcard-modal'); if(mo)mo.classList.add('on');
 }
 
-// ---- BOOSTER SCELLÉ (cartes MTG) ----
+// ---- COLLECTION DE CARTES (MTG) ----
+// Invariant : aucune carte MTG en objet isolé dans l'inventaire — tout est absorbé dans
+// un unique objet « Collection de cartes » (champ collection:'mtg', cards:{id:qty}).
+const MTG_COLLECTION_ITEM='Collection de cartes';
 const _MTG_RAR_COL={common:'#cfcfcf',uncommon:'#8fb4dd',rare:'#e0bd5e',mythic:'#f0813c'};
+function _mtgCollectionItem(create){
+  let c=char.inventory.find(it=>it&&it.collection==='mtg');
+  if(!c&&create){ c={name:MTG_COLLECTION_ITEM,type:'STUFF',qty:1,w:0,equipped:false,collection:'mtg',cards:{}}; char.inventory.push(c); }
+  if(c&&!c.cards) c.cards={};
+  return c||null;
+}
+function _mtgAddCards(ids){
+  const col=_mtgCollectionItem(true);
+  ids.forEach(x=>{ const id=(typeof x==='string')?x:x.id; if(!id)return;
+    const q=(typeof x==='string')?1:(x.qty||1); col.cards[id]=(col.cards[id]||0)+q; });
+  return col;
+}
+// Absorbe toute carte isolée (loot, MJ, sol…) dans la collection. true si l'état a changé.
+function fpNormalizeMtgCards(){
+  if(!char||!Array.isArray(char.inventory))return false;
+  const loose=char.inventory.filter(it=>it&&it.mtgcard);
+  if(!loose.length)return false;
+  const col=_mtgCollectionItem(true);
+  loose.forEach(it=>{ col.cards[it.mtgcard]=(col.cards[it.mtgcard]||0)+(it.qty||1); });
+  char.inventory=char.inventory.filter(it=>!(it&&it.mtgcard));
+  return true;
+}
+function _mtgTotal(col){ return Object.values((col&&col.cards)||{}).reduce((a,n)=>a+n,0); }
+// Popup de consultation de la collection
+function voirCollection(){
+  const col=_mtgCollectionItem(false);
+  const g=document.getElementById('col-grid'); if(!g)return;
+  const cards=Object.entries((col&&col.cards)||{})
+    .map(([id,q])=>{ const c=(window.MTG_CARDS||[]).find(x=>x.id===id); return c?{...c,q}:null; })
+    .filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name,'fr'));
+  const tot=cards.reduce((a,c)=>a+c.q,0);
+  const n=document.getElementById('col-count');
+  if(n)n.textContent=cards.length?`${cards.length} carte(s) différente(s) · ${tot} au total`:'';
+  g.innerHTML=cards.length?cards.map(c=>`<div class="bo-card" onclick="voirMtgCard('${c.id}')" title="${c.name}">
+      <img src="../../img/collectibles/mtg/${c.img}" alt="" loading="lazy">
+      <span class="bo-rar" style="color:${_MTG_RAR_COL[c.rarity]||'#ccc'}">${_MTG_RAR_LBL[c.rarity]||c.rarity}${c.q>1?' ×'+c.q:''}</span>
+    </div>`).join(''):'<div style="color:var(--td);font-size:.7rem;padding:1.2rem">Aucune carte pour l\'instant.</div>';
+  const mo=document.getElementById('collection-modal'); if(mo)mo.classList.add('on');
+}
+function closeCollection(){ const m=document.getElementById('collection-modal'); if(m)m.classList.remove('on'); }
+
+// ---- BOOSTER SCELLÉ (cartes MTG) ----
 // Tire le contenu d'un booster selon sa structure réelle (data/mtg_boosters.json)
 function _rollBooster(key){
   const B=(window.MTG_BOOSTERS||{})[key]; if(!B||!B.boosters) return null;
@@ -879,11 +927,7 @@ async function ouvrirBooster(i){
   const cards=_rollBooster(it.booster);
   if(!cards||!cards.length){alert('Contenu du booster indisponible.');return;}
   if((it.qty||1)>1) it.qty--; else char.inventory.splice(i,1);
-  cards.forEach(c=>{
-    const ex=char.inventory.find(x=>x.mtgcard===c.id);
-    if(ex) ex.qty=(ex.qty||1)+1;
-    else char.inventory.push({name:c.name,type:'STUFF',qty:1,w:0,equipped:false,mtgcard:c.id});
-  });
+  _mtgAddCards(cards.map(c=>c.id));   // → versées dans la Collection de cartes
   saveToFirebase(); rAll();
   const g=document.getElementById('bo-grid');
   const n=document.getElementById('bo-count'); if(n)n.textContent=cards.length;
