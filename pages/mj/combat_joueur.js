@@ -1314,7 +1314,6 @@ function renderActionsDeclarees(){
     const ennemisV = (combatState?.ennemis || []).filter(e => e.pvCur > 0 && !e.hidden && enemyVisible(e));
     const savedCible = document.getElementById('j-act-cible')?.value || cibleAttaque || '';
     const savedZone  = document.getElementById('j-act-zone')?.value || '';
-    const inputStyle = 'box-sizing:border-box;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:monospace;font-size:8px;padding:3px 5px;outline:none';
 
     const aimUsed  = (as.mineure?.used || []).includes('Aim');
     const reuseAim = (selectedActionDraft.type === 'Attack' && aimUsed && myAim && myAim.w);
@@ -1330,7 +1329,7 @@ function renderActionsDeclarees(){
       if(selectedActionDraft.type === 'Attack' || selectedActionDraft.type === 'Aim'){
         _declWeaps = attackWeapons();
         const savedW = document.getElementById('j-act-arme')?.value || '0';
-        body += '<select id="j-act-arme" style="width:100%;margin-bottom:4px;' + inputStyle + '">'
+        body += '<select id="j-act-arme" class="decl-in">'
           + _declWeaps.map((w,i) => '<option value="'+i+'"'+(String(i)===savedW?' selected':'')+'>'+w.label+' · '+w.dmg+' · TN '+w.tn+'</option>').join('')
           + '</select>';
       }
@@ -1338,17 +1337,14 @@ function renderActionsDeclarees(){
         if(ennemisV.length){
           // La zone ne se choisit qu'en VISANT (Aim). Une attaque non visée → zone tirée au hasard.
           const showZone = (selectedActionDraft.type === 'Aim');
-          body += '<div style="display:flex;gap:4px;margin-bottom:4px">'
-            + '<select id="j-act-cible" style="flex:' + (showZone?'2':'1') + ';' + inputStyle + '">'
+          body += '<select id="j-act-cible" class="decl-in">'
             + enemyOptions(ennemisV, savedCible)
             + '</select>'
             + (showZone
-                ? '<select id="j-act-zone" style="flex:1;' + inputStyle + '">'
+                ? '<select id="j-act-zone" class="decl-in">'
                   + AIM_ZONES.map(z => '<option value="' + z + '"' + (z===savedZone?' selected':'') + '>' + (z || '— zone —') + '</option>').join('')
                   + '</select>'
-                : '')
-            + '</div>'
-            + (showZone ? '' : '<div style="font-size:7px;color:var(--td);margin-bottom:4px">Vise pour cibler une zone précise</div>');
+                : '<div style="font-size:8px;color:var(--td);margin-bottom:6px">Vise pour cibler une zone précise</div>');
         } else {
           body += '<div style="font-size:7px;color:var(--rd);margin-bottom:4px">Aucun ennemi vivant à cibler</div>';
         }
@@ -1361,7 +1357,7 @@ function renderActionsDeclarees(){
         if(items.length){
           const savedDraw = document.getElementById('j-act-draw')?.value || '';
           const kind = t => t==='WEAPON' ? '🔫' : '🛡';
-          body += '<select id="j-act-draw" style="width:100%;margin-bottom:4px;' + inputStyle + '">'
+          body += '<select id="j-act-draw" class="decl-in">'
             + '<option value="">— choisir un objet à sortir/ranger —</option>'
             + items.map(o => '<option value="'+o.idx+'"'+(String(o.idx)===savedDraw?' selected':'')+'>'+(o.it.equipped?'▣ ':'□ ')+kind(o.it.type)+' '+o.it.name+(o.it.equipped?' (équipé → ranger)':' (équiper)')+'</option>').join('')
             + '</select>';
@@ -1375,7 +1371,7 @@ function renderActionsDeclarees(){
         const chems = inv.map((it,idx)=>({it,idx})).filter(o => o.it.type === 'DRUGS' && (o.it.qty==null || o.it.qty>0));
         if(chems.length){
           const savedChem = document.getElementById('j-act-chem')?.value || '';
-          body += '<select id="j-act-chem" style="width:100%;margin-bottom:4px;' + inputStyle + '">'
+          body += '<select id="j-act-chem" class="decl-in">'
             + '<option value="">— choisir un chem —</option>'
             + chems.map(o => '<option value="'+o.idx+'"'+(String(o.idx)===savedChem?' selected':'')+'>'+o.it.name+' ×'+(o.it.qty??1)+'</option>').join('')
             + '</select>';
@@ -1384,16 +1380,16 @@ function renderActionsDeclarees(){
         }
       }
     }
-    body += '<input type="text" id="j-action-details" placeholder="Precisions optionnelles (note...)" style="width:100%;margin-bottom:4px;' + inputStyle + '">';
+    body += '<input type="text" id="j-action-details" class="decl-in" placeholder="Precisions optionnelles (note...)">';
 
-    draftHtml = '<div style="margin:6px 0;padding:5px;border:1px solid var(--am);background:#1a1200;font-size:8px">'
-      + '<div style="color:var(--am);margin-bottom:2px">' + selectedActionDraft.type
-      + ' <span style="color:var(--td);font-size:7px">(' + selectedActionDraft.category + ')</span></div>'
-      + '<div style="color:var(--td);font-size:7px;margin-bottom:5px">' + selectedActionDraft.desc + '</div>'
+    draftHtml = '<div class="decl-box">'
+      + '<div style="color:var(--am);margin-bottom:3px;letter-spacing:1px">' + selectedActionDraft.type
+      + ' <span style="color:var(--td);font-size:8px">(' + selectedActionDraft.category + ')</span></div>'
+      + '<div style="color:var(--td);font-size:8px;line-height:1.4;margin-bottom:8px">' + selectedActionDraft.desc + '</div>'
       + body
-      + '<div style="display:flex;gap:4px">'
-      + '<button onclick="submitActionDeclaree()" style="flex:1;background:none;border:1px solid var(--g);color:var(--g);font-family:monospace;font-size:8px;padding:3px;cursor:pointer;letter-spacing:0">→ Envoyer au MJ</button>'
-      + '<button onclick="cancelActionDeclaree()" style="background:none;border:1px solid var(--rd);color:var(--rd);font-family:monospace;font-size:8px;padding:3px 8px;cursor:pointer;letter-spacing:0">✕</button>'
+      + '<div class="decl-btns">'
+      + '<button class="decl-send" onclick="submitActionDeclaree()">→ Envoyer au MJ</button>'
+      + '<button class="decl-cancel" onclick="cancelActionDeclaree()">✕</button>'
       + '</div>'
       + '</div>';
   }
