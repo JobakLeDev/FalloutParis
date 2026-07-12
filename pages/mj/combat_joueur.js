@@ -364,6 +364,38 @@ function renderCombatJoueur(){
 // MINI-CARTE DE COMBAT (vue joueur) — lecture + déplacement pendant Move/Sprint
 // ============================================================
 let _jMoveActive = null, _jMoveRange = 0;   // type d'action de déplacement en cours + portée (cases)
+
+// ============================================================
+// BROUILLARD DE COMBAT — mémoire de terrain, PAR JOUEUR (/combats/{id}.seen[joueurId])
+// Une case jamais eue en ligne de vue est masquée : ni terrain, ni murs. Une fois vue, elle
+// reste connue POUR TOUJOURS (murs et objets immobiles ne bougent pas → on s'en souvient).
+// Les ENNEMIS ne sont PAS mémorisés : ils restent soumis à enemyVisible() (LOS temps réel).
+// ============================================================
+let _seen = {};                 // {"x,y":1} — miroir local du doc
+let _seenTimer = null;
+function _fogOn(){ return !!(combatState?.grid?.pos?.[joueurId]); }   // pas encore placé → pas de brouillard
+function jSeen(x,y){ return !_fogOn() || !!_seen[x+','+y]; }
+function _saveSeen(){
+  if(!db || !combatId) return;
+  clearTimeout(_seenTimer);   // groupe les découvertes d'un même déplacement en une écriture
+  _seenTimer = setTimeout(() => {
+    db.collection(COMBATS_COLL).doc(combatId).update({ ['seen.'+joueurId]: _seen }).catch(()=>{});
+  }, 500);
+}
+// Ajoute à la mémoire toutes les cases actuellement en ligne de vue depuis ma position
+function _refreshSeen(){
+  const grid = combatState?.grid; if(!grid || !grid.w) return;
+  const doc = (combatState.seen || {})[joueurId] || {};
+  for(const k in doc) _seen[k] = 1;                 // le doc fait foi (autre onglet, reconnexion)
+  const me = grid.pos?.[joueurId]; if(!me) return;
+  let neuf = 0;
+  for(let y=0; y<grid.h; y++) for(let x=0; x<grid.w; x++){
+    const k = x+','+y;
+    if(_seen[k]) continue;
+    if(gridLineOfSight(grid, me, {x,y})){ _seen[k] = 1; neuf++; }
+  }
+  if(neuf) _saveSeen();
+}
 function _jMapToks(){
   const list = [];
   (combatState?.ordreInitiative||[]).filter(o=>o.type==='joueur').forEach(o=>list.push({ id:o.id, nom:(tousJoueurs[o.id]?.nom||o.nom||o.id), kind:'joueur', me:o.id===joueurId }));
@@ -377,6 +409,7 @@ function renderJMap(){
   if(!pnl || !el) return;
   if(!grid || !grid.w){ pnl.style.display='none'; return; }
   pnl.style.display='';
+  _refreshSeen();                       // ma position a pu changer → nouvelles cases découvertes
   const hint = document.getElementById('j-map-hint');
   if(hint) hint.textContent = _jMoveActive ? `— déplace-toi : clique une case verte (≤ ${_jMoveRange} cases)` : '';
   const { w, h } = grid;
@@ -392,9 +425,11 @@ function renderJMap(){
   let html = `<div class="cmap${moving?' moving':''}" style="grid-template-columns:repeat(${w},var(--cs,22px))">`;
   for(let y=0;y<h;y++) for(let x=0;x<w;x++){
     const key=x+','+y; const tid=byPos[key]; const t=tid?toks.find(z=>z.id===tid):null;
-    const terr = gridTerrainAt(grid, x, y);
+    const vu   = jSeen(x,y);                                  // case déjà eue en ligne de vue ?
+    const terr = vu ? gridTerrainAt(grid, x, y) : null;       // terrain mémorisé (immobile) — masqué si jamais vu
     const bt = (typeof BLOCK_TYPES!=='undefined') ? BLOCK_TYPES.find(b=>b.id===terr) : null;
     let cls='cmap-cell';
+    if(!vu) cls+=' cmap-fog';
     if(terr) cls+=' b-'+terr;
     let onclick='', style='';
     if(reach && reach[key]!=null){
@@ -422,7 +457,7 @@ function renderJMap(){
     }
     html += `<div class="${cls}"${style?` style="${style}"`:''}${onclick?` onclick="${onclick}"`:''}${eAttr} title="${tTitle}">${inner}</div>`;
   }
-  html += '<div class="cmap-edges">' + (typeof gridEdgesHtml==='function' ? gridEdgesHtml(grid, 30) : '') + '</div>';
+  html += '<div class="cmap-edges">' + (typeof gridEdgesHtml==='function' ? gridEdgesHtml(grid, 30, jSeen) : '') + '</div>';
   // Portes adjacentes à mon jeton → cliquables (déclare une action mineure) — seulement à mon tour
   const _isMoTour = _act?.type==='joueur' && _act.id===joueurId;
   if(myPos && _isMoTour && !turnEnded && typeof gridDoorHotspots==='function')
