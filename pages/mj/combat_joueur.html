@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css?v=0053a05a">
   <link rel="stylesheet" href="combat.css?v=ca949489">
-  <link rel="stylesheet" href="combat_joueur.css?v=92659b93">
+  <link rel="stylesheet" href="combat_joueur.css?v=da86e759">
   <link rel="stylesheet" href="../../common/zoom.css?v=2a2cfe92">
 </head>
 <body>
@@ -57,14 +57,8 @@
         </div>
       </div>
 
-      <!-- CENTRE : Carte → Mes actions → Mes jets → exec → Terminer -->
+      <!-- CENTRE : Mes actions (+ Mes jets) → Terminer → Carte -->
       <div class="cjl-col cjl-center">
-
-        <!-- CARTE -->
-        <div class="pnl" id="j-map-pnl" style="display:none">
-          <div class="pnl-title">🗺 Carte de combat <span id="j-map-hint" style="font-size:7px;color:var(--td)"></span></div>
-          <div id="j-combat-map"></div>
-        </div>
 
         <div class="pnl bottom-actions">
           <div class="pnl-title">Mes actions</div>
@@ -122,6 +116,12 @@
 
         <!-- TERMINER MON TOUR -->
         <div id="j-fin-tour" style="display:none;text-align:center"></div>
+
+        <!-- CARTE (sous les actions : on décide en haut, on regarde le terrain en dessous) -->
+        <div class="pnl" id="j-map-pnl" style="display:none">
+          <div class="pnl-title">🗺 Carte de combat <span id="j-map-hint" style="font-size:7px;color:var(--td)"></span></div>
+          <div id="j-combat-map"></div>
+        </div>
       </div>
 
       <!-- DROITE : AP groupe + Luck -->
