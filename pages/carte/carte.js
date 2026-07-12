@@ -146,7 +146,13 @@ function geoZoneGenQuery(props) {
 }
 
 function init() {
-  if (embed) document.body.classList.add('embed');
+  if (embed) {
+    document.body.classList.add('embed');
+    // Embarquée dans la fiche (qui applique déjà html::before/::after de common/style.css) :
+    // on coupe notre propre CRT, sinon scanlines + voile vert se cumulent.
+    document.documentElement.style.setProperty('--crt-green', '0');
+    document.documentElement.style.setProperty('--crt-scan', '0');
+  }
   fdb = firebase.initializeApp(firebaseConfig).firestore();
   buildMap();
 }
