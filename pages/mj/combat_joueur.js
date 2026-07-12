@@ -1259,7 +1259,11 @@ async function jLancer2D20(){
   }
 
   // Coût AP groupe pour dés bonus
-  const apCost = [0,0,0,1,3,6][nbDiceJ]||0;
+  // ⚠️ Le nombre de dés est FIGÉ ici, AVANT la dépense d'AP : `await _updateAPGroupe()` rend la main,
+  // le snapshot Firestore redessine l'écran, et renderDiceAccess() remet nbDiceJ à 2 parce que l'option
+  // choisie est devenue inabordable avec la réserve désormais vide. On payait 6 AP pour lancer 2 dés.
+  const nbBase = nbDiceJ;
+  const apCost = [0,0,0,1,3,6][nbBase]||0;
   if(apCost>0){
     if((combatState?.apPool||0)<apCost) return;
     await _updateAPGroupe(-apCost);
@@ -1267,7 +1271,7 @@ async function jLancer2D20(){
 
   // Dé bonus d'assistance (action Assist d'un allié) → +1 dé, consommé après le jet
   const assist = !!(combatState?.assistDie?.[joueurId]);
-  const nbDice = nbDiceJ + (assist ? 1 : 0);
+  const nbDice = nbBase + (assist ? 1 : 0);
   if(assist) db.collection(COMBATS_COLL).doc(combatId).update({ ['assistDie.'+joueurId]: null }).catch(()=>{});
 
   const dés = Array.from({length:nbDice},()=>Math.floor(Math.random()*20)+1);
