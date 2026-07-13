@@ -1686,7 +1686,7 @@ function renderActionsMJ(){
   el.innerHTML = pending.map(({jId, cat, p, nom}) => {
     const key = jId + '_' + cat;
     const isMoveType = ['Move','Sprint'].includes(p.type);
-    const destStr = (isMoveType && p.to) ? ' <span style="color:var(--g)">→ (' + p.to.x + ',' + p.to.y + ')</span>' : '';
+    const destStr = (isMoveType && p.to && typeof p.to.x !== 'undefined' && typeof p.to.y !== 'undefined') ? ' <span style="color:var(--g)">→ (' + p.to.x + ',' + p.to.y + ')</span>' : '';
     return '<div style="padding:5px;border:1px solid var(--am);background:#1a1200;margin-bottom:4px">'
       + '<div style="font-size:8px;margin-bottom:3px">'
       + '<span style="color:var(--am)">' + nom.toUpperCase() + '</span>'
