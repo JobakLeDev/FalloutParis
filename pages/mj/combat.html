@@ -62,7 +62,7 @@
   <!-- LAYOUT : gauche (Joueurs) · centre (Dés/Carte/Actions/Journal) · droite (Ennemis/Tracker) -->
   <div class="combat-layout">
 
-    <!-- GAUCHE : Joueurs -->
+    <!-- GAUCHE : Joueurs + Actions joueurs en attente -->
     <div class="cl-col cl-left">
       <div class="pnl">
         <div class="pnl-title">
@@ -72,6 +72,15 @@
         <div class="sel-bar" id="sel-joueurs"></div>
         <div id="joueurs-combat"></div>
         <div id="allies-combat"></div>
+      </div>
+
+      <!-- ACTIONS JOUEURS EN ATTENTE -->
+      <div class="pnl">
+        <div class="pnl-title" style="display:flex;justify-content:space-between;align-items:center">
+          <span>Actions joueurs <span id="actions-joueurs-count" class="aj-count" style="display:none">0</span></span>
+          <span style="font-size:7px;color:var(--td);letter-spacing:1px">temps réel</span>
+        </div>
+        <div id="actions-joueurs-notif"><span class="empty">Aucune action en attente</span></div>
       </div>
     </div>
 
@@ -116,16 +125,7 @@
         <div id="combat-map"><span class="empty" style="font-size:8px;color:var(--td)">Pas de carte — clique « Générer ».</span></div>
       </div>
 
-      <!-- ACTIONS JOUEURS (sous la carte, même largeur) -->
-      <div class="pnl">
-        <div class="pnl-title" style="display:flex;justify-content:space-between;align-items:center">
-          <span>Actions joueurs <span id="actions-joueurs-count" class="aj-count" style="display:none">0</span></span>
-          <span style="font-size:7px;color:var(--td);letter-spacing:1px">temps réel</span>
-        </div>
-        <div id="actions-joueurs-notif"><span class="empty">Aucune action en attente</span></div>
-      </div>
-
-      <!-- JOURNAL (sous, même largeur) -->
+      <!-- JOURNAL -->
       <div class="pnl">
         <div class="pnl-title">
           Journal des actions
@@ -185,7 +185,7 @@
   <script src="../../common/db.js?v=ba83522f"></script>
   <script src="mj_shared.js?v=5eeb58bd"></script>
   <script src="combat_sync.js?v=774864bd"></script>
-  <script src="combat.js?v=a9d63f26"></script>
+  <script src="combat.js?v=c2fbd729"></script>
   <script src="combat_radio.js?v=04795fd0"></script>
   <script>document.addEventListener("DOMContentLoaded", () => window.DB_READY.then(init));</script>
   <script src="../../common/responsive.js?v=f2bdcb93"></script>
