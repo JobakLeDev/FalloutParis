@@ -1662,7 +1662,10 @@ async function genButinCombat(){
 // ============================================================
 
 function renderActionsMJ(){
-  const el = document.getElementById('actions-joueurs-notif'); if(!el) return;
+  const el = document.getElementById('actions-joueurs-notif');
+  if(!el){ console.warn('Conteneur #actions-joueurs-notif introuvable !'); return; }
+  console.log('renderActionsMJ: actionsJoueurs =', actionsJoueurs);
+
   const pending = [];
   Object.entries(actionsJoueurs).forEach(([jId, data]) => {
     ['mineure','majeure'].forEach(cat => {
@@ -1673,6 +1676,8 @@ function renderActionsMJ(){
       }
     });
   });
+  console.log('Actions en attente:', pending.length, pending);
+
   // Indicateurs « demande de validation en attente » (en-tête + titre du panneau) + bip à l'arrivée
   const cnt = pending.length;
   const badge = document.getElementById('mj-pending-badge');
@@ -1723,13 +1728,15 @@ async function validerAction(jId, cat){
     if(combatMap && combatMap.pos) combatMap.pos[jId] = { x: p.to.x, y: p.to.y };   // miroir local : trait effacé aussitôt
   }
   try {
+    console.log('Écriture Firestore:', {COMBATS_COLL, currentCombatId, upd});
     await db.collection(COMBATS_COLL).doc(currentCombatId).update(upd);
+    console.log('✓ Écriture réussie');
     if(actionsState[jId]) actionsState[jId][cat] = Math.max(0, (actionsState[jId][cat]||1) - 1);   // miroir local pour le tracker
     renderTracker();
     // Interaction porte : la valider ouvre/ferme effectivement la porte (le joueur ne peut pas le faire seul)
     if(p.doorKey && typeof openDoorMJ === 'function') openDoorMJ(p.doorKey);
     addLog('✓ ' + nom + ' : ' + p.type + ' (' + cat + ') validée');
-  } catch(e){ console.error(e); }
+  } catch(e){ console.error('❌ Erreur validation:', e); }
 }
 
 async function refuserAction(jId, cat){
