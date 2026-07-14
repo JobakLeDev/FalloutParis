@@ -1733,6 +1733,7 @@ async function validerAction(jId, cat){
     console.log('✓ Écriture réussie');
     if(actionsState[jId]) actionsState[jId][cat] = Math.max(0, (actionsState[jId][cat]||1) - 1);   // miroir local pour le tracker
     renderTracker();
+    if(isMovement) renderCombatMap();   // re-rendre la carte pour afficher le jeton à sa nouvelle position
     // Interaction porte : la valider ouvre/ferme effectivement la porte (le joueur ne peut pas le faire seul)
     if(p.doorKey && typeof openDoorMJ === 'function') openDoorMJ(p.doorKey);
     addLog('✓ ' + nom + ' : ' + p.type + ' (' + cat + ') validée');
