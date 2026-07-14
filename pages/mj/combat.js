@@ -898,6 +898,7 @@ function _atkPendingLines(cs){
       if(!p || p.status !== 'waiting' || !['Attack','Aim'].includes(p.type) || !p.cible) return;
       const from = combatMap.pos[jId];
       const to = combatMap.pos[p.cible];
+      console.log('_atkPendingLines:', {jId, cible: p.cible, from, to, posKeys: Object.keys(combatMap.pos)});
       if(!from || !to) return;
       const x1 = cx(from), y1 = cy(from), x2 = cx(to), y2 = cy(to);
       const len = Math.hypot(x2-x1, y2-y1), ang = Math.atan2(y2-y1, x2-x1)*180/Math.PI;
