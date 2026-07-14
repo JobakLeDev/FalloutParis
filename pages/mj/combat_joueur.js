@@ -1654,8 +1654,8 @@ async function submitActionDeclaree(){
   const upd = {};
   const pend = { type, details, requestedAt: Date.now(), status: 'waiting' };
   if(moveTo) pend.to = moveTo;   // le MJ appliquera le déplacement en validant (comme p.doorKey pour les portes)
-  if((type === 'Attack' || type === 'Aim') && cible) pend.cible = cible;   // ID ennemi pour tracer une ligne
-  if((type === 'Attack' || type === 'Aim') && zone) pend.zone = zone;      // zone de tir
+  if((type === 'Attack' || type === 'Aim') && cible) pend.cible = 'E' + cible;   // ID ennemi avec préfixe 'E' pour tracer une ligne
+  if((type === 'Attack' || type === 'Aim') && zone) pend.zone = zone;           // zone de tir
   upd['actionsDeclarees.' + joueurId + '.' + category + '.pending'] = pend;
   // Fermer le bloc d'édition AVANT l'écriture (Firestore re-render en local immédiatement)
   selectedActionDraft = null;
