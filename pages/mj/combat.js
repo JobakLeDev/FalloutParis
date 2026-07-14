@@ -1706,8 +1706,9 @@ function renderActionsMJ(){
 }
 
 async function validerAction(jId, cat){
-  const data = actionsJoueurs[jId]; if(!data) return;
-  const p = data?.[cat]?.pending; if(!p || p.status !== 'waiting') return;
+  console.log('validerAction appelée :', {jId, cat, data: actionsJoueurs[jId], pending: actionsJoueurs[jId]?.[cat]?.pending});
+  const data = actionsJoueurs[jId]; if(!data){ console.warn('Pas de données pour joueur:', jId); return; }
+  const p = data?.[cat]?.pending; if(!p || p.status !== 'waiting'){ console.warn('Action non en attente :', {p, status: p?.status}); return; }
   const nom = combattants[jId]?.data?.nom || jId;
   const isMovement = ['Move','Sprint'].includes(p.type);
   const upd = {};
