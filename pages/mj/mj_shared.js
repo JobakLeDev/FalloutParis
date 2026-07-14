@@ -82,7 +82,8 @@ function gridChebyshev(a, b){ return Math.max(Math.abs(a.x - b.x), Math.abs(a.y 
 // Distance de déplacement (pas de diagonale gratuite : une diagonale = 2 cases)
 function gridManhattan(a, b){ return Math.abs(a.x - b.x) + Math.abs(a.y - b.y); }
 // distance en cases → bande (0 Contact, 1 Moyenne, 2 Longue, 3 Extrême)
-function gridBand(cells){ if(cells <= 1) return 0; if(cells <= 6) return 1; if(cells <= 11) return 2; return 3; }
+// Contact: 0-5 cases | Moyenne: 6-11 cases | Longue: 12-19 cases | Extrême: 20+ cases
+function gridBand(cells){ if(cells <= 5) return 0; if(cells <= 11) return 1; if(cells <= 19) return 2; return 3; }
 // Types de blocs de terrain (MJ peut les peindre). solid = bloque le passage/placement.
 // `solid` = bloque le PASSAGE uniquement (reachableCells / gridOccupied). La VUE ne dépend que des
 // ARÊTES (gridEdgeBlocksSight) : un bloc de terrain ne coupe jamais la ligne de vue. L'ancien bloc
