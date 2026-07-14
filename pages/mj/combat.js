@@ -886,6 +886,26 @@ function _movePendingLines(cs){
   return h;
 }
 
+function _atkPendingLines(cs){
+  if(!combatMap || !combatMap.pos) return '';
+  const pad = 5, pitch = cs + 1;
+  const cx = p => pad + p.x*pitch + cs/2, cy = p => pad + p.y*pitch + cs/2;
+  let h = '';
+  Object.entries(actionsJoueurs || {}).forEach(([jId, a]) => {
+    ['mineure','majeure'].forEach(cat => {
+      const p = a?.[cat]?.pending;
+      if(!p || p.status !== 'waiting' || !['Attack','Aim'].includes(p.type) || !p.cible) return;
+      const from = combatMap.pos[jId];
+      const to = combatMap.pos[p.cible];
+      if(!from || !to) return;
+      const x1 = cx(from), y1 = cy(from), x2 = cx(to), y2 = cy(to);
+      const len = Math.hypot(x2-x1, y2-y1), ang = Math.atan2(y2-y1, x2-x1)*180/Math.PI;
+      h += '<div class="cmap-atkline" style="left:'+x1+'px;top:'+y1+'px;width:'+len+'px;transform:rotate('+ang+'deg)"></div>';
+    });
+  });
+  return h;
+}
+
 function renderCombatMap(){
   const el = document.getElementById('combat-map'); if(!el) return;
   if(!combatMap){ el.innerHTML = '<span class="empty" style="font-size:8px;color:var(--td)">Pas de carte — clique « Générer ».</span>'; return; }
@@ -934,6 +954,7 @@ function renderCombatMap(){
   const doorHot = (!_edgeSel && !_blockSel && !_mapSel) ? gridAllDoorHotspots(combatMap, cs, 'openDoorMJ') : '';
   html += '<div class="cmap-edges">' + gridEdgesHtml(combatMap, cs) + (_edgeSel ? edgeHotspots(combatMap, cs) : doorHot) + '</div>';
   html += _movePendingLines(cs);    // trajets déclarés en attente de validation (jeton → destination voulue)
+  html += _atkPendingLines(cs);     // lignes de visée pour les attaques en attente
   html += '</div>';                 // /cmap
   html += mapSideMenu();            // bandeau vertical à droite (jeton sélectionné) — hors flux, ne décale pas la carte
   html += '</div>';                 // /cmap-wrap
@@ -1691,13 +1712,16 @@ function renderActionsMJ(){
   el.innerHTML = pending.map(({jId, cat, p, nom}) => {
     const key = jId + '_' + cat;
     const isMoveType = ['Move','Sprint'].includes(p.type);
+    const isAtkType = ['Attack','Aim'].includes(p.type);
     const destStr = (isMoveType && p.to && typeof p.to.x !== 'undefined' && typeof p.to.y !== 'undefined') ? ' <span style="color:var(--g)">→ (' + p.to.x + ',' + p.to.y + ')</span>' : '';
+    const atkStr = (isAtkType && p.cible) ? ' <span style="color:var(--rd)">🎯 ' + p.cible + '</span>' : '';
     return '<div style="padding:5px;border:1px solid var(--am);background:#1a1200;margin-bottom:4px">'
       + '<div style="font-size:8px;margin-bottom:3px">'
       + '<span style="color:var(--am)">' + nom.toUpperCase() + '</span>'
       + ' <span style="color:var(--td)">· ' + cat + ' ·</span>'
       + ' <span style="color:var(--tb)">' + p.type + '</span>'
       + destStr
+      + atkStr
       + '</div>'
       + (p.details ? '<div style="font-size:7px;color:var(--td);margin-bottom:4px;font-style:italic">&ldquo;' + p.details + '&rdquo;</div>' : '')
       + '<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">'

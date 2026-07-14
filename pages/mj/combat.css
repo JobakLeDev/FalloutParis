@@ -422,6 +422,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   border:2px dashed var(--g); border-radius:2px; background:rgba(93,190,93,.12);
   box-shadow:0 0 10px rgba(93,190,93,.35) inset; }
 
+.cmap-atkline{ position:absolute; height:0; transform-origin:0 50%; z-index:5; pointer-events:none;
+  border-top:2px dashed rgba(220,150,50,.8); filter:drop-shadow(0 0 3px rgba(220,150,50,.5));
+  animation:atkDash .9s linear infinite; }
+@keyframes atkDash{ from{ opacity:.5; } 50%{ opacity:1; } to{ opacity:.5; } }
+
 /* Clignotement « prend des dégâts » (style NES, on/off net) */
 .dmg-flash{ animation:dmgFlash .6s steps(1) 1; }
 @keyframes dmgFlash{
