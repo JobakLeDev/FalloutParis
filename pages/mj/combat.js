@@ -138,6 +138,7 @@ function deverrouiller(){
     if(data.actionsDeclarees){
       actionsJoueurs = data.actionsDeclarees;
       renderActionsMJ();
+      renderCombatMap();  // re-rendre la carte pour afficher les traits des déplacements/attaques en attente
       // 1er snapshot : mémoriser les turnDone existants sans déclencher d'avance
       if(!_turnDoneSeeded){
         Object.entries(data.actionsDeclarees).forEach(([id,a]) => { if(a?.turnDone) lastTurnDoneTs[id] = a.turnDone; });
