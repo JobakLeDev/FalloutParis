@@ -371,8 +371,9 @@ async function loadGeoJsonLayers() {
           }));
         });
         if (best) {
-          L.polyline(best.pts, { pane: 'seinePane', color: '#4CFF77', weight: 10, opacity: 0.9, lineCap: 'round' }).addTo(map);
-          L.polyline(best.pts, { pane: 'seinePane', color: '#2FAF62', weight: 7, opacity: 0.95, lineCap: 'round' }).addTo(map);
+          // Bras nettement plus large que le fleuve : c'est une CASCADE qui plonge dans le cratère
+          L.polyline(best.pts, { pane: 'seinePane', color: '#4CFF77', weight: 22, opacity: 0.9, lineCap: 'round' }).addTo(map);
+          L.polyline(best.pts, { pane: 'seinePane', color: '#2FAF62', weight: 16, opacity: 0.95, lineCap: 'round' }).addTo(map);
         }
       });
   } catch(e) { console.warn('seine.geojson non chargé', e); }
