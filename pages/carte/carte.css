@@ -75,6 +75,20 @@ body.embed #map, body.embed #map-metro{position:absolute;inset:0;width:auto;heig
 .pz-gen{color:var(--am);text-decoration:none;border:1px solid var(--gd);padding:1px 5px;background:none;font-family:'Share Tech Mono',monospace;font-size:9px;cursor:pointer;line-height:1.4;}
 .pz-gen:hover{border-color:var(--g);color:var(--g);}
 .empty{font-size:8px;color:var(--td);}
+/* Gestionnaire POI & Zones (bandeau MJ) */
+#pzm-search{width:100%;box-sizing:border-box;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:8px;padding:4px 6px;margin-bottom:5px;letter-spacing:1px;}
+#pzm-search:focus{outline:none;border-color:var(--g);}
+#pz-manager{max-height:300px;overflow-y:auto;}
+.pzm-cat{font-size:7px;letter-spacing:2px;color:var(--am);text-transform:uppercase;margin:6px 0 3px;position:sticky;top:0;background:rgba(22,32,22,.95);padding:2px 0;}
+.pzm-row{display:flex;align-items:center;gap:5px;padding:2px 0;border-bottom:1px solid var(--b);}
+.pzm-row.pzm-hidden .pzm-name{color:var(--td);}
+.pzm-dot{flex:0 0 8px;width:8px;height:8px;border-radius:50%;}
+.pzm-dot.pzm-zone{background:none;border:1px solid var(--g);border-radius:2px;}
+.pzm-name{flex:1;font-size:8px;color:var(--tb);cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pzm-name:hover{color:var(--g);}
+.pzm-b{flex:0 0 auto;background:none;border:1px solid var(--b2);color:var(--td);font-size:8px;padding:1px 4px;cursor:pointer;line-height:1.4;}
+.pzm-b:hover{border-color:var(--g);color:var(--g);}
+.pzm-b.del:hover{border-color:var(--rd);color:var(--rd);}
 /* Lignes position joueur (nom + boutons au-dessus, lieu en dessous) */
 .pp-row{padding:5px 0;border-bottom:1px solid var(--b);}
 .pp-head{display:flex;align-items:center;gap:6px;}

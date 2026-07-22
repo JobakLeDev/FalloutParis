@@ -299,3 +299,59 @@ function revealForAll(kind, id, all) {
 function deletePOI(id) { mapData.pois = mapData.pois.filter(x => x.id !== id); openItem = null; saveData(); map.closePopup(); }
 function deleteZone(id) { mapData.zones = mapData.zones.filter(z => z.id !== id); openItem = null; saveData(); map.closePopup(); }
 function setHint(txt) { const el = document.getElementById('mjp-hint'); if (el) el.textContent = txt; }
+
+// ============================================================
+// GESTIONNAIRE POI & ZONES — liste dans le bandeau MJ (mode édition).
+// Clic sur le nom = centrer la carte ; ✎ = éditer ; 🗑 = supprimer (confirmé).
+// ============================================================
+let _pzFilter = '';
+function pzFilterChange(v) { _pzFilter = (v || '').toLowerCase(); renderPoiZoneManager(); }
+
+function renderPoiZoneManager() {
+  const el = document.getElementById('pz-manager'); if (!el || !isMJ) return;
+  const f = _pzFilter;
+  const byName = (a, b) => (a.name || '').localeCompare(b.name || '', 'fr');
+  const pois  = (mapData.pois  || []).filter(p => !f || (p.name || '').toLowerCase().includes(f)).slice().sort(byName);
+  const zones = (mapData.zones || []).filter(z => !f || (z.name || '').toLowerCase().includes(f)).slice().sort(byName);
+
+  const poiRow = p => {
+    const t = POI_TYPES[p.type] || POI_TYPES.other;
+    const hidden = !anyRevealed(p);
+    return `<div class="pzm-row${hidden ? ' pzm-hidden' : ''}">
+      <span class="pzm-dot" style="background:${t.color}" title="${t.label}"></span>
+      <span class="pzm-name" onclick="pzCenter('poi','${p.id}')" title="${t.label}${hidden ? ' — caché des joueurs' : ''}">${p.name || '?'}</span>
+      <button class="pzm-b" onclick="editPOI('${p.id}')" title="Éditer">✎</button>
+      <button class="pzm-b del" onclick="pzDelete('poi','${p.id}')" title="Supprimer">🗑</button>
+    </div>`;
+  };
+  const zoneRow = z => `<div class="pzm-row">
+      <span class="pzm-dot pzm-zone" title="Zone"></span>
+      <span class="pzm-name" onclick="pzCenter('zone','${z.id}')">${z.name || '?'}</span>
+      <button class="pzm-b" onclick="editZone('${z.id}')" title="Éditer">✎</button>
+      <button class="pzm-b del" onclick="pzDelete('zone','${z.id}')" title="Supprimer">🗑</button>
+    </div>`;
+
+  el.innerHTML =
+    `<div class="pzm-cat">POI (${pois.length})</div>` +
+    (pois.length ? pois.map(poiRow).join('') : '<span class="empty">Aucun</span>') +
+    `<div class="pzm-cat">Zones (${zones.length})</div>` +
+    (zones.length ? zones.map(zoneRow).join('') : '<span class="empty">Aucune</span>');
+}
+
+function pzCenter(kind, id) {
+  const it = _item(kind, id); if (!it) return;
+  if (kind === 'poi') {
+    map.setView([it.lat, it.lng], map.getZoom(), { animate: true });
+    poiMarkers[id]?.openPopup();
+  } else {
+    const poly = zonePolys[id];
+    if (poly) { map.fitBounds(poly.getBounds(), { animate: true, maxZoom: map.getZoom() }); poly.openPopup?.(); }
+    else if (it.polygon?.length) map.setView(it.polygon[0], map.getZoom(), { animate: true });
+  }
+}
+
+async function pzDelete(kind, id) {
+  const it = _item(kind, id); if (!it) return;
+  if (!await fpConfirm(`Supprimer ${kind === 'poi' ? 'le POI' : 'la zone'} « ${it.name || '?'} » ?`)) return;
+  kind === 'poi' ? deletePOI(id) : deleteZone(id);
+}

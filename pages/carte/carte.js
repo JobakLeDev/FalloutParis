@@ -739,12 +739,18 @@ function updateModeUI() {
   const ml = document.getElementById('mj-left');  if (ml) ml.style.display = isMJ ? 'block' : 'none';
   const mr = document.getElementById('mj-right'); if (mr) mr.style.display = isMJ ? 'block' : 'none';
   // MJ : outils d'édition directement disponibles (plus de toggle)
-  if (isMJ) { editMode = true; const t = document.getElementById('mjp-tools'); if (t) t.style.display = 'block'; buildPoiPicker(); }
+  if (isMJ) {
+    editMode = true;
+    const t = document.getElementById('mjp-tools');  if (t) t.style.display = 'block';
+    const m = document.getElementById('mjp-manage'); if (m) m.style.display = 'block';
+    buildPoiPicker();
+  }
 }
 function toggleEdit() {
   editMode = !editMode;
   document.getElementById('edit-btn').classList.toggle('on', editMode);
   document.getElementById('mjp-tools').style.display = editMode ? 'block' : 'none';
+  const m = document.getElementById('mjp-manage'); if (m) m.style.display = editMode ? 'block' : 'none';
   if (!editMode) { addingPOI = false; cancelDrawZone(); }
   renderAll();
 }
@@ -764,6 +770,7 @@ function renderAll() {
   renderFog();
   renderPing();
   renderMJPanel();
+  if (typeof renderPoiZoneManager === 'function') renderPoiZoneManager();
   if (metroMap) renderMetro();
   if (openItem) {
     const layer = openItem.kind === 'poi' ? poiMarkers[openItem.id]
