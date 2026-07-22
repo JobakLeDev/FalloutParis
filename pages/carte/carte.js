@@ -1330,7 +1330,9 @@ function zonePopup(z) {
 }
 function poiPopup(p, t) {
   let h = `<div class="zpop"><div class="zpop-title">${t.icon} ${p.name}</div>
-    <div class="zpop-pool">${t.label}${p.desc ? ' — ' + p.desc : ''}</div>`;
+    <div class="zpop-pool">${t.label}${p.faction ? ' · ⚑ ' + p.faction : ''}${p.desc ? ' — ' + p.desc : ''}</div>`;
+  // Référence MJ : lieu réel du POI (adresse pré-guerre, jamais montrée aux joueurs)
+  if (isMJ && p.lieuReel) h += `<div class="zpop-pool" style="color:var(--td);font-size:8px">📍 ${p.lieuReel}</div>`;
   // POI marchand : boutique
   if (p.type === 'trader') {
     if (isMJ) {
