@@ -404,7 +404,8 @@ function renderGeoLayers() {
           const merc = Math.cos(c.lat * Math.PI / 180);   // carré à l'écran en Web Mercator
           const halfLng = Math.max((b.getEast() - b.getWest()) / 2, (b.getNorth() - b.getSouth()) / 2 / merc) * 1.45;
           const halfLat = halfLng * merc;
-          L.imageOverlay('../../img/crater.png',
+          // ?v= manuel : bump-cache.js ne versionne que les références des .html, pas les URLs en JS
+          L.imageOverlay('../../img/crater.png?v=2',
             L.latLngBounds([c.lat - halfLat, c.lng - halfLng], [c.lat + halfLat, c.lng + halfLng]),
             { pane: 'geoZonePane', className: 'crater-img', interactive: false }).addTo(geoZoneLayer);
         }
