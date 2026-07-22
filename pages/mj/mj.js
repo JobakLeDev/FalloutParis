@@ -106,10 +106,10 @@ function startSync(){
     renderParties();
   });
   populateLootCats();
-  // Carte : positions des jetons + POI (pour les « points chauds » à boosters, cf. boosterShare)
+  // Carte : positions des jetons + POI + zones (pour les « points chauds » à boosters, cf. boosterShare)
   db.collection('carte').doc(fpCampId()).onSnapshot(s => {
     const d = s.exists ? s.data() : {};
-    carteData = { tokens: d.tokens || {}, pois: Array.isArray(d.pois) ? d.pois : [] };
+    carteData = { tokens: d.tokens || {}, pois: Array.isArray(d.pois) ? d.pois : [], zones: Array.isArray(d.zones) ? d.zones : [] };
     renderLootHotspot();
   }, e => console.warn('carte (hotspots):', e && e.code));
   db.collection('butin').doc(fpCampId()).onSnapshot(s => {
@@ -569,7 +569,7 @@ function _postcardLootList(){ return (window.POSTCARDS||[]).map(p=>({n:'Carte po
 // ont en repli la proba d'une commune moyenne pour rester lootables.
 const _MTG_RARITY_R = { common:1, uncommon:3, rare:4, mythic:5 };
 const MTG_BOOSTER_ITEM = 'Booster scellé — Fallout';
-let carteData = { tokens:{}, pois:[] };   // rempli par le listener /carte
+let carteData = { tokens:{}, pois:[], zones:[] };   // rempli par le listener /carte
 function _esc(s){ return (s==null?'':''+s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // « Points chauds » : part de boosters selon la proximité des joueurs SÉLECTIONNÉS d'une
@@ -1769,7 +1769,7 @@ function _refreshPOIList(){
 
 function _refreshZoneList(){
   const list = document.getElementById('zone-list'); if(!list) return;
-  const zones = (mapData && mapData.zones) || [];
+  const zones = (carteData && carteData.zones) || [];
   list.innerHTML = zones.map((z, i) => `
     <div style="padding:8px;background:#222;border:1px solid var(--b2);display:grid;gap:4px;grid-template-columns:1fr 100px">
       <div><strong>${z.nom || z.Nom || '?'}</strong> (${z.Type || 'Zone'})</div>
@@ -1809,7 +1809,7 @@ function addNewZone(){
   if(!name) { fpConfirm('Nom obligatoire','err'); return; }
 
   const newZone = { Nom: name, Type: type, Faction: null, Statut: 'normal', Descriptio: '', Visible: true, sort: 999, geometry: { type: 'MultiPolygon', coordinates: [] } };
-  const zones = [...(mapData?.zones || []), newZone];
+  const zones = [...(carteData?.zones || []), newZone];
 
   db.collection('carte').doc(fpCampId()).set({ zones }, { merge: true })
     .then(() => {
@@ -1821,8 +1821,8 @@ function addNewZone(){
 }
 
 function _deleteZone(idx){
-  if(!mapData.zones) return;
-  const zones = mapData.zones.filter((_, i) => i !== idx);
+  if(!carteData.zones) return;
+  const zones = carteData.zones.filter((_, i) => i !== idx);
   db.collection('carte').doc(fpCampId()).set({ zones }, { merge: true })
     .then(() => { _refreshZoneList(); fpConfirm('✓ Zone supprimée','ok'); })
     .catch(e => fpConfirm('Erreur : ' + (e.message || e),'err'));
