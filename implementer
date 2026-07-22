@@ -10,6 +10,7 @@ dans la partie claude generale : après chaque opération que tu réalises, cons
 (rien en attente)
 
 --- Fait ---
+-[OK] Seine elargie sur la carte Paris : 2 passes de dessin (trait clair 10px = rives + trait sombre 7px par-dessus = lit d'eau, bouts arrondis) au lieu du filet de 1.6px. La Seine de l'onglet METRO (repere de fond) n'a pas ete touchee.
 -[OK] zones geojson : crateres remplis couleur du fond de carte (#071307, opaque, au-dessus des rues -> trous de bombe dans la ville) ; zone technique « Paris » (Type zone) jamais rendue meme cote MJ ; Cratere nord + ouest passes Visible=true -> seuls l'Enfer Vert et les 3 crateres sont visibles des joueurs.
 -[OK] metadonnees des POI restaurees : fusion marqueurs.geojson V1 (description, faction, type Settlement/Safe) + lieu_reel du poi.geojson V2 dans les POI Firebase (21/23 marqueurs matches malgre les renommages V1->V2 ; Vault 17/9 sans equivalent, a trancher). Popup POI : ⚑ faction + 📍 lieu reel (MJ only) ; editPOI propose la faction ; Le Repaire du Dragon type cardshop.
 -[OK] regression corrigee : routes/Seine/zones/cadre disparues de la carte — la migration POI avait supprime TOUS les geojson de map/ alors que carte.js charge toujours ces couches de fond en fetch. Restaurees depuis le commit V2 (seul poi.geojson reste retire, source = Firebase). Regle notee dans CLAUDE.md : ne plus toucher aux geojson de fond dans map/.
