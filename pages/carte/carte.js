@@ -369,9 +369,15 @@ function renderGeoLayers() {
   if (geoZonesData) {
     L.geoJSON(geoZonesData, {
       pane: 'geoZonePane', renderer: geoZoneRenderer,
-      filter: f => isMJ || f.properties.Visible === true,
+      // Type 'zone' = polygone technique (ex. « Paris », emprise de la ville) : jamais rendu, même MJ
+      filter: f => ('' + (f.properties.Type || '')).toLowerCase() !== 'zone' && (isMJ || f.properties.Visible === true),
       style: f => {
         const fonctionnelle = isMJ && f.properties.Visible !== true;  // non visible joueurs
+        // Cratères : remplissage couleur du fond de carte, opaque et AU-DESSUS des rues
+        // → les rues disparaissent dedans, le cratère se lit comme un trou dans la ville
+        if (('' + (f.properties.Type || '')).toLowerCase().startsWith('crat')) {
+          return { stroke: false, weight: 0, fillColor: '#071307', fillOpacity: fonctionnelle ? 0.55 : 1, interactive: isMJ };
+        }
         // Désert de radiation : vert toxique, sans bordure, plus opaque
         if (('' + (f.properties.Statut || '')).toLowerCase().includes('rad')) {
           return { stroke: false, weight: 0, fillColor: '#5dff5d', fillOpacity: fonctionnelle ? 0.14 : 0.4, interactive: isMJ };
