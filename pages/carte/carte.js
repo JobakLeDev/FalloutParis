@@ -434,11 +434,20 @@ function renderGeoLayers() {
         if (('' + (f.properties.Type || '')).toLowerCase().startsWith('crat')) {
           const b = layer.getBounds(), c = b.getCenter();
           const merc = Math.cos(c.lat * Math.PI / 180);   // carré à l'écran en Web Mercator
-          // Échelle de la texture par cratère (défaut 1 = inscrite dans l'emprise du polygone)
-          const CRATER_IMG_SCALE = { 'cratère nord': 0.7 };
-          const scale = CRATER_IMG_SCALE[('' + (f.properties.Nom || '')).toLowerCase()] || 1.0;
-          const halfLng = Math.max((b.getEast() - b.getWest()) / 2, (b.getNorth() - b.getSouth()) / 2 / merc) * scale;
-          const halfLat = halfLng * merc;
+          // Réglages par cratère : échelle (défaut 1) et « stretch » = l'image épouse la
+          // boîte englobante du polygone (étirée selon sa forme) au lieu de rester carrée
+          const CRATER_IMG_SCALE   = { 'cratère nord': 0.95 };
+          const CRATER_IMG_STRETCH = { 'cratère nord': true };
+          const nomKey = ('' + (f.properties.Nom || '')).toLowerCase();
+          const scale = CRATER_IMG_SCALE[nomKey] || 1.0;
+          let halfLng, halfLat;
+          if (CRATER_IMG_STRETCH[nomKey]) {
+            halfLng = (b.getEast() - b.getWest()) / 2 * scale;
+            halfLat = (b.getNorth() - b.getSouth()) / 2 * scale;
+          } else {
+            halfLng = Math.max((b.getEast() - b.getWest()) / 2, (b.getNorth() - b.getSouth()) / 2 / merc) * scale;
+            halfLat = halfLng * merc;
+          }
           // ?v= manuel : bump-cache.js ne versionne que les références des .html, pas les URLs en JS
           L.imageOverlay('../../img/crater.png?v=2',
             L.latLngBounds([c.lat - halfLat, c.lng - halfLng], [c.lat + halfLat, c.lng + halfLng]),
