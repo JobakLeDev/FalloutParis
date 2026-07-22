@@ -394,7 +394,21 @@ function renderGeoLayers() {
                  interactive: isMJ };  // joueurs : zone = simple dessin, non cliquable
       },
       // Joueurs : pas de popup (zone non interactive)
-      onEachFeature: (f, layer) => { if (isMJ) layer.bindPopup(geoZonePopup(f.properties)); },
+      onEachFeature: (f, layer) => {
+        if (isMJ) layer.bindPopup(geoZonePopup(f.properties));
+        // Cratères : texture d'impact (img/crater.png) calée sur l'emprise du polygone.
+        // mix-blend-mode:screen (carte.css) → le fond noir de l'image disparaît, seules
+        // les fissures lumineuses s'impriment. ×1.45 car les fissures débordent du cercle.
+        if (('' + (f.properties.Type || '')).toLowerCase().startsWith('crat')) {
+          const b = layer.getBounds(), c = b.getCenter();
+          const merc = Math.cos(c.lat * Math.PI / 180);   // carré à l'écran en Web Mercator
+          const halfLng = Math.max((b.getEast() - b.getWest()) / 2, (b.getNorth() - b.getSouth()) / 2 / merc) * 1.45;
+          const halfLat = halfLng * merc;
+          L.imageOverlay('../../img/crater.png',
+            L.latLngBounds([c.lat - halfLat, c.lng - halfLng], [c.lat + halfLat, c.lng + halfLng]),
+            { pane: 'geoZonePane', className: 'crater-img', interactive: false }).addTo(geoZoneLayer);
+        }
+      },
     }).addTo(geoZoneLayer);
   }
 
