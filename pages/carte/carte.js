@@ -382,6 +382,10 @@ function renderGeoLayers() {
         // Cratères : remplissage couleur du fond de carte, opaque et AU-DESSUS des rues
         // → les rues disparaissent dedans, le cratère se lit comme un trou dans la ville
         if (('' + (f.properties.Type || '')).toLowerCase().startsWith('crat')) {
+          // Cratère INONDÉ (Cratère Sud) : rempli couleur de la Seine (lac) + liseré de rive
+          const inonde = ('' + (f.properties.Statut || '')).toLowerCase().includes('nond');
+          if (inonde) return { color: '#4CFF77', weight: 2, opacity: 0.9,
+                               fillColor: '#2FAF62', fillOpacity: fonctionnelle ? 0.55 : 0.95, interactive: isMJ };
           return { stroke: false, weight: 0, fillColor: '#071307', fillOpacity: fonctionnelle ? 0.55 : 1, interactive: isMJ };
         }
         // Désert de radiation : vert toxique, sans bordure, plus opaque
