@@ -1609,3 +1609,124 @@ function sendMsgMJ(){
     .set({ msgs: firebase.firestore.FieldValue.arrayUnion(msg) }, { merge: true })
     .catch(e => console.error('sendMsgMJ:', e));
 }
+
+// ============================================================
+// CRÉATEUR D'OBJETS À LA VOLÉE
+// ============================================================
+function openCreateObjModal(){
+  const mo = document.getElementById('mj-create-obj-modal'); if(!mo) return;
+  mo.classList.add('on');
+  _populateCreateObjSelects();
+  document.getElementById('co-action').value = 'joueur';
+  _updateCreateObjActionUI();
+}
+
+function closeCreateObjModal(){
+  const mo = document.getElementById('mj-create-obj-modal'); if(!mo) return;
+  mo.classList.remove('on');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const actionSel = document.getElementById('co-action');
+  if(actionSel) actionSel.addEventListener('change', _updateCreateObjActionUI);
+});
+
+function _populateCreateObjSelects(){
+  const jsel = document.getElementById('co-joueur'); if(!jsel) return;
+  jsel.innerHTML = '';
+  const joueurIds = Object.keys(joueurs || {}).sort();
+  joueurIds.forEach(id => {
+    const j = joueurs[id];
+    const nom = j.nom || id;
+    const opt = document.createElement('option');
+    opt.value = id;
+    opt.textContent = nom;
+    jsel.appendChild(opt);
+  });
+}
+
+function _updateCreateObjActionUI(){
+  const action = document.getElementById('co-action')?.value || 'joueur';
+  const joueurRow = document.getElementById('co-joueur-row');
+  if(joueurRow) joueurRow.style.display = action === 'joueur' ? 'block' : 'none';
+}
+
+function creerObjet(){
+  const type = document.getElementById('co-type')?.value || 'STUFF';
+  const name = document.getElementById('co-name')?.value?.trim();
+  const weight = parseFloat(document.getElementById('co-weight')?.value) || 1;
+  const qty = parseInt(document.getElementById('co-qty')?.value) || 1;
+  const eff = document.getElementById('co-eff')?.value?.trim();
+  const action = document.getElementById('co-action')?.value || 'joueur';
+  const joueurId = document.getElementById('co-joueur')?.value;
+
+  if(!name){ fpPrompt('Nom obligatoire !',''); return; }
+
+  const item = { name, type, qty, w: weight };
+  if(eff) item.eff = eff;
+  if(type === 'WEAPON') item.equipped = false;
+  if(type === 'ARMOR') item.equipped = false;
+  if(type === 'CLOTHING') item.equipped = false;
+
+  if(action === 'joueur'){
+    if(!joueurId) { fpPrompt('Sélectionne un joueur !',''); return; }
+    _donnerObjetAuJoueur(joueurId, item);
+  } else if(action === 'carte'){
+    _poserObjetSurCarte(item);
+  } else if(action === 'refuge'){
+    _ajouterObjetAuRefuge(item);
+  }
+
+  closeCreateObjModal();
+}
+
+function _donnerObjetAuJoueur(joueurId, item){
+  db.collection('joueurs').doc(joueurId).get().then(snap => {
+    if(!snap.exists) return;
+    const inv = snap.data().inventory || [];
+    inv.push(item);
+    db.collection('joueurs').doc(joueurId).update({ inventory: inv })
+      .then(() => {
+        fpConfirm('✓ ' + item.name + ' ajouté à ' + (joueurs[joueurId]?.nom || joueurId),'ok');
+      })
+      .catch(e => fpConfirm('Erreur : ' + (e.message || e),'err'));
+  }).catch(e => fpConfirm('Erreur : ' + (e.message || e),'err'));
+}
+
+function _poserObjetSurCarte(item){
+  fpPrompt('Latitude / Longitude (ex: 48.8566 2.3522)','48.8566 2.3522').then(input => {
+    if(!input) return;
+    const [lat, lng] = input.trim().split(/\s+/).map(parseFloat);
+    if(isNaN(lat) || isNaN(lng)) { fpConfirm('Coordonnées invalides','err'); return; }
+
+    const campId = fpCampId();
+    const groundKey = 'ground__' + campId;
+    const groundItem = { id: Math.random().toString(36).substr(2,9), ...item, lat, lng, droppedBy: 'mj', ts: Date.now() };
+
+    db.collection('carte').doc(groundKey).set({ items: firebase.firestore.FieldValue.arrayUnion(groundItem) }, { merge: true })
+      .then(() => {
+        fpConfirm('✓ ' + item.name + ' posé à (' + lat + ', ' + lng + ')','ok');
+      })
+      .catch(e => fpConfirm('Erreur : ' + (e.message || e),'err'));
+  });
+}
+
+function _ajouterObjetAuRefuge(item){
+  fpPrompt('ID du refuge','').then(refugeId => {
+    if(!refugeId) return;
+    const campId = fpCampId();
+    db.collection('settlements').doc(campId).get().then(snap => {
+      if(!snap.exists || !snap.data().sites || !snap.data().sites[refugeId]){
+        fpConfirm('Refuge introuvable','err');
+        return;
+      }
+      const inv = snap.data().sites[refugeId].inv || [];
+      inv.push(item);
+      db.collection('settlements').doc(campId).update({ ['sites.' + refugeId + '.inv']: inv })
+        .then(() => {
+          fpConfirm('✓ ' + item.name + ' ajouté au refuge','ok');
+        })
+        .catch(e => fpConfirm('Erreur : ' + (e.message || e),'err'));
+    }).catch(e => fpConfirm('Erreur : ' + (e.message || e),'err'));
+  });
+}

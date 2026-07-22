@@ -201,6 +201,13 @@
           </div>
         </div>
 
+        <div class="action-group">
+          <div class="action-group-title">🎁 Créer objet</div>
+          <div class="action-row">
+            <button class="action-btn heal full" onclick="openCreateObjModal()">🎁 Créer un objet</button>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -501,6 +508,67 @@
   </div>
 </div>
 
+<!-- CRÉATEUR D'OBJETS -->
+<div class="mj-mo" id="mj-create-obj-modal">
+  <div class="mj-cat-box">
+    <div class="mj-msg-head"><span>🎁 CRÉER UN OBJET</span><button class="hbtn" onclick="closeCreateObjModal()">✕</button></div>
+    <div style="padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:9px;max-height:70vh;overflow-y:auto">
+
+      <div class="mf">
+        <label>Type</label>
+        <select id="co-type">
+          <option value="WEAPON">⚔ Arme</option>
+          <option value="ARMOR">🛡 Armure</option>
+          <option value="CLOTHING">👔 Vêtement</option>
+          <option value="FOOD">🍖 Nourriture</option>
+          <option value="DRUGS">💊 Produit chimique</option>
+          <option value="STUFF">📦 Objet</option>
+          <option value="AMMO">🔫 Munitions</option>
+        </select>
+      </div>
+
+      <div class="mf">
+        <label>Nom</label>
+        <input type="text" id="co-name" placeholder="ex: Laser Pistol…">
+      </div>
+
+      <div class="mf">
+        <label>Poids (kg)</label>
+        <input type="number" id="co-weight" value="1" step="0.1" min="0">
+      </div>
+
+      <div class="mf">
+        <label>Quantité</label>
+        <input type="number" id="co-qty" value="1" min="1" max="999">
+      </div>
+
+      <div class="mf" style="grid-column:1/-1">
+        <label>Effet / Notes (optionnel)</label>
+        <input type="text" id="co-eff" placeholder="ex: Piercing 1…">
+      </div>
+
+      <div class="mf" style="grid-column:1/-1">
+        <label>Action</label>
+        <select id="co-action">
+          <option value="joueur">➕ Ajouter à un joueur</option>
+          <option value="carte">📍 Poser sur la carte (au sol)</option>
+          <option value="refuge">🏠 Ajouter au refuge</option>
+        </select>
+      </div>
+
+      <div class="mf" id="co-joueur-row" style="grid-column:1/-1">
+        <label>Joueur</label>
+        <select id="co-joueur"></select>
+      </div>
+
+      <div style="grid-column:1/-1;display:flex;gap:8px;justify-content:space-between">
+        <button class="action-btn heal" onclick="creerObjet()" style="flex:1">✓ Créer</button>
+        <button class="action-btn dmg" onclick="closeCreateObjModal()" style="flex:1">✕ Annuler</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- MESSAGERIE MJ -->
 <div class="mj-mo" id="mj-msg-modal">
   <div class="mj-msg-box">
@@ -526,7 +594,7 @@
   <script src="../../common/survie.js?v=31a541f2"></script>
   <script src="mj_shared.js?v=579350c4"></script>
   <script src="zones.js?v=4b361af8"></script>
-  <script src="mj.js?v=537a3eee"></script>
+  <script src="mj.js?v=42fa60a6"></script>
   <script src="../../common/responsive.js?v=f2bdcb93"></script>
 </body>
 </html>
