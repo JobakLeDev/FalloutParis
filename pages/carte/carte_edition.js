@@ -209,7 +209,9 @@ async function editPOI(id) {
   const name = await fpPrompt('Nom :', p.name); if (name === null) return;
   const type = await fpPrompt('Type (' + Object.keys(POI_TYPES).join(', ') + ') :', p.type);
   const desc = await fpPrompt('Description :', p.desc || '');
+  const faction = await fpPrompt('Faction occupante (vide = aucune) :', p.faction || '');
   p.name = name || p.name; if (POI_TYPES[type]) p.type = type; p.desc = desc || '';
+  if (faction !== null) { if (faction.trim()) p.faction = faction.trim(); else delete p.faction; }
   saveData();
 }
 function toggleDrawZone() {
