@@ -10,6 +10,7 @@ dans la partie claude generale : après chaque opération que tu réalises, cons
 (rien en attente)
 
 --- Fait ---
+-[OK] inventaires de départ selon la faction : chaque origine (vault/settlement/zazous/ultras) recoit son starter kit (vêtements thématiques + arme adaptée + soin + nourriture + eau). Données faction_starter_kits.json, chargées dans db.js, appliquées à la création du perso.
 -[OK] BUG : payer des AP pour des des bonus (3D/4D/5D) puis ne lancer que 2 des. Course entre l await et le re-render : jLancer2D20 depensait les AP (await _updateAPGroupe), le snapshot Firestore redessinait l ecran, renderDiceAccess() voyait l option devenue inabordable (reserve vide) et faisait setNbDiceJ(2) — puis la fonction reprenait apres l await et lisait nbDiceJ = 2. Le joueur payait 6 AP pour 2 des. Corrige : nombre de des fige (nbBase) AVANT la depense.
 -[OK] attaque : carte non assombrie pendant la declaration (classe .no-veil etendue a Attack/Aim, comme pour le deplacement) + halo rouge pulse sur le jeton de l ennemi VISE (.cen-target), reevalue a chaque changement du selecteur de cible. Sans ca le "#2" du selecteur ne se reperait pas sur le terrain.
 -[OK] carcasse : taille calee sur la maquette — sprite re-detoure au ras de la carrosserie (62x96 portrait, le halo rendait le cadrage carre) et pose en contain sur l emprise 2x2 ; bordures et fond des 4 cases supprimes (le lisere vert decoupait la voiture en quartiers).

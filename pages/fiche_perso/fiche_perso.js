@@ -132,13 +132,13 @@ let curTab='general', curInv='all';
 
 function sw(tab){
   document.querySelectorAll('.tab').forEach((el,i)=>{
-    el.classList.toggle('on',['general','inventaire','perks','carte','quetes','journal','encyclopedie','radio'][i]===tab);
+    el.classList.toggle('on',['general','inventaire','perks','carte','quetes','journal','radio'][i]===tab);
   });
   document.querySelectorAll('.tc').forEach(el=>el.classList.remove('on'));
   const tc=document.getElementById('tc-'+tab);
   if(tc)tc.classList.add('on');
   // Éteindre le point de notif quand on ouvre l'onglet correspondant
-  if(typeof markTabSeen==='function' && (tab==='quetes'||tab==='journal'||tab==='encyclopedie')) markTabSeen(tab);
+  if(typeof markTabSeen==='function' && (tab==='quetes'||tab==='journal')) markTabSeen(tab);
   const id=new URLSearchParams(location.search).get('id')||'';
   // Charger la carte (iframe) à la première ouverture de l'onglet ; sinon recentrer sur le joueur
   if(tab==='carte'){
@@ -182,15 +182,6 @@ function sw(tab){
       f.src='../journal/journal.html?id='+encodeURIComponent(id)+'&embed=1&camp='+encodeURIComponent((char&&char.campaign)||'data');
     } else if(f && f.contentWindow){
       f.contentWindow.postMessage('journal-refresh','*');
-    }
-  }
-  // Charger l'encyclopédie (iframe) ; sinon rafraîchir
-  if(tab==='encyclopedie'){
-    const f=document.getElementById('ency-frame');
-    if(f && !f.src){
-      f.src='../encyclopedie/encyclopedie.html?id='+encodeURIComponent(id)+'&embed=1&camp='+encodeURIComponent((char&&char.campaign)||'data');
-    } else if(f && f.contentWindow){
-      f.contentWindow.postMessage('ency-refresh','*');
     }
   }
   curTab=tab; rAll();
