@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"name": "cadre",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "Nom": "MAP", "Fonction": "FULL_ZONE" }, "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [ 2.192624930347411, 48.908230085112137 ], [ 2.456054070848389, 48.908230085112137 ], [ 2.454980102308199, 48.800066110707256 ], [ 2.191550961807221, 48.803288016327826 ], [ 2.192624930347411, 48.908230085112137 ] ] ] ] } }
+]
+}
