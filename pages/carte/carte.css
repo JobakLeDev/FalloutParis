@@ -75,8 +75,9 @@ body.embed #map, body.embed #map-metro{position:absolute;inset:0;width:auto;heig
 .pz-gen{color:var(--am);text-decoration:none;border:1px solid var(--gd);padding:1px 5px;background:none;font-family:'Share Tech Mono',monospace;font-size:9px;cursor:pointer;line-height:1.4;}
 .pz-gen:hover{border-color:var(--g);color:var(--g);}
 .empty{font-size:8px;color:var(--td);}
-/* Texture d'impact des cratères : PNG à fond transparent (noir → alpha), pas de blend nécessaire */
-.crater-img{opacity:.9;}
+/* Texture d'impact des cratères : PNG à fond transparent (noir → alpha), pas de blend nécessaire.
+   z-index : passe DEVANT le SVG des zones (même pane) → l'image s'affiche par-dessus le masque. */
+.crater-img{opacity:.9;z-index:2;}
 /* Gestionnaire POI & Zones (bandeau MJ) */
 #pzm-search{width:100%;box-sizing:border-box;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:8px;padding:4px 6px;margin-bottom:5px;letter-spacing:1px;}
 #pzm-search:focus{outline:none;border-color:var(--g);}
