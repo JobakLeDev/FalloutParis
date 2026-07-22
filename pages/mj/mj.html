@@ -208,6 +208,16 @@
           </div>
         </div>
 
+        <div class="action-group">
+          <div class="action-group-title">🗺 Gestion Carte</div>
+          <div class="action-row">
+            <button class="action-btn full" onclick="openMapEditorModal()">🏁 Éditer POIs</button>
+          </div>
+          <div class="action-row">
+            <button class="action-btn full" onclick="openZonesEditorModal()">📍 Éditer Zones</button>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -569,6 +579,58 @@
   </div>
 </div>
 
+<!-- ÉDITEUR POIS -->
+<div class="mj-mo" id="mj-poi-modal">
+  <div class="mj-cat-box">
+    <div class="mj-msg-head"><span>🏁 GESTION POIs</span><button class="hbtn" onclick="closePOIModal()">✕</button></div>
+    <div style="padding:16px;display:grid;gap:12px;font-size:9px;max-height:70vh;overflow-y:auto">
+      <div style="display:grid;grid-template-columns:1fr 1fr 200px;gap:8px;align-items:end">
+        <div class="mf">
+          <label>Nom POI</label>
+          <input type="text" id="poi-name" placeholder="ex: Maison de la Radio">
+        </div>
+        <div class="mf">
+          <label>Type</label>
+          <select id="poi-type">
+            <option value="other">📍 Standard</option>
+            <option value="cardshop">🎁 Boutique de cartes</option>
+            <option value="faction">⚔ Faction</option>
+            <option value="danger">☢ Danger</option>
+          </select>
+        </div>
+        <button class="action-btn heal" onclick="addNewPOI()" style="width:100%">➕ Ajouter</button>
+      </div>
+      <div style="max-height:300px;overflow-y:auto;border:1px solid var(--b);padding:8px;display:grid;gap:6px" id="poi-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ÉDITEUR ZONES -->
+<div class="mj-mo" id="mj-zone-modal">
+  <div class="mj-cat-box">
+    <div class="mj-msg-head"><span>📍 GESTION ZONES</span><button class="hbtn" onclick="closeZoneModal()">✕</button></div>
+    <div style="padding:16px;display:grid;gap:12px;font-size:9px;max-height:70vh;overflow-y:auto">
+      <div style="display:grid;grid-template-columns:1fr 1fr 150px;gap:8px;align-items:end">
+        <div class="mf">
+          <label>Nom Zone</label>
+          <input type="text" id="zone-name" placeholder="ex: L'enfer Vert">
+        </div>
+        <div class="mf">
+          <label>Type</label>
+          <select id="zone-type">
+            <option value="Danger">☢ Danger</option>
+            <option value="Loot">💰 Loot</option>
+            <option value="Safe">🏠 Safe</option>
+            <option value="Other">📍 Autre</option>
+          </select>
+        </div>
+        <button class="action-btn heal" onclick="addNewZone()" style="width:100%">➕ Ajouter</button>
+      </div>
+      <div style="max-height:300px;overflow-y:auto;border:1px solid var(--b);padding:8px;display:grid;gap:6px" id="zone-list"></div>
+    </div>
+  </div>
+</div>
+
 <!-- MESSAGERIE MJ -->
 <div class="mj-mo" id="mj-msg-modal">
   <div class="mj-msg-box">
@@ -594,7 +656,7 @@
   <script src="../../common/survie.js?v=31a541f2"></script>
   <script src="mj_shared.js?v=579350c4"></script>
   <script src="zones.js?v=4b361af8"></script>
-  <script src="mj.js?v=42fa60a6"></script>
+  <script src="mj.js?v=417276db"></script>
   <script src="../../common/responsive.js?v=f2bdcb93"></script>
 </body>
 </html>
