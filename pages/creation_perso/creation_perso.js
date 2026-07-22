@@ -117,16 +117,24 @@ async function creer(){
   const snap=await db.collection('joueurs').doc(id).get();
   if(snap.exists){showMsg('Cet identifiant est déjà pris !','err');return;}
 
+  // Charger le starter kit basé sur la faction
+  const starterKit = (window.STARTER_KITS && window.STARTER_KITS[faction]) ? window.STARTER_KITS[faction] : null;
+  let inventory = [];
+  if(starterKit){
+    // Construire l'inventaire depuis le starter kit
+    if(starterKit.clothing) inventory.push(starterKit.clothing);
+    if(starterKit.weapon) inventory.push(starterKit.weapon);
+    if(starterKit.healing) inventory.push(starterKit.healing);
+    if(starterKit.food) inventory.push(starterKit.food);
+    if(starterKit.water) inventory.push(starterKit.water);
+  }
+
   const data={
     nom, origine, faction, factionRel:{}, campaign:fpCampId(), code,
     niveau:1, xp:0, hp:10, rad:0, momentum:0, powerArmor:false,
     special:{S:5,P:5,E:5,C:5,I:5,A:5,L:5},
     perks:{}, skills:{en_weapon:0,cac_weapon:0,light_weapon:0,heavy_weapon:0,athletics:0,lockpick:0,speech:0,sneak:0,explosives:0,barehand:0,medicine:0,pilot:0,throwing:0,repair:0,science:0,survival:0,barter:0},
-    taggedSkills:[], inventory:[
-      {name:'Vault 74 Jumpsuit',type:'CLOTHING',qty:1,w:1,equipped:true},
-      {name:'Pipe Gun',type:'WEAPON',qty:1,w:0.9,equipped:true,persoBonus:false},
-      {name:'Stimpak',type:'DRUGS',qty:1,w:0.05,equipped:false},
-    ], ammo:[],
+    taggedSkills:[], inventory, ammo:[],
     wounds:{head:false,torso:false,armL:false,armR:false,legL:false,legR:false},
     lastUpdate:Date.now(),
   };

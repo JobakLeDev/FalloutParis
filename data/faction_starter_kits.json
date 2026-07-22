@@ -1,0 +1,34 @@
+{
+  "vault": {
+    "label": "Abri 74",
+    "clothing": { "name": "Vault 74 Jumpsuit", "type": "CLOTHING", "qty": 1, "w": 1, "equipped": true },
+    "weapon": { "name": "Pipe Gun", "type": "WEAPON", "qty": 1, "w": 0.9, "equipped": true, "persoBonus": false },
+    "healing": { "name": "Stimpak", "type": "DRUGS", "qty": 1, "w": 0.05, "equipped": false },
+    "food": { "name": "Brahmin Meat", "type": "FOOD", "qty": 1, "w": 0.45, "equipped": false },
+    "water": { "name": "Gourde", "type": "STUFF", "qty": 1, "w": 0.5, "water": 1, "equipped": false }
+  },
+  "settlement": {
+    "label": "Bourg-de-Bois",
+    "clothing": { "name": "Armure légère makeshift", "type": "ARMOR", "qty": 1, "w": 3, "equipped": true },
+    "weapon": { "name": "Pool Cue", "type": "WEAPON", "qty": 1, "w": 0.5, "equipped": true, "persoBonus": false },
+    "healing": { "name": "Stimpak", "type": "DRUGS", "qty": 1, "w": 0.05, "equipped": false },
+    "food": { "name": "Mole Rat Chunks", "type": "FOOD", "qty": 1, "w": 0.09, "equipped": false },
+    "water": { "name": "Gourde", "type": "STUFF", "qty": 1, "w": 0.5, "water": 1, "equipped": false }
+  },
+  "zazous": {
+    "label": "Les Zazous",
+    "clothing": { "name": "Vêtements colorés Zazou", "type": "CLOTHING", "qty": 1, "w": 0.8, "equipped": true },
+    "weapon": { "name": "Combat Knife", "type": "WEAPON", "qty": 1, "w": 0.5, "equipped": true, "persoBonus": false },
+    "healing": { "name": "Stimpak", "type": "DRUGS", "qty": 1, "w": 0.05, "equipped": false },
+    "food": { "name": "Mole Rat Chunks", "type": "FOOD", "qty": 1, "w": 0.09, "equipped": false },
+    "water": { "name": "Gourde", "type": "STUFF", "qty": 1, "w": 0.5, "water": 1, "equipped": false }
+  },
+  "ultras": {
+    "label": "Les Ultras",
+    "clothing": { "name": "Blouson Ultras renforcé", "type": "CLOTHING", "qty": 1, "w": 1.2, "equipped": true },
+    "weapon": { "name": "Baseball Bat", "type": "WEAPON", "qty": 1, "w": 1.4, "equipped": true, "persoBonus": false },
+    "healing": { "name": "Stimpak", "type": "DRUGS", "qty": 1, "w": 0.05, "equipped": false },
+    "food": { "name": "Yao Guai Ribs", "type": "FOOD", "qty": 1, "w": 0.45, "equipped": false },
+    "water": { "name": "Gourde", "type": "STUFF", "qty": 1, "w": 0.5, "water": 1, "equipped": false }
+  }
+}
