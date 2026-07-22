@@ -342,12 +342,13 @@ async function loadGeoJsonLayers() {
   try {
     const data = await fetch(GEOJSON_BASE + 'seine.geojson').then(r => r.json());
     // Deux passes pour donner de la LARGEUR au fleuve (les données sont des lignes, pas des polygones) :
-    // 1) trait large clair = les rives, 2) trait un peu moins large sombre par-dessus = le lit d'eau.
+    // 1) trait large vif = les rives, 2) trait un peu moins large par-dessus = le lit d'eau,
+    // en vert d'eau PLEIN (bien distinct du fond de carte : le fleuve se lit comme rempli).
     L.geoJSON(data, { pane: 'seinePane',
-      style: { color: '#4CFF77', weight: 10, opacity: 0.55, lineCap: 'round', lineJoin: 'round', fill: false },
+      style: { color: '#4CFF77', weight: 10, opacity: 0.9, lineCap: 'round', lineJoin: 'round', fill: false },
     }).addTo(map);
     L.geoJSON(data, { pane: 'seinePane',
-      style: { color: '#0E2A0E', weight: 7, opacity: 0.95, lineCap: 'round', lineJoin: 'round', fill: false },
+      style: { color: '#2FAF62', weight: 7, opacity: 0.95, lineCap: 'round', lineJoin: 'round', fill: false },
     }).addTo(map);
   } catch(e) { console.warn('seine.geojson non chargé', e); }
   try {
