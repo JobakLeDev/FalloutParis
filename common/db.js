@@ -35,7 +35,8 @@ window.DB_READY = Promise.all([
   _fetch('loot_profiles.json'),
   _fetch('weapon_mods.json'),
   _fetch('armor_mods.json'),
-  _fetch('encyclopedie.json').catch(() => ({})),
+  // _fetch('encyclopedie.json').catch(() => ({})),  // débranchée — voir /pending
+  Promise.resolve({}),  // placeholder pour ne pas casser l'indexage du tuple
   _fetch('profiles.json').catch(() => ({})),
   _fetch('build_blocks.json').catch(() => ({})),
   _fetch('junk.json').catch(() => ({})),

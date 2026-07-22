@@ -141,10 +141,10 @@ async function creer(){
 
   try{
     await db.collection('joueurs').doc(id).set(data);
-    // Rend visible l'entrée de base de la faction d'origine dans l'encyclopédie
-    if(faction){
-      try{ await db.collection('encyclopedie').doc(fpCampId()).set({ reveal: { [faction]: firebase.firestore.FieldValue.arrayUnion(id) } }, { merge:true }); }catch(e){}
-    }
+    // Rend visible l'entrée de base de la faction d'origine dans l'encyclopédie — COMMENTÉ (encyclopédie débranchée)
+    // if(faction){
+    //   try{ await db.collection('encyclopedie').doc(fpCampId()).set({ reveal: { [faction]: firebase.firestore.FieldValue.arrayUnion(id) } }, { merge:true }); }catch(e){}
+    // }
     showMsg(`✓ ${nom} créé ! Redirection vers la fiche...`,'ok');
     setTimeout(()=>window.location.href=`/FalloutParis/pages/setup_perso/setup_perso.html?id=${id}`,1500);
   }catch(e){showMsg('Erreur : '+e.message,'err');}

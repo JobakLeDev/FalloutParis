@@ -468,10 +468,10 @@ function revealGeoAll(nom, all)    {
 
 // ---- Journal : log auto d'un lieu découvert (hybride, dédup par src) ----
 function logLieu(nom, pid, baseSrc) { logJournal({ type: 'lieu', title: nom, text: 'Lieu découvert', revealedFor: [pid], src: baseSrc + ':' + pid }); revealEncyLieu(nom, pid); }
-// Déblocage auto du Lieu d'encyclopédie lié à ce POI (entry.poi === nom) pour le joueur
+// Déblocage auto du Lieu d'encyclopédie — COMMENTÉ (encyclopédie débranchée)
 function revealEncyLieu(nom, pid) {
-  if (!fdb || !nom || !pid) return;
-  fdb.collection('encyclopedie').doc(fpCampId()).set({ lieuxPoi: { [nom]: firebase.firestore.FieldValue.arrayUnion(pid) } }, { merge: true }).catch(() => {});
+  // if (!fdb || !nom || !pid) return;
+  // fdb.collection('encyclopedie').doc(fpCampId()).set({ lieuxPoi: { [nom]: firebase.firestore.FieldValue.arrayUnion(pid) } }, { merge: true }).catch(() => {});
 }
 function logJournal(entry) {
   if (!fdb) return;
