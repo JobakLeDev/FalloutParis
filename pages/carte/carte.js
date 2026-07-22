@@ -350,6 +350,31 @@ async function loadGeoJsonLayers() {
     L.geoJSON(data, { pane: 'seinePane',
       style: { color: '#2FAF62', weight: 7, opacity: 0.95, lineCap: 'round', lineJoin: 'round', fill: false },
     }).addTo(map);
+    // Raccord visuel Seine → cratère(s) inondé(s) : le fleuve « se déverse » dans le lac.
+    // On relie le sommet de Seine et le sommet du polygone de cratère les plus proches
+    // par un bras d'eau du même style (rives + lit) → ils se touchent quel que soit le tracé.
+    (geoZonesData?.features || [])
+      .filter(f => ('' + (f.properties.Type || '')).toLowerCase().startsWith('crat')
+                && ('' + (f.properties.Statut || '')).toLowerCase().includes('nond'))
+      .forEach(cf => {
+        const rings = cf.geometry.type === 'Polygon' ? cf.geometry.coordinates : cf.geometry.coordinates.flat();
+        const cratPts = [];
+        rings.forEach(r => r.forEach(([x, y]) => cratPts.push([y, x])));
+        let best = null;
+        (data.features || []).forEach(sf => {
+          const lines = sf.geometry.type === 'LineString' ? [sf.geometry.coordinates] : sf.geometry.coordinates;
+          lines.forEach(l => l.forEach(([x, y]) => {
+            for (const p of cratPts) {
+              const d = (p[0] - y) * (p[0] - y) + (p[1] - x) * 0.66 * ((p[1] - x) * 0.66);
+              if (!best || d < best.d) best = { d, pts: [[y, x], p] };
+            }
+          }));
+        });
+        if (best) {
+          L.polyline(best.pts, { pane: 'seinePane', color: '#4CFF77', weight: 10, opacity: 0.9, lineCap: 'round' }).addTo(map);
+          L.polyline(best.pts, { pane: 'seinePane', color: '#2FAF62', weight: 7, opacity: 0.95, lineCap: 'round' }).addTo(map);
+        }
+      });
   } catch(e) { console.warn('seine.geojson non chargé', e); }
   try {
     const data = await fetch(GEOJSON_BASE + 'rails.geojson').then(r => r.json());
