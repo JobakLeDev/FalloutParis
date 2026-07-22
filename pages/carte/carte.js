@@ -228,6 +228,8 @@ function buildMap() {
   // → renderer SVG dédié, sinon les polygones vont dans overlayPane (au-dessus du fog)
   map.createPane('geoZonePane'); map.getPane('geoZonePane').style.zIndex = 330;
   geoZoneRenderer = L.svg({ pane: 'geoZonePane' });
+  // Pane dédié aux textures de cratère : AU-DESSUS des zones (330), SOUS le brouillard (350)
+  map.createPane('craterPane'); const cp = map.getPane('craterPane'); cp.style.zIndex = 335; cp.style.pointerEvents = 'none';
   // Pane du brouillard : au-dessus des zones, sous les marqueurs (400+)
   map.createPane('fogPane'); const fp = map.getPane('fogPane'); fp.style.zIndex = 350; fp.style.pointerEvents = 'none';
 
@@ -440,7 +442,7 @@ function renderGeoLayers() {
           // ?v= manuel : bump-cache.js ne versionne que les références des .html, pas les URLs en JS
           L.imageOverlay('../../img/crater.png?v=2',
             L.latLngBounds([c.lat - halfLat, c.lng - halfLng], [c.lat + halfLat, c.lng + halfLng]),
-            { pane: 'geoZonePane', className: 'crater-img', interactive: false }).addTo(geoZoneLayer);
+            { pane: 'craterPane', className: 'crater-img', interactive: false }).addTo(geoZoneLayer);
         }
       },
     }).addTo(geoZoneLayer);
