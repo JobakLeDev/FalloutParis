@@ -396,9 +396,9 @@ function renderGeoLayers() {
       // Joueurs : pas de popup (zone non interactive)
       onEachFeature: (f, layer) => {
         if (isMJ) layer.bindPopup(geoZonePopup(f.properties));
-        // Cratères : texture d'impact (img/crater.png) calée sur l'emprise du polygone.
-        // mix-blend-mode:screen (carte.css) → le fond noir de l'image disparaît, seules
-        // les fissures lumineuses s'impriment. ×1.45 car les fissures débordent du cercle.
+        // Cratères : texture d'impact (img/crater.png, fond noir converti en transparence
+        // dans le PNG lui-même) calée sur l'emprise du polygone. ×1.45 car les fissures
+        // débordent du cercle central de l'image.
         if (('' + (f.properties.Type || '')).toLowerCase().startsWith('crat')) {
           const b = layer.getBounds(), c = b.getCenter();
           const merc = Math.cos(c.lat * Math.PI / 180);   // carré à l'écran en Web Mercator
