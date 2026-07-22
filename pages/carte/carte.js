@@ -397,12 +397,12 @@ function renderGeoLayers() {
       onEachFeature: (f, layer) => {
         if (isMJ) layer.bindPopup(geoZonePopup(f.properties));
         // Cratères : texture d'impact (img/crater.png, fond noir converti en transparence
-        // dans le PNG lui-même) calée sur l'emprise du polygone. ×1.45 car les fissures
-        // débordent du cercle central de l'image.
+        // dans le PNG lui-même) INSCRITE dans le vide du polygone (les rues sont effacées
+        // par le remplissage) : l'image tient dans l'emprise, fissures comprises.
         if (('' + (f.properties.Type || '')).toLowerCase().startsWith('crat')) {
           const b = layer.getBounds(), c = b.getCenter();
           const merc = Math.cos(c.lat * Math.PI / 180);   // carré à l'écran en Web Mercator
-          const halfLng = Math.max((b.getEast() - b.getWest()) / 2, (b.getNorth() - b.getSouth()) / 2 / merc) * 1.45;
+          const halfLng = Math.max((b.getEast() - b.getWest()) / 2, (b.getNorth() - b.getSouth()) / 2 / merc) * 1.0;
           const halfLat = halfLng * merc;
           // ?v= manuel : bump-cache.js ne versionne que les références des .html, pas les URLs en JS
           L.imageOverlay('../../img/crater.png?v=2',
