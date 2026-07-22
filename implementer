@@ -10,6 +10,7 @@ dans la partie claude generale : après chaque opération que tu réalises, cons
 (rien en attente)
 
 --- Fait ---
+-[OK] zones geojson : crateres remplis couleur du fond de carte (#071307, opaque, au-dessus des rues -> trous de bombe dans la ville) ; zone technique « Paris » (Type zone) jamais rendue meme cote MJ ; Cratere nord + ouest passes Visible=true -> seuls l'Enfer Vert et les 3 crateres sont visibles des joueurs.
 -[OK] metadonnees des POI restaurees : fusion marqueurs.geojson V1 (description, faction, type Settlement/Safe) + lieu_reel du poi.geojson V2 dans les POI Firebase (21/23 marqueurs matches malgre les renommages V1->V2 ; Vault 17/9 sans equivalent, a trancher). Popup POI : ⚑ faction + 📍 lieu reel (MJ only) ; editPOI propose la faction ; Le Repaire du Dragon type cardshop.
 -[OK] regression corrigee : routes/Seine/zones/cadre disparues de la carte — la migration POI avait supprime TOUS les geojson de map/ alors que carte.js charge toujours ces couches de fond en fetch. Restaurees depuis le commit V2 (seul poi.geojson reste retire, source = Firebase). Regle notee dans CLAUDE.md : ne plus toucher aux geojson de fond dans map/.
 -[OK] migration POI geojson -> Firebase : les 44 POI de la carte V2 (pending/map/poi.geojson) pousses dans /carte/data.pois via l'API REST Firestore (fusion par nom, 4 POI existants conserves avec leurs revelations). Schema aligne sur carte.js : {id,name,type,lat,lng,revealedFor}. load-poi.html supprime (il 404ait : fichier deplace dans pending/ + config Firebase erronee).
