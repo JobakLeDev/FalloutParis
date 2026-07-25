@@ -99,7 +99,7 @@ body.embed #map, body.embed #map-metro{position:absolute;inset:0;width:auto;heig
 /* position:fixed dans un body zoomé : offsets et vh sont MULTIPLIÉS par le zoom
    → on divise par --fpz pour rester dans l'écran. max-height ~= 62vh au rendu :
    les panneaux ne descendent plus jusqu'en bas (ils scrollent en interne). */
-#mj-left,#mj-right{position:fixed;top:calc(100px / var(--fpz,1));width:200px;z-index:1100;background:rgba(22,32,22,.95);border:1px solid var(--b2);max-height:calc(62vh / var(--fpz,1));overflow-y:auto;}
+#mj-left,#mj-right{position:fixed;top:calc(150px / var(--fpz,1));width:200px;z-index:1100;background:rgba(22,32,22,.95);border:1px solid var(--b2);max-height:calc(62vh / var(--fpz,1));overflow-y:auto;}
 #mj-left{left:calc(10px / var(--fpz,1));}
 #mj-right{right:calc(10px / var(--fpz,1));}
 .mjp-section{padding:8px 10px;border-bottom:1px solid var(--b);}
