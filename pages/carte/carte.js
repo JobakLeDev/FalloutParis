@@ -807,7 +807,12 @@ async function lgvSave() {
 function renderLieuGridView(l) {
   const mapDiv = document.getElementById('map-lieux'); if (!mapDiv) return;
   if (mapLieu) { mapLieu.remove(); mapLieu = null; }
-  const g = l.grid, cs = 34;
+  mapDiv.style.display = '';   // visible AVANT de mesurer (peut venir d'une vue refuge masquée)
+  const g = l.grid;
+  // Taille de case adaptative : la grille remplit la zone dispo (moins la palette + légende + marge)
+  const availW = (mapDiv.clientWidth || 700) - 40;
+  const availH = (mapDiv.clientHeight || 480) - (isMJ ? 100 : 60);
+  const cs = Math.max(20, Math.min(64, Math.floor(availW / g.w), Math.floor(availH / g.h)));
   const BLOCK_LB = { cover: 'couverture', rubble: 'débris', carcasse: 'carcasse', wall: 'bloc' };
   let h = '<div class="lgv-wrap">';
   // Palette d'édition (MJ)
