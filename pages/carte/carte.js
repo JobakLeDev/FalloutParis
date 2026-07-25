@@ -704,10 +704,12 @@ function renderLieux() {
   const el = document.getElementById('lieux-list'); if (!el) return;
   let html = '';
   if (isMJ) html += '<button class="lieu-btn" style="border-color:var(--g);color:var(--g)" onclick="ajouterLieu()">🏛 + Ajouter un lieu</button>';
-  if (lieux.length) html += lieux.map(l => {
-    const atk = (isMJ && l.image)
+  // Lieux générés pour le combat (mjOnly, ex. plans de settlements) : cachés des joueurs
+  const lieuxVisibles = lieux.filter(l => isMJ || !l.mjOnly);
+  if (lieuxVisibles.length) html += lieuxVisibles.map(l => {
+    const atk = (isMJ && (l.image || l.grid))
       ? `<button class="lieu-btn lieu-atk" onclick="lancerCombatLieu('${l.id}')" title="Lancer un combat sur cette carte">⚔</button>` : '';
-    return `<div class="lieu-row"><button class="lieu-btn${lieuActif?.id === l.id ? ' on' : ''}" onclick="ouvrirLieu('${l.id}')">${l.name}</button>${atk}</div>`;
+    return `<div class="lieu-row"><button class="lieu-btn${lieuActif?.id === l.id ? ' on' : ''}" onclick="ouvrirLieu('${l.id}')">${l.name}${l.grid ? ' ▦' : ''}</button>${atk}</div>`;
   }).join('');
   // Refuges/Settlements visibles (MJ voit tout) — triés par distance croissante au jeton du joueur
   const sites = Object.entries(settlementsData.sites || {}).filter(([id, s]) => settlementVisible(s));
@@ -779,7 +781,7 @@ function ouvrirRefuge(id) {
 // que combatDoc.grid), elle est rechargée telle quelle (murs/blocs/fond) ;
 // sinon fond seul, et « 💾 Plan du lieu » (écran combat) l'enregistre pour la suite.
 function lancerCombatLieu(id) {
-  const l = lieux.find(x => x.id === id); if (!l || !l.image) return;
+  const l = lieux.find(x => x.id === id); if (!l || (!l.image && !l.grid)) return;
   window.open('../mj/combat.html?lieu=' + encodeURIComponent(l.id), '_blank');
 }
 
