@@ -423,7 +423,11 @@ function renderJMap(){
   const moving = !!reach;   // mode déplacement : on masque le quadrillage, on affiche bords de zone + points d'accroche
   const nbReach = (x,y) => reach && reach[x+','+y]!=null;
   const _tgtId = _declTargetId();   // ennemi visé → halo sur son jeton
-  let html = `<div class="cmap${moving?' moving':''}" style="grid-template-columns:repeat(${w},var(--cs,22px))">`;
+  // Plan de lieu en fond (grid.bg, posé par le MJ depuis la carte LIEUX) + voile sombre
+  const bgStyle = grid.bg
+    ? `;background-image:linear-gradient(rgba(4,12,7,.55),rgba(4,12,7,.55)),url('${('' + grid.bg).replace(/'/g, '')}');background-size:100% 100%;background-repeat:no-repeat`
+    : '';
+  let html = `<div class="cmap${moving?' moving':''}" style="grid-template-columns:repeat(${w},var(--cs,22px))${bgStyle}">`;
   for(let y=0;y<h;y++) for(let x=0;x<w;x++){
     const key=x+','+y; const tid=byPos[key]; const t=tid?toks.find(z=>z.id===tid):null;
     const vu   = jSeen(x,y);                                  // case déjà eue en ligne de vue ?

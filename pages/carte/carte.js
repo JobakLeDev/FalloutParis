@@ -704,9 +704,11 @@ function renderLieux() {
   const el = document.getElementById('lieux-list'); if (!el) return;
   let html = '';
   if (isMJ) html += '<button class="lieu-btn" style="border-color:var(--g);color:var(--g)" onclick="ajouterLieu()">🏛 + Ajouter un lieu</button>';
-  if (lieux.length) html += lieux.map(l =>
-    `<button class="lieu-btn${lieuActif?.id === l.id ? ' on' : ''}" onclick="ouvrirLieu('${l.id}')">${l.name}</button>`
-  ).join('');
+  if (lieux.length) html += lieux.map(l => {
+    const atk = (isMJ && l.image)
+      ? `<button class="lieu-btn lieu-atk" onclick="lancerCombatLieu('${l.id}')" title="Lancer un combat sur cette carte">⚔</button>` : '';
+    return `<div class="lieu-row"><button class="lieu-btn${lieuActif?.id === l.id ? ' on' : ''}" onclick="ouvrirLieu('${l.id}')">${l.name}</button>${atk}</div>`;
+  }).join('');
   // Refuges/Settlements visibles (MJ voit tout) — triés par distance croissante au jeton du joueur
   const sites = Object.entries(settlementsData.sites || {}).filter(([id, s]) => settlementVisible(s));
   const refuges = sites.filter(([, s]) => s.type !== 'settlement');
@@ -770,6 +772,13 @@ function ouvrirRefuge(id) {
   src += '&cb=' + Date.now();   // anti-cache : recharge toujours la dernière version de settlement.html
   fr.src = src; fr.style.display = 'block';
   renderLieux();
+}
+
+// Lancer un combat sur la carte de ce lieu : combat.html reçoit l'image en ?bg
+// et la pose en fond de battlemap (grid.bg, synchronisé chez les joueurs).
+function lancerCombatLieu(id) {
+  const l = lieux.find(x => x.id === id); if (!l || !l.image) return;
+  window.open('../mj/combat.html?bg=' + encodeURIComponent(l.image), '_blank');
 }
 
 function ouvrirLieu(id) {
@@ -1399,9 +1408,11 @@ function zonePopup(z) {
     <button onclick="deleteZone('${z.id}')" class="del">🗑</button></div>` + revealControls('zone', z.id, z);
   return h + '</div>';
 }
+const POI_SIZE_LB = { small: 'Petit', mid: 'Moyen', large: 'Grand', bourg: 'Bourg' };
 function poiPopup(p, t) {
+  const sz = p.size ? (POI_SIZE_LB[p.size] || p.size) : '';
   let h = `<div class="zpop"><div class="zpop-title">${t.icon} ${p.name}</div>
-    <div class="zpop-pool">${t.label}${p.faction ? ' · ⚑ ' + p.faction : ''}${p.desc ? ' — ' + p.desc : ''}</div>`;
+    <div class="zpop-pool">${t.label}${sz ? ' (' + sz + ')' : ''}${p.faction ? ' · ⚑ ' + p.faction : ''}${p.desc ? ' — ' + p.desc : ''}</div>`;
   // Référence MJ : lieu réel du POI (adresse pré-guerre, jamais montrée aux joueurs)
   if (isMJ && p.lieuReel) h += `<div class="zpop-pool" style="color:var(--td);font-size:8px">📍 ${p.lieuReel}</div>`;
   // POI marchand : boutique
