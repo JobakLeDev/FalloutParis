@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="../../common/style.css?v=0053a05a">
-  <link rel="stylesheet" href="carte.css?v=24440047">
+  <link rel="stylesheet" href="carte.css?v=2673dd2e">
   <link rel="stylesheet" href="../../common/zoom.css?v=2a2cfe92">
 </head>
 <body>
@@ -61,12 +61,15 @@
 
   <!-- BANDEAU GAUCHE : outils MJ -->
   <div id="mj-left" style="display:none">
-    <div class="mjp-section">
-      <div class="mjp-title">Outils</div>
-      <button class="mjp-btn" id="btn-ping" onclick="togglePingMode()">🚩 Ping joueurs</button>
+    <div class="mjp-section" data-mjp="outils">
+      <div class="mjp-title" onclick="toggleMjSection('outils')"><span class="mjp-arrow">▾</span>Outils</div>
+      <div class="mjp-body">
+        <button class="mjp-btn" id="btn-ping" onclick="togglePingMode()">🚩 Ping joueurs</button>
+      </div>
     </div>
-    <div class="mjp-section" id="mjp-tools" style="display:none">
-      <div class="mjp-title">Édition</div>
+    <div class="mjp-section" id="mjp-tools" data-mjp="edition" style="display:none">
+      <div class="mjp-title" onclick="toggleMjSection('edition')"><span class="mjp-arrow">▾</span>Édition</div>
+      <div class="mjp-body">
       <div id="mjp-paris-tools">
         <div class="mjp-sublabel">Ajouter un POI (choisis un picto puis clique la carte) :</div>
         <div id="poi-picker" class="poi-picker"></div>
@@ -80,12 +83,15 @@
         <button class="mjp-btn ok" onclick="finishDrawZone()">✓ Terminer</button>
         <button class="mjp-btn cancel" onclick="cancelDrawZone()">✗ Annuler</button>
       </div>
+      </div><!-- /mjp-body -->
     </div>
     <!-- GESTIONNAIRE POI & ZONES (MJ, mode édition) -->
-    <div class="mjp-section" id="mjp-manage" style="display:none">
-      <div class="mjp-title">🗂 POI &amp; Zones</div>
-      <input type="text" id="pzm-search" placeholder="Filtrer…" oninput="pzFilterChange(this.value)">
-      <div id="pz-manager"></div>
+    <div class="mjp-section" id="mjp-manage" data-mjp="poizones" style="display:none">
+      <div class="mjp-title" onclick="toggleMjSection('poizones')"><span class="mjp-arrow">▾</span>🗂 POI &amp; Zones</div>
+      <div class="mjp-body">
+        <input type="text" id="pzm-search" placeholder="Filtrer…" oninput="pzFilterChange(this.value)">
+        <div id="pz-manager"></div>
+      </div>
     </div>
     <div class="mjp-hint" id="mjp-hint"></div>
     <div id="move-result"></div>
@@ -93,13 +99,17 @@
 
   <!-- BANDEAU DROITE : positions des joueurs -->
   <div id="mj-right" style="display:none">
-    <div class="mjp-section">
-      <div class="mjp-title">Position des joueurs</div>
-      <div id="player-zones"><span class="empty">…</span></div>
+    <div class="mjp-section" data-mjp="positions">
+      <div class="mjp-title" onclick="toggleMjSection('positions')"><span class="mjp-arrow">▾</span>Position des joueurs</div>
+      <div class="mjp-body">
+        <div id="player-zones"><span class="empty">…</span></div>
+      </div>
     </div>
-    <div class="mjp-section">
-      <div class="mjp-title">🧹 Maintenance carte</div>
-      <div id="mj-maintenance"><span class="empty">…</span></div>
+    <div class="mjp-section" data-mjp="maintenance">
+      <div class="mjp-title" onclick="toggleMjSection('maintenance')"><span class="mjp-arrow">▾</span>🧹 Maintenance carte</div>
+      <div class="mjp-body">
+        <div id="mj-maintenance"><span class="empty">…</span></div>
+      </div>
     </div>
   </div>
 
@@ -148,7 +158,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="../../common/shared.js?v=946354bb"></script>
   <script src="../../common/db.js?v=b8ae07a6"></script>
-  <script src="carte.js?v=b7fe5aea"></script>
+  <script src="carte.js?v=32047d2b"></script>
   <script src="carte_metro.js?v=f2f1a9fe"></script>
   <script src="carte_edition.js?v=d932b15a"></script>
   <script src="carte_echanges.js?v=e3faff9f"></script>

@@ -907,7 +907,24 @@ function updateModeUI() {
     const t = document.getElementById('mjp-tools');  if (t) t.style.display = 'block';
     const m = document.getElementById('mjp-manage'); if (m) m.style.display = 'block';
     buildPoiPicker();
+    _applyMjCollapsed();   // restaure l'état replié/déplié des panneaux MJ
   }
+}
+// Panneaux MJ repliables (flèche sur le titre). État mémorisé dans localStorage.
+function _mjCollapsedSet() {
+  try { return new Set(JSON.parse(localStorage.getItem('fp_mjCollapsed') || '[]')); } catch (e) { return new Set(); }
+}
+function _applyMjCollapsed() {
+  const set = _mjCollapsedSet();
+  document.querySelectorAll('.mjp-section[data-mjp]').forEach(sec => {
+    sec.classList.toggle('mjp-collapsed', set.has(sec.getAttribute('data-mjp')));
+  });
+}
+function toggleMjSection(key) {
+  const sec = document.querySelector('.mjp-section[data-mjp="' + key + '"]'); if (!sec) return;
+  const set = _mjCollapsedSet();
+  if (sec.classList.toggle('mjp-collapsed')) set.add(key); else set.delete(key);
+  try { localStorage.setItem('fp_mjCollapsed', JSON.stringify([...set])); } catch (e) {}
 }
 function toggleEdit() {
   editMode = !editMode;
