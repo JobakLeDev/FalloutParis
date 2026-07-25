@@ -776,6 +776,29 @@ function ouvrirRefuge(id) {
   renderLieux();
 }
 
+// Aperçu (lecture seule) de la grille battlemap d'un lieu généré — format commun lieu.grid.
+// Terrain = cases colorées ; arêtes V,x,y / H,x,y = murs (vert), fenêtres (cyan), portes (ambre).
+function renderLieuGridView(l) {
+  const mapDiv = document.getElementById('map-lieux'); if (!mapDiv) return;
+  if (mapLieu) { mapLieu.remove(); mapLieu = null; }
+  const g = l.grid, cs = 34;
+  const BLOCK_LB = { cover: 'couverture', rubble: 'débris', carcasse: 'carcasse', wall: 'bloc' };
+  let h = `<div class="lgv-wrap"><div class="lgv" style="width:${g.w * cs + 1}px;height:${g.h * cs + 1}px;background-size:${cs}px ${cs}px">`;
+  for (const k in (g.terrain || {})) {
+    const [x, y] = k.split(',').map(Number);
+    h += `<div class="lgv-cell t-${g.terrain[k]}" style="left:${x * cs}px;top:${y * cs}px;width:${cs}px;height:${cs}px" title="${BLOCK_LB[g.terrain[k]] || g.terrain[k]}"></div>`;
+  }
+  for (const k in (g.edges || {})) {
+    const [o, x, y] = k.split(',');
+    const t = g.edges[k];
+    if (o === 'V') h += `<div class="lgv-edge v e-${t}" style="left:${x * cs - 2}px;top:${y * cs}px;height:${cs}px"></div>`;
+    else h += `<div class="lgv-edge h e-${t}" style="left:${x * cs}px;top:${y * cs - 2}px;width:${cs}px"></div>`;
+  }
+  h += `</div><div class="lgv-cap">🏛 ${l.name} — aperçu du plan · <span class="lgv-wall">■ mur</span> <span class="lgv-win">■ fenêtre</span> <span class="lgv-door">■ porte</span>${isMJ ? ' · retouche : ⚔ combat puis 💾 Plan du lieu' : ''}</div></div>`;
+  mapDiv.style.display = '';
+  mapDiv.innerHTML = h;
+}
+
 // Lancer un combat sur la carte de ce lieu : combat.html reçoit ?lieu=<id> —
 // FORMAT COMMUN : si le lieu porte une grille préparée (lieu.grid = même schéma
 // que combatDoc.grid), elle est rechargée telle quelle (murs/blocs/fond) ;
@@ -792,9 +815,15 @@ function ouvrirLieu(id) {
   const ph = document.getElementById('lieux-placeholder');
   const mapDiv = document.getElementById('map-lieux');
   if (mapDiv) mapDiv.style.display = '';
-  if (!l.image) { if (ph) ph.style.display = 'flex'; renderLieux(); return; }
+  if (!l.image) {
+    // Pas d'image mais une grille battlemap (lieu généré) → aperçu du plan
+    if (l.grid) { if (ph) ph.style.display = 'none'; renderLieuGridView(l); }
+    else if (ph) ph.style.display = 'flex';
+    renderLieux(); return;
+  }
   if (ph) ph.style.display = 'none';
   if (mapLieu) { mapLieu.remove(); mapLieu = null; }
+  if (mapDiv) mapDiv.innerHTML = '';   // purge un éventuel aperçu de grille avant de recréer Leaflet
   const img = new Image();
   img.onload = () => {
     const w = img.naturalWidth, h = img.naturalHeight;

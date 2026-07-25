@@ -26,6 +26,10 @@
     z = Math.round(z * 1000) / 1000;
     document.body.style.zoom = z;
     window.__fpZoom = z;
+    // Zoom standardisé (Chrome 128+) : les % du body sont MULTIPLIÉS par le zoom au rendu
+    // → une page height:100% déborde de l'écran. --fpz permet de contre-dimensionner
+    // (ex. carte.css : body{width:calc(100vw/var(--fpz));height:calc(100vh/var(--fpz))}).
+    document.documentElement.style.setProperty('--fpz', z);
     // Carte : la map Leaflet reste à l'échelle normale (contre-zoom = 1/zoom)
     var inv = (1 / z).toFixed(4);
     var maps = document.querySelectorAll('#map, #map-metro, #map-lieux');
