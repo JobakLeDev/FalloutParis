@@ -30,9 +30,11 @@
     // → une page height:100% déborde de l'écran. --fpz permet de contre-dimensionner
     // (ex. carte.css : body{width:calc(100vw/var(--fpz));height:calc(100vh/var(--fpz))}).
     document.documentElement.style.setProperty('--fpz', z);
-    // Carte : la map Leaflet reste à l'échelle normale (contre-zoom = 1/zoom)
+    // Carte : la map Leaflet reste à l'échelle normale (contre-zoom = 1/zoom).
+    // #map-lieux n'est PLUS contre-zoomé : il héberge surtout l'aperçu/éditeur de plan
+    // (HTML pur) qui doit suivre l'échelle de l'UI.
     var inv = (1 / z).toFixed(4);
-    var maps = document.querySelectorAll('#map, #map-metro, #map-lieux');
+    var maps = document.querySelectorAll('#map, #map-metro');
     for(var i=0;i<maps.length;i++){ maps[i].style.zoom = inv; }
   }
 

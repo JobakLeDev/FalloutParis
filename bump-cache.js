@@ -16,7 +16,7 @@ const path = require('path');
 const crypto = require('crypto');
 
 const ROOT = __dirname;
-const SKIP_DIRS = new Set(['node_modules', '.git', 'discord-bot']);
+const SKIP_DIRS = new Set(['node_modules', '.git', 'discord-bot', 'pending']);
 const check = process.argv.includes('--check');
 
 // src="…" / href="…" pointant un .js/.css/.svg local, avec ?v=… optionnel + #fragment optionnel
