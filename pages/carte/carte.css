@@ -74,6 +74,19 @@ body.embed #map, body.embed #map-metro{position:absolute;inset:0;width:auto;heig
 .lgv-edge.e-door,.lgv-edge.e-doorOpen{background:var(--am);box-shadow:0 0 4px rgba(232,168,32,.5);}
 .lgv-cap{font-size:8px;color:var(--td);letter-spacing:1px;text-align:center;}
 .lgv-cap .lgv-wall{color:var(--g);} .lgv-cap .lgv-win{color:#39c8c8;} .lgv-cap .lgv-door{color:var(--am);}
+.lgv-cap .lgv-dirty{color:var(--am);}
+/* Éditeur de plan (MJ) : palette + zones cliquables */
+.lgv-pal{display:flex;gap:4px;align-items:center;flex-wrap:wrap;justify-content:center;}
+.lgv-pal-lb{font-size:7px;color:var(--td);letter-spacing:2px;text-transform:uppercase;margin:0 2px 0 8px;}
+.lgv-brush{background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:11px;width:30px;height:26px;cursor:pointer;line-height:1;}
+.lgv-brush:hover{border-color:var(--g);}
+.lgv-brush.on{border-color:var(--am);color:var(--am);background:#1a1200;}
+.lgv-brush.save{width:auto;padding:0 8px;border-color:var(--gd);color:var(--g);}
+.lgv-brush.save.dirty{border-color:var(--am);color:var(--am);animation:lgvPulse 1.2s infinite;}
+@keyframes lgvPulse{0%,100%{opacity:1;}50%{opacity:.55;}}
+.lgv-hot{position:absolute;z-index:4;cursor:crosshair;}
+.lgv-hot.edge:hover{background:rgba(232,168,32,.35);}
+.lgv-hot.cell:hover{background:rgba(93,190,93,.18);}
 .lieu-row{display:flex;gap:4px;align-items:stretch;}
 .lieu-row .lieu-btn{flex:1;min-width:0;}
 .lieu-btn.lieu-atk{flex:0 0 auto;width:auto;text-align:center;color:var(--rd);border-color:var(--rdk);}

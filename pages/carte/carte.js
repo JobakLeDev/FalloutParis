@@ -776,14 +776,55 @@ function ouvrirRefuge(id) {
   renderLieux();
 }
 
-// Aperçu (lecture seule) de la grille battlemap d'un lieu généré — format commun lieu.grid.
-// Terrain = cases colorées ; arêtes V,x,y / H,x,y = murs (vert), fenêtres (cyan), portes (ambre).
+// Grille battlemap d'un lieu (format commun lieu.grid) : aperçu pour tous,
+// ÉDITEUR pour le MJ — palette murs/fenêtres/portes/blocs, clic pour poser/retirer,
+// 💾 enregistre dans /carte/lieux. Pas besoin d'un combat actif pour retoucher un plan.
+let _lgvBrush = null, _lgvDirty = false;
+const _LGV_EDGE_BRUSHES = ['wall', 'window', 'door', 'eedge'];
+const _LGV_CELL_BRUSHES = ['cover', 'rubble', 'ecell'];
+function lgvSetBrush(b) { _lgvBrush = (_lgvBrush === b ? null : b); if (lieuActif) renderLieuGridView(lieuActif); }
+function lgvEdge(o, x, y) {
+  if (!isMJ || !lieuActif?.grid || !_LGV_EDGE_BRUSHES.includes(_lgvBrush)) return;
+  const g = lieuActif.grid; g.edges = g.edges || {};
+  const k = o + ',' + x + ',' + y;
+  if (_lgvBrush === 'eedge' || g.edges[k] === _lgvBrush) delete g.edges[k]; else g.edges[k] = _lgvBrush;
+  _lgvDirty = true; renderLieuGridView(lieuActif);
+}
+function lgvCell(x, y) {
+  if (!isMJ || !lieuActif?.grid || !_LGV_CELL_BRUSHES.includes(_lgvBrush)) return;
+  const g = lieuActif.grid; g.terrain = g.terrain || {};
+  const k = x + ',' + y;
+  if (_lgvBrush === 'ecell' || g.terrain[k] === _lgvBrush) delete g.terrain[k]; else g.terrain[k] = _lgvBrush;
+  _lgvDirty = true; renderLieuGridView(lieuActif);
+}
+async function lgvSave() {
+  if (!lieuActif) return;
+  try {
+    await fdb.collection('carte').doc('lieux').set({ lieux });
+    _lgvDirty = false; renderLieuGridView(lieuActif);
+  } catch (e) { console.error('lgvSave:', e); alert('Échec de l\'enregistrement du plan.'); }
+}
 function renderLieuGridView(l) {
   const mapDiv = document.getElementById('map-lieux'); if (!mapDiv) return;
   if (mapLieu) { mapLieu.remove(); mapLieu = null; }
   const g = l.grid, cs = 34;
   const BLOCK_LB = { cover: 'couverture', rubble: 'débris', carcasse: 'carcasse', wall: 'bloc' };
-  let h = `<div class="lgv-wrap"><div class="lgv" style="width:${g.w * cs + 1}px;height:${g.h * cs + 1}px;background-size:${cs}px ${cs}px">`;
+  let h = '<div class="lgv-wrap">';
+  // Palette d'édition (MJ)
+  if (isMJ) {
+    const br = (id, ic, lb) => `<button class="lgv-brush${_lgvBrush === id ? ' on' : ''}" onclick="lgvSetBrush('${id}')" title="${lb}">${ic}</button>`;
+    h += '<div class="lgv-pal">'
+      + '<span class="lgv-pal-lb">Lignes</span>'
+      + br('wall', '▬', 'Mur') + br('window', '◫', 'Fenêtre') + br('door', '🚪', 'Porte') + br('eedge', '⌫', 'Effacer une ligne')
+      + '<span class="lgv-pal-lb">Blocs</span>'
+      + br('cover', '🛡', 'Couverture') + br('rubble', '🧱', 'Débris') + br('ecell', '⌫', 'Effacer un bloc')
+      + `<button class="lgv-brush save${_lgvDirty ? ' dirty' : ''}" onclick="lgvSave()" title="Enregistrer le plan du lieu">💾${_lgvDirty ? ' *' : ''}</button>`
+      + '</div>';
+  }
+  h += `<div class="lgv" style="width:${g.w * cs + 1}px;height:${g.h * cs + 1}px;background-size:${cs}px ${cs}px">`;
+  const cellClick = isMJ && _LGV_CELL_BRUSHES.includes(_lgvBrush);
+  if (cellClick) for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++)
+    h += `<div class="lgv-hot cell" style="left:${x * cs}px;top:${y * cs}px;width:${cs}px;height:${cs}px" onclick="lgvCell(${x},${y})"></div>`;
   for (const k in (g.terrain || {})) {
     const [x, y] = k.split(',').map(Number);
     h += `<div class="lgv-cell t-${g.terrain[k]}" style="left:${x * cs}px;top:${y * cs}px;width:${cs}px;height:${cs}px" title="${BLOCK_LB[g.terrain[k]] || g.terrain[k]}"></div>`;
@@ -794,7 +835,16 @@ function renderLieuGridView(l) {
     if (o === 'V') h += `<div class="lgv-edge v e-${t}" style="left:${x * cs - 2}px;top:${y * cs}px;height:${cs}px"></div>`;
     else h += `<div class="lgv-edge h e-${t}" style="left:${x * cs}px;top:${y * cs - 2}px;width:${cs}px"></div>`;
   }
-  h += `</div><div class="lgv-cap">🏛 ${l.name} — aperçu du plan · <span class="lgv-wall">■ mur</span> <span class="lgv-win">■ fenêtre</span> <span class="lgv-door">■ porte</span>${isMJ ? ' · retouche : ⚔ combat puis 💾 Plan du lieu' : ''}</div></div>`;
+  // Zones cliquables des arêtes (pinceau ligne actif) : bords verticaux et horizontaux
+  if (isMJ && _LGV_EDGE_BRUSHES.includes(_lgvBrush)) {
+    for (let y = 0; y < g.h; y++) for (let x = 0; x <= g.w; x++)
+      h += `<div class="lgv-hot edge" style="left:${x * cs - 5}px;top:${y * cs}px;width:10px;height:${cs}px" onclick="lgvEdge('V',${x},${y})"></div>`;
+    for (let y = 0; y <= g.h; y++) for (let x = 0; x < g.w; x++)
+      h += `<div class="lgv-hot edge" style="left:${x * cs}px;top:${y * cs - 5}px;width:${cs}px;height:10px" onclick="lgvEdge('H',${x},${y})"></div>`;
+  }
+  h += `</div><div class="lgv-cap">🏛 ${l.name} — <span class="lgv-wall">■ mur</span> <span class="lgv-win">■ fenêtre</span> <span class="lgv-door">■ porte</span>`
+    + (isMJ ? (_lgvBrush ? ' · pinceau actif : clique la grille' : ' · choisis un pinceau pour éditer') + (_lgvDirty ? ' · <span class="lgv-dirty">modifs non enregistrées</span>' : '') : '')
+    + '</div></div>';
   mapDiv.style.display = '';
   mapDiv.innerHTML = h;
 }
