@@ -29,10 +29,9 @@ body.embed #map-tabs{padding:0;}
 
 /* PARIS — carte dans un cadre fermé, centré, ~65% de la zone */
 #map-paris-wrap{flex:1;display:flex;align-items:flex-start;justify-content:center;min-height:0;padding:0 8px 8px;overflow:hidden;}
-/* 66% de la FENÊTRE au rendu : le zoom du body (×--fpz) est annulé par le contre-zoom
-   de la map (×1/--fpz), mais le body est contre-dimensionné (÷--fpz) → on multiplie
-   le pourcentage par --fpz pour retomber sur 66 % de l'écran. */
-#map{width:calc(66% * var(--fpz,1));height:calc(66% * var(--fpz,1));background:#071307;position:relative;border:1px solid var(--b2);box-shadow:inset 0 0 30px rgba(0,0,0,0.6),0 0 0 1px #060d06;overflow:hidden;}
+/* #map a un zoom effectif de 1 (body ×--fpz annulé par le contre-zoom ×1/--fpz de la map),
+   donc les unités viewport rendent 1:1 avec l'écran → dimensionnement décorrélé de --fpz. */
+#map{width:52vw;height:58vh;background:#071307;position:relative;border:1px solid var(--b2);box-shadow:inset 0 0 30px rgba(0,0,0,0.6),0 0 0 1px #060d06;overflow:hidden;}
 /* Intégré dans la fiche (iframe) : la carte remplit tout le cadre */
 body.embed #map-paris-wrap{padding:0;position:relative;}
 body.embed #map-metro-wrap{padding:0;position:relative;}
@@ -51,7 +50,7 @@ body.embed #map, body.embed #map-metro{position:absolute;inset:0;width:auto;heig
 
 /* LIEUX */
 #map-metro-wrap{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;padding:8px;overflow:hidden;position:relative;}
-#map-metro{width:calc(66% * var(--fpz,1));height:calc(66% * var(--fpz,1));background:#071307;position:relative;border:1px solid var(--b2);box-shadow:inset 0 0 30px rgba(0,0,0,0.6),0 0 0 1px #060d06;overflow:hidden;}
+#map-metro{width:52vw;height:58vh;background:#071307;position:relative;border:1px solid var(--b2);box-shadow:inset 0 0 30px rgba(0,0,0,0.6),0 0 0 1px #060d06;overflow:hidden;}
 
 #map-lieux-wrap{flex:1;display:flex;min-height:0;}
 #lieux-sidebar{width:180px;flex:none;background:var(--p2);border-right:1px solid var(--b2);padding:8px;overflow-y:auto;}
@@ -104,6 +103,13 @@ body.embed #map, body.embed #map-metro{position:absolute;inset:0;width:auto;heig
 #mj-right{right:calc(10px / var(--fpz,1));}
 .mjp-section{padding:8px 10px;border-bottom:1px solid var(--b);}
 .mjp-title{font-size:7px;letter-spacing:3px;color:var(--td);text-transform:uppercase;margin-bottom:6px;}
+/* Titre repliable : flèche cliquable */
+.mjp-title[onclick]{cursor:pointer;display:flex;align-items:center;gap:5px;user-select:none;}
+.mjp-title[onclick]:hover{color:var(--g);}
+.mjp-arrow{font-size:8px;transition:transform .12s;display:inline-block;}
+.mjp-section.mjp-collapsed .mjp-arrow{transform:rotate(-90deg);}
+.mjp-section.mjp-collapsed .mjp-title{margin-bottom:0;}
+.mjp-section.mjp-collapsed .mjp-body{display:none;}
 .mjp-btn{display:block;width:100%;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:8px;padding:5px;margin-bottom:4px;cursor:pointer;letter-spacing:1px;text-align:left;}
 .mjp-btn:hover{border-color:var(--g);}
 .mjp-btn.on{border-color:var(--am);color:var(--am);}
