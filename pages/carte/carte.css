@@ -31,7 +31,7 @@ body.embed #map-tabs{padding:0;}
 #map-paris-wrap{flex:1;display:flex;align-items:flex-start;justify-content:center;min-height:0;padding:0 8px 8px;overflow:hidden;}
 /* #map a un zoom effectif de 1 (body ×--fpz annulé par le contre-zoom ×1/--fpz de la map),
    donc les unités viewport rendent 1:1 avec l'écran → dimensionnement décorrélé de --fpz. */
-#map{width:52vw;height:58vh;background:#071307;position:relative;border:1px solid var(--b2);box-shadow:inset 0 0 30px rgba(0,0,0,0.6),0 0 0 1px #060d06;overflow:hidden;}
+#map{width:58vw;height:66vh;background:#071307;position:relative;border:1px solid var(--b2);box-shadow:inset 0 0 30px rgba(0,0,0,0.6),0 0 0 1px #060d06;overflow:hidden;}
 /* Intégré dans la fiche (iframe) : la carte remplit tout le cadre */
 body.embed #map-paris-wrap{padding:0;position:relative;}
 body.embed #map-metro-wrap{padding:0;position:relative;}
@@ -50,7 +50,7 @@ body.embed #map, body.embed #map-metro{position:absolute;inset:0;width:auto;heig
 
 /* LIEUX */
 #map-metro-wrap{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;padding:8px;overflow:hidden;position:relative;}
-#map-metro{width:52vw;height:58vh;background:#071307;position:relative;border:1px solid var(--b2);box-shadow:inset 0 0 30px rgba(0,0,0,0.6),0 0 0 1px #060d06;overflow:hidden;}
+#map-metro{width:58vw;height:66vh;background:#071307;position:relative;border:1px solid var(--b2);box-shadow:inset 0 0 30px rgba(0,0,0,0.6),0 0 0 1px #060d06;overflow:hidden;}
 
 #map-lieux-wrap{flex:1;display:flex;min-height:0;}
 #lieux-sidebar{width:180px;flex:none;background:var(--p2);border-right:1px solid var(--b2);padding:8px;overflow-y:auto;}
@@ -96,9 +96,10 @@ body.embed #map, body.embed #map-metro{position:absolute;inset:0;width:auto;heig
 
 
 /* BANDEAUX MJ (gauche : outils · droite : positions joueurs) */
-/* position:fixed dans un body zoomé : offsets et 100vh sont MULTIPLIÉS par le zoom
-   → on divise par --fpz pour que le bloc reste dans l'écran (fin du débordement bas). */
-#mj-left,#mj-right{position:fixed;top:calc(96px / var(--fpz,1));width:200px;z-index:1100;background:rgba(22,32,22,.95);border:1px solid var(--b2);max-height:calc(100vh / var(--fpz,1) - 110px);overflow-y:auto;}
+/* position:fixed dans un body zoomé : offsets et vh sont MULTIPLIÉS par le zoom
+   → on divise par --fpz pour rester dans l'écran. max-height ~= 62vh au rendu :
+   les panneaux ne descendent plus jusqu'en bas (ils scrollent en interne). */
+#mj-left,#mj-right{position:fixed;top:calc(100px / var(--fpz,1));width:200px;z-index:1100;background:rgba(22,32,22,.95);border:1px solid var(--b2);max-height:calc(62vh / var(--fpz,1));overflow-y:auto;}
 #mj-left{left:calc(10px / var(--fpz,1));}
 #mj-right{right:calc(10px / var(--fpz,1));}
 .mjp-section{padding:8px 10px;border-bottom:1px solid var(--b);}
