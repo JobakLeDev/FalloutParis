@@ -747,6 +747,8 @@ function _mapTokens(){
   (ennemis||[]).forEach(e => list.push({ id:'E'+e.id, nom:e.nom, kind:'ennemi', dead:(e.pvCur||0)<=0, hidden:e.hidden }));
   return list;
 }
+// Plan de lieu passé par la carte (LIEUX → bouton ⚔) : posé en fond de battlemap à la génération
+const _combatBg = new URLSearchParams(location.search).get('bg') || '';
 function genCombatMap(){
   const w = 21, h = 12;
   const map = { w, h, terrain: {}, pos: {} };
@@ -756,14 +758,20 @@ function genCombatMap(){
   let y = 1;
   amis.forEach(t => { map.pos[t.id] = { x: 1, y: Math.min(h-1, y) }; y += 1; });
   foes.forEach((t,i) => { map.pos[t.id] = { x: w-2-(i%2), y: 1 + (i % (h-1)) }; });
-  // décor aléatoire au centre : carcasses / débris / couverture (l'ancien 'wall' n'est plus posé)
-  const deco = ['carcasse','rubble','cover','carcasse','cover'];
-  const n = 9 + Math.floor(Math.random()*9);
-  for(let k=0;k<n;k++){
-    const ox = 3 + Math.floor(Math.random()*(w-6));
-    const oy = Math.floor(Math.random()*h);
-    // gridPaintBlock gère l'emprise (la carcasse fait 2×2) et refuse si ça déborde ou tombe sur un jeton
-    gridPaintBlock(map, ox, oy, deco[Math.floor(Math.random()*deco.length)]);
+  if(_combatBg){
+    // Combat sur le plan d'un lieu : l'image EST le décor → pas de décor aléatoire
+    // (le MJ pose murs/portes/blocs à la main par-dessus le plan)
+    map.bg = _combatBg;
+  } else {
+    // décor aléatoire au centre : carcasses / débris / couverture (l'ancien 'wall' n'est plus posé)
+    const deco = ['carcasse','rubble','cover','carcasse','cover'];
+    const n = 9 + Math.floor(Math.random()*9);
+    for(let k=0;k<n;k++){
+      const ox = 3 + Math.floor(Math.random()*(w-6));
+      const oy = Math.floor(Math.random()*h);
+      // gridPaintBlock gère l'emprise (la carcasse fait 2×2) et refuse si ça déborde ou tombe sur un jeton
+      gridPaintBlock(map, ox, oy, deco[Math.floor(Math.random()*deco.length)]);
+    }
   }
   combatMap = map;
   recomputeBandsFromMap();
@@ -929,7 +937,11 @@ function renderCombatMap(){
   pal += '</div>';
   pal += '</div>';
   const cs = 32;   // taille de case MJ (= --cs)
-  let html = pal + '<div class="cmap-wrap">' + `<div class="cmap" style="grid-template-columns:repeat(${w},var(--cs,22px))">`;
+  // Plan de lieu en fond (grid.bg) : image étirée sur la grille + voile sombre pour la lisibilité
+  const bgStyle = combatMap.bg
+    ? `;background-image:linear-gradient(rgba(4,12,7,.55),rgba(4,12,7,.55)),url('${combatMap.bg.replace(/'/g, '')}');background-size:100% 100%;background-repeat:no-repeat`
+    : '';
+  let html = pal + '<div class="cmap-wrap">' + `<div class="cmap" style="grid-template-columns:repeat(${w},var(--cs,22px))${bgStyle}">`;
   for(let y=0;y<h;y++) for(let x=0;x<w;x++){
     const key = x+','+y;
     const tid = byPos[key];
