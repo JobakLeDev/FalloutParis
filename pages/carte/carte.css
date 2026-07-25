@@ -89,6 +89,11 @@ body.embed #map, body.embed #map-metro{position:absolute;inset:0;width:auto;heig
 .lgv-hot{position:absolute;z-index:4;cursor:crosshair;}
 .lgv-hot.edge:hover{background:rgba(232,168,32,.35);}
 .lgv-hot.cell:hover{background:rgba(93,190,93,.18);}
+.lgv-brush.wide{width:auto;padding:0 8px;}
+.lgv-brush[disabled]{opacity:.35;cursor:not-allowed;}
+/* Zone de combat découpée */
+.lgv-crop{position:absolute;z-index:3;border:2px solid var(--rd);background:rgba(224,64,64,.14);pointer-events:none;box-shadow:0 0 8px rgba(224,64,64,.5);}
+.lgv-cropa{position:absolute;z-index:3;border:2px dashed var(--am);background:rgba(232,168,32,.2);pointer-events:none;}
 .lieu-row{display:flex;gap:4px;align-items:stretch;}
 .lieu-row .lieu-btn{flex:1;min-width:0;}
 .lieu-btn.lieu-atk{flex:0 0 auto;width:auto;text-align:center;color:var(--rd);border-color:var(--rdk);}
