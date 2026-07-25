@@ -118,6 +118,7 @@
           <span>🗺 Carte de combat <span style="font-size:7px;color:var(--td)">— clic jeton puis case</span></span>
           <span style="display:flex;gap:6px">
             <button class="init-btn" onclick="genCombatMap()">🎲 Générer</button>
+            <button class="init-btn" id="btn-save-lieu" style="display:none;border-color:var(--am);color:var(--am)" onclick="saveLieuGrid()" title="Enregistrer terrain + murs + fond comme plan du lieu (rechargé aux prochains combats ici)">💾 Plan du lieu</button>
             <button class="init-btn" onclick="pushMapToPlayers()" title="Forcer la carte chez les joueurs (corrige une désync)">🔄 Resync</button>
             <button class="init-btn" onclick="clearCombatMap()">✕ Retirer</button>
           </span>
@@ -185,7 +186,7 @@
   <script src="../../common/db.js?v=b8ae07a6"></script>
   <script src="mj_shared.js?v=579350c4"></script>
   <script src="combat_sync.js?v=774864bd"></script>
-  <script src="combat.js?v=e9b6abbb"></script>
+  <script src="combat.js?v=0e0f5f65"></script>
   <script src="combat_radio.js?v=04795fd0"></script>
   <script>document.addEventListener("DOMContentLoaded", () => window.DB_READY.then(init));</script>
   <script src="../../common/responsive.js?v=f2bdcb93"></script>
