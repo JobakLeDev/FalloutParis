@@ -779,10 +779,11 @@ function ouvrirRefuge(id) {
 // Grille battlemap d'un lieu (format commun lieu.grid) : aperçu pour tous,
 // ÉDITEUR pour le MJ — palette murs/fenêtres/portes/blocs, clic pour poser/retirer,
 // 💾 enregistre dans /carte/lieux. Pas besoin d'un combat actif pour retoucher un plan.
-let _lgvBrush = null, _lgvDirty = false;
+let _lgvBrush = null, _lgvDirty = false, _lgvZoom = 1;
+let _lgvCropMode = false, _lgvCropA = null, _lgvCrop = null;   // découpe d'une zone de combat
 const _LGV_EDGE_BRUSHES = ['wall', 'window', 'door', 'eedge'];
 const _LGV_CELL_BRUSHES = ['cover', 'rubble', 'ecell'];
-function lgvSetBrush(b) { _lgvBrush = (_lgvBrush === b ? null : b); if (lieuActif) renderLieuGridView(lieuActif); }
+function lgvSetBrush(b) { _lgvBrush = (_lgvBrush === b ? null : b); _lgvCropMode = false; if (lieuActif) renderLieuGridView(lieuActif); }
 function lgvEdge(o, x, y) {
   if (!isMJ || !lieuActif?.grid || !_LGV_EDGE_BRUSHES.includes(_lgvBrush)) return;
   const g = lieuActif.grid; g.edges = g.edges || {};
@@ -804,18 +805,53 @@ async function lgvSave() {
     _lgvDirty = false; renderLieuGridView(lieuActif);
   } catch (e) { console.error('lgvSave:', e); alert('Échec de l\'enregistrement du plan.'); }
 }
+function lgvZoomBy(f) { _lgvZoom = Math.max(0.3, Math.min(4, _lgvZoom * f)); if (lieuActif) renderLieuGridView(lieuActif); }
+function lgvZoomReset() { _lgvZoom = 1; if (lieuActif) renderLieuGridView(lieuActif); }
+// Redimensionner le plan (grands settlements) — purge le terrain/arêtes hors des nouvelles bornes
+async function lgvResize() {
+  if (!isMJ || !lieuActif?.grid) return;
+  const g = lieuActif.grid;
+  const w = parseInt(await fpPrompt('Largeur du plan (cases) :', g.w), 10);
+  if (!w || w < 3 || w > 80) return;
+  const hh = parseInt(await fpPrompt('Hauteur du plan (cases) :', g.h), 10);
+  if (!hh || hh < 3 || hh > 80) return;
+  g.w = w; g.h = hh;
+  for (const k in (g.terrain || {})) { const [x, y] = k.split(',').map(Number); if (x >= w || y >= hh) delete g.terrain[k]; }
+  for (const k in (g.edges || {})) { const [o, x, y] = k.split(',').map((v, i) => i ? Number(v) : v); if (x > w || y > hh) delete g.edges[k]; }
+  _lgvCrop = null; _lgvCropA = null; _lgvDirty = true; renderLieuGridView(lieuActif);
+}
+// Mode découpe : 2 clics (coin A puis coin B) définissent la zone de combat
+function lgvToggleCrop() { _lgvCropMode = !_lgvCropMode; _lgvBrush = null; _lgvCropA = null; if (lieuActif) renderLieuGridView(lieuActif); }
+function lgvCropClick(x, y) {
+  if (!_lgvCropMode) return;
+  if (!_lgvCropA) { _lgvCropA = { x, y }; }
+  else {
+    const x0 = Math.min(_lgvCropA.x, x), y0 = Math.min(_lgvCropA.y, y);
+    _lgvCrop = { x: x0, y: y0, w: Math.abs(x - _lgvCropA.x) + 1, h: Math.abs(y - _lgvCropA.y) + 1 };
+    _lgvCropA = null;
+  }
+  renderLieuGridView(lieuActif);
+}
+// Lance le combat sur la zone découpée (params ?cx/cy/cw/ch) ou sur tout le lieu
+function lgvCombat(cropped) {
+  if (!lieuActif) return;
+  let url = '../mj/combat.html?lieu=' + encodeURIComponent(lieuActif.id);
+  if (cropped && _lgvCrop) url += `&cx=${_lgvCrop.x}&cy=${_lgvCrop.y}&cw=${_lgvCrop.w}&ch=${_lgvCrop.h}`;
+  window.open(url, '_blank');
+}
 function renderLieuGridView(l) {
   const mapDiv = document.getElementById('map-lieux'); if (!mapDiv) return;
   if (mapLieu) { mapLieu.remove(); mapLieu = null; }
   mapDiv.style.display = '';   // visible AVANT de mesurer (peut venir d'une vue refuge masquée)
   const g = l.grid;
-  // Taille de case adaptative : la grille remplit la zone dispo (moins la palette + légende + marge)
+  // Taille de case : « fit » (tout le plan visible) × facteur de zoom manuel.
   const availW = (mapDiv.clientWidth || 700) - 40;
-  const availH = (mapDiv.clientHeight || 480) - (isMJ ? 100 : 60);
-  const cs = Math.max(20, Math.min(64, Math.floor(availW / g.w), Math.floor(availH / g.h)));
+  const availH = (mapDiv.clientHeight || 480) - (isMJ ? 140 : 60);
+  const fitCs = Math.max(6, Math.min(64, availW / g.w, availH / g.h));
+  const cs = Math.max(8, Math.round(fitCs * _lgvZoom));
   const BLOCK_LB = { cover: 'couverture', rubble: 'débris', carcasse: 'carcasse', wall: 'bloc' };
   let h = '<div class="lgv-wrap">';
-  // Palette d'édition (MJ)
+  // Barre d'outils (MJ)
   if (isMJ) {
     const br = (id, ic, lb) => `<button class="lgv-brush${_lgvBrush === id ? ' on' : ''}" onclick="lgvSetBrush('${id}')" title="${lb}">${ic}</button>`;
     h += '<div class="lgv-pal">'
@@ -825,11 +861,20 @@ function renderLieuGridView(l) {
       + br('cover', '🛡', 'Couverture') + br('rubble', '🧱', 'Débris') + br('ecell', '⌫', 'Effacer un bloc')
       + `<button class="lgv-brush save${_lgvDirty ? ' dirty' : ''}" onclick="lgvSave()" title="Enregistrer le plan du lieu">💾${_lgvDirty ? ' *' : ''}</button>`
       + '</div>';
+    // Vue / taille / combat
+    h += '<div class="lgv-pal">'
+      + '<span class="lgv-pal-lb">Vue</span>'
+      + `<button class="lgv-brush" onclick="lgvZoomBy(0.8)" title="Dézoomer">−</button>`
+      + `<button class="lgv-brush" onclick="lgvZoomReset()" title="Ajuster à l\'écran">⛶</button>`
+      + `<button class="lgv-brush" onclick="lgvZoomBy(1.25)" title="Zoomer">+</button>`
+      + `<button class="lgv-brush wide" onclick="lgvResize()" title="Changer les dimensions du plan">↔ ${g.w}×${g.h}</button>`
+      + '<span class="lgv-pal-lb">Combat</span>'
+      + `<button class="lgv-brush${_lgvCropMode ? ' on' : ''}" onclick="lgvToggleCrop()" title="Découper une zone de combat (2 clics)">✂</button>`
+      + `<button class="lgv-brush wide" onclick="lgvCombat(true)" title="Lancer un combat sur la zone découpée"${_lgvCrop ? '' : ' disabled'}>⚔ Zone</button>`
+      + `<button class="lgv-brush wide" onclick="lgvCombat(false)" title="Lancer un combat sur tout le plan">⚔ Tout</button>`
+      + '</div>';
   }
   h += `<div class="lgv" style="width:${g.w * cs + 1}px;height:${g.h * cs + 1}px;background-size:${cs}px ${cs}px">`;
-  const cellClick = isMJ && _LGV_CELL_BRUSHES.includes(_lgvBrush);
-  if (cellClick) for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++)
-    h += `<div class="lgv-hot cell" style="left:${x * cs}px;top:${y * cs}px;width:${cs}px;height:${cs}px" onclick="lgvCell(${x},${y})"></div>`;
   for (const k in (g.terrain || {})) {
     const [x, y] = k.split(',').map(Number);
     h += `<div class="lgv-cell t-${g.terrain[k]}" style="left:${x * cs}px;top:${y * cs}px;width:${cs}px;height:${cs}px" title="${BLOCK_LB[g.terrain[k]] || g.terrain[k]}"></div>`;
@@ -840,15 +885,22 @@ function renderLieuGridView(l) {
     if (o === 'V') h += `<div class="lgv-edge v e-${t}" style="left:${x * cs - 2}px;top:${y * cs}px;height:${cs}px"></div>`;
     else h += `<div class="lgv-edge h e-${t}" style="left:${x * cs}px;top:${y * cs - 2}px;width:${cs}px"></div>`;
   }
-  // Zones cliquables des arêtes (pinceau ligne actif) : bords verticaux et horizontaux
+  // Zone de combat découpée (rectangle) + coin en attente
+  if (_lgvCrop) h += `<div class="lgv-crop" style="left:${_lgvCrop.x * cs}px;top:${_lgvCrop.y * cs}px;width:${_lgvCrop.w * cs}px;height:${_lgvCrop.h * cs}px"></div>`;
+  if (_lgvCropMode && _lgvCropA) h += `<div class="lgv-cropa" style="left:${_lgvCropA.x * cs}px;top:${_lgvCropA.y * cs}px;width:${cs}px;height:${cs}px"></div>`;
+  // Zones cliquables (MJ) : arêtes (pinceau ligne), cases (pinceau bloc), ou cases (mode découpe)
   if (isMJ && _LGV_EDGE_BRUSHES.includes(_lgvBrush)) {
     for (let y = 0; y < g.h; y++) for (let x = 0; x <= g.w; x++)
       h += `<div class="lgv-hot edge" style="left:${x * cs - 5}px;top:${y * cs}px;width:10px;height:${cs}px" onclick="lgvEdge('V',${x},${y})"></div>`;
     for (let y = 0; y <= g.h; y++) for (let x = 0; x < g.w; x++)
       h += `<div class="lgv-hot edge" style="left:${x * cs}px;top:${y * cs - 5}px;width:${cs}px;height:10px" onclick="lgvEdge('H',${x},${y})"></div>`;
+  } else if (isMJ && (_LGV_CELL_BRUSHES.includes(_lgvBrush) || _lgvCropMode)) {
+    const fn = _lgvCropMode ? 'lgvCropClick' : 'lgvCell';
+    for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++)
+      h += `<div class="lgv-hot cell" style="left:${x * cs}px;top:${y * cs}px;width:${cs}px;height:${cs}px" onclick="${fn}(${x},${y})"></div>`;
   }
   h += `</div><div class="lgv-cap">🏛 ${l.name} — <span class="lgv-wall">■ mur</span> <span class="lgv-win">■ fenêtre</span> <span class="lgv-door">■ porte</span>`
-    + (isMJ ? (_lgvBrush ? ' · pinceau actif : clique la grille' : ' · choisis un pinceau pour éditer') + (_lgvDirty ? ' · <span class="lgv-dirty">modifs non enregistrées</span>' : '') : '')
+    + (isMJ ? (_lgvCropMode ? ' · <span class="lgv-dirty">découpe : clique 2 coins</span>' : _lgvBrush ? ' · pinceau actif : clique la grille' : '') + (_lgvCrop ? ` · zone ${_lgvCrop.w}×${_lgvCrop.h}` : '') + (_lgvDirty ? ' · <span class="lgv-dirty">non enregistré</span>' : '') : '')
     + '</div></div>';
   mapDiv.style.display = '';
   mapDiv.innerHTML = h;

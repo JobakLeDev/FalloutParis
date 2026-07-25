@@ -755,6 +755,28 @@ function _mapTokens(){
 // ?bg=<image> reste accepté (ancien lien : fond seul, sans grille préparée).
 const _combatBg = new URLSearchParams(location.search).get('bg') || '';
 const _lieuId   = new URLSearchParams(location.search).get('lieu') || '';
+// Découpe : sous-région du plan du lieu (?cx/cy/cw/ch) → combat court sur une pièce
+const _cropQ = (() => {
+  const p = new URLSearchParams(location.search);
+  const v = ['cx','cy','cw','ch'].map(k => parseInt(p.get(k), 10));
+  return v.every(n => Number.isFinite(n)) ? { x:v[0], y:v[1], w:v[2], h:v[3] } : null;
+})();
+// Extrait la sous-région {x,y,w,h} d'une grille (terrain/edges/anchors), coords ramenées à 0
+function _cropGrid(tpl, c){
+  const out = { w:c.w, h:c.h, terrain:{}, edges:{} };
+  const inX = x => x >= c.x && x < c.x + c.w, inY = y => y >= c.y && y < c.y + c.h;
+  for(const k in (tpl.terrain||{})){ const [x,y]=k.split(',').map(Number); if(inX(x)&&inY(y)) out.terrain[(x-c.x)+','+(y-c.y)] = tpl.terrain[k]; }
+  for(const k in (tpl.anchors||{})){ const [x,y]=k.split(',').map(Number); if(inX(x)&&inY(y)){ out.anchors=out.anchors||{}; out.anchors[(x-c.x)+','+(y-c.y)] = tpl.anchors[k]; } }
+  for(const k in (tpl.edges||{})){
+    const [o,xs,ys]=k.split(','); const x=Number(xs), y=Number(ys);
+    // arête V,x,y borde à gauche de (x,y) : garder si x∈[cx,cx+cw], y∈[cy,cy+ch)
+    // arête H,x,y borde en haut de (x,y) : garder si x∈[cx,cx+cw), y∈[cy,cy+ch]
+    const ok = o==='V' ? (x>=c.x && x<=c.x+c.w && inY(y)) : (inX(x) && y>=c.y && y<=c.y+c.h);
+    if(ok) out.edges[o+','+(x-c.x)+','+(y-c.y)] = tpl.edges[k];
+  }
+  if(tpl.bg) out.bg = tpl.bg;   // note : le fond image n'est pas rogné (plans générés = sans image)
+  return out;
+}
 let _lieu = null;   // {id,name,image,grid?} chargé depuis /carte/lieux
 function _loadLieu(){
   if(!_lieuId || !db) return;
@@ -767,7 +789,9 @@ function _loadLieu(){
   }).catch(e => console.warn('lieu:', e));
 }
 function genCombatMap(){
-  const tpl = (_lieu && _lieu.grid) || null;
+  // Plan du lieu, éventuellement rogné à la zone découpée sur la carte (?cx/cy/cw/ch)
+  let tpl = (_lieu && _lieu.grid) || null;
+  if(tpl && _cropQ){ tpl = _cropGrid(tpl, _cropQ); addLog('✂ Zone de combat découpée : ' + _cropQ.w + '×' + _cropQ.h); }
   const w = (tpl && tpl.w) || 21, h = (tpl && tpl.h) || 12;
   const map = { w, h, terrain: {}, pos: {} };
   if(tpl){
