@@ -774,11 +774,13 @@ function ouvrirRefuge(id) {
   renderLieux();
 }
 
-// Lancer un combat sur la carte de ce lieu : combat.html reçoit l'image en ?bg
-// et la pose en fond de battlemap (grid.bg, synchronisé chez les joueurs).
+// Lancer un combat sur la carte de ce lieu : combat.html reçoit ?lieu=<id> —
+// FORMAT COMMUN : si le lieu porte une grille préparée (lieu.grid = même schéma
+// que combatDoc.grid), elle est rechargée telle quelle (murs/blocs/fond) ;
+// sinon fond seul, et « 💾 Plan du lieu » (écran combat) l'enregistre pour la suite.
 function lancerCombatLieu(id) {
   const l = lieux.find(x => x.id === id); if (!l || !l.image) return;
-  window.open('../mj/combat.html?bg=' + encodeURIComponent(l.image), '_blank');
+  window.open('../mj/combat.html?lieu=' + encodeURIComponent(l.id), '_blank');
 }
 
 function ouvrirLieu(id) {

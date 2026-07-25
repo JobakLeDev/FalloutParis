@@ -80,6 +80,7 @@ function init(){
 
 function deverrouiller(){
   chargerJoueurs();
+  _loadLieu();   // ?lieu=<id> : charge le lieu (grille préparée + bouton 💾 Plan du lieu)
   // Listener pour apPool (mis à jour par les joueurs)
   db.collection(COMBATS_COLL).doc(currentCombatId).onSnapshot(snap => {
     if(!snap.exists) return;
@@ -747,21 +748,38 @@ function _mapTokens(){
   (ennemis||[]).forEach(e => list.push({ id:'E'+e.id, nom:e.nom, kind:'ennemi', dead:(e.pvCur||0)<=0, hidden:e.hidden }));
   return list;
 }
-// Plan de lieu passé par la carte (LIEUX → bouton ⚔) : posé en fond de battlemap à la génération
+// FORMAT COMMUN lieu ↔ combat : un lieu peut porter une grille battlemap préparée
+// (lieu.grid = {w,h,terrain,edges,anchors?,bg}) — même schéma que combatDoc.grid.
+// ?lieu=<id> (carte LIEUX → ⚔) recharge cette grille à la génération ; « 💾 Plan du lieu »
+// réenregistre la grille courante (terrain+murs+fond, SANS les jetons) sur le lieu.
+// ?bg=<image> reste accepté (ancien lien : fond seul, sans grille préparée).
 const _combatBg = new URLSearchParams(location.search).get('bg') || '';
+const _lieuId   = new URLSearchParams(location.search).get('lieu') || '';
+let _lieu = null;   // {id,name,image,grid?} chargé depuis /carte/lieux
+function _loadLieu(){
+  if(!_lieuId || !db) return;
+  db.collection('carte').doc('lieux').get().then(s => {
+    const arr = (s.exists ? s.data().lieux : null) || [];
+    _lieu = arr.find(l => l.id === _lieuId) || null;
+    const btn = document.getElementById('btn-save-lieu');
+    if(btn && _lieu) btn.style.display = '';
+    if(_lieu) addLog('🏛 Lieu « ' + (_lieu.name||'?') + ' »' + (_lieu.grid ? ' — plan préparé, « Générer » le recharge.' : ' — pas encore de plan : pose murs/blocs puis « 💾 Plan du lieu ».'));
+  }).catch(e => console.warn('lieu:', e));
+}
 function genCombatMap(){
-  const w = 21, h = 12;
+  const tpl = (_lieu && _lieu.grid) || null;
+  const w = (tpl && tpl.w) || 21, h = (tpl && tpl.h) || 12;
   const map = { w, h, terrain: {}, pos: {} };
-  const toks = _mapTokens();
-  const amis = toks.filter(t => t.kind!=='ennemi');
-  const foes = toks.filter(t => t.kind==='ennemi');
-  let y = 1;
-  amis.forEach(t => { map.pos[t.id] = { x: 1, y: Math.min(h-1, y) }; y += 1; });
-  foes.forEach((t,i) => { map.pos[t.id] = { x: w-2-(i%2), y: 1 + (i % (h-1)) }; });
-  if(_combatBg){
-    // Combat sur le plan d'un lieu : l'image EST le décor → pas de décor aléatoire
-    // (le MJ pose murs/portes/blocs à la main par-dessus le plan)
-    map.bg = _combatBg;
+  if(tpl){
+    // Grille préparée du lieu : terrain + murs + fond rechargés à l'identique
+    map.terrain = JSON.parse(JSON.stringify(tpl.terrain || {}));
+    if(tpl.edges)   map.edges   = JSON.parse(JSON.stringify(tpl.edges));
+    if(tpl.anchors) map.anchors = JSON.parse(JSON.stringify(tpl.anchors));
+    map.bg = tpl.bg || _lieu.image || '';
+  } else if(_lieu && _lieu.image){
+    map.bg = _lieu.image;   // lieu sans plan préparé : fond seul, le MJ dessine par-dessus
+  } else if(_combatBg){
+    map.bg = _combatBg;     // ancien lien ?bg
   } else {
     // décor aléatoire au centre : carcasses / débris / couverture (l'ancien 'wall' n'est plus posé)
     const deco = ['carcasse','rubble','cover','carcasse','cover'];
@@ -773,6 +791,22 @@ function genCombatMap(){
       gridPaintBlock(map, ox, oy, deco[Math.floor(Math.random()*deco.length)]);
     }
   }
+  const toks = _mapTokens();
+  const amis = toks.filter(t => t.kind!=='ennemi');
+  const foes = toks.filter(t => t.kind==='ennemi');
+  let y = 1;
+  amis.forEach(t => { map.pos[t.id] = { x: 1, y: Math.min(h-1, y) }; y += 1; });
+  foes.forEach((t,i) => { map.pos[t.id] = { x: w-2-(i%2), y: 1 + (i % (h-1)) }; });
+  // Un plan préparé peut occuper les colonnes de spawn → reloger les jetons tombés sur un bloc solide
+  Object.keys(map.pos).forEach(id => {
+    const p = map.pos[id];
+    const terr = gridTerrainAt(map, p.x, p.y);
+    if(terr && blockSolid(terr)){
+      const t = toks.find(z => z.id === id);
+      const np = _freeMapCell(map, !!(t && t.kind === 'ennemi'));
+      if(np) map.pos[id] = np;
+    }
+  });
   combatMap = map;
   recomputeBandsFromMap();
   renderCombat();
@@ -780,6 +814,26 @@ function genCombatMap(){
   addLog('🗺 Carte de combat générée');
 }
 function clearCombatMap(){ combatMap = null; _mapSel = null; _blockSel = null; _edgeSel = null; renderCombat(); syncCombatToFirebase(); }
+// Enregistre la grille courante (terrain+murs+fond, SANS jetons) comme plan du lieu (format commun)
+async function saveLieuGrid(){
+  if(!_lieu){ addLog('⚠ Pas de lieu associé à ce combat (ouvrir via carte → LIEUX → ⚔).'); return; }
+  if(!combatMap){ addLog('⚠ Pas de carte à enregistrer — « Générer » d\'abord.'); return; }
+  const g = { w: combatMap.w, h: combatMap.h,
+              terrain: combatMap.terrain || {}, edges: combatMap.edges || {},
+              bg: combatMap.bg || _lieu.image || '' };
+  if(combatMap.anchors) g.anchors = combatMap.anchors;
+  try {
+    const ref = db.collection('carte').doc('lieux');
+    const s = await ref.get();
+    const arr = (s.exists ? s.data().lieux : null) || [];
+    const l = arr.find(x => x.id === _lieu.id);
+    if(!l){ addLog('⚠ Lieu introuvable dans /carte/lieux.'); return; }
+    l.grid = g;
+    await ref.set({ lieux: arr });
+    _lieu.grid = g;
+    addLog('💾 Plan enregistré sur « ' + (_lieu.name||'?') + ' » — les prochains combats ici le rechargeront.');
+  } catch(e){ console.error('saveLieuGrid:', e); addLog('⚠ Échec de l\'enregistrement du plan.'); }
+}
 // Force la carte du MJ chez les joueurs — update (remplace tout le champ grid, donc supprime aussi les arêtes effacées que `set merge` laissait)
 async function pushMapToPlayers(){
   if(!db || !currentCombatId){ return; }
