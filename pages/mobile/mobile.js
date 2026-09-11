@@ -31,6 +31,7 @@ async function init() {
   db.collection('joueurs').doc(JOUEUR_ID).onSnapshot(s => {
     if (!s.exists) return;
     char = _normalize(s.data());
+    _attachCombat(char.combatId || null);   // le combatId vit sur le doc du joueur
     renderAll();
   }, e => console.warn('joueur:', e && e.code));
 
@@ -75,7 +76,7 @@ function _normalize(d) {
   return Object.assign({
     name: d.nom || JOUEUR_ID, special: {}, skills: {}, taggedSkills: [], perks: [],
     inventory: [], ammo: [], caps: 0, niveau: 1, xp: 0, hp: 0, rad: 0, luck_points: 0,
-    wounds: {}, survie: {}, powerArmor: false,
+    wounds: {}, survie: {}, powerArmor: false, combatId: null,
   }, d, { name: d.nom || d.name || JOUEUR_ID });
 }
 
@@ -372,13 +373,61 @@ function renderQuetes() {
   }).join('');
 }
 
+// ---------- Combat ----------
+// L'état est DÉRIVÉ du doc de combat (comme le bandeau de la fiche PC) : pas
+// besoin que le MJ écrive un événement, l'alerte suit le tracker d'initiative.
+let _combatUnsub = null, _combatId = null, _combat = null, _monTourVu = false;
+function _attachCombat(id) {
+  if (id === _combatId) return;
+  _combatId = id;
+  if (_combatUnsub) { _combatUnsub(); _combatUnsub = null; }
+  if (!id) { _combat = null; _monTourVu = false; renderAlerts(_events); return; }
+  _combatUnsub = db.collection('combat').doc(id).onSnapshot(s => {
+    _combat = s.exists ? s.data() : null;
+    if (!_combat || !_combat.actif) { _combat = null; _monTourVu = false; }
+    else {
+      // Vibration au passage de MON tour (une seule fois, si le navigateur le permet)
+      const ordre = _combat.ordreInitiative || [];
+      const moi = (ordre[_combat.tourActif || 0] || {}).id === JOUEUR_ID;
+      if (moi && !_monTourVu && navigator.vibrate) { try { navigator.vibrate([60, 40, 60]); } catch (e) {} }
+      _monTourVu = moi;
+    }
+    renderAlerts(_events);
+  }, e => console.warn('combat:', e && e.code));
+}
+function openCombat() {
+  if (!_combatId) return;
+  location.href = '../mj/combat_joueur.html?id=' + encodeURIComponent(JOUEUR_ID)
+    + '&combat=' + encodeURIComponent(_combatId)
+    + '&camp=' + encodeURIComponent(fpCampId());
+}
+
 // ---------- Alertes ----------
+// Deux sources : le combat en cours (dérivé) + les événements persistants
+// personnels de /events (quête débloquée, objet reçu…).
 const EV_ICON = { quete: '📋', tour: '⚔', objet: '🎒', message: '📟', terminal: '💻', butin: '🎒' };
+let _events = [];
 function renderAlerts(list) {
+  if (list) _events = list;
   const el = document.getElementById('m-alerts');
-  el.innerHTML = (list || []).map(ev =>
+  let h = '';
+
+  if (_combat && _combat.actif) {
+    const ordre = _combat.ordreInitiative || [];
+    const actif = ordre[_combat.tourActif || 0] || {};
+    const monTour = actif.id === JOUEUR_ID;
+    h += `<button class="m-alert${monTour ? ' turn' : ' info'}" onclick="openCombat()">
+      <span class="ic">⚔</span>
+      <span><b>${monTour ? 'C\'EST TON TOUR' : 'Combat en cours'}</b><br>
+        <small>Round ${_combat.numRound || 1}${monTour ? '' : ' · tour de ' + (actif.nom || '?')} — ouvrir l'écran de combat</small></span>
+    </button>`;
+  }
+
+  h += (_events || []).map(ev =>
     `<button class="m-alert" onclick="ackEvent('${ev.id}','${ev.type || ''}')">
        <span class="ic">${EV_ICON[ev.type] || '⚠'}</span><span>${ev.text || 'Événement'}</span></button>`).join('');
+
+  el.innerHTML = h;
 }
 async function ackEvent(id, type) {
   if (type === 'quete') mSw('quetes');

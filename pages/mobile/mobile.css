@@ -70,6 +70,13 @@ body {
   box-shadow: 0 0 12px rgba(232,168,32,.18); animation: mPulse 2.4s ease-in-out infinite;
 }
 .m-alert .ic { font-size: 1.1rem; flex: none; }
+.m-alert small { color: var(--td); font-size: .6rem; }
+/* Combat : rouge pulsé quand c'est TON tour, vert sobre sinon */
+.m-alert.turn { border-color: var(--rd); background: #1c0c0c; box-shadow: 0 0 14px rgba(224,64,64,.3); animation: mTurn 1.3s ease-in-out infinite; }
+.m-alert.turn b { color: var(--rd); letter-spacing: 1px; }
+.m-alert.info { border-color: var(--gd); background: #0d1a0d; box-shadow: none; animation: none; }
+.m-alert.info b { color: var(--g); }
+@keyframes mTurn { 0%,100%{ box-shadow:0 0 10px rgba(224,64,64,.22);} 50%{ box-shadow:0 0 22px rgba(224,64,64,.5);} }
 @keyframes mPulse { 0%,100%{ box-shadow:0 0 10px rgba(232,168,32,.14);} 50%{ box-shadow:0 0 18px rgba(232,168,32,.32);} }
 
 /* ---------- CONTENU ---------- */
