@@ -77,7 +77,7 @@
 .des-row .cd-btn { border-color: var(--am); color: var(--am); }
 .des-row .cd-btn:hover:not(:disabled) { background: var(--am); color: #08120a; }
 .dice-result.sm { font-size: 11px; padding: 4px 6px; min-height: 0; background: #0c150c; border: 1px solid var(--b); text-align: center; }
-.j-fin-btn { background: var(--gk); border: 1px solid var(--g); color: var(--g); font-family: 'Share Tech Mono', monospace; font-size: 11px; padding: 8px 26px; cursor: pointer; letter-spacing: 1px; transition: all .1s; }
+.j-fin-btn { background: var(--gk); border: 1px solid var(--g); border-radius: var(--r-sm); color: var(--g); font-family: 'Share Tech Mono', monospace; font-size: 11px; padding: 8px 26px; cursor: pointer; letter-spacing: 1px; transition: all .1s; }
 .j-fin-btn:hover { background: var(--g); color: #08120a; }
 
 /* En-tête de colonne (Toucher / Dégâts) */
