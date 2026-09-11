@@ -77,13 +77,17 @@ body{overflow-x:hidden;}   /* le 100vw du bandeau ne doit pas créer d'ascenseur
 .bdg.grave{border-color:#ff8a3d;color:#ff8a3d;}
 .bdg.d{border-color:var(--rd);color:var(--rd);}
 
-/* TABS — pilules arrondies, l'onglet actif s'illumine (maquette Pip-Boy 3000) */
-.tabs{display:flex;gap:0.4rem;background:transparent;border:none;padding:0 0 0.55rem;}
+/* TABS — UN SEUL bloc arrondi contenant les onglets (maquette) : séparateurs fins,
+   l'onglet actif devient un encart lumineux avec trait bas phosphore. */
+.tabs{display:flex;gap:0;background:#0d170d;border:1px solid var(--b2);border-radius:var(--r);padding:0.28rem;margin-bottom:0.55rem;box-shadow:var(--glow), inset 0 0 16px rgba(0,0,0,.35);}
 .tab{flex:1;text-align:center;padding:0.6rem 0.333rem;font-size:0.667rem;letter-spacing:2px;color:var(--td);cursor:pointer;
-  background:#0d170d;border:1px solid var(--b);border-radius:var(--r-sm);transition:all 0.12s;text-transform:uppercase;position:relative;}
-.tab:hover{color:var(--t);border-color:var(--b2);background:#101c10;}
+  background:transparent;border:1px solid transparent;border-radius:var(--r-sm);transition:all 0.12s;text-transform:uppercase;position:relative;}
+/* Séparateur vertical entre onglets (masqué autour de l'actif) */
+.tab+.tab::before{content:'';position:absolute;left:0;top:24%;bottom:24%;width:1px;background:var(--b);}
+.tab.on::before,.tab.on+.tab::before{display:none;}
+.tab:hover{color:var(--t);background:#101c10;}
 .tab.on{color:var(--tb);border-color:var(--g);background:#12210f;box-shadow:var(--glow-br), inset 0 0 10px rgba(102,212,102,.12);text-shadow:0 0 8px rgba(140,232,140,.6);}
-.tab.on::after{content:'';position:absolute;left:18%;right:18%;bottom:-1px;height:2px;border-radius:2px;background:var(--g);box-shadow:0 0 8px rgba(102,212,102,.8);}
+.tab.on::after{content:'';position:absolute;left:18%;right:18%;bottom:2px;height:2px;border-radius:2px;background:var(--g);box-shadow:0 0 8px rgba(102,212,102,.8);}
 /* Icônes d'onglets (planches découpées img/tabs/) */
 .tab{display:flex;align-items:center;justify-content:center;gap:0.45rem;}
 .tab-ic{width:1.35rem;height:1.35rem;object-fit:contain;filter:drop-shadow(0 0 4px rgba(102,212,102,.5));opacity:.75;}
