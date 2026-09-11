@@ -51,7 +51,7 @@ html::after{
    img/header_paris.jpg existe ; sinon le dégradé seul), coins arrondis + halo. */
 .hdr{background:
     linear-gradient(180deg, rgba(10,20,10,.55) 0%, rgba(9,17,9,.78) 70%, rgba(10,19,10,.95) 100%),
-    url('../img/header_paris.jpg') center 62%/cover no-repeat,   /* bande skyline 7:1 (recadrée) */
+    url('../img/header_paris.jpg') center/cover no-repeat,   /* bande skyline 12.5:1 (au format du bandeau) */
     var(--p2);
   border:none;border-bottom:1px solid var(--b2);box-shadow:var(--glow), inset 0 0 30px rgba(0,0,0,.45);
   padding:0.833rem 2rem;display:flex;align-items:center;gap:1rem;position:relative;margin-bottom:0.6rem;overflow:hidden;
