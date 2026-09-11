@@ -8,7 +8,12 @@
 
 :root{
   --ui-scale: clamp(1, calc(100vw / 1600), 1.5);
-  --g:#5dbe5d;--gd:#3a7a3a;--gk:#1a3a1a;--bg:#0c150c;--p:#111d11;--p2:#162016;--b:#253825;--b2:#3a5c3a;--t:#7ed87e;--td:#4a7a4a;--tb:#b0f0b0;--am:#b6a258;--am-br:#e8a820;--rd:#e04040;--rdk:#5a1a1a;--sc:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.12) 2px,rgba(0,0,0,0.12) 4px);
+  /* Refonte « Pip-Boy 3000 » : verts plus lumineux, rayons arrondis, halos phosphore */
+  --g:#66d466;--gd:#3f8a3f;--gk:#1a3a1a;--bg:#0a130a;--p:#101c10;--p2:#152015;--b:#274427;--b2:#3f663f;--t:#8ce88c;--td:#579957;--tb:#c9ffc9;--am:#b6a258;--am-br:#e8a820;--rd:#e04040;--rdk:#5a1a1a;--sc:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.12) 2px,rgba(0,0,0,0.12) 4px);
+  --r:0.8rem;                                   /* rayon des grands panneaux */
+  --r-sm:0.45rem;                               /* rayon des cartes / boutons */
+  --glow:0 0 14px rgba(102,212,102,.14);        /* halo extérieur des panneaux */
+  --glow-br:0 0 10px rgba(140,232,140,.45);     /* halo des éléments actifs */
 }
 /* Échelle globale : 1rem = font-size racine, pilotée par --ui-scale */
 html{font-size:clamp(14px, calc(12px * var(--ui-scale)), 22px);}
@@ -42,15 +47,21 @@ html::after{
 /* Conteneur Pip-Boy : largeur responsive, plus de zoom fixe (transform) */
 .pip{width:min(96vw,2200px);margin:0 auto;padding:1.333rem;}
 
-/* HEADER */
-.hdr{background:var(--p2);border:1px solid var(--b2);padding:0.833rem 1.333rem;display:flex;align-items:center;gap:1rem;position:relative;}
-.hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--g),transparent);}
-.logo{font-family:'Oswald',sans-serif;font-size:1.5rem;font-weight:600;letter-spacing:3px;color:var(--g);}
-.logo small{display:block;font-size:0.667rem;letter-spacing:5px;color:var(--td);font-family:'Share Tech Mono',monospace;}
+/* HEADER — bannière « Pip-Boy 3000 » : panorama de Paris en ruine (si l'image
+   img/header_paris.jpg existe ; sinon le dégradé seul), coins arrondis + halo. */
+.hdr{background:
+    linear-gradient(180deg, rgba(10,20,10,.72) 0%, rgba(8,16,8,.88) 78%, rgba(10,19,10,.97) 100%),
+    url('../img/header_paris.jpg') center 28%/cover no-repeat,
+    var(--p2);
+  border:1px solid var(--b2);border-radius:var(--r);box-shadow:var(--glow), inset 0 0 30px rgba(0,0,0,.45);
+  padding:0.833rem 1.333rem;display:flex;align-items:center;gap:1rem;position:relative;margin-bottom:0.6rem;overflow:hidden;}
+.hdr::after{content:'';position:absolute;bottom:0;left:6%;right:6%;height:1px;background:linear-gradient(90deg,transparent,var(--g),transparent);opacity:.6;}
+.logo{font-family:'Oswald',sans-serif;font-size:1.5rem;font-weight:600;letter-spacing:3px;color:var(--g);text-shadow:0 0 10px rgba(102,212,102,.5);}
+.logo small{display:block;font-size:0.667rem;letter-spacing:5px;color:var(--td);font-family:'Share Tech Mono',monospace;text-shadow:none;}
 .hdr-mid{flex:1;text-align:center;}
-.name-inp{color:var(--tb);font-family:'Oswald',sans-serif;font-size:1.5rem;letter-spacing:3px;text-align:center;}
+.name-inp{color:var(--tb);font-family:'Oswald',sans-serif;font-size:1.6rem;letter-spacing:4px;text-align:center;text-shadow:0 0 12px rgba(201,255,201,.35);}
 .meta{font-size:0.75rem;color:var(--td);letter-spacing:3px;margin-top:0.167rem;}
-.hdr-right{text-align:right;min-width:11.667rem;}
+.hdr-right{text-align:right;min-width:11.667rem;background:rgba(10,20,10,.65);border:1px solid var(--b2);border-radius:var(--r-sm);padding:0.45rem 0.7rem;box-shadow:inset 0 0 12px rgba(0,0,0,.35);}
 .mini-hp{font-size:0.75rem;color:var(--td);}
 .mini-hp b{color:var(--tb);font-family:'Oswald',sans-serif;font-size:1.167rem;}
 
@@ -63,37 +74,37 @@ html::after{
 .bdg.grave{border-color:#ff8a3d;color:#ff8a3d;}
 .bdg.d{border-color:var(--rd);color:var(--rd);}
 
-/* TABS */
-.tabs{display:flex;background:var(--p2);border-left:1px solid var(--b2);border-right:1px solid var(--b2);}
-.tab{flex:1;text-align:center;padding:0.667rem 0.333rem;font-size:0.667rem;letter-spacing:2px;color:var(--td);cursor:pointer;border-bottom:2px solid transparent;border-right:1px solid var(--b);transition:all 0.12s;text-transform:uppercase;}
-.tab:last-child{border-right:none;}
-.tab:hover{color:var(--t);background:#0f1a0f;}
-.tab.on{color:var(--g);border-bottom:2px solid var(--g);background:#0f1a0f;}
-.body{background:var(--p);border:1px solid var(--b2);border-top:none;min-height:60vh;padding:1rem;position:relative;}
-.body::before{content:'';position:absolute;inset:0;background:var(--sc);pointer-events:none;opacity:0.35;}
+/* TABS — pilules arrondies, l'onglet actif s'illumine (maquette Pip-Boy 3000) */
+.tabs{display:flex;gap:0.4rem;background:transparent;border:none;padding:0 0 0.55rem;}
+.tab{flex:1;text-align:center;padding:0.6rem 0.333rem;font-size:0.667rem;letter-spacing:2px;color:var(--td);cursor:pointer;
+  background:#0d170d;border:1px solid var(--b);border-radius:var(--r-sm);transition:all 0.12s;text-transform:uppercase;position:relative;}
+.tab:hover{color:var(--t);border-color:var(--b2);background:#101c10;}
+.tab.on{color:var(--tb);border-color:var(--g);background:#12210f;box-shadow:var(--glow-br), inset 0 0 10px rgba(102,212,102,.12);text-shadow:0 0 8px rgba(140,232,140,.6);}
+.tab.on::after{content:'';position:absolute;left:18%;right:18%;bottom:-1px;height:2px;border-radius:2px;background:var(--g);box-shadow:0 0 8px rgba(102,212,102,.8);}
+.body{background:var(--p);border:1px solid var(--b2);border-radius:var(--r);min-height:60vh;padding:1rem;position:relative;box-shadow:var(--glow);}
+.body::before{content:'';position:absolute;inset:0;background:var(--sc);pointer-events:none;opacity:0.35;border-radius:var(--r);}
 .tc{display:none;}.tc.on{display:block;}
 
-/* PANELS */
-.pnl{background:#0d170d;border:1px solid var(--b);padding:0.75rem 0.917rem;margin-bottom:0.75rem;}
-.ptitle{font-size:0.667rem;letter-spacing:4px;color:var(--td);text-transform:uppercase;border-bottom:1px solid var(--b);padding-bottom:0.333rem;margin-bottom:0.583rem;}
+/* PANELS — coins arrondis, liseré lumineux, titre phosphore */
+.pnl{background:#0c160c;border:1px solid #2c4f2c;border-radius:var(--r);padding:0.75rem 0.917rem;margin-bottom:0.75rem;
+  box-shadow:0 0 10px rgba(102,212,102,.08), inset 0 0 22px rgba(0,0,0,.30);}
+.ptitle{font-size:0.72rem;letter-spacing:4px;color:var(--g);text-transform:uppercase;padding-bottom:0.35rem;margin-bottom:0.583rem;
+  text-shadow:0 0 8px rgba(102,212,102,.45);border-bottom:none;position:relative;}
+.ptitle::after{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:linear-gradient(90deg,var(--b2),transparent 70%);}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.583rem;}
 
-/* SPECIAL */
-.sk{font-size:0.75rem;color:var(--td);width:1rem;}
-.sn{flex:1;font-size:0.667rem;color:var(--td);padding:0 0.5rem;}
-.sdots{display:flex;gap:0.167rem;}
-.sd{width:0.667rem;height:0.667rem;border-radius:50%;border:1px solid var(--gd);background:#080f08;}
-.sd.on{background:var(--g);border-color:var(--g);}
-.sv{font-family:'Oswald',sans-serif;font-size:1.5rem;color:var(--tb);min-width:2.167rem;text-align:right;}
-.sv.m{color:var(--am);}
+/* SPECIAL — lettre en pastille carrée bordée + barre segmentée (maquette) */
+.sdots{display:flex;gap:2px;background:#060d06;border:1px solid var(--b);border-radius:0.3rem;padding:2px 3px;}
+.sd{width:0.85rem;height:0.55rem;border-radius:2px;border:none;background:#0e1c0e;}
+.sd.on{background:var(--g);box-shadow:0 0 6px rgba(102,212,102,.55);}
 
-
-/* SPECIAL COMPACT */
-.srow{display:flex;align-items:center;padding:0.167rem 0.417rem;background:#080f08;border:1px solid var(--b);margin-bottom:0.167rem;}
-.sk{font-size:0.833rem;color:var(--am);width:1.167rem;font-family:'Oswald',sans-serif;}
-.sn{flex:1;font-size:0.667rem;color:var(--td);padding:0 0.5rem;}
-.sv{font-family:'Oswald',sans-serif;font-size:1.333rem;color:var(--tb);min-width:2.167rem;text-align:right;}
+.srow{display:flex;align-items:center;gap:0.15rem;padding:0.28rem 0.45rem;background:#0b150b;border:1px solid var(--b);border-radius:var(--r-sm);margin-bottom:0.3rem;}
+.sk{flex:none;width:1.7rem;height:1.7rem;display:flex;align-items:center;justify-content:center;
+  font-size:0.95rem;color:var(--tb);font-family:'Oswald',sans-serif;
+  border:1px solid var(--gd);border-radius:0.35rem;background:#0e1c0e;box-shadow:inset 0 0 8px rgba(102,212,102,.10);}
+.sn{flex:1;font-size:0.667rem;color:var(--t);padding:0 0.5rem;letter-spacing:1px;text-transform:uppercase;}
+.sv{font-family:'Oswald',sans-serif;font-size:1.333rem;color:var(--tb);min-width:2.167rem;text-align:right;text-shadow:0 0 8px rgba(201,255,201,.3);}
 .sv.m{color:var(--am);}
 
 /* BODY CROSS - localisations en croix */
@@ -125,7 +136,7 @@ html::after{
 
 .body-cross{position:absolute;inset:0;}
 
-.loc-card-cross{background:rgba(8,15,8,0.85);border:1px solid var(--b);padding:0.25rem 0.417rem;min-width:5.5rem;max-width:9rem;backdrop-filter:blur(1px);}
+.loc-card-cross{background:rgba(8,15,8,0.85);border:1px solid var(--b);border-radius:var(--r-sm);padding:0.25rem 0.417rem;min-width:5.5rem;max-width:9rem;backdrop-filter:blur(1px);}
 .loc-card-cross.hurt{border-color:var(--rd);background:var(--rdk);}
 .loc-card-cross.center-loc{min-width:7rem;text-align:center;}
 .loc-card-cross.center-loc .lcc-rds{justify-content:center;}
@@ -137,7 +148,7 @@ html::after{
 .lcc-rd b.nz{color:var(--g);}
 
 /* ARMES DANS GÉNÉRAL */
-.gen-weap-card{background:#080f08;border:1px solid var(--b);padding:0.5rem 0.667rem;margin-bottom:0.417rem;}
+.gen-weap-card{background:#080f08;border:1px solid var(--b);border-radius:var(--r-sm);padding:0.5rem 0.667rem;margin-bottom:0.417rem;}
 .gen-weap-card.eq{border-color:var(--gd);}
 .gwc-row{display:flex;justify-content:space-between;align-items:center;}
 .gwc-name{font-size:0.8rem;color:var(--tb);}
@@ -146,23 +157,23 @@ html::after{
 .gwc-ammo{display:flex;align-items:center;gap:0.5rem;margin-top:0.333rem;font-size:0.68rem;color:var(--td);}
 .gwc-ammo-qty{font-family:'Oswald',sans-serif;font-size:1.05rem;color:var(--tb);}
 
-/* BARS */
+/* BARS — arrondies, fine bordure, remplissage lumineux (maquette) */
 .bw{margin-bottom:0.583rem;}
 .bl{display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:0.167rem;}
 .bl .bv{color:var(--tb);font-family:'Oswald',sans-serif;font-size:1rem;}
-.bt{height:1rem;background:#060d06;border:1px solid var(--b);overflow:hidden;}
-.bf{height:100%;}
-.bf::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent,transparent 4px,rgba(0,0,0,0.2) 4px,rgba(0,0,0,0.2) 5px);}
+.bt{height:1rem;background:#060d06;border:1px solid var(--gd);border-radius:999px;overflow:hidden;padding:2px;}
+.bf{height:100%;border-radius:999px;}
+.bf::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent,transparent 4px,rgba(0,0,0,0.2) 4px,rgba(0,0,0,0.2) 5px);border-radius:999px;}
 .bf{position:relative;}
-.hp-ok{background:var(--g);}
-.hp-md{background:var(--am);}
-.hp-lo{background:var(--rd);}
-.rad-f{background:#e8a820;}
-.xp-f{background:var(--am);}
-.ch-f{background:var(--g);}
+.hp-ok{background:var(--g);box-shadow:0 0 8px rgba(102,212,102,.5);}
+.hp-md{background:var(--am-br);box-shadow:0 0 8px rgba(232,168,32,.4);}
+.hp-lo{background:var(--rd);box-shadow:0 0 8px rgba(224,64,64,.4);}
+.rad-f{background:#e8a820;box-shadow:0 0 8px rgba(232,168,32,.4);}
+.xp-f{background:var(--am-br);}
+.ch-f{background:var(--g);box-shadow:0 0 8px rgba(102,212,102,.5);}
 
 /* BUTTONS */
-.btn{background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:0.75rem;padding:0.333rem 0.583rem;cursor:pointer;letter-spacing:1px;transition:all 0.1s;}
+.btn{background:#060d06;border:1px solid var(--b2);border-radius:var(--r-sm);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:0.75rem;padding:0.333rem 0.583rem;cursor:pointer;letter-spacing:1px;transition:all 0.1s;}
 .btn:hover{background:var(--gk);border-color:var(--g);color:var(--tb);}
 .btn:active{transform:scale(0.97);}
 .btn.dng{border-color:#3a1a1a;}
@@ -192,7 +203,7 @@ hr.fo{border:none;border-top:1px solid var(--b);margin:0.5rem 0;}
 .sk-tn{font-size:0.667rem;color:var(--td);min-width:2.667rem;text-align:right;}
 
 /* WEAPONS (equipped panel) */
-.wcard{background:#080f08;border:1px solid var(--b);padding:0.583rem 0.75rem;margin-bottom:0.417rem;}
+.wcard{background:#080f08;border:1px solid var(--b);border-radius:var(--r-sm);padding:0.583rem 0.75rem;margin-bottom:0.417rem;}
 .wcard.eq{border-color:var(--gd);}
 .wt{display:flex;justify-content:space-between;align-items:flex-start;}
 .wname{font-size:0.917rem;color:var(--tb);}
@@ -201,14 +212,14 @@ hr.fo{border:none;border-top:1px solid var(--b);margin:0.5rem 0;}
 .wtag{color:var(--am);}
 
 /* AMMO */
-.amrow{display:flex;align-items:center;justify-content:space-between;padding:0.333rem 0.583rem;background:#080f08;border:1px solid var(--b);margin-bottom:0.333rem;}
+.amrow{display:flex;align-items:center;justify-content:space-between;padding:0.333rem 0.583rem;background:#080f08;border:1px solid var(--b);border-radius:var(--r-sm);margin-bottom:0.333rem;}
 .amcal{font-size:0.75rem;color:var(--td);}
 .amqty{font-family:'Oswald',sans-serif;font-size:1.333rem;color:var(--tb);}
 .ambtn{background:none;border:1px solid var(--b);color:var(--td);font-size:0.833rem;width:1.667rem;height:1.667rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .ambtn:hover{border-color:var(--g);color:var(--t);}
 
 /* LOCS */
-.lcard{background:#080f08;border:1px solid var(--b);padding:0.417rem 0.583rem;}.lcard.hurt{border-color:var(--rd);background:var(--rdk);}
+.lcard{background:#080f08;border:1px solid var(--b);border-radius:var(--r-sm);padding:0.417rem 0.583rem;}.lcard.hurt{border-color:var(--rd);background:var(--rdk);}
 .lname{font-size:0.667rem;color:var(--td);letter-spacing:1px;margin-bottom:0.25rem;display:flex;justify-content:space-between;align-items:center;}
 .larm{font-size:0.583rem;color:var(--gd);margin-bottom:0.167rem;min-height:0.833rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .lrds{display:flex;gap:0.417rem;}
@@ -220,7 +231,7 @@ hr.fo{border:none;border-top:1px solid var(--b);margin:0.5rem 0;}
 .wdot.hurt{background:var(--rd);border-color:var(--rd);}
 
 /* PERKS */
-.pkcard{background:#080f08;border:1px solid var(--b);padding:0.5rem 0.667rem;margin-bottom:0.333rem;cursor:pointer;transition:all 0.12s;}
+.pkcard{background:#080f08;border:1px solid var(--b);border-radius:var(--r-sm);padding:0.5rem 0.667rem;margin-bottom:0.333rem;cursor:pointer;transition:all 0.12s;}
 .pkcard.act{border-color:var(--am);}
 .pkcard.trig{border-color:var(--g);background:var(--gk);}
 .pkname{font-size:0.75rem;color:var(--t);}
@@ -290,7 +301,7 @@ hr.fo{border:none;border-top:1px solid var(--b);margin:0.5rem 0;}
 /* MODAL */
 .mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:200;align-items:center;justify-content:center;}
 .mo.on{display:flex;}
-.mbox{background:var(--p2);border:1px solid var(--b2);padding:1.5rem;width:24.167rem;max-width:92vw;}
+.mbox{background:var(--p2);border:1px solid var(--b2);border-radius:var(--r);box-shadow:var(--glow);padding:1.5rem;width:24.167rem;max-width:92vw;}
 .mtitle{font-size:0.75rem;letter-spacing:4px;color:var(--td);margin-bottom:0.833rem;}
 .mf{margin-bottom:0.583rem;}
 .mf label{font-size:0.667rem;color:var(--td);display:block;margin-bottom:0.167rem;letter-spacing:2px;}
@@ -308,7 +319,7 @@ hr.fo{border:none;border-top:1px solid var(--b);margin:0.5rem 0;}
 
 /* Pop-up stylée (remplace alert natif) — voir shared.js */
 #fp-alert{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);}
-.fp-alert-box{background:var(--p2,#162016);border:1px solid var(--g,#5dbe5d);box-shadow:0 0 22px rgba(93,190,93,.3);padding:18px 20px;width:340px;max-width:90vw;font-family:'Share Tech Mono',monospace;margin:6px;}
+.fp-alert-box{background:var(--p2,#162016);border:1px solid var(--g,#5dbe5d);border-radius:var(--r,10px);box-shadow:0 0 22px rgba(93,190,93,.3);padding:18px 20px;width:340px;max-width:90vw;font-family:'Share Tech Mono',monospace;margin:6px;}
 .fp-alert-msg{color:var(--tb,#b0f0b0);font-size:12px;line-height:1.55;white-space:pre-line;margin-bottom:14px;}
 .fp-alert-ok{display:block;margin-left:auto;background:var(--gk,#1a3a1a);border:1px solid var(--g,#5dbe5d);color:var(--tb,#b0f0b0);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:3px;padding:7px 20px;cursor:pointer;}
 .fp-alert-ok:hover{background:#1e4a1e;box-shadow:0 0 10px rgba(93,190,93,.3);}
