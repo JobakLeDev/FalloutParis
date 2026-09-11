@@ -44,8 +44,11 @@ html::after{
 @keyframes crtFlicker{ 0%,100%{opacity:.92} 8%{opacity:1} 9%{opacity:.85} 12%{opacity:.97} 50%{opacity:.95} 51%{opacity:1} }
 @media (prefers-reduced-motion: reduce){ html::before{ animation:none; } }
 
-/* Conteneur Pip-Boy : largeur responsive, plus de zoom fixe (transform) */
-.pip{width:min(96vw,2200px);margin:0 auto;padding:1.333rem;}
+/* Conteneur Pip-Boy = CANVAS de l'app : plafonné à 2560px et centré.
+   Au-delà (ultra-wide), l'écran ne s'étale plus : le fond reste sombre autour,
+   et rien ne part se perdre dans les coins. */
+:root{ --canvas:2560px; --pip-pad:1.333rem; }
+.pip{width:min(100vw,var(--canvas));margin:0 auto;padding:var(--pip-pad);}
 
 /* HEADER — bannière « Pip-Boy 3000 » : panorama de Paris en ruine (si l'image
    img/header_paris.jpg existe ; sinon le dégradé seul), coins arrondis + halo. */
@@ -56,12 +59,10 @@ html::after{
     url('../img/header_paris.webp') center/auto 100% no-repeat,
     var(--p2);
   border:none;border-bottom:1px solid var(--b2);box-shadow:var(--glow), inset 0 0 30px rgba(0,0,0,.45);
-  display:flex;align-items:center;gap:1rem;position:relative;margin-bottom:0.6rem;overflow:hidden;
-  /* Pleine largeur de la FENÊTRE (sort du conteneur .pip centré) */
-  width:100vw;margin-left:calc(50% - 50vw);margin-top:-1.333rem;
-  /* …mais le CONTENU reste aligné sur la colonne centrale (sinon, sur grand écran,
-     le logo et le bloc PV/RAD/LUCK se perdent dans les coins de l'écran) */
-  padding:0.833rem max(2rem, calc((100vw - min(96vw, 2200px)) / 2 + 1.333rem));}
+  display:flex;align-items:center;gap:1rem;position:relative;overflow:hidden;
+  /* Pleine largeur du CANVAS : déborde du padding de .pip, pas de l'écran */
+  margin:calc(-1 * var(--pip-pad)) calc(-1 * var(--pip-pad)) 0.6rem;
+  padding:0.833rem 2rem;}
 .hdr-mid{min-width:0;}
 body{overflow-x:hidden;}   /* le 100vw du bandeau ne doit pas créer d'ascenseur horizontal */
 .hdr::after{content:'';position:absolute;bottom:0;left:6%;right:6%;height:1px;background:linear-gradient(90deg,transparent,var(--g),transparent);opacity:.6;}
