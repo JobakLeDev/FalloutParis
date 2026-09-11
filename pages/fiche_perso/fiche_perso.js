@@ -266,12 +266,8 @@ function purgeEffects(){ if(!(char.activeEffects||[]).length) return; char.activ
 function rCaps(){const el=document.getElementById('caps-val');if(el)el.textContent=(char.caps||0).toLocaleString('fr-FR');}
 
 // ---- SURVIE : faim / soif / sommeil + Fatigue (lié à l'horloge) ----
-function _survBar(idx,max,danger){
-  let segs='';
-  for(let i=0;i<max;i++){ const on=i<idx; const col=danger?'var(--rd)':(idx>=max-1?'var(--rd)':idx>=max-2?'var(--am)':'var(--g)');
-    segs+=`<span style="flex:1;height:5px;background:${on?col:'#0e160e'};border:1px solid var(--b)"></span>`; }
-  return `<div style="display:flex;gap:2px;margin:2px 0">${segs}</div>`;
-}
+// Rendu maquette : icône | libellé | barre pilule (remplissage = réserve restante,
+// vert → ambre → rouge selon l'état) | statut coloré à droite.
 function rSurvie(){
   const el=document.getElementById('survie-content'); if(!el||typeof SURVIE==='undefined') return;
   const now=window._fpCampaignMin;
@@ -279,13 +275,19 @@ function rSurvie(){
   char.survie=char.survie||{};
   if(now!=null){ ['eat','drink','sleep'].forEach(k=>{ if(char.survie[k]==null) char.survie[k]=now; }); }
   const s=SURVIE.compute(char.survie, now!=null?now:0);
-  const row=(ico,lbl,o,max)=>`<div style="margin-bottom:4px">
-      <div style="display:flex;justify-content:space-between;font-size:8px"><span>${ico} ${lbl}</span><span style="color:${o.danger?'var(--rd)':'var(--td)'}">${o.label}</span></div>
-      ${_survBar(o.idx,max,o.danger)}</div>`;
-  let h=row('🍖','Faim',s.faim,s.maxIdx.faim)+row('🥤','Soif',s.soif,s.maxIdx.soif)+row('😴','Sommeil',s.sommeil,s.maxIdx.sommeil);
-  h+=`<div style="border-top:1px solid var(--b);margin-top:3px;padding-top:3px;font-size:8px">`
-   + `Fatigue : <b style="color:${s.fatigue>0?'var(--rd)':'var(--g)'};font-family:Oswald,sans-serif;font-size:12px">${s.fatigue}</b>`
-   + (s.fatigue>0?` <span style="color:var(--td)">(−${s.apMalus} AP gagnés · −${s.hpLoss} PV/scène)</span>`:'')
+  const row=(ico,lbl,o,max)=>{
+    const col=o.danger||o.idx>=max-1?'var(--rd)':o.idx>=max-2?'var(--am-br)':'var(--g)';
+    const pct=Math.max(6,Math.round(100*(max-1-o.idx)/(max-1)));
+    return `<div class="sv-row">
+      <span class="sv-ico">${ico}</span>
+      <span class="sv-lbl">${lbl}</span>
+      <span class="sv-bar"><span class="sv-fill" style="width:${pct}%;background:${col};box-shadow:0 0 6px ${col}"></span></span>
+      <span class="sv-status" style="color:${col}">${o.label}</span>
+    </div>`;
+  };
+  let h=row('🍴','Faim',s.faim,s.maxIdx.faim)+row('💧','Soif',s.soif,s.maxIdx.soif)+row('🛏','Sommeil',s.sommeil,s.maxIdx.sommeil);
+  h+=`<div class="sv-fatigue">Fatigue : <b style="color:${s.fatigue>0?'var(--rd)':'var(--g)'}">${s.fatigue}</b>`
+   + (s.fatigue>0?` <span>(−${s.apMalus} AP gagnés · −${s.hpLoss} PV/scène)</span>`:'')
    + `</div>`;
   el.innerHTML=h;
 }
