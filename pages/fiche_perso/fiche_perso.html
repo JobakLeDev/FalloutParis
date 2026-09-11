@@ -106,8 +106,8 @@
 <!-- GÉNÉRAL -->
 <div class="tc on" id="tc-general">
 
-  <!-- LIGNE UNIQUE : SPECIAL | MON PERSONNAGE (armure + armes + survie) -->
-  <div class="gen-row" style="display:grid;grid-template-columns:160px minmax(0,1fr);gap:9px;align-items:start">
+  <!-- LIGNE UNIQUE (maquette) : SPECIAL | MON PERSONNAGE | (SURVIE + ARMES ÉQUIPÉES) -->
+  <div class="gen-row" style="display:grid;grid-template-columns:160px minmax(0,2fr) minmax(0,1fr);gap:9px;align-items:start">
 
     <!-- SPECIAL compact étroit -->
     <div class="pnl" style="padding:7px 8px">
@@ -120,37 +120,32 @@
       </div>
     </div>
 
-    <!-- MON PERSONNAGE : armure (Vault Boy) + armes équipées + survie -->
+    <!-- MON PERSONNAGE : armure en croix sur le Vault Boy (panneau dédié) -->
     <div class="pnl">
       <div class="ptitle">Mon personnage</div>
       <div id="pa-banner" style="display:none"></div>
-      <div class="mp-grid" style="display:grid;grid-template-columns:minmax(0,3fr) minmax(0,1fr);gap:12px;align-items:start">
-
-        <!-- Armure en croix : zone = 3/4 du bloc, image centrée dans la zone -->
-        <div class="body-cross-wrap" style="position:relative;width:100%;max-width:640px;height:auto;display:block;margin:0 auto">
-          <img id="vaultboy-img" src="../../img/vaultboy_radar.png" class="vaultboy-bg" style="position:static;width:100%;height:auto;transform:none;display:block;margin:0 auto;opacity:.85" alt="">
-          <div class="body-cross">
-            <div id="loc-head"   style="position:absolute;top:2%;left:50%;transform:translateX(-50%)"></div>
-            <div id="loc-torso"  style="position:absolute;top:40%;left:50%;transform:translateX(-50%)"></div>
-            <div id="loc-armR"   style="position:absolute;top:30%;left:9%"></div>
-            <div id="loc-armL"   style="position:absolute;top:30%;right:9%"></div>
-            <div id="loc-legR"   style="position:absolute;top:68%;left:17%"></div>
-            <div id="loc-legL"   style="position:absolute;top:68%;right:17%"></div>
-          </div>
+      <div class="body-cross-wrap" style="position:relative;width:100%;max-width:640px;height:auto;display:block;margin:0 auto">
+        <img id="vaultboy-img" src="../../img/vaultboy_radar.png" class="vaultboy-bg" style="position:static;width:100%;height:auto;transform:none;display:block;margin:0 auto;opacity:.85" alt="">
+        <div class="body-cross">
+          <div id="loc-head"   style="position:absolute;top:2%;left:50%;transform:translateX(-50%)"></div>
+          <div id="loc-torso"  style="position:absolute;top:40%;left:50%;transform:translateX(-50%)"></div>
+          <div id="loc-armR"   style="position:absolute;top:30%;left:9%"></div>
+          <div id="loc-armL"   style="position:absolute;top:30%;right:9%"></div>
+          <div id="loc-legR"   style="position:absolute;top:68%;left:17%"></div>
+          <div id="loc-legL"   style="position:absolute;top:68%;right:17%"></div>
         </div>
+      </div>
+    </div>
 
-        <!-- Survie (haut) + Armes équipées (bas) -->
-        <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
-          <div id="pnl-survie">
-            <div class="mp-sub">Survie</div>
-            <div id="survie-content"></div>
-          </div>
-          <div id="pnl-gen-weap">
-            <div class="mp-sub weap-toggle" onclick="toggleWeapCollapse()">Armes équipées <span id="weap-chev">▾</span></div>
-            <div id="gen-weap"></div>
-          </div>
-        </div>
-
+    <!-- Colonne droite : SURVIE puis ARMES ÉQUIPÉES, panneaux séparés (maquette) -->
+    <div style="display:flex;flex-direction:column;gap:9px;min-width:0">
+      <div class="pnl" id="pnl-survie">
+        <div class="ptitle">Survie</div>
+        <div id="survie-content"></div>
+      </div>
+      <div class="pnl" id="pnl-gen-weap">
+        <div class="ptitle weap-toggle" onclick="toggleWeapCollapse()" style="cursor:pointer;user-select:none">Armes équipées <span id="weap-chev">▾</span></div>
+        <div id="gen-weap"></div>
       </div>
     </div>
 
