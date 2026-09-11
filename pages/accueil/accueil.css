@@ -29,14 +29,14 @@ body::before{
 .title{
   font-family:'Oswald',sans-serif;font-size:clamp(18px,4.4vh,24px);font-weight:600;
   letter-spacing:5px;color:var(--g);
-  text-shadow:0 0 20px #5dbe5d66;
+  text-shadow:0 0 22px rgba(102,212,102,.55);
 }
 .subtitle{font-size:8px;letter-spacing:4px;color:var(--td);margin-top:4px;opacity:0.6;}
 .tagline{font-size:clamp(10px,2vh,12px);color:var(--t);margin-top:clamp(6px,1.4vh,14px);letter-spacing:3px;opacity:0.85;font-style:italic;}
 
 /* PANEL */
 .panel{
-  background:var(--p2);border:1px solid var(--b2);
+  background:var(--p2);border:1px solid var(--b2);border-radius:var(--r);box-shadow:var(--glow), inset 0 0 24px rgba(0,0,0,.35);
   padding:clamp(12px,2vh,20px);position:relative;
 }
 .panel::before{
@@ -44,7 +44,7 @@ body::before{
   background:linear-gradient(90deg,transparent,var(--g),transparent);
 }
 .ptitle{
-  font-size:8px;letter-spacing:4px;color:var(--td);text-transform:uppercase;
+  font-size:8px;letter-spacing:4px;color:var(--g);text-shadow:0 0 7px rgba(102,212,102,.45);text-transform:uppercase;
   border-bottom:1px solid var(--b);padding-bottom:6px;margin-bottom:clamp(8px,1.8vh,16px);
 }
 
@@ -52,26 +52,26 @@ body::before{
 .field{margin-bottom:clamp(8px,1.5vh,14px);}
 .field label{font-size:8px;letter-spacing:3px;color:var(--td);display:block;margin-bottom:5px;text-transform:uppercase;}
 .field input{
-  width:100%;background:#060d06;border:1px solid var(--b2);
+  width:100%;background:#060d06;border:1px solid var(--b2);border-radius:var(--r-sm);
   color:var(--tb);font-family:'Share Tech Mono',monospace;
   font-size:14px;padding:10px 12px;outline:none;
   letter-spacing:2px;transition:border-color 0.15s;
 }
-.field input:focus{border-color:var(--g);}
+.field input:focus{border-color:var(--g);box-shadow:0 0 10px rgba(102,212,102,.2);}
 .field input::placeholder{color:var(--td);font-size:11px;letter-spacing:1px;}
 
 /* BUTTONS */
 .btn-primary{
-  width:100%;background:var(--gk);border:1px solid var(--g);
+  width:100%;background:var(--gk);border:1px solid var(--g);border-radius:var(--r-sm);
   color:var(--tb);font-family:'Share Tech Mono',monospace;
   font-size:10px;padding:12px;cursor:pointer;
   letter-spacing:4px;text-transform:uppercase;
   transition:all 0.15s;margin-top:4px;
 }
-.btn-primary:hover{background:#1e4a1e;box-shadow:0 0 12px #5dbe5d33;}
+.btn-primary:hover{background:#1e4a1e;box-shadow:var(--glow-br);}
 .btn-primary:active{transform:scale(0.98);}
 .btn-secondary{
-  width:100%;background:transparent;border:1px solid var(--b2);
+  width:100%;background:transparent;border:1px solid var(--b2);border-radius:var(--r-sm);
   color:var(--td);font-family:'Share Tech Mono',monospace;
   font-size:10px;padding:11px;cursor:pointer;
   letter-spacing:4px;text-transform:uppercase;
@@ -88,7 +88,7 @@ body::before{
 
 /* MESSAGE */
 .msg{
-  font-size:9px;padding:8px 12px;border:1px solid;
+  font-size:9px;padding:8px 12px;border:1px solid;border-radius:var(--r-sm);
   margin-top:12px;letter-spacing:1px;display:none;
   text-align:center;
 }
@@ -111,3 +111,16 @@ body::before{
 
 /* FOOTER */
 .footer{text-align:center;margin-top:clamp(8px,1.6vh,20px);font-size:8px;color:var(--td);opacity:0.5;letter-spacing:2px;}
+/* Bouton « Ouvrir mon Pip-Boy » : envoie la connexion vers la page mobile.
+   Ambre pour le distinguer de l'accès fiche (vert) et de la création (discret). */
+.btn-pipboy{
+  width:100%;display:flex;align-items:center;justify-content:center;gap:8px;
+  background:#1a1200;border:1px solid var(--am-br);border-radius:var(--r-sm);
+  color:var(--am-br);font-family:'Share Tech Mono',monospace;
+  font-size:10px;padding:11px;cursor:pointer;letter-spacing:3px;text-transform:uppercase;
+  transition:all .15s;margin-top:8px;
+}
+.btn-pipboy:hover{background:#2a1d00;box-shadow:0 0 12px rgba(232,168,32,.35);}
+.btn-pipboy:active{transform:scale(.98);}
+.btn-pipboy img{width:16px;height:16px;object-fit:contain;filter:drop-shadow(0 0 4px rgba(232,168,32,.6));}
+.pipboy-hint{font-size:8px;color:var(--td);text-align:center;margin-top:6px;letter-spacing:1px;line-height:1.5;}

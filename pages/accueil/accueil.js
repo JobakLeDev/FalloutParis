@@ -10,7 +10,9 @@ document.getElementById('inp-id').addEventListener('keydown', e => {
   if(e.key === 'Enter') document.getElementById('inp-code').focus();
 });
 
-async function connexion() {
+// dest : 'fiche' (défaut, écran PC) ou 'mobile' (page Pip-Boy, second écran).
+// Même contrôle d'identifiant/code dans les deux cas.
+async function connexion(dest) {
   const id = document.getElementById('inp-id').value.trim().toLowerCase();
   const code = document.getElementById('inp-code').value.trim();
 
@@ -38,14 +40,19 @@ async function connexion() {
     }
 
     // Pas de code défini → on laisse passer (rétrocompatibilité)
-    showMsg('Accès autorisé. Chargement...', 'ok');
+    showMsg(dest === 'mobile' ? 'Accès autorisé. Ouverture du Pip-Boy...' : 'Accès autorisé. Chargement...', 'ok');
     try { sessionStorage.removeItem('fp_themePos'); } catch(e){}   // la musique d'accueil ne reprendra pas sur la fiche
     // Fondu de sortie de la musique d'accueil
     if(typeof window.fpThemeFadeOut === 'function') window.fpThemeFadeOut(600);
     // Son de connexion joué ICI (le clic = geste utilisateur → autoplay autorisé) ;
     // on redirige quand le son est terminé pour ne pas le couper (plafond de sécurité).
     let navigated = false;
-    const go = () => { if(navigated) return; navigated = true; window.location.href = `/FalloutParis/pages/fiche_perso/fiche_perso.html?id=${id}`; };
+    // Pip-Boy : on mémorise l'id pour que l'icône d'écran d'accueil rouvre ce perso sans re-saisie
+    if(dest === 'mobile'){ try { localStorage.setItem('fp_mobileId', id); } catch(e){} }
+    const cible = dest === 'mobile'
+      ? `/FalloutParis/pages/mobile/mobile.html?id=${id}`
+      : `/FalloutParis/pages/fiche_perso/fiche_perso.html?id=${id}`;
+    const go = () => { if(navigated) return; navigated = true; window.location.href = cible; };
     let played = false;
     try {
       const a = new Audio('../../audio/sfx/load_joueur_sfx.mp3'); a.volume = 0.6;
