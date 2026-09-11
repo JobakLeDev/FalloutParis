@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fallout Paris — Fiche Personnage</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../../common/style.css?v=c6a5715f">
-  <link rel="stylesheet" href="fiche_perso.css?v=8dbe13dd">
+  <link rel="stylesheet" href="../../common/style.css?v=cd1e7079">
+  <link rel="stylesheet" href="fiche_perso.css?v=d6803fe8">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
@@ -29,6 +29,7 @@
         <input type="range" id="rad-vol" class="hr-vol" min="0" max="100" value="70" oninput="radioVol(this.value)" title="Volume">
         <span class="hr-name" id="rad-name"></span>
         <span class="hr-track" id="rad-bc-track"></span>
+        <span class="hr-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
       </div>
     </div>
   </div>
@@ -476,7 +477,7 @@
   <script src="../../common/db.js?v=b8ae07a6"></script>
   <script src="../../common/survie.js?v=31a541f2"></script>
   <script src="fiche_perso.js?v=f5ba5448"></script>
-  <script src="../../common/firebase.js?v=bd7427d0"></script>
+  <script src="../../common/firebase.js?v=fd4f69b6"></script>
   <script src="../../common/responsive.js?v=8e2ae4f7"></script>
 </body>
 </html>

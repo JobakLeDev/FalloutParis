@@ -33,7 +33,7 @@ function setStatus(msg, color) {
   if (!el) {
     el = document.createElement('div');
     el.id = 'fb-status';
-    el.style.cssText = 'position:fixed;bottom:10px;right:10px;font-size:9px;padding:4px 10px;border:1px solid;letter-spacing:1px;font-family:"Share Tech Mono",monospace;z-index:999;background:#0c150c;';
+    el.className = 'fb-status';   // style dans common/style.css (panneau arrondi, maquette)
     document.body.appendChild(el);
   }
   el.textContent = msg;
@@ -294,12 +294,22 @@ function _radioSrcBuild(folder, track){
 }
 function radioInitFollower(){
   if(!_radioAudio){ _radioAudio = new Audio(); _radioAudio.volume = _radioVol/100; }
-  const v = document.getElementById('rad-vol'); if(v) v.value = _radioVol;
+  const v = document.getElementById('rad-vol'); if(v){ v.value = _radioVol; _radioPaintVol(); }
   _radioUpdateMuteBtn();
+}
+// Remplit le rail du curseur jusqu'à la valeur (CSS : linear-gradient sur --vol)
+function _radioPaintVol(){
+  const v = document.getElementById('rad-vol');
+  if(v) v.style.setProperty('--vol', (parseInt(v.value)||0) + '%');
 }
 const _SPK_ON  = '<svg class="ic" viewBox="0 0 24 24"><path fill="currentColor" d="M4 9v6h4l5 4V5L8 9H4z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>';
 const _SPK_OFF = '<svg class="ic" viewBox="0 0 24 24"><path fill="currentColor" d="M4 9v6h4l5 4V5L8 9H4z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M16 9.5l5 5M21 9.5l-5 5"/></svg>';
-function _radioUpdateMuteBtn(){ const b=document.getElementById('rad-mute'); if(b){ b.innerHTML = _radioMuted ? _SPK_OFF : _SPK_ON; b.classList.toggle('off', _radioMuted); } }
+function _radioUpdateMuteBtn(){
+  const b=document.getElementById('rad-mute');
+  if(b){ b.innerHTML = _radioMuted ? _SPK_OFF : _SPK_ON; b.classList.toggle('off', _radioMuted); }
+  const box=document.getElementById('hdr-radio');
+  if(box) box.classList.toggle('muted', _radioMuted);   // égaliseur figé quand le son est coupé
+}
 function applyRadio(){
   if(!_radioAudio) radioInitFollower();
   const box = document.getElementById('hdr-radio');
@@ -345,7 +355,7 @@ function radioMute(){
   _radioUpdateMuteBtn();
   applyRadio();
 }
-function radioVol(v){ _radioVol = parseInt(v)||0; if(_radioAudio) _radioAudio.volume = _radioVol/100; try{ localStorage.setItem('fp_radioVol', _radioVol); }catch(e){} }
+function radioVol(v){ _radioVol = parseInt(v)||0; if(_radioAudio) _radioAudio.volume = _radioVol/100; _radioPaintVol(); try{ localStorage.setItem('fp_radioVol', _radioVol); }catch(e){} }
 
 // Bandeau « marchand disponible » → ouvre la modale boutique itinérante ('mj')
 let _shopAlertShown = false;
