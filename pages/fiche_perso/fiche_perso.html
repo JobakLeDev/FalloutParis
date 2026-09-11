@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fallout Paris — Fiche Personnage</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../../common/style.css?v=9b25712c">
+  <link rel="stylesheet" href="../../common/style.css?v=2edc6765">
   <link rel="stylesheet" href="fiche_perso.css?v=d6803fe8">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -127,13 +127,17 @@
       <div id="pa-banner" style="display:none"></div>
       <div class="body-cross-wrap" style="position:relative;width:100%;max-width:340px;height:auto;display:block;margin:0 auto">
         <img id="vaultboy-img" src="../../img/vaultboy_radar.png" class="vaultboy-bg" style="position:static;width:100%;height:auto;transform:none;display:block;margin:0 auto;opacity:.85" alt="">
+        <!-- Cartes ancrées sur le cercle radar (centre 50/50, rayon ~35 % de l'image) :
+             tête = segment bas tangent au sommet · bras = angle INFÉRIEUR sur le cercle
+             (droit → angle inf. droit, gauche → angle inf. gauche) · jambes = idem avec
+             l'angle SUPÉRIEUR · buste = centré sur le nombril du personnage. -->
         <div class="body-cross">
-          <div id="loc-head"   style="position:absolute;top:2%;left:50%;transform:translateX(-50%)"></div>
-          <div id="loc-torso"  style="position:absolute;top:40%;left:50%;transform:translateX(-50%)"></div>
-          <div id="loc-armR"   style="position:absolute;top:30%;left:9%"></div>
-          <div id="loc-armL"   style="position:absolute;top:30%;right:9%"></div>
-          <div id="loc-legR"   style="position:absolute;top:68%;left:17%"></div>
-          <div id="loc-legL"   style="position:absolute;top:68%;right:17%"></div>
+          <div id="loc-head"   style="position:absolute;left:50%;top:15%;transform:translate(-50%,-100%)"></div>
+          <div id="loc-torso"  style="position:absolute;left:50%;top:56%;transform:translate(-50%,-50%)"></div>
+          <div id="loc-armR"   style="position:absolute;left:17.1%;top:38%;transform:translate(-100%,-100%)"></div>
+          <div id="loc-armL"   style="position:absolute;left:82.9%;top:38%;transform:translate(0,-100%)"></div>
+          <div id="loc-legR"   style="position:absolute;left:17.1%;top:62%;transform:translate(-100%,0)"></div>
+          <div id="loc-legL"   style="position:absolute;left:82.9%;top:62%;transform:translate(0,0)"></div>
         </div>
       </div>
     </div>

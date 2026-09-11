@@ -157,9 +157,12 @@ body{overflow-x:hidden;}   /* le 100vw du bandeau ne doit pas créer d'ascenseur
 
 .body-cross{position:absolute;inset:0;}
 
-.loc-card-cross{background:rgba(8,15,8,0.85);border:1px solid var(--b);border-radius:var(--r-sm);padding:0.25rem 0.417rem;min-width:5.5rem;max-width:9rem;backdrop-filter:blur(1px);}
+/* Chaque conteneur de carte se dimensionne sur son contenu (sinon, ancré près d'un bord,
+   la largeur disponible l'écraserait et le texte se casserait) */
+.body-cross>div{width:max-content;}
+.loc-card-cross{background:rgba(8,15,8,0.88);border:1px solid var(--b);border-radius:var(--r-sm);padding:0.22rem 0.38rem;min-width:4.8rem;max-width:8rem;backdrop-filter:blur(1px);}
 .loc-card-cross.hurt{border-color:var(--rd);background:var(--rdk);}
-.loc-card-cross.center-loc{min-width:7rem;text-align:center;}
+.loc-card-cross.center-loc{min-width:6rem;text-align:center;}
 .loc-card-cross.center-loc .lcc-rds{justify-content:center;}
 .lcc-name{font-size:0.583rem;color:var(--td);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:0.083rem;}
 .lcc-arm{font-size:0.583rem;color:var(--gd);display:block;margin-bottom:0.167rem;min-height:0.833rem;}
