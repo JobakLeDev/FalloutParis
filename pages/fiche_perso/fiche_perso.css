@@ -1,5 +1,16 @@
 /* Styles spécifiques fiche_perso — voir common/style.css pour les styles partagés */
 
+/* ===== Panneau SURVIE (maquette) : icône | libellé | barre pilule | statut ===== */
+.sv-row{ display:flex; align-items:center; gap:.5rem; margin-bottom:.5rem; min-width:0; }
+.sv-ico{ flex:none; width:1.4rem; text-align:center; font-size:.85rem; filter:drop-shadow(0 0 4px rgba(102,212,102,.5)); }
+.sv-lbl{ flex:none; width:4.6rem; font-size:.68rem; letter-spacing:1px; color:var(--t); }
+.sv-bar{ flex:1; min-width:0; height:.75rem; background:#060d06; border:1px solid var(--gd); border-radius:999px; padding:2px; overflow:hidden; }
+.sv-fill{ display:block; height:100%; border-radius:999px; transition:width .3s; }
+.sv-status{ flex:none; min-width:5.2rem; text-align:right; font-size:.62rem; letter-spacing:.5px; }
+.sv-fatigue{ border-top:1px solid var(--b); margin-top:.35rem; padding-top:.4rem; font-size:.65rem; color:var(--t); }
+.sv-fatigue b{ font-family:'Oswald',sans-serif; font-size:1rem; }
+.sv-fatigue span{ color:var(--td); }
+
 /* ===== Onglet RÉCUP (junk) ===== */
 .junk-cols{ grid-template-columns:3.667rem 1fr 6.667rem 3.333rem 3.333rem 3.2rem; }
 .itag.JUNK{ border-color:#7a6a45; color:#c8b47a; }
