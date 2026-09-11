@@ -9,7 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <link rel="stylesheet" href="../../common/style.css?v=2edc6765">
-  <link rel="stylesheet" href="accueil.css?v=2384a24d">
+  <link rel="stylesheet" href="accueil.css?v=4758f428">
   <link rel="stylesheet" href="../../common/zoom.css?v=2a2cfe92">
 </head>
 <body>
@@ -33,6 +33,10 @@
       <input type="password" id="inp-code" placeholder="••••" maxlength="4" inputmode="numeric">
     </div>
     <button class="btn-primary" onclick="connexion()">⟶ Accéder à ma fiche</button>
+    <button class="btn-pipboy" onclick="connexion('mobile')">
+      <img src="../../img/icons/icon-192.png" alt="">Ouvrir mon Pip-Boy
+    </button>
+    <div class="pipboy-hint">Second écran : fiche, sac, quêtes et actions.<br>Sur téléphone, « Ajouter à l'écran d'accueil » pour le plein écran.</div>
     <div class="sep">ou</div>
     <button class="btn-secondary" onclick="window.location.href='/FalloutParis/pages/creation_perso/creation_perso.html'">+ Nouveau personnage</button>
     <div class="msg" id="msg"></div>
@@ -43,7 +47,7 @@
 </div>
   <script src="../../common/shared.js?v=946354bb"></script>
   <script src="../../common/db.js?v=b8ae07a6"></script>
-  <script src="accueil.js?v=6d142317"></script>
+  <script src="accueil.js?v=aa8daff3"></script>
   <script src="../../common/theme.js?v=613766fd"></script>
 </body>
 </html>
