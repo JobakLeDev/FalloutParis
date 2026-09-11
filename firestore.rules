@@ -89,6 +89,11 @@ service cloud.firestore {
     // /pnj/<campId> = { list:[{id,nom,faction,role,notes,special?,skills?,perks?}] }
     match /pnj/{doc} { allow read, write: if true; }
 
+    // ---------- Événements personnels (page mobile) ----------
+    // /events/{id} = { playerId, type, text, read, ts, campaign? }
+    // Alertes persistantes et personnelles : quête débloquée, ton tour, objet reçu.
+    match /events/{doc} { allow read, write: if true; }
+
     // ---------- Tout le reste : INTERDIT ----------
     // Empêche la création de collections/documents non prévus.
     match /{document=**} {
