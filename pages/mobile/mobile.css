@@ -71,19 +71,28 @@ body {
 }
 .m-empty { color: var(--td); font-size: .72rem; text-align: center; padding: 1.4rem .6rem; }
 
-/* S.P.E.C.I.A.L. */
-.m-sp { display: flex; align-items: center; gap: .45rem; padding: .3rem 0; }
-.m-sp + .m-sp { border-top: 1px solid #1a2a1a; }
-.m-sp-k {
-  flex: none; width: 1.55rem; height: 1.55rem; display: flex; align-items: center; justify-content: center;
-  font-family: 'Oswald', sans-serif; font-size: .85rem; color: var(--tb);
-  border: 1px solid var(--gd); border-radius: .3rem; background: #0e1c0e;
+/* S.P.E.C.I.A.L. — une seule ligne : initiale + valeur (détail des noms = PC) */
+.m-sp-line { display: flex; gap: .25rem; }
+.m-spx {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px;
+  padding: .3rem 0; background: #0b150b; border: 1px solid var(--b); border-radius: var(--r-sm);
 }
-.m-sp-n { flex: 1; min-width: 0; font-size: .62rem; color: var(--t); letter-spacing: 1px; }
-.m-sp-bar { display: flex; gap: 2px; margin-top: 3px; }
-.m-sp-bar i { flex: 1; height: .3rem; border-radius: 1px; background: #0e1c0e; }
-.m-sp-bar i.on { background: var(--g); box-shadow: 0 0 5px rgba(102,212,102,.5); }
-.m-sp-v { flex: none; font-family: 'Oswald', sans-serif; font-size: 1.1rem; color: var(--tb); min-width: 1.4rem; text-align: right; }
+.m-spx b { font-family: 'Oswald', sans-serif; font-size: .72rem; color: var(--g); font-weight: 600; }
+.m-spx i { font-family: 'Oswald', sans-serif; font-size: 1.05rem; font-style: normal; color: var(--tb); line-height: 1; }
+
+/* Mon personnage : Vault Boy radar + RD par localisation */
+.m-pa { font-size: .6rem; color: var(--am-br); text-align: center; margin-bottom: .35rem;
+  border: 1px solid var(--am-br); border-radius: var(--r-sm); padding: .3rem; background: rgba(232,168,32,.07); }
+.m-vb { display: block; width: 100%; max-width: 13rem; height: auto; margin: 0 auto .5rem; opacity: .9; }
+.m-locs { display: grid; grid-template-columns: 1fr 1fr; gap: .35rem; }
+.m-loc { background: #0b150b; border: 1px solid var(--b); border-radius: var(--r-sm); padding: .35rem .45rem; min-width: 0; }
+.m-loc.hurt { border-color: var(--rd); background: #1a0a0a; }
+.m-loc-l { display: block; font-size: .55rem; letter-spacing: 1px; color: var(--td); text-transform: uppercase; }
+.m-loc.hurt .m-loc-l { color: var(--rd); }
+.m-loc-a { display: block; font-size: .58rem; color: var(--gd); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 1px 0 2px; }
+.m-loc-r { display: flex; align-items: baseline; gap: 2px; }
+.m-loc-r b { font-family: 'Oswald', sans-serif; font-size: .85rem; color: var(--t); }
+.m-loc-r i { font-style: normal; font-size: .5rem; color: var(--td); margin-right: .25rem; }
 
 /* Survie */
 .m-sv { display: flex; align-items: center; gap: .5rem; margin-bottom: .45rem; }
@@ -106,14 +115,6 @@ body {
 .m-weap-n { font-size: .75rem; color: var(--tb); }
 .m-weap-s { font-size: .58rem; color: var(--td); margin-top: 1px; }
 .m-weap-d { flex: none; font-family: 'Oswald', sans-serif; font-size: 1.1rem; color: var(--am-br); }
-
-/* Compétences */
-.m-sk { display: flex; align-items: center; gap: .4rem; padding: .28rem 0; font-size: .65rem; }
-.m-sk + .m-sk { border-top: 1px solid #162616; }
-.m-sk-n { flex: 1; color: var(--t); }
-.m-sk-r { color: var(--td); font-family: 'Oswald', sans-serif; font-size: .9rem; min-width: 1.2rem; text-align: right; }
-.m-sk-r.tag { color: var(--am-br); }
-.m-sk-tn { min-width: 3rem; text-align: right; color: var(--tb); }
 
 /* ---------- SAC ---------- */
 .m-filters { display: flex; gap: .3rem; overflow-x: auto; padding: 0 0 .5rem; -webkit-overflow-scrolling: touch; }
