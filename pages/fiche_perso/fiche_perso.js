@@ -301,9 +301,11 @@ function rSpecial(){
     const disp=(k==='S')?fe:eff[k];        // valeur EFFECTIVE (collection + Power Armor + perks)
     const m=disp!==base;                   // différente de la base → mise en évidence
     const bh=bs[k]?`<span class="sbh" title="Bonus de collection : +${bs[k]} ${N[k]}">🎎</span>`:'';
+    // Barre segmentée sur 10 (maquette) sous le nom
+    const segs=Array.from({length:10},(_,i)=>`<span class="sd${i<Math.min(10,disp)?' on':''}"></span>`).join('');
     g.innerHTML+=`<div class="srow">
       <span class="sk">${k}</span>
-      <span class="sn">${N[k]}${bh}</span>
+      <span class="sn-wrap"><span class="sn">${N[k]}${bh}</span><span class="sdots">${segs}</span></span>
       <span class="sv${m?' m':''}">${disp}</span>
     </div>`;
   });
