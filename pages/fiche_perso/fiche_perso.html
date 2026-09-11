@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fallout Paris — Fiche Personnage</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../../common/style.css?v=6f434200">
+  <link rel="stylesheet" href="../../common/style.css?v=1469df76">
   <link rel="stylesheet" href="fiche_perso.css?v=36d11e09">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -93,12 +93,12 @@
 
 <!-- TABS -->
 <div class="tabs">
-  <div class="tab on" onclick="sw('general')">GÉNÉRAL</div>
-  <div class="tab" onclick="sw('inventaire')">INVENTAIRE</div>
-  <div class="tab" onclick="sw('perks')">PERKS &amp; COMPÉT.</div>
-  <div class="tab" onclick="sw('carte')">CARTE</div>
-  <div class="tab" onclick="sw('quetes')">QUÊTES<span id="tabdot-quetes" class="tab-dot" style="display:none"></span></div>
-  <div class="tab" onclick="sw('journal')">JOURNAL<span id="tabdot-journal" class="tab-dot" style="display:none"></span></div>
+  <div class="tab on" onclick="sw('general')"><img class="tab-ic" src="../../img/tabs/general.png" alt="">GÉNÉRAL</div>
+  <div class="tab" onclick="sw('inventaire')"><img class="tab-ic" src="../../img/tabs/inventaire.png" alt="">INVENTAIRE</div>
+  <div class="tab" onclick="sw('perks')"><img class="tab-ic" src="../../img/tabs/perks.png" alt="">PERKS &amp; COMPÉT.</div>
+  <div class="tab" onclick="sw('carte')"><img class="tab-ic" src="../../img/tabs/carte.png" alt="">CARTE</div>
+  <div class="tab" onclick="sw('quetes')"><img class="tab-ic" src="../../img/tabs/quetes.png" alt="">QUÊTES<span id="tabdot-quetes" class="tab-dot" style="display:none"></span></div>
+  <div class="tab" onclick="sw('journal')"><img class="tab-ic" src="../../img/tabs/journal.png" alt="">JOURNAL<span id="tabdot-journal" class="tab-dot" style="display:none"></span></div>
 </div>
 
 <div class="body">
@@ -128,7 +128,7 @@
 
         <!-- Armure en croix : zone = 3/4 du bloc, image centrée dans la zone -->
         <div class="body-cross-wrap" style="position:relative;width:100%;max-width:640px;height:auto;display:block;margin:0 auto">
-          <img id="vaultboy-img" src="../../img/VaultBoy.png" class="vaultboy-bg" style="position:static;width:100%;height:auto;transform:none;display:block;margin:0 auto;opacity:.28;filter:brightness(1.2)" alt="">
+          <img id="vaultboy-img" src="../../img/vaultboy_radar.png" class="vaultboy-bg" style="position:static;width:100%;height:auto;transform:none;display:block;margin:0 auto;opacity:.85" alt="">
           <div class="body-cross">
             <div id="loc-head"   style="position:absolute;top:2%;left:50%;transform:translateX(-50%)"></div>
             <div id="loc-torso"  style="position:absolute;top:40%;left:50%;transform:translateX(-50%)"></div>
@@ -206,13 +206,13 @@
       </div>
     </div>
     <div class="inv-tabs">
-      <div class="inv-tab on" onclick="swInv('all')">TOUT</div>
-      <div class="inv-tab" onclick="swInv('weap')">ARMES</div>
-      <div class="inv-tab" onclick="swInv('armor')">ARMURE & TENUES</div>
-      <div class="inv-tab" onclick="swInv('aid')">AIDE</div>
-      <div class="inv-tab" onclick="swInv('misc')">DIVERS</div>
-      <div class="inv-tab" onclick="swInv('junk')">RÉCUP</div>
-      <div class="inv-tab" onclick="swInv('ammo')">MUNITIONS</div>
+      <div class="inv-tab on" onclick="swInv('all')"><img class="inv-ic" src="../../img/tabs/inv_tout.png" alt="">TOUT</div>
+      <div class="inv-tab" onclick="swInv('weap')"><img class="inv-ic" src="../../img/tabs/inv_armes.png" alt="">ARMES</div>
+      <div class="inv-tab" onclick="swInv('armor')"><img class="inv-ic" src="../../img/tabs/inv_armure.png" alt="">ARMURE & TENUES</div>
+      <div class="inv-tab" onclick="swInv('aid')"><img class="inv-ic" src="../../img/tabs/inv_aide.png" alt="">AIDE</div>
+      <div class="inv-tab" onclick="swInv('misc')"><img class="inv-ic" src="../../img/tabs/inv_divers.png" alt="">DIVERS</div>
+      <div class="inv-tab" onclick="swInv('junk')"><img class="inv-ic" src="../../img/tabs/inv_recup.png" alt="">RÉCUP</div>
+      <div class="inv-tab" onclick="swInv('ammo')"><img class="inv-ic" src="../../img/tabs/inv_munitions.png" alt="">MUNITIONS</div>
     </div>
 
     <!-- TOUT -->
@@ -480,7 +480,7 @@
   <script src="../../common/shared.js?v=946354bb"></script>
   <script src="../../common/db.js?v=b8ae07a6"></script>
   <script src="../../common/survie.js?v=31a541f2"></script>
-  <script src="fiche_perso.js?v=296cf97c"></script>
+  <script src="fiche_perso.js?v=553bd477"></script>
   <script src="../../common/firebase.js?v=bd7427d0"></script>
   <script src="../../common/responsive.js?v=8e2ae4f7"></script>
 </body>

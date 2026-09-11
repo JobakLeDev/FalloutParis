@@ -81,6 +81,12 @@ html::after{
 .tab:hover{color:var(--t);border-color:var(--b2);background:#101c10;}
 .tab.on{color:var(--tb);border-color:var(--g);background:#12210f;box-shadow:var(--glow-br), inset 0 0 10px rgba(102,212,102,.12);text-shadow:0 0 8px rgba(140,232,140,.6);}
 .tab.on::after{content:'';position:absolute;left:18%;right:18%;bottom:-1px;height:2px;border-radius:2px;background:var(--g);box-shadow:0 0 8px rgba(102,212,102,.8);}
+/* Icônes d'onglets (planches découpées img/tabs/) */
+.tab{display:flex;align-items:center;justify-content:center;gap:0.45rem;}
+.tab-ic{width:1.35rem;height:1.35rem;object-fit:contain;filter:drop-shadow(0 0 4px rgba(102,212,102,.5));opacity:.75;}
+.tab.on .tab-ic{opacity:1;filter:drop-shadow(0 0 7px rgba(140,232,140,.8));}
+.inv-ic{width:1.1rem;height:1.1rem;object-fit:contain;vertical-align:-0.25rem;margin-right:0.35rem;filter:drop-shadow(0 0 4px rgba(102,212,102,.45));opacity:.7;}
+.inv-tab.on .inv-ic{opacity:1;}
 .body{background:var(--p);border:1px solid var(--b2);border-radius:var(--r);min-height:60vh;padding:1rem;position:relative;box-shadow:var(--glow);}
 .body::before{content:'';position:absolute;inset:0;background:var(--sc);pointer-events:none;opacity:0.35;border-radius:var(--r);}
 .tc{display:none;}.tc.on{display:block;}

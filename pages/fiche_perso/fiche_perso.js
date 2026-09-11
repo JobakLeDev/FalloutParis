@@ -402,7 +402,9 @@ function rLocsGen(){
   // Swap vaultboy image + halo ambre + bandeau selon mode Power Armor
   const vbImg=document.getElementById('vaultboy-img');
   if(vbImg){
-    vbImg.src=frame?'../../img/VaultBoyPA.png':'../../img/VaultBoy.png';
+    // Refonte : Vault Boy sur fond radar (asset déjà tamisé → opacité pleine hors PA)
+    vbImg.src=frame?'../../img/VaultBoyPA.png':'../../img/vaultboy_radar.png';
+    vbImg.style.opacity=frame?'.5':'.85';
     const wrap=vbImg.closest('.body-cross-wrap');
     if(wrap) wrap.classList.toggle('pa-on',!!frame);
   }
