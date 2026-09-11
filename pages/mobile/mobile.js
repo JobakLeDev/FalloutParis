@@ -90,7 +90,7 @@ function mSw(t) {
 // ---------- Rendu ----------
 function renderAll() {
   if (!char) return;
-  renderHeader(); renderSpecial(); renderSurvie(); renderWeapons(); renderSkills();
+  renderHeader(); renderSpecial(); renderBody(); renderSurvie(); renderWeapons();
   renderCharge(); renderFilters(); renderInv();
 }
 
@@ -118,16 +118,64 @@ function _fmtClock(min) {
   return String(h).padStart(2, '0') + 'h' + String(m).padStart(2, '0');
 }
 
+// Une seule ligne : initiale + valeur (le détail des noms reste sur le PC)
 function renderSpecial() {
-  const N = { S: 'FORCE', P: 'PERCEPTION', E: 'ENDURANCE', C: 'CHARISME', I: 'INTELLIGENCE', A: 'AGILITÉ', L: 'CHANCE' };
+  const N = { S: 'Force', P: 'Perception', E: 'Endurance', C: 'Charisme', I: 'Intelligence', A: 'Agilité', L: 'Chance' };
   const sp = fpSpecial(char), forEff = fpForEff(char);
   document.getElementById('m-special').innerHTML = ['S','P','E','C','I','A','L'].map(k => {
     const v = k === 'S' ? forEff : sp[k];
-    const segs = Array.from({ length: 10 }, (_, i) => `<i class="${i < Math.min(10, v) ? 'on' : ''}"></i>`).join('');
-    return `<div class="m-sp"><span class="m-sp-k">${k}</span>
-      <span class="m-sp-n">${N[k]}<span class="m-sp-bar">${segs}</span></span>
-      <span class="m-sp-v">${v}</span></div>`;
+    return `<span class="m-spx" title="${N[k]}"><b>${k}</b><i>${v}</i></span>`;
   }).join('');
+}
+
+// « Mon personnage » : Vault Boy radar + RD par localisation (blessures en rouge).
+// Même règle qu'à la fiche (RAW p.123 : on garde la MEILLEURE RD par type, pas la somme).
+const M_LOCS = [
+  { k: 'head',  l: 'Tête' },   { k: 'torso', l: 'Buste' },
+  { k: 'armR',  l: 'Bras D.' },{ k: 'armL',  l: 'Bras G.' },
+  { k: 'legR',  l: 'Jambe D.' },{ k: 'legL', l: 'Jambe G.' },
+];
+function _frame() { return (char.inventory || []).find(it => it.type === 'POWERARMOR_FRAME' && it.equipped) || null; }
+function _locRD(zone) {
+  const zm = { head:'Head', torso:'Torso', armL:'Arm', armR:'Arm', legL:'Leg', legR:'Leg' };
+  let ph = 0, en = 0, rad = 0, nom = '';
+  const fr = _frame();
+  if (char.powerArmor && fr) {
+    const piece = fr.slots && fr.slots[zone];
+    if (piece) {
+      const base = (DB.armor || []).find(a => a.n === piece.name) || {};
+      const e = fpApplyArmorMods ? fpApplyArmorMods(base, piece.mods) : base;
+      ph = e.ph || 0; en = e.en || 0; rad = e.rad || 0; nom = piece.name;
+    }
+  } else {
+    (char.inventory || []).forEach(it => {
+      if (!it.equipped) return;
+      const dbA = (DB.armor || []).find(a => a.n === it.name);
+      if (!dbA) return;
+      const covers = dbA.z === zm[zone] || (dbA.z === 'Body' && zone !== 'head') || dbA.z === 'All';
+      if (!covers) return;
+      const e = fpApplyArmorMods ? fpApplyArmorMods(dbA, it.mods) : dbA;
+      ph = Math.max(ph, e.ph || 0); en = Math.max(en, e.en || 0);
+      rad = (dbA.rad === 999 || rad === 999) ? 999 : Math.max(rad, e.rad || 0);
+      if (!nom) nom = it.name;
+    });
+  }
+  return { ph, en, rad, nom };
+}
+function renderBody() {
+  const fr = char.powerArmor ? _frame() : null;
+  const cells = M_LOCS.map(L => {
+    const r = _locRD(L.k), hurt = !!(char.wounds || {})[L.k];
+    return `<div class="m-loc${hurt ? ' hurt' : ''}">
+      <span class="m-loc-l">${L.l}${hurt ? ' ✚' : ''}</span>
+      <span class="m-loc-a">${r.nom || '—'}</span>
+      <span class="m-loc-r"><b>${r.ph}</b><i>Ph</i><b>${r.en}</b><i>En</i><b>${r.rad === 999 ? '∞' : r.rad}</b><i>Ra</i></span>
+    </div>`;
+  }).join('');
+  document.getElementById('m-body').innerHTML =
+    (fr ? `<div class="m-pa">🦾 Servo-armure — ${fr.name}${fr.core ? '' : ' · ⚠ cœur vide'}</div>` : '')
+    + `<img class="m-vb" src="../../img/${fr ? 'VaultBoyPA.png' : 'vaultboy_radar.png'}" alt="">`
+    + `<div class="m-locs">${cells}</div>`;
 }
 
 function renderSurvie() {
@@ -170,14 +218,7 @@ function _skTN(sk) {
   const rg = (char.skills || {})[sk.key] || 0;
   return attr + rg + ((char.taggedSkills || []).includes(sk.key) ? 2 : 0);
 }
-function renderSkills() {
-  document.getElementById('m-skills').innerHTML = (SKILLS_DEF || []).map(sk => {
-    const rg = (char.skills || {})[sk.key] || 0, tag = (char.taggedSkills || []).includes(sk.key);
-    return `<div class="m-sk"><span class="m-sk-n">${tag ? '★ ' : ''}${sk.name}</span>
-      <span class="m-sk-r${tag ? ' tag' : ''}">${rg}</span>
-      <span class="m-sk-tn">TN ${_skTN(sk)}</span></div>`;
-  }).join('');
-}
+
 
 // ---------- SAC ----------
 const INV_CATS = [
