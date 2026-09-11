@@ -1,4 +1,6 @@
-:root{--g:#5dbe5d;--gd:#3a7a3a;--gk:#1a3a1a;--bg:#0c150c;--p:#111d11;--p2:#162016;--b:#253825;--b2:#3a5c3a;--t:#7ed87e;--td:#4a7a4a;--tb:#b0f0b0;--am:#e8a820;--rd:#e04040;--rdk:#1a0505;}
+/* Palette héritée de common/style.css (refonte Pip-Boy 3000) — on ne garde ici
+   que ce qui est propre à la page. */
+:root{--scan:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.12) 2px,rgba(0,0,0,0.12) 4px);}
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;}
 body{background:var(--bg);color:var(--t);font-family:'Share Tech Mono',monospace;display:flex;flex-direction:column;overflow:hidden;}
@@ -12,7 +14,7 @@ body:not(.embed){width:calc(100vw / var(--fpz,1)) !important;height:calc(100vh /
 .hdr-title{font-family:'Oswald',sans-serif;font-size:16px;letter-spacing:3px;color:var(--g);}
 .hdr-title small{display:block;font-size:7px;letter-spacing:4px;color:var(--td);}
 .hdr-btns{display:flex;gap:8px;}
-.hbtn{background:transparent;border:1px solid var(--b2);color:var(--td);font-family:'Share Tech Mono',monospace;font-size:8px;padding:6px 12px;cursor:pointer;letter-spacing:2px;text-transform:uppercase;text-decoration:none;display:inline-block;transition:all .1s;}
+.hbtn{background:transparent;border:1px solid var(--b2);border-radius:var(--r-sm);color:var(--td);font-family:'Share Tech Mono',monospace;font-size:8px;padding:6px 12px;cursor:pointer;letter-spacing:2px;text-transform:uppercase;text-decoration:none;display:inline-block;transition:all .1s;}
 .hbtn:hover{border-color:var(--g);color:var(--t);}
 .hbtn.on{border-color:var(--am);color:var(--am);background:#1a1200;}
 
@@ -31,7 +33,7 @@ body.embed #map-tabs{padding:0;}
 #map-paris-wrap{flex:1;display:flex;align-items:flex-start;justify-content:center;min-height:0;padding:0 8px 8px;overflow:hidden;}
 /* #map a un zoom effectif de 1 (body ×--fpz annulé par le contre-zoom ×1/--fpz de la map),
    donc les unités viewport rendent 1:1 avec l'écran → dimensionnement décorrélé de --fpz. */
-#map{width:64vw;height:72vh;background:#071307;position:relative;border:1px solid var(--b2);box-shadow:inset 0 0 30px rgba(0,0,0,0.6),0 0 0 1px #060d06;overflow:hidden;}
+#map{width:64vw;height:72vh;background:#071307;position:relative;border:1px solid var(--b2);border-radius:var(--r);box-shadow:inset 0 0 30px rgba(0,0,0,0.6),0 0 0 1px #060d06;overflow:hidden;}
 /* Intégré dans la fiche (iframe) : la carte remplit tout le cadre */
 body.embed #map-paris-wrap{padding:0;position:relative;}
 body.embed #map-metro-wrap{padding:0;position:relative;}
@@ -50,7 +52,7 @@ body.embed #map, body.embed #map-metro{position:absolute;inset:0;width:auto;heig
 
 /* LIEUX */
 #map-metro-wrap{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;padding:8px;overflow:hidden;position:relative;}
-#map-metro{width:64vw;height:72vh;background:#071307;position:relative;border:1px solid var(--b2);box-shadow:inset 0 0 30px rgba(0,0,0,0.6),0 0 0 1px #060d06;overflow:hidden;}
+#map-metro{width:64vw;height:72vh;background:#071307;position:relative;border:1px solid var(--b2);border-radius:var(--r);box-shadow:inset 0 0 30px rgba(0,0,0,0.6),0 0 0 1px #060d06;overflow:hidden;}
 
 #map-lieux-wrap{flex:1;display:flex;min-height:0;}
 #lieux-sidebar{width:180px;flex:none;background:var(--p2);border-right:1px solid var(--b2);padding:8px;overflow-y:auto;}
@@ -58,7 +60,7 @@ body.embed #map, body.embed #map-metro{position:absolute;inset:0;width:auto;heig
 #lieux-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;color:var(--td);font-size:10px;letter-spacing:2px;gap:8px;}
 #lieux-placeholder small{font-size:8px;color:var(--b2);}
 #map-lieux-wrap{position:relative;}
-.lieu-btn{display:block;width:100%;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:8px;padding:5px 7px;margin-bottom:4px;cursor:pointer;text-align:left;letter-spacing:.5px;}
+.lieu-btn{display:block;width:100%;background:#060d06;border:1px solid var(--b2);border-radius:var(--r-sm);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:8px;padding:5px 7px;margin-bottom:4px;cursor:pointer;text-align:left;letter-spacing:.5px;}
 .lieu-btn:hover{border-color:var(--g);}
 .lieu-btn.on{border-color:var(--am);color:var(--am);}
 /* Aperçu de grille battlemap d'un lieu généré (lecture seule) */
@@ -80,7 +82,7 @@ body.embed #map, body.embed #map-metro{position:absolute;inset:0;width:auto;heig
 /* Éditeur de plan (MJ) : palette + zones cliquables */
 .lgv-pal{display:flex;gap:4px;align-items:center;flex-wrap:wrap;justify-content:center;}
 .lgv-pal-lb{font-size:7px;color:var(--td);letter-spacing:2px;text-transform:uppercase;margin:0 2px 0 8px;}
-.lgv-brush{background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:11px;width:30px;height:26px;cursor:pointer;line-height:1;}
+.lgv-brush{background:#060d06;border:1px solid var(--b2);border-radius:var(--r-sm);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:11px;width:30px;height:26px;cursor:pointer;line-height:1;}
 .lgv-brush:hover{border-color:var(--g);}
 .lgv-brush.on{border-color:var(--am);color:var(--am);background:#1a1200;}
 .lgv-brush.save{width:auto;padding:0 8px;border-color:var(--gd);color:var(--g);}
@@ -116,7 +118,7 @@ body.embed #map, body.embed #map-metro{position:absolute;inset:0;width:auto;heig
 .mjp-section.mjp-collapsed .mjp-arrow{transform:rotate(-90deg);}
 .mjp-section.mjp-collapsed .mjp-title{margin-bottom:0;}
 .mjp-section.mjp-collapsed .mjp-body{display:none;}
-.mjp-btn{display:block;width:100%;background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:8px;padding:5px;margin-bottom:4px;cursor:pointer;letter-spacing:1px;text-align:left;}
+.mjp-btn{display:block;width:100%;background:#060d06;border:1px solid var(--b2);border-radius:var(--r-sm);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:8px;padding:5px;margin-bottom:4px;cursor:pointer;letter-spacing:1px;text-align:left;}
 .mjp-btn:hover{border-color:var(--g);}
 .mjp-btn.on{border-color:var(--am);color:var(--am);}
 .mjp-btn.ok{border-color:var(--gd);color:var(--g);display:inline-block;width:48%;}

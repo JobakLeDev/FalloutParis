@@ -21,7 +21,7 @@ body.embed .qhdr{display:none;}
 .q-empty{color:var(--td);font-size:11px;letter-spacing:1px;padding:30px 6px;text-align:center;}
 
 /* Carte de quête */
-.q-card{background:var(--p);border:1px solid var(--b);border-left:3px solid var(--am);padding:10px 12px;margin-bottom:10px;}
+.q-card{background:var(--p);border:1px solid var(--b);border-radius:var(--r-sm);border-left:3px solid var(--am);padding:10px 12px;margin-bottom:10px;}
 .q-card.s-done{border-left-color:var(--g);}
 .q-card.s-failed{border-left-color:var(--rd);opacity:.85;}
 .q-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
