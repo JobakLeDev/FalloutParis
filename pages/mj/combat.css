@@ -1,4 +1,4 @@
-:root{--g:#5dbe5d;--gd:#3a7a3a;--gk:#1a3a1a;--bg:#0c150c;--p:#111d11;--p2:#162016;--b:#253825;--b2:#3a5c3a;--t:#7ed87e;--td:#4a7a4a;--tb:#b0f0b0;--am:#e8a820;--rd:#e04040;--rdk:#1a0505;}
+/* Palette héritée de common/style.css (refonte Pip-Boy 3000) */
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--t);font-family:'Share Tech Mono',monospace;min-height:100vh;padding:8px;background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.1) 2px,rgba(0,0,0,0.1) 4px);}
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 50% 20%,#182818 0%,#0c150c 70%);z-index:-1;}
@@ -44,15 +44,15 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .jc-card,.ennemi-card{max-width:100%;}
 
 /* PANNEAU */
-.pnl{background:var(--p2);border:1px solid var(--b2);padding:8px;}
-.pnl-title{font-size:7px;letter-spacing:4px;color:var(--td);text-transform:uppercase;border-bottom:1px solid var(--b);padding-bottom:3px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;}
+.pnl{background:var(--p2);border:1px solid var(--b2);border-radius:var(--r);box-shadow:var(--glow);padding:8px;}
+.pnl-title{font-size:7px;letter-spacing:4px;color:var(--g);text-shadow:0 0 7px rgba(102,212,102,.45);text-transform:uppercase;border-bottom:1px solid var(--b);padding-bottom:3px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;}
 
 /* SÉLECTION JOUEURS */
 .sel-bar{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:7px;align-items:center;}
 .sel-j-btn{background:#060d06;border:1px solid var(--b);color:var(--td);font-family:'Share Tech Mono',monospace;font-size:7px;padding:3px 8px;cursor:pointer;transition:all 0.1s;}
 .sel-j-btn:hover{border-color:var(--g);color:var(--t);}
 .sel-j-btn.active{border-color:var(--g);background:var(--gk);color:var(--tb);}
-.init-btn{background:var(--rdk);border:1px solid var(--rd);color:var(--rd);font-family:'Share Tech Mono',monospace;font-size:7px;padding:3px 10px;cursor:pointer;letter-spacing:1px;margin-left:auto;}
+.init-btn{background:var(--rdk);border:1px solid var(--rd);border-radius:var(--r-sm);color:var(--rd);font-family:'Share Tech Mono',monospace;font-size:7px;padding:3px 10px;cursor:pointer;letter-spacing:1px;margin-left:auto;}
 .init-btn:hover{background:#2a0808;}
 
 /* CARTES JOUEURS & ENNEMIS */
@@ -96,7 +96,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 /* MODAL ENNEMI */
 .mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:200;align-items:center;justify-content:center;}
 .mo.on{display:flex;}
-.mbox{background:var(--p2);border:1px solid var(--b2);padding:16px;width:280px;}
+.mbox{background:var(--p2);border:1px solid var(--b2);border-radius:var(--r);box-shadow:var(--glow);padding:16px;width:280px;}
 .mtitle{font-size:8px;letter-spacing:4px;color:var(--td);margin-bottom:10px;border-bottom:1px solid var(--b);padding-bottom:4px;}
 .mf{margin-bottom:8px;}
 .mf label{font-size:7px;color:var(--td);display:block;margin-bottom:3px;letter-spacing:2px;}
@@ -122,12 +122,12 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .tn-inp{width:48px;background:#060d06;border:1px solid var(--b2);color:var(--tb);font-family:'Oswald',sans-serif;font-size:17px;padding:3px 5px;text-align:center;outline:none;}
 .tn-inp:focus{border-color:var(--g);}
 .tn-lbl{font-size:7px;color:var(--td);letter-spacing:1px;min-width:20px;}
-.dice-btn{flex:1;background:var(--gk);border:1px solid var(--g);color:var(--tb);font-family:'Share Tech Mono',monospace;font-size:8px;padding:5px;cursor:pointer;letter-spacing:1px;}
+.dice-btn{flex:1;background:var(--gk);border:1px solid var(--g);border-radius:var(--r-sm);color:var(--tb);font-family:'Share Tech Mono',monospace;font-size:8px;padding:5px;cursor:pointer;letter-spacing:1px;}
 .dice-btn:hover{background:#1e4a1e;}
 .dice-result{font-size:10px;padding:5px 6px;background:#060d06;border:1px solid var(--b);margin-top:5px;min-height:24px;line-height:1.6;}
 .cd-row{display:flex;gap:5px;align-items:center;margin-top:7px;}
 .cd-inp{width:40px;background:#060d06;border:1px solid var(--b2);color:var(--tb);font-family:'Oswald',sans-serif;font-size:15px;padding:2px 4px;text-align:center;outline:none;}
-.cd-btn{flex:1;background:#1a1a0a;border:1px solid var(--am);color:var(--am);font-family:'Share Tech Mono',monospace;font-size:8px;padding:5px;cursor:pointer;letter-spacing:1px;}
+.cd-btn{flex:1;background:#1a1a0a;border:1px solid var(--am);border-radius:var(--r-sm);color:var(--am);font-family:'Share Tech Mono',monospace;font-size:8px;padding:5px;cursor:pointer;letter-spacing:1px;}
 .cd-btn:hover{background:#2a2a0a;}
 
 /* LOG */
@@ -186,13 +186,13 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .tour-actif{box-shadow:0 0 0 1px var(--g);}
 
 /* ---- BARRE AP ---- */
-.ap-bar{display:flex;align-items:center;gap:12px;padding:5px 10px;background:var(--p2);border:1px solid var(--b2);margin-bottom:8px;flex-wrap:wrap;}
+.ap-bar{display:flex;align-items:center;gap:12px;padding:5px 10px;background:var(--p2);border:1px solid var(--b2);border-radius:var(--r-sm);margin-bottom:8px;flex-wrap:wrap;}
 .ap-section{display:flex;align-items:center;gap:5px;}
 .ap-sep{width:1px;height:20px;background:var(--b2);}
 .ap-bar-lbl{font-size:7px;color:var(--td);letter-spacing:2px;}
 .ap-bar-val{font-family:'Oswald',sans-serif;font-size:16px;color:var(--am);}
 .ap-bar-val.mj{color:var(--rd);}
-.ap-btn{background:none;border:1px solid var(--b2);color:var(--td);font-size:11px;width:18px;height:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.ap-btn{background:none;border:1px solid var(--b2);border-radius:var(--r-sm);color:var(--td);font-size:11px;width:18px;height:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .ap-btn:hover{border-color:var(--am);color:var(--am);}
 .ap-btn-sm{background:none;border:1px solid var(--b2);color:var(--td);font-family:'Share Tech Mono',monospace;font-size:7px;padding:2px 5px;cursor:pointer;letter-spacing:1px;}
 .ap-btn-sm:hover{border-color:var(--g);color:var(--g);}
