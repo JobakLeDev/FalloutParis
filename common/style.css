@@ -56,9 +56,13 @@ html::after{
     url('../img/header_paris.webp') center/auto 100% no-repeat,
     var(--p2);
   border:none;border-bottom:1px solid var(--b2);box-shadow:var(--glow), inset 0 0 30px rgba(0,0,0,.45);
-  padding:0.833rem 2rem;display:flex;align-items:center;gap:1rem;position:relative;margin-bottom:0.6rem;overflow:hidden;
+  display:flex;align-items:center;gap:1rem;position:relative;margin-bottom:0.6rem;overflow:hidden;
   /* Pleine largeur de la FENÊTRE (sort du conteneur .pip centré) */
-  width:100vw;margin-left:calc(50% - 50vw);margin-top:-1.333rem;}
+  width:100vw;margin-left:calc(50% - 50vw);margin-top:-1.333rem;
+  /* …mais le CONTENU reste aligné sur la colonne centrale (sinon, sur grand écran,
+     le logo et le bloc PV/RAD/LUCK se perdent dans les coins de l'écran) */
+  padding:0.833rem max(2rem, calc((100vw - min(96vw, 2200px)) / 2 + 1.333rem));}
+.hdr-mid{min-width:0;}
 body{overflow-x:hidden;}   /* le 100vw du bandeau ne doit pas créer d'ascenseur horizontal */
 .hdr::after{content:'';position:absolute;bottom:0;left:6%;right:6%;height:1px;background:linear-gradient(90deg,transparent,var(--g),transparent);opacity:.6;}
 .logo{font-family:'Oswald',sans-serif;font-size:1.5rem;font-weight:600;letter-spacing:3px;color:var(--g);text-shadow:0 0 10px rgba(102,212,102,.5);}
