@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <title>Pip-Boy — Fallout Paris</title>
+  <link rel="manifest" href="../../manifest.json">
+  <meta name="theme-color" content="#0a130a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pip-Boy">
+  <link rel="apple-touch-icon" href="../../img/icons/icon-192.png">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../common/style.css?v=2edc6765">
+  <link rel="stylesheet" href="mobile.css?v=f517583a">
+</head>
+<body>
+
+<!-- Pastille d'état réseau (netwake.js) -->
+<div id="fp-net-pill" class="fp-net-pill" style="display:none"></div>
+
+<!-- EN-TÊTE : identité + constantes vitales -->
+<header class="m-hdr" id="m-hdr">
+  <div class="m-hdr-id">
+    <div class="m-name" id="m-name">…</div>
+    <div class="m-sub" id="m-sub">Connexion…</div>
+  </div>
+  <div class="m-vitals">
+    <div class="m-vital"><span class="m-vl">PV</span><b id="m-hp">—</b></div>
+    <div class="m-vital"><span class="m-vl">RAD</span><b id="m-rad">—</b></div>
+    <div class="m-vital"><span class="m-vl">LUCK</span><b id="m-luck">—</b></div>
+  </div>
+</header>
+
+<!-- ALERTES (événements personnels non lus) -->
+<div class="m-alerts" id="m-alerts"></div>
+
+<!-- CONTENU -->
+<main class="m-main" id="m-main">
+
+  <!-- FICHE -->
+  <section class="m-tc on" id="tc-fiche">
+    <div class="m-card">
+      <div class="m-ct">S.P.E.C.I.A.L.</div>
+      <div id="m-special"></div>
+    </div>
+    <div class="m-card">
+      <div class="m-ct">Survie</div>
+      <div id="m-survie"></div>
+    </div>
+    <div class="m-card">
+      <div class="m-ct">Armes équipées</div>
+      <div id="m-weap"></div>
+    </div>
+    <div class="m-card">
+      <div class="m-ct">Compétences</div>
+      <div id="m-skills"></div>
+    </div>
+  </section>
+
+  <!-- SAC -->
+  <section class="m-tc" id="tc-sac">
+    <div class="m-card">
+      <div class="m-ct">Charge</div>
+      <div id="m-charge"></div>
+    </div>
+    <div class="m-filters" id="m-filters"></div>
+    <div id="m-inv"></div>
+  </section>
+
+  <!-- QUÊTES -->
+  <section class="m-tc" id="tc-quetes">
+    <div id="m-quetes"><div class="m-empty">Aucune quête connue.</div></div>
+  </section>
+
+</main>
+
+<!-- BOUTON DÉS PERMANENT -->
+<button class="m-dice-fab" id="m-dice-fab" onclick="openDice()" aria-label="Lancer les dés">🎲</button>
+
+<!-- NAVIGATION (3 onglets) -->
+<nav class="m-nav">
+  <button class="m-tab on" id="nav-fiche"  onclick="mSw('fiche')"><img src="../../img/tabs/general.png" alt=""><span>Fiche</span></button>
+  <button class="m-tab"    id="nav-sac"    onclick="mSw('sac')"><img src="../../img/tabs/inventaire.png" alt=""><span>Sac</span></button>
+  <button class="m-tab"    id="nav-quetes" onclick="mSw('quetes')"><img src="../../img/tabs/quetes.png" alt=""><span>Quêtes</span><span class="m-dot" id="dot-quetes" style="display:none"></span></button>
+</nav>
+
+<!-- FEUILLE DE DÉS -->
+<div class="m-sheet" id="m-dice">
+  <div class="m-sheet-box">
+    <div class="m-sheet-hd"><span>🎲 Jet de dés</span><button class="m-x" onclick="closeDice()">✕</button></div>
+    <div class="m-sheet-body">
+      <div class="m-dice-mode">
+        <button class="m-seg on" id="dm-2d20" onclick="setDiceMode('2d20')">Test 2D20</button>
+        <button class="m-seg" id="dm-cd" onclick="setDiceMode('cd')">Dés de combat</button>
+      </div>
+
+      <div id="dice-2d20">
+        <label class="m-lbl">Compétence</label>
+        <select id="dice-skill" class="m-sel" onchange="syncTN()"></select>
+        <div class="m-row">
+          <div class="m-f"><label class="m-lbl">TN</label><input type="number" id="dice-tn" class="m-in" value="10" min="1" max="30"></div>
+          <div class="m-f"><label class="m-lbl">Dés</label>
+            <select id="dice-nb" class="m-sel"><option>2</option><option>3</option><option>4</option><option>5</option></select>
+          </div>
+        </div>
+      </div>
+
+      <div id="dice-cd" style="display:none">
+        <label class="m-lbl">Nombre de dés de combat</label>
+        <input type="number" id="dice-cdnb" class="m-in" value="3" min="1" max="12">
+      </div>
+
+      <button class="m-btn big" onclick="rollDice()">Lancer</button>
+      <label class="m-check"><input type="checkbox" id="dice-public" checked> Annoncer au MJ</label>
+      <div class="m-dice-out" id="dice-out"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../../common/shared.js?v=946354bb"></script>
+<script src="../../common/db.js?v=b8ae07a6"></script>
+<script src="../../common/survie.js?v=31a541f2"></script>
+<script src="../../common/netwake.js?v=b34c74ab"></script>
+<script src="mobile.js?v=1e09a227"></script>
+<!-- NB : common/responsive.js n'est volontairement PAS chargé — il applique un
+     zoom calé sur une largeur de 1460 px, inadapté à un téléphone. -->
+</body>
+</html>
