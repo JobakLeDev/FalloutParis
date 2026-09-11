@@ -74,7 +74,7 @@ function _setId() {
 function _normalize(d) {
   return Object.assign({
     name: d.nom || JOUEUR_ID, special: {}, skills: {}, taggedSkills: [], perks: [],
-    inventory: [], ammo: [], caps: 0, niveau: 1, xp: 0, pv: 0, rad: 0, luck: 0,
+    inventory: [], ammo: [], caps: 0, niveau: 1, xp: 0, hp: 0, rad: 0, luck_points: 0,
     wounds: {}, survie: {}, powerArmor: false,
   }, d, { name: d.nom || d.name || JOUEUR_ID });
 }
@@ -96,7 +96,7 @@ function renderAll() {
 
 function renderHeader() {
   if (!char) return;
-  const sp = fpSpecial(char), hpMax = fpHpMax(char), hp = char.pv ?? hpMax;
+  const sp = fpSpecial(char), hpMax = fpHpMax(char), hp = char.hp ?? hpMax;
   const pct = hpMax ? Math.round(100 * hp / hpMax) : 0;
   const st = fpHealthStatus(pct);
   document.getElementById('m-name').textContent = char.name;
@@ -111,7 +111,7 @@ function renderHeader() {
   const radEl = document.getElementById('m-rad');
   radEl.textContent = char.rad || 0;
   radEl.parentElement.className = 'm-vital' + ((char.rad || 0) > 0 ? ' warn' : '');
-  document.getElementById('m-luck').textContent = (char.luck ?? 0) + '/' + (sp.L ?? 5);
+  document.getElementById('m-luck').textContent = (char.luck_points ?? 0) + '/' + (sp.L ?? 5);
 }
 function _fmtClock(min) {
   const h = Math.floor((min % 1440) / 60), m = min % 60;
@@ -299,20 +299,52 @@ async function toggleEquip(i) {
   it.equipped = on;
   await _save({ inventory: inv });
 }
-// Consommer : applique les PV du soin, décrémente, retire à 0.
+// Consommer — même logique que la fiche PC (fiche_perso.js) :
+// buff d'abord (pour que le soin tienne compte d'un éventuel +PV max), puis
+// soin/rads, puis remise à zéro du compteur de survie, puis décrément.
+// Un même objet ne CUMULE pas son buff : on retire l'effet de même `src` avant
+// de le ré-appliquer (refresh) ; seuls les PV gagnés s'appliquent à chaque prise.
 async function useItem(i) {
   const inv = JSON.parse(JSON.stringify(char.inventory || []));
-  const it = inv[i]; if (!it) return;
-  const def = (DB.food || []).concat(DB.drinks || [], DB.drugs || []).find(x => x.n === it.name);
-  const eff = (typeof fpParseConsumable === 'function' && def) ? fpParseConsumable(def) : null;
+  const it = inv[i]; if (!it || (it.qty || 1) <= 0) return;
+  const def = (DB.food || []).concat(DB.drinks || [], DB.drugs || []).find(x => x.n === it.name) || {};
+  const fx = (typeof fpParseConsumable === 'function')
+    ? fpParseConsumable(def) : { instant: { hp: def.hp || 0, radHeal: 0 }, buff: null };
+
   const patch = {};
-  const heal = eff && eff.hp ? eff.hp : 0;
-  if (heal) patch.pv = Math.min(fpHpMax(char), (char.pv || 0) + heal);
+  let effects = JSON.parse(JSON.stringify(char.activeEffects || []));
+  if (fx.buff) {
+    effects = effects.filter(e => e.src !== it.name);
+    effects.push({ id: 'e' + Date.now().toString(36) + Math.floor(Math.random() * 999), src: it.name, ...fx.buff });
+    patch.activeEffects = effects;
+  }
+  // PV max recalculé AVEC le buff qu'on vient de poser
+  const hpMax = fpHpMax(Object.assign({}, char, { activeEffects: effects }));
+  const heal = fx.instant.hp || 0;
+  if (heal) patch.hp = Math.min(hpMax, (char.hp || 0) + heal);
+  let rad = char.rad || 0;
+  if (fx.instant.radHeal > 0) rad = Math.max(0, rad - fx.instant.radHeal);
+  if (typeof def.rad === 'number' && def.rad < 0) rad = Math.max(0, rad + def.rad);
+  if (rad !== (char.rad || 0)) patch.rad = rad;
+  // Manger/boire remet le compteur de survie à zéro (Rassasié / Désaltéré)
+  if (_campMin != null) {
+    const sv = Object.assign({}, char.survie || {});
+    if (it.type === 'FOOD') sv.eat = _campMin;
+    else if (it.type === 'DRINK') sv.drink = _campMin;
+    patch.survie = sv;
+  }
   it.qty = (it.qty || 1) - 1;
   if (it.qty <= 0) inv.splice(i, 1);
   patch.inventory = inv;
+
   await _save(patch);
-  if (heal) _toast(`+${heal} PV`);
+  const bits = [];
+  if (heal) bits.push('+' + heal + ' PV');
+  if (fx.instant.radHeal) bits.push('−' + fx.instant.radHeal + ' rad');
+  if (fx.buff) bits.push('effet actif');
+  _toast(it.name + (bits.length ? ' · ' + bits.join(' · ') : ''));
+  // Trace pour le MJ (le journal est son fil de session)
+  if (typeof fpLogAction === 'function') fpLogAction(db, char.name || JOUEUR_ID, `a utilisé « ${it.name} »`);
 }
 function _toast(msg) {
   const el = document.createElement('div');
@@ -420,5 +452,53 @@ function _announce(label, detail) {
   if (typeof fpLogAction === 'function' && db && char)
     fpLogAction(db, char.name || JOUEUR_ID, `a lancé « ${label} » : ${detail}`);
 }
+
+// ---------- Rafraîchir (mode app : plus de barre d'URL) ----------
+// Appui court : on relance les listeners (suffit dans 99 % des cas et c'est
+// instantané). Appui long : rechargement complet de la page, cache contourné.
+let _refreshHold = null;
+function mRefresh() {
+  const b = document.getElementById('m-refresh');
+  if (b) { b.classList.add('spin'); setTimeout(() => b.classList.remove('spin'), 900); }
+  if (typeof fpNetReconnect === 'function') fpNetReconnect();
+  _toast('Actualisé');
+}
+function mHardReload() { location.reload(); }
+(function wireRefresh() {
+  document.addEventListener('DOMContentLoaded', () => {
+    const b = document.getElementById('m-refresh');
+    if (!b) return;
+    const start = () => { _refreshHold = setTimeout(() => { _refreshHold = null; mHardReload(); }, 700); };
+    const stop  = () => { if (_refreshHold) { clearTimeout(_refreshHold); _refreshHold = null; } };
+    b.addEventListener('touchstart', start, { passive: true });
+    b.addEventListener('touchend', stop);
+    b.addEventListener('touchcancel', stop);
+    b.addEventListener('mousedown', start);
+    b.addEventListener('mouseup', stop);
+    b.addEventListener('mouseleave', stop);
+
+    // Tirer vers le bas depuis le haut de page = rafraîchir (geste attendu sur
+    // mobile ; le natif est désactivé par overscroll-behavior:contain).
+    const ptr = document.getElementById('m-ptr');
+    let y0 = null, dy = 0;
+    const SEUIL = 70;
+    document.addEventListener('touchstart', e => {
+      y0 = (window.scrollY <= 0 && e.touches.length === 1) ? e.touches[0].clientY : null;
+      dy = 0;
+    }, { passive: true });
+    document.addEventListener('touchmove', e => {
+      if (y0 == null) return;
+      dy = e.touches[0].clientY - y0;
+      if (dy <= 0) { if (ptr) ptr.style.transform = ''; return; }
+      const d = Math.min(dy * .5, 90);
+      if (ptr) { ptr.style.transform = `translate(-50%, ${d}px)`; ptr.classList.toggle('ready', dy > SEUIL); }
+    }, { passive: true });
+    document.addEventListener('touchend', () => {
+      if (ptr) { ptr.style.transform = ''; ptr.classList.remove('ready'); }
+      if (y0 != null && dy > SEUIL) mRefresh();
+      y0 = null; dy = 0;
+    });
+  });
+})();
 
 document.addEventListener('DOMContentLoaded', init);

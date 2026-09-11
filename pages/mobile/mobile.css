@@ -42,6 +42,23 @@ body {
 .m-vital b { font-family: 'Oswald', sans-serif; font-size: .95rem; color: var(--tb); }
 .m-vital.warn b { color: var(--am-br); }
 .m-vital.danger b { color: var(--rd); }
+/* Rafraîchir : indispensable en mode app (pas de barre d'URL) */
+.m-refresh {
+  flex: none; width: 2.2rem; height: 2.2rem; margin-left: .1rem;
+  background: rgba(10,20,10,.7); border: 1px solid var(--b2); border-radius: var(--r-sm);
+  color: var(--g); font-size: 1.1rem; line-height: 1; cursor: pointer;
+}
+.m-refresh:active { background: var(--gk); }
+.m-refresh.spin { animation: mSpin .9s linear; }
+@keyframes mSpin { to { transform: rotate(360deg); } }
+/* Indicateur « tirer pour rafraîchir » */
+.m-ptr {
+  position: fixed; top: calc(3.2rem + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
+  z-index: 39; width: 2.1rem; height: 2.1rem; display: flex; align-items: center; justify-content: center;
+  background: #0d170d; border: 1px solid var(--b2); border-radius: 50%; color: var(--td);
+  font-size: 1rem; pointer-events: none; transition: transform .18s ease-out;
+}
+.m-ptr.ready { border-color: var(--g); color: var(--g); box-shadow: var(--glow-br); }
 
 /* ---------- ALERTES ---------- */
 .m-alerts { padding: 0 .6rem; }
