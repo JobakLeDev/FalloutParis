@@ -350,15 +350,18 @@ function rGenWeap(){
     {lbl:'ARME 2',  inv:armes[1]||null,     empty:'Aucune arme'},
     {lbl:'EXPLOSIF',inv:explosifs[0]||null, empty:'Aucun explosif'},
   ];
+  // Vignette par slot (maquette) : arme → pistolet · slot vide → pistolet + · explosif → munitions
+  const slotIco=s=>!s.inv?'inv_equiper':(s.lbl==='EXPLOSIF'?'inv_munitions':'inv_armes');
   el.innerHTML=slots.map(s=>{
+    const ico=`<div class="gwc-ico${s.inv?'':' off'}"><img src="../../img/tabs/${slotIco(s)}.png" alt=""></div>`;
     if(!s.inv){
-      return `<div class="gen-weap-card empty-slot"><div class="gwc-slot">${s.lbl}</div><div class="gwc-empty">${s.empty}</div></div>`;
+      return `<div class="gen-weap-card empty-slot">${ico}<div class="gwc-main"><div class="gwc-slot">${s.lbl}</div><div class="gwc-empty">${s.empty}</div></div></div>`;
     }
     const inv=s.inv, db=fpApplyWeaponMods(DB.weapons.find(w=>w.n===inv.name)||{}, inv.mods);
     const tn=getWeaponTN(inv);
     const ammoFound=db.a&&db.a!=='-'?char.ammo.find(a=>a.cal===db.a):null;
     const ammoQty=ammoFound?ammoFound.qty:null;
-    return `<div class="gen-weap-card eq">
+    return `<div class="gen-weap-card eq">${ico}<div class="gwc-main">
       <div class="gwc-slot">${s.lbl}</div>
       <div class="gwc-row">
         <div>
@@ -371,7 +374,7 @@ function rGenWeap(){
         </div>
       </div>
       ${ammoQty!==null?`<div class="gwc-ammo"><span>${db.a}</span><span class="gwc-ammo-qty">${ammoQty}</span><span>cartouches</span></div>`:''}
-    </div>`;
+    </div></div>`;
   }).join('');
 }
 // Noms de TOUTES les pièces équipées couvrant une zone (tenue Body/All + armure spécifique).
