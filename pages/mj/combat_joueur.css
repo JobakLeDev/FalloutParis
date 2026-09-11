@@ -32,7 +32,7 @@
 .act-cat-lbl     { font-size: 9px; color: var(--td); letter-spacing: 2px; margin: 4px 0 5px; }
 .j-act-btns      { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 .j-act-btn {
-  background: #0a140a; border: 1px solid var(--b2); color: var(--t);
+  background: #0a140a; border: 1px solid var(--b2); border-radius: var(--r-sm); color: var(--t);
   font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: .5px;
   padding: 7px 12px; cursor: pointer; transition: all .1s;
 }
@@ -351,8 +351,8 @@
   position:relative;
   padding:0 8px 8px;                                   /* le titre déborde → full-bleed */
   background:linear-gradient(180deg,#0c160c 0%,#080f08 100%);
-  border:1px solid var(--b2); border-radius:3px;
-  box-shadow:0 2px 10px rgba(0,0,0,.35), inset 0 1px 0 rgba(93,190,93,.05);
+  border:1px solid var(--b2); border-radius:var(--r);
+  box-shadow:var(--glow), 0 2px 10px rgba(0,0,0,.35), inset 0 1px 0 rgba(102,212,102,.06);
   transition:border-color .15s, box-shadow .15s;
 }
 /* liseré supérieur (pas sur le popup de dés : il a déjà son propre halo et des coins arrondis) */
