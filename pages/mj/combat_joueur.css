@@ -407,51 +407,7 @@
    état des combattants > commandes (présentes mais discrètes).
    ============================================================ */
 
-/* ---- Bandeau de tour ---- */
-.cj-hero{
-  display:flex; align-items:stretch; gap:10px; margin-bottom:8px;
-}
-.cj-hero-round{
-  flex:none; display:flex; flex-direction:column; align-items:center; justify-content:center;
-  min-width:5.2rem; padding:.35rem .6rem;
-  background:linear-gradient(180deg,#0e1a0e,#0a140a); border:1px solid var(--b2); border-radius:var(--r);
-  box-shadow:var(--glow);
-}
-.cj-hero-round span{ font-size:.55rem; letter-spacing:3px; color:var(--td); text-transform:uppercase; }
-.cj-hero-round b{ font-family:'Oswald',sans-serif; font-size:2rem; line-height:1; color:var(--am-br); text-shadow:0 0 12px rgba(232,168,32,.45); }
-.cj-hero-now{
-  flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center;
-  padding:.4rem 1rem; border:1px solid var(--b2); border-radius:var(--r);
-  background:linear-gradient(90deg,rgba(102,212,102,.10),rgba(10,20,10,.4) 70%);
-  box-shadow:var(--glow);
-}
-.cj-hero-now small{ font-size:.6rem; letter-spacing:3px; color:var(--td); text-transform:uppercase; }
-.cj-hero-now b{
-  font-family:'Oswald',sans-serif; font-weight:600; font-size:1.9rem; line-height:1.1; letter-spacing:3px;
-  text-transform:uppercase; color:var(--tb); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-}
-.cj-hero-now.me{ border-color:var(--g); background:linear-gradient(90deg,rgba(102,212,102,.24),rgba(10,20,10,.4) 75%); }
-.cj-hero-now.me b{ color:var(--g); text-shadow:0 0 16px rgba(102,212,102,.65); animation:cjTurn 1.6s ease-in-out infinite; }
-.cj-hero-now.foe{ border-color:rgba(224,64,64,.55); background:linear-gradient(90deg,rgba(224,64,64,.16),rgba(10,20,10,.4) 75%); }
-.cj-hero-now.foe b{ color:#ff8a8a; text-shadow:0 0 12px rgba(224,64,64,.45); }
-@keyframes cjTurn{ 0%,100%{ opacity:1; } 50%{ opacity:.72; } }
-@media (prefers-reduced-motion: reduce){ .cj-hero-now.me b{ animation:none; } }
-
-/* ---- Ordre d'initiative : pastilles lisibles ---- */
-.cj-order{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
-.cj-order .tracker-item{
-  margin:0; padding:.35rem .6rem; min-width:7rem;
-  border-radius:var(--r-sm); background:#0b150b; border:1px solid var(--b);
-}
-.cj-order .tracker-top{ margin:0; gap:.6rem; }
-.cj-order .tracker-nom{ font-size:.78rem !important; letter-spacing:.5px; }
-.cj-order .tracker-init{ font-size:.8rem !important; color:var(--td); }
-.cj-order .tracker-item.actif{ border-color:var(--g); background:#12230f; box-shadow:var(--glow-br); }
-.cj-order .tracker-item.ennemi{ border-color:#3a1515; background:#140a0a; }
-.cj-order .tracker-item.ennemi.actif{ border-color:var(--rd); box-shadow:0 0 12px rgba(224,64,64,.45); }
-.cj-order .tracker-item.c-est-moi{ border-color:var(--gd); }
-.trk-hp{ display:block; height:4px; margin-top:4px; background:#1e0b0b; border-radius:999px; overflow:hidden; }
-.trk-hp > i{ display:block; height:100%; background:var(--rd); border-radius:999px; box-shadow:0 0 5px rgba(224,64,64,.6); }
+/* (bandeau de tour + pastilles d'initiative : partagés, dans combat.css) */
 
 /* ---- Colonnes : la carte prend la place ---- */
 .cjl{ grid-template-columns:minmax(0,230px) minmax(0,1fr) minmax(0,280px); gap:10px; }   /* perso & ressources | carte | commandes */

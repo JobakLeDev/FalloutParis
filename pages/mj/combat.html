@@ -7,7 +7,7 @@
   <title>Fallout Paris — Combat</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css?v=2edc6765">
-  <link rel="stylesheet" href="combat.css?v=0b1bf00a">
+  <link rel="stylesheet" href="combat.css?v=c5788782">
   <link rel="stylesheet" href="../../common/zoom.css?v=2a2cfe92">
 </head>
 <body>
@@ -26,11 +26,14 @@
     </div>
   </div>
 
-  <!-- BANDEAU TRACKER DE TOUR -->
-  <div class="ap-bar tracker-banner">
-    <span class="ap-bar-lbl">TOUR</span>
-    <div id="tracker-tour" class="trk-row"><span class="empty">Lance l'initiative pour démarrer</span></div>
+  <!-- BANDEAU DE TOUR — même langage que l'écran joueur : qui joue, en gros ; flux de combat à droite -->
+  <div class="cj-hero">
+    <div class="cj-hero-round"><span>Round</span><b id="mj-round">—</b></div>
+    <div class="cj-hero-now" id="mj-now"><span class="empty">Lance l'initiative pour démarrer</span></div>
+    <div class="cj-hero-flow" id="mj-flow"></div>
   </div>
+  <!-- Ordre d'initiative -->
+  <div id="tracker-tour" class="cj-order"><span class="empty">Lance l'initiative pour démarrer</span></div>
 
   <!-- BARRE AP GROUPE + MJ -->
   <div class="ap-bar">
@@ -64,7 +67,7 @@
 
     <!-- GAUCHE : Joueurs + Actions joueurs en attente -->
     <div class="cl-col cl-left">
-      <div class="pnl">
+      <div class="pnl cj-fold" id="pnl-joueurs">
         <div class="pnl-title">
           Joueurs
           <button class="init-btn" onclick="lancerInitiative()">🎲 Initiative</button>
@@ -75,7 +78,7 @@
       </div>
 
       <!-- ACTIONS JOUEURS EN ATTENTE -->
-      <div class="pnl">
+      <div class="pnl cj-fold" id="pnl-validations">
         <div class="pnl-title" style="display:flex;justify-content:space-between;align-items:center">
           <span>Actions joueurs <span id="actions-joueurs-count" class="aj-count" style="display:none">0</span></span>
           <span style="font-size:7px;color:var(--td);letter-spacing:1px">temps réel</span>
@@ -127,7 +130,7 @@
       </div>
 
       <!-- JOURNAL -->
-      <div class="pnl">
+      <div class="pnl cj-fold" id="pnl-log">
         <div class="pnl-title">
           Journal des actions
           <button class="log-clear" onclick="clearLog()">Effacer</button>
@@ -139,7 +142,7 @@
 
     <!-- DROITE : Ennemis + Tracker -->
     <div class="cl-col cl-right">
-      <div class="pnl">
+      <div class="pnl cj-fold" id="pnl-ennemis">
         <div class="pnl-title">
           Ennemis
           <button class="add-ennemi-btn" onclick="ouvrirModalEnnemi()">+ Ajouter</button>
@@ -186,7 +189,7 @@
   <script src="../../common/db.js?v=b8ae07a6"></script>
   <script src="mj_shared.js?v=579350c4"></script>
   <script src="combat_sync.js?v=774864bd"></script>
-  <script src="combat.js?v=c2a5f435"></script>
+  <script src="combat.js?v=022eb71d"></script>
   <script src="combat_radio.js?v=04795fd0"></script>
   <script>document.addEventListener("DOMContentLoaded", () => window.DB_READY.then(init));</script>
   <script src="../../common/responsive.js?v=8e2ae4f7"></script>

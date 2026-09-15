@@ -457,3 +457,147 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   padding:1px 7px; margin-left:4px; vertical-align:middle;
   animation:mjPendingPulse 1s ease-in-out infinite;
 }
+
+
+/* ============================================================
+   LANGAGE COMMUN DES ÉCRANS DE COMBAT (MJ + joueur)
+   Bandeau de tour « qui joue » + pastilles d'initiative avec barres de PV.
+   ============================================================ */
+/* ---- Bandeau de tour ---- */
+.cj-hero{
+  display:flex; align-items:stretch; gap:10px; margin-bottom:8px;
+}
+.cj-hero-round{
+  flex:none; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  min-width:5.2rem; padding:.35rem .6rem;
+  background:linear-gradient(180deg,#0e1a0e,#0a140a); border:1px solid var(--b2); border-radius:var(--r);
+  box-shadow:var(--glow);
+}
+.cj-hero-round span{ font-size:.55rem; letter-spacing:3px; color:var(--td); text-transform:uppercase; }
+.cj-hero-round b{ font-family:'Oswald',sans-serif; font-size:2rem; line-height:1; color:var(--am-br); text-shadow:0 0 12px rgba(232,168,32,.45); }
+.cj-hero-now{
+  flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center;
+  padding:.4rem 1rem; border:1px solid var(--b2); border-radius:var(--r);
+  background:linear-gradient(90deg,rgba(102,212,102,.10),rgba(10,20,10,.4) 70%);
+  box-shadow:var(--glow);
+}
+.cj-hero-now small{ font-size:.6rem; letter-spacing:3px; color:var(--td); text-transform:uppercase; }
+.cj-hero-now b{
+  font-family:'Oswald',sans-serif; font-weight:600; font-size:1.9rem; line-height:1.1; letter-spacing:3px;
+  text-transform:uppercase; color:var(--tb); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.cj-hero-now.me{ border-color:var(--g); background:linear-gradient(90deg,rgba(102,212,102,.24),rgba(10,20,10,.4) 75%); }
+.cj-hero-now.me b{ color:var(--g); text-shadow:0 0 16px rgba(102,212,102,.65); animation:cjTurn 1.6s ease-in-out infinite; }
+.cj-hero-now.foe{ border-color:rgba(224,64,64,.55); background:linear-gradient(90deg,rgba(224,64,64,.16),rgba(10,20,10,.4) 75%); }
+.cj-hero-now.foe b{ color:#ff8a8a; text-shadow:0 0 12px rgba(224,64,64,.45); }
+@keyframes cjTurn{ 0%,100%{ opacity:1; } 50%{ opacity:.72; } }
+@media (prefers-reduced-motion: reduce){ .cj-hero-now.me b{ animation:none; } }
+
+/* ---- Ordre d'initiative : pastilles lisibles ---- */
+.cj-order{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+.cj-order .tracker-item{
+  margin:0; padding:.35rem .6rem; min-width:7rem;
+  border-radius:var(--r-sm); background:#0b150b; border:1px solid var(--b);
+}
+.cj-order .tracker-top{ margin:0; gap:.6rem; }
+.cj-order .tracker-nom{ font-size:.78rem !important; letter-spacing:.5px; }
+.cj-order .tracker-init{ font-size:.8rem !important; color:var(--td); }
+.cj-order .tracker-item.actif{ border-color:var(--g); background:#12230f; box-shadow:var(--glow-br); }
+.cj-order .tracker-item.ennemi{ border-color:#3a1515; background:#140a0a; }
+.cj-order .tracker-item.ennemi.actif{ border-color:var(--rd); box-shadow:0 0 12px rgba(224,64,64,.45); }
+.cj-order .tracker-item.c-est-moi{ border-color:var(--gd); }
+.trk-hp{ display:block; height:4px; margin-top:4px; background:#1e0b0b; border-radius:999px; overflow:hidden; }
+.trk-hp > i{ display:block; height:100%; background:var(--rd); border-radius:999px; box-shadow:0 0 5px rgba(224,64,64,.6); }
+
+
+/* ============================================================
+   ÉCRAN DE COMBAT MJ — même langage que l'écran joueur PC.
+   Tout est cantonné à .combat-layout / #app > .ap-bar : combat_joueur.html
+   charge aussi ce fichier et ne doit pas être affecté.
+   ============================================================ */
+
+/* ---- Bandeau : flux de combat à droite (commandes principales du MJ) ---- */
+.cj-hero-flow{ flex:none; display:flex; gap:6px; align-items:stretch; }
+.cj-hero-flow:empty{ display:none; }
+.cj-flow-btn{
+  --ja:var(--g); --ja-rgb:102,212,102;
+  display:flex; align-items:center; gap:8px; padding:6px 12px 6px 7px; cursor:pointer;
+  font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:1px; color:var(--tb);
+  background:linear-gradient(180deg, rgba(var(--ja-rgb),.10), rgba(0,0,0,.2));
+  border:1px solid rgba(var(--ja-rgb),.35); border-radius:var(--r);
+  transition:border-color .14s, background .14s, transform .12s, box-shadow .14s;
+}
+.cj-flow-btn .ja-ic{
+  width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--ja);
+  background:rgba(var(--ja-rgb),.12); border:1px solid rgba(var(--ja-rgb),.32); border-radius:8px;
+}
+.cj-flow-btn:hover{ border-color:rgba(var(--ja-rgb),.8); background:linear-gradient(180deg, rgba(var(--ja-rgb),.2), rgba(var(--ja-rgb),.05));
+  box-shadow:0 4px 14px rgba(0,0,0,.35), 0 0 12px rgba(var(--ja-rgb),.25); transform:translateY(-1px); }
+.cj-flow-btn:active{ transform:scale(.98); box-shadow:none; }
+.cj-flow-btn.next{ --ja:var(--g);     --ja-rgb:102,212,102; }
+.cj-flow-btn.loot{ --ja:var(--am-br); --ja-rgb:232,168,32; }
+.cj-flow-btn.end { --ja:var(--rd);    --ja-rgb:224,64,64; color:#ffb3b3; }
+.cj-hero-now.ally b{ color:var(--tb); }
+
+/* PV des joueurs dans les pastilles (vert ; ennemis en rouge) */
+.trk-hp.pc{ background:#0b1e0b; }
+.trk-hp.pc > i{ background:var(--g); box-shadow:0 0 5px rgba(102,212,102,.55); }
+
+/* ---- Barre AP groupe / AP MJ ---- */
+#app > .ap-bar{ background:linear-gradient(180deg,#0e1a0e,#0a140a); border-radius:var(--r); box-shadow:var(--glow); padding:7px 12px; }
+
+/* ---- Panneaux : bandeau de titre full-bleed à barre d'accent (comme l'écran joueur) ---- */
+.combat-layout .pnl:not(.dice-banner){
+  position:relative; padding:0 9px 9px;
+  background:linear-gradient(180deg,#0c160c 0%,#080f08 100%);
+  border:1px solid var(--b2); border-radius:var(--r);
+  box-shadow:var(--glow), 0 2px 10px rgba(0,0,0,.35), inset 0 1px 0 rgba(102,212,102,.06);
+}
+.combat-layout .pnl:not(.dice-banner)::before{
+  content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg,transparent,var(--g),transparent); opacity:.35; pointer-events:none;
+}
+.combat-layout .pnl:not(.dice-banner) > .pnl-title{
+  position:relative; margin:0 -9px 9px; padding:7px 10px 7px 13px;
+  background:linear-gradient(90deg,rgba(102,212,102,.12) 0%,rgba(102,212,102,.02) 60%,transparent 100%);
+  border-bottom:1px solid var(--b2); color:var(--tb); font-size:8px; letter-spacing:3px;
+  border-radius:var(--r) var(--r) 0 0;
+}
+.combat-layout .pnl:not(.dice-banner) > .pnl-title::before{
+  content:''; position:absolute; left:0; top:0; bottom:0; width:2px; background:var(--g); box-shadow:0 0 6px var(--g);
+}
+.combat-layout .dice-banner{ background:linear-gradient(180deg,#0e1a0e,#0a140a); }
+
+/* ---- Panneaux repliables ---- */
+.combat-layout .pnl.cj-fold > .pnl-title{ cursor:pointer; user-select:none; padding-right:26px; }
+.combat-layout .pnl.cj-fold > .pnl-title::after{ content:'▾'; position:absolute; right:10px; top:50%; transform:translateY(-50%); color:var(--td); font-size:10px; }
+.combat-layout .pnl.cj-fold > .pnl-title:hover{ color:var(--g); }
+.combat-layout .pnl.cj-fold.pnl-collapsed{ padding-bottom:0; }
+.combat-layout .pnl.cj-fold.pnl-collapsed > .pnl-title{ margin-bottom:0; border-bottom:none; border-radius:var(--r); }
+.combat-layout .pnl.cj-fold.pnl-collapsed > .pnl-title::after{ content:'▸'; }
+.combat-layout .pnl.cj-fold.pnl-collapsed > :not(.pnl-title){ display:none !important; }
+
+/* ---- Boutons : plus de plaques plates, des tuiles sobres qui s'éclairent au survol ---- */
+.combat-layout .init-btn, .combat-layout .add-ennemi-btn, .combat-layout .log-clear,
+.combat-layout .dice-btn, .combat-layout .cd-btn, .combat-layout .d20-sel-btn,
+#app > .ap-bar .ap-btn, #app > .ap-bar .ap-btn-sm, .combat-layout .ap-btn-sm{
+  border-radius:var(--r-sm); letter-spacing:1px;
+  background-image:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.18));
+  transition:border-color .14s, color .14s, background-color .14s, box-shadow .14s, transform .12s;
+}
+.combat-layout .init-btn:hover, .combat-layout .add-ennemi-btn:hover, .combat-layout .log-clear:hover,
+.combat-layout .dice-btn:hover, .combat-layout .cd-btn:hover, .combat-layout .d20-sel-btn:hover,
+#app > .ap-bar .ap-btn:hover, #app > .ap-bar .ap-btn-sm:hover, .combat-layout .ap-btn-sm:hover{
+  transform:translateY(-1px); box-shadow:0 3px 10px rgba(0,0,0,.35), 0 0 10px rgba(102,212,102,.18);
+}
+.combat-layout .init-btn:active, .combat-layout .dice-btn:active, .combat-layout .cd-btn:active,
+.combat-layout .ap-btn-sm:active, #app > .ap-bar .ap-btn:active{ transform:scale(.97); box-shadow:none; }
+.combat-layout .init-btn{ font-size:8px; padding:4px 10px; }
+.combat-layout .add-ennemi-btn{ padding:7px; font-size:9px; }
+.combat-layout .dice-btn, .combat-layout .cd-btn{ font-size:10px; padding:7px; }
+.combat-layout .d20-sel-btn{ font-size:8px; padding:5px 6px; }
+.combat-layout .d20-sel-btn.on{ box-shadow:0 0 10px rgba(102,212,102,.3); }
+#app > .ap-bar .ap-btn{ width:22px; height:22px; }
+#app > .ap-bar .ap-btn-sm, .combat-layout .ap-btn-sm{ padding:3px 8px; font-size:8px; }
+
+@media (prefers-reduced-motion: reduce){ .cj-flow-btn, .combat-layout [class*="-btn"]{ transition:none; } }
