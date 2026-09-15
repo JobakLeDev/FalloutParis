@@ -173,8 +173,8 @@ function deverrouiller(){
           if(cible && cible.pvCur > 0){
             const avant = cible.pvCur;
             cible.pvCur = Math.max(0, cible.pvCur - r.dmg);
-            addLog('💥 '+cible.nom+' : '+avant+' → '+cible.pvCur+' PV (−'+r.dmg+')');
-            if(cible.pvCur <= 0) addLog('💀 '+cible.nom+' éliminé !');
+            addLog('💥 '+enName(cible)+' : '+avant+' → '+cible.pvCur+' PV (−'+r.dmg+')');
+            if(cible.pvCur <= 0) addLog('💀 '+enName(cible)+' éliminé !');
             renderCombat();
             syncCombatToFirebase();
           }
@@ -336,7 +336,7 @@ function lancerInitiative(){
   // Ennemis : initiative déjà calculée à la création (Body + Mind du schéma)
   ennemis.forEach(e => {
     if(!e.initiative) e.initiative = (e.body||6) + (e.mind||4);
-    ordreInitiative.push({id:'e_'+e.id, nom:e.nom, type:'ennemi', init:e.initiative, eid:e.id});
+    ordreInitiative.push({id:'e_'+e.id, nom:enName(e), type:'ennemi', init:e.initiative, eid:e.id});
     initActionsState('e_'+e.id, false, {});
   });
 
@@ -583,7 +583,7 @@ function attaqueAllie(id){
     html += '<option value="">Aucun ennemi vivant</option>';
   } else {
     html += '<option value="">— Choisir —</option>';
-    vivants.forEach(e => { html += '<option value="' + e.id + '">' + e.nom.toUpperCase() + ' (RD ' + e.rd + ' · ' + e.pvCur + '/' + e.pvMax + ' PV)</option>'; });
+    vivants.forEach(e => { html += '<option value="' + e.id + '">' + enName(e).toUpperCase() + ' (RD ' + e.rd + ' · ' + e.pvCur + '/' + e.pvMax + ' PV)</option>'; });
   }
   html += '</select></div>';
   html += '<div class="ctx-diff">Difficulté : <select id="diff-sel" onchange="majDC()" style="background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:monospace;font-size:9px;padding:2px 4px;outline:none"><option value="0">D0</option><option value="1" selected>D1</option><option value="2">D2</option><option value="3">D3</option></select></div>';
@@ -691,6 +691,10 @@ function _initFoldsMJ(){
   });
 }
 document.addEventListener('DOMContentLoaded', _initFoldsMJ);
+document.addEventListener('DOMContentLoaded', () => fpInitSideTabs('.combat-layout', [
+  { key:'left',  col:'.cl-left',  label:'Joueurs' },
+  { key:'right', col:'.cl-right', label:'Ennemis' },
+], 'fp_cmjSide', fitMjMap));
 
 // ---- CARTE AJUSTÉE À LA LARGEUR ----
 // Arêtes et traits sont calculés sur un pas fixe (cs=32) : on zoome le bloc, jamais les cases.
@@ -730,8 +734,11 @@ function ajouterEnnemisModal(){
     const inst = enemyInstanceFromDB(nom, lvl); if(!inst) continue;
     inst.id = Date.now()+i;
     inst.nom = nb>1 ? nom+' '+(i+1) : nom;
+    // Nom lisible à l'oral (« Pillard balafré ») : tiré ICI une seule fois, stocké dans l'ennemi
+    const _lb = fpEnemyLabel(nom, new Set(ennemis.map(x => x.trait).filter(Boolean)));
+    inst.base = nom; inst.label = _lb.label; inst.trait = _lb.trait;
     ennemis.push(inst);
-    addLog('➕ '+inst.nom+' (PV:'+inst.pvMax+' RD:'+inst.rd+')');
+    addLog('➕ '+inst.label+' (PV:'+inst.pvMax+' RD:'+inst.rd+')');
   }
   fermerModalEnnemi();
   renderCombat();
@@ -774,9 +781,9 @@ function playerLocRD(d, loc){
 function dmgEnnemi(id, val){
   const e = ennemis.find(e=>e.id===id); if(!e) return;
   const after = Math.max(0, e.pvCur - val);
-  addLog('⚔ '+e.nom+' : '+e.pvCur+'→'+after+' PV (-'+val+')');
+  addLog('⚔ '+enName(e)+' : '+e.pvCur+'→'+after+' PV (-'+val+')');
   e.pvCur = after;
-  if(e.pvCur<=0) addLog('💀 '+e.nom+' éliminé !');
+  if(e.pvCur<=0) addLog('💀 '+enName(e)+' éliminé !');
   renderCombat();
 }
 
@@ -791,6 +798,7 @@ function supprimerEnnemi(id){
 
 // ---- RENDER ----
 function renderCombat(){
+  if(typeof fpEnsureEnemyLabels === 'function' && fpEnsureEnemyLabels(ennemis) && typeof syncCombatToFirebase === 'function') syncCombatToFirebase();
   renderJoueursCombat();
   renderAllies();
   renderEnnemis();
@@ -809,7 +817,7 @@ function _mapTokens(){
   const list = [];
   Object.keys(combattants).forEach(id => list.push({ id, nom: (joueurs[id]?.nom||id), kind:'joueur' }));
   (allies||[]).forEach(a => list.push({ id:'A'+a.id, nom:a.nom, kind:'allie' }));
-  (ennemis||[]).forEach(e => list.push({ id:'E'+e.id, nom:e.nom, kind:'ennemi', dead:(e.pvCur||0)<=0, hidden:e.hidden }));
+  (ennemis||[]).forEach(e => list.push({ id:'E'+e.id, nom:e.nom, label:enName(e), kind:'ennemi', dead:(e.pvCur||0)<=0, hidden:e.hidden }));
   return list;
 }
 // FORMAT COMMUN lieu ↔ combat : un lieu peut porter une grille battlemap préparée
@@ -1103,7 +1111,7 @@ function renderCombatMap(){
     } else inner = (bt?bt.icon:'');
     const eAttr = (t && t.kind==='ennemi') ? ` data-eid="${t.id.slice(1)}"` : '';
     const onclick = t ? `mapPickToken('${tid}')` : `mapCellClick(${x},${y})`;
-    html += `<div class="${cls}" onclick="${onclick}"${eAttr} title="${t?(t.nom+(t.hidden?' (masqué)':'')):(bt?bt.label:'')}">${inner}</div>`;
+    html += `<div class="${cls}" onclick="${onclick}"${eAttr} title="${t?((t.label||t.nom)+(t.hidden?' (masqué)':'')):(bt?bt.label:'')}">${inner}</div>`;
   }
   // Overlay des lignes d'arête (+ zones cliquables si pinceau d'arête actif ; sinon, portes ouvrables)
   const doorHot = (!_edgeSel && !_blockSel && !_mapSel) ? gridAllDoorHotspots(combatMap, cs, 'openDoorMJ') : '';
@@ -1244,7 +1252,7 @@ function renderEnnemis(){
     const isTourActif = ordreInitiative.length && ordreInitiative[tourActif]?.eid===e.id;
     el.innerHTML += `<div class="ennemi-card${e.pvCur<=0?' dead':''}${isTourActif?' tour-actif':''}${_mapSel==='E'+e.id?' mapsel-card':''}${_collapsedCards.has('E'+e.id)?' collapsed':''}" data-tokid="E${e.id}">
       <div class="jc-top">
-        <span class="ennemi-name">${_collapseBtn('E'+e.id)}${isTourActif?'▶ ':''}${e.nom}</span>
+        <span class="ennemi-name">${_collapseBtn('E'+e.id)}${isTourActif?'▶ ':''}${enName(e)}</span>
         <div style="display:flex;gap:4px;align-items:center">
           <span class="jc-init">${e.initiative!==null?e.initiative:'—'}</span>
           <button class="e-del" style="border-color:${e.hidden?'var(--am)':'var(--b2)'};color:${e.hidden?'var(--am)':'var(--td)'}" onclick="toggleEnemyHidden(${e.id})" title="${e.hidden?'Masqué aux joueurs — cliquer pour révéler':'Visible — cliquer pour masquer'}">${e.hidden?'🙈':'👁'}</button>
@@ -1275,7 +1283,7 @@ function renderEnnemis(){
 function toggleEnemyHidden(id){
   const e = ennemis.find(x => x.id === id); if(!e) return;
   e.hidden = !e.hidden;
-  addLog(e.hidden ? '🙈 '+e.nom+' masqué aux joueurs' : '👁 '+e.nom+' révélé');
+  addLog(e.hidden ? '🙈 '+enName(e)+' masqué aux joueurs' : '👁 '+enName(e)+' révélé');
   renderCombat();
   syncCombatToFirebase();
 }
@@ -1309,7 +1317,7 @@ function handleStrangerReq(nom){
   let ov = document.getElementById('stranger-pick'); if(ov) ov.remove();
   ov = document.createElement('div'); ov.id = 'stranger-pick';
   ov.innerHTML = '<div class="sp-box"><div class="sp-h">🕴 L\'Étranger Mystérieux apparaît<br><small>Choisis sa cible (8 DC)</small></div>'
-    + vivants.map(e => '<button class="sp-en" onclick="strangerHit('+e.id+')">' + e.nom + ' — ' + e.pvCur + '/' + e.pvMax + ' PV</button>').join('')
+    + vivants.map(e => '<button class="sp-en" onclick="strangerHit('+e.id+')">' + enName(e) + ' — ' + e.pvCur + '/' + e.pvMax + ' PV</button>').join('')
     + '<button class="sp-cancel" onclick="strangerCancel()">Annuler (l\'Étranger repart)</button></div>';
   document.body.appendChild(ov);
 }
@@ -1323,7 +1331,7 @@ function strangerHit(eid){
   const net = Math.max(0, dmg - rd);
   const avant = e.pvCur;
   e.pvCur = Math.max(0, e.pvCur - net);
-  addLog('🕴💥 L\'Étranger Mystérieux abat ' + net + ' sur ' + e.nom + ' (' + dmg + ' − RD ' + rd + ') · ' + avant + '→' + e.pvCur + ' PV' + (e.pvCur<=0?' 💀 éliminé !':''));
+  addLog('🕴💥 L\'Étranger Mystérieux abat ' + net + ' sur ' + enName(e) + ' (' + dmg + ' − RD ' + rd + ') · ' + avant + '→' + e.pvCur + ' PV' + (e.pvCur<=0?' 💀 éliminé !':''));
   // Clignotement de la cible chez tous (pas de traceur : l'Étranger n'a pas de jeton) + son côté joueurs
   if(db && currentCombatId){
     db.collection(COMBATS_COLL).doc(currentCombatId).update({ fxAttack: { fromTok:'', toTok:'E'+e.id, hit:true, stranger:true, ts:Date.now() } }).catch(()=>{});
@@ -1337,12 +1345,12 @@ function setAttaqueEnnemi(eid){
   panel._nbDC = nbDC;
   panel._eid = e.id;
   panel._modeEnnemi = true;
-  panel._ennemNom = e.nom;
+  panel._ennemNom = enName(e);
   panel._atkMode = 'enemy';                       // ennemi → joueur : dégâts auto (RD localisée, zone aléatoire)
   panel._dmgType = e.dmgType || 'physical';
   panel._lastHit = true;
   const cibles = Object.values(combattants);
-  let html = '<div class="ctx-nom" style="color:var(--rd)">' + e.nom.toUpperCase() + ' attaque</div>';
+  let html = '<div class="ctx-nom" style="color:var(--rd)">' + enName(e).toUpperCase() + ' attaque</div>';
   html += '<div class="ctx-arme">ATQ : <b>' + e.atq + '</b> · RD : <b>' + e.rd + '</b></div>';
   html += '<div class="ctx-diff" style="margin-top:4px">Cible :';
   html += '<select id="cible-sel" onchange="majTNCible()" style="background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:monospace;font-size:9px;padding:2px 4px;outline:none;margin-left:6px">';
@@ -1506,7 +1514,7 @@ function updateDicePanel(){
   const vivants = (ennemis||[]).filter(e => (e.pvCur||0) > 0);
   html += '<div class="ctx-diff">🎯 Cible : <select id="cible-sel" style="background:#060d06;border:1px solid var(--b2);color:var(--t);font-family:monospace;font-size:9px;padding:2px 4px;outline:none;max-width:100%">';
   html += '<option value="">— aucune (manuel) —</option>';
-  vivants.forEach(e => { html += '<option value="'+e.id+'">'+e.nom+' ('+e.pvCur+'/'+e.pvMax+' · RD '+e.rd+')</option>'; });
+  vivants.forEach(e => { html += '<option value="'+e.id+'">'+enName(e)+' ('+e.pvCur+'/'+e.pvMax+' · RD '+e.rd+')</option>'; });
   html += '</select></div>';
   panel.innerHTML = html;
 }
@@ -1653,12 +1661,12 @@ function lancerCD(){
     const eid = sel ? sel.value : '';
     const e = eid ? ennemis.find(x => x.id == eid) : null;
     if(!e){ addLog('🐾💥 '+(panel._ennemNom||'Compagnon')+' '+nb+'DC: '+dmg+'dmg — aucune cible sélectionnée'); return; }
-    if(panel._lastHit === false){ addLog('🐾 '+(panel._ennemNom||'Compagnon')+' rate '+e.nom+' (pas de dégâts)'); fpBroadcastFx('A'+panel._allyId, 'E'+e.id, false); panel._atkMode=null; return; }
+    if(panel._lastHit === false){ addLog('🐾 '+(panel._ennemNom||'Compagnon')+' rate '+enName(e)+' (pas de dégâts)'); fpBroadcastFx('A'+panel._allyId, 'E'+e.id, false); panel._atkMode=null; return; }
     const rd = parseInt(e.rd)||0;
     const net = Math.max(0, dmg - rd);
     const avant = e.pvCur;
     e.pvCur = Math.max(0, e.pvCur - net);
-    addLog('🐾💥 '+(panel._ennemNom||'Compagnon')+' inflige '+net+' à '+e.nom+' ('+dmg+'dmg − RD '+rd+(ef?' · +'+ef+'⚡':'')+') · '+avant+'→'+e.pvCur+' PV'+(e.pvCur<=0?' 💀 éliminé !':''));
+    addLog('🐾💥 '+(panel._ennemNom||'Compagnon')+' inflige '+net+' à '+enName(e)+' ('+dmg+'dmg − RD '+rd+(ef?' · +'+ef+'⚡':'')+') · '+avant+'→'+e.pvCur+' PV'+(e.pvCur<=0?' 💀 éliminé !':''));
     fpBroadcastFx('A'+panel._allyId, 'E'+e.id, true);
     panel._atkMode = null;   // évite une 2e application sur re-clic
     renderCombat(); renderTracker(); syncCombatToFirebase();
@@ -1671,13 +1679,13 @@ function lancerCD(){
     const eid = sel ? sel.value : '';
     const e = eid ? ennemis.find(x => x.id == eid) : null;
     if(!e){ addLog('💥 '+nomJ+(armeActive?' ('+armeActive+')':'')+' '+nb+'DC: '+dmg+'dmg'+(ef?' +'+ef+'⚡':'')+' — applique les dégâts à la main (aucune cible)'); return; }
-    if(panel._lastHit === false){ addLog('✗ '+nomJ+' rate '+e.nom+' (pas de dégâts)'); fpBroadcastFx(joueurActif, 'E'+e.id, false); panel._lastHit = null; return; }
+    if(panel._lastHit === false){ addLog('✗ '+nomJ+' rate '+enName(e)+' (pas de dégâts)'); fpBroadcastFx(joueurActif, 'E'+e.id, false); panel._lastHit = null; return; }
     if(panel._lastHit == null){ addLog('💥 '+nomJ+' '+nb+'DC: '+dmg+'dmg — lance d\'abord le 2D20 (toucher)'); return; }
     const rd = parseInt(e.rd)||0;
     const net = Math.max(0, dmg - rd);
     const avant = e.pvCur;
     e.pvCur = Math.max(0, e.pvCur - net);
-    addLog('⚔💥 '+nomJ+' inflige '+net+' à '+e.nom+' ('+dmg+'dmg − RD '+rd+(ef?' · +'+ef+'⚡':'')+') · '+avant+'→'+e.pvCur+' PV'+(e.pvCur<=0?' 💀 éliminé !':''));
+    addLog('⚔💥 '+nomJ+' inflige '+net+' à '+enName(e)+' ('+dmg+'dmg − RD '+rd+(ef?' · +'+ef+'⚡':'')+') · '+avant+'→'+e.pvCur+' PV'+(e.pvCur<=0?' 💀 éliminé !':''));
     fpBroadcastFx(joueurActif, 'E'+e.id, true);
     panel._lastHit = null;   // évite une 2e application sur re-clic
     renderCombat(); renderTracker(); syncCombatToFirebase();

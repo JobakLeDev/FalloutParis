@@ -144,8 +144,18 @@ function enemyNum(e){
   }
   return 0;
 }
-function enemyLabel(e){ if(!e) return ''; const n = enemyNum(e); return e.nom + (n ? ' #' + n : ''); }
+// Libellé lisible (« Pillard balafré ») tiré par le MJ et stocké dans l'ennemi ; repli : nom #N
+function enemyLabel(e){ if(!e) return ''; if(e.label) return e.label; const n = enemyNum(e); return e.nom + (n ? ' #' + n : ''); }
 function enemyNumById(id){ return enemyNum(_enemyById(id)); }
+// Badge du jeton : 2 premières lettres de l'adjectif (« Ta » = tatoué) pour relier le jeton
+// au nom annoncé à l'oral ; repli sur le numéro si deux homonymes partagent l'abréviation.
+function _enemyBadge(e, n){
+  if(!e || !e.trait) return n;
+  const tag = t => t ? t.charAt(0).toUpperCase() + t.charAt(1) : '';
+  const mine = tag(e.trait);
+  const clash = (combatState?.ennemis || []).some(o => o !== e && (o.base || o.nom) === (e.base || e.nom) && tag(o.trait) === mine);
+  return clash ? n : mine;
+}
 
 function cibleNom(id){ return enemyLabel(_enemyById(id)); }
 function enemyOptions(list, selectedId){
@@ -481,7 +491,7 @@ function renderJMap(){
     let tTitle = t ? t.nom : (bt ? bt.label : '');
     if(t && t.kind==='ennemi' && !t.dead){
       const _e = _enemyById(t.id.slice(1)), _n = _e ? enemyNum(_e) : 0;
-      if(_n){ inner += '<span class="cen-num">' + _n + '</span>'; tTitle = enemyLabel(_e); }   // badge : rend le « #2 » repérable sur la carte
+      if(_n){ inner += '<span class="cen-num">' + _enemyBadge(_e, _n) + '</span>'; tTitle = enemyLabel(_e); }   // badge : distingue les homonymes sur la carte
     }
     html += `<div class="${cls}"${style?` style="${style}"`:''}${onclick?` onclick="${onclick}"`:''}${eAttr} title="${tTitle}">${inner}</div>`;
   }
@@ -1218,6 +1228,10 @@ function _initFolds(){
   });
 }
 document.addEventListener('DOMContentLoaded', _initFolds);
+document.addEventListener('DOMContentLoaded', () => fpInitSideTabs('.cjl', [
+  { key:'left',  col:'.cjl-left',  label:'Perso' },
+  { key:'right', col:'.cjl-right', label:'Commandes' },
+], 'fp_cjSide', fitJMap));
 
 // ---- DOCK DE COMMANDES ----
 // Le PC est l'écran de restitution, le téléphone la télécommande : les commandes
@@ -1234,6 +1248,7 @@ function _syncDock(myTurn){
   const open = busy || (_dockManual !== null ? _dockManual : myTurn);
   d.classList.toggle('collapsed', !open);
   d.classList.toggle('myturn', !!myTurn);
+  document.querySelector('.cjl')?.classList.toggle('myturn', !!myTurn);   // languette des commandes repliées : appel visuel
   const chev = document.getElementById('cj-dock-chev'); if(chev) chev.textContent = open ? '▾' : '▸';
   const hint = document.getElementById('cj-dock-hint'); if(hint) hint.textContent = (!open && !myTurn) ? '· hors de ton tour' : '';
 }

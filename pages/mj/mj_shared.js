@@ -496,3 +496,117 @@ function generateCombatLoot(enemies){
   });
   return { items, caps };
 }
+
+// ============================================================
+// NOMS D'ENNEMIS LISIBLES À L'ORAL — « Pillard balafré », « Goule borgne »
+// Tirés UNE SEULE FOIS à l'ajout par le MJ et stockés dans l'ennemi (e.label,
+// e.trait, e.base) → PC, mobile et vocal parlent du même combattant. Jamais
+// générés au rendu. e.nom reste la clé technique (base, images des jetons).
+// ============================================================
+// Nom français court + genre (accord de l'adjectif). Absent → e.nom tel quel, au masculin.
+const FP_ENEMY_FR = {
+  'Bloodbug':{n:'Moustique sanguin',g:'m'}, 'Bloatfly':{n:'Mouche bouffie',g:'f'}, 'Radroach':{n:'Radcafard',g:'m'},
+  'Stingwing':{n:'Dard-ailé',g:'m'}, 'Radscorpion':{n:'Radscorpion',g:'m'},
+  'Brahmane sauvage':{n:'Brahmane sauvage',g:'m'}, 'Chien sauvage':{n:'Chien sauvage',g:'m'}, 'Chien':{n:'Chien',g:'m'},
+  'Mutant Hound':{n:'Molosse mutant',g:'m'}, 'Mole Rat':{n:'Rat-taupe',g:'m'}, 'Radstag':{n:'Radcerf',g:'m'},
+  'Yao Guai':{n:'Yao guai',g:'m'}, 'Deathclaw':{n:'Écorcheur',g:'m'},
+  'Mirelurk Hatchling':{n:'Bébé fangeux',g:'m'}, 'Mirelurk':{n:'Fangeux',g:'m'}, 'Mirelurk Hunter':{n:'Fangeux chasseur',g:'m'}, 'Mirelurk Queen':{n:'Reine fangeuse',g:'f'},
+  'Feral Ghoul':{n:'Goule',g:'f'}, 'Glowing One':{n:'Goule lumineuse',g:'f'},
+  'Super Mutant':{n:'Super mutant',g:'m'}, 'Super Mutant Brute':{n:'Brute mutante',g:'f'}, 'Super Mutant Master':{n:'Maître mutant',g:'m'},
+  'Super Mutant Suicider':{n:'Mutant suicidaire',g:'m'}, 'Super Mutant Behemoth':{n:'Béhémoth',g:'m'},
+  'Assaultron':{n:'Assaultron',g:'m'}, 'Eyebot':{n:'Robot-œil',g:'m'}, 'Mister Handy':{n:'Mister Handy',g:'m'},
+  'Protectron':{n:'Protectron',g:'m'}, 'Sentry Bot':{n:'Robot sentinelle',g:'m'},
+  'Machine Gun Turret MK I':{n:'Tourelle Mk I',g:'f'}, 'Machine Gun Turret MK III':{n:'Tourelle Mk III',g:'f'}, 'Machine Gun Turret MK V':{n:'Tourelle Mk V',g:'f'},
+  'Synth':{n:'Synthétique',g:'m'}, 'Synth Strider':{n:'Synthétique arpenteur',g:'m'}, 'Synth Courser':{n:'Chasseur synthétique',g:'m'}, 'Synth Trooper':{n:'Soldat synthétique',g:'m'},
+  'Brotherhood Elder':{n:'Ancien',g:'m'}, 'Brotherhood Paladin':{n:'Paladin',g:'m'}, 'Brotherhood Knight':{n:'Chevalier',g:'m'},
+  'Brotherhood Scribe':{n:'Scribe',g:'m'}, 'Brotherhood Lancer':{n:'Lancier',g:'m'},
+  'Children of Atom':{n:'Atomiste',g:'m'}, 'Gunner':{n:'Artilleur',g:'m'}, 'Mercenary':{n:'Mercenaire',g:'m'}, 'Minuteman':{n:'Minuteman',g:'m'},
+  'Railroad Agent':{n:'Agent du Réseau',g:'m'}, 'Institute Scientist':{n:'Scientifique',g:'m'}, 'Trader / Caravan Merchant':{n:'Marchand',g:'m'},
+  'Vault Dweller':{n:"Habitant d'abri",g:'m'}, 'Wastelander':{n:'Errant',g:'m'},
+  'Raider':{n:'Pillard',g:'m'}, 'Raider Psycho':{n:'Psychopathe',g:'m'}, 'Raider Scaver':{n:'Récupérateur',g:'m'},
+  'Raider Veteran':{n:'Vétéran',g:'m'}, 'Raider Boss':{n:'Chef pillard',g:'m'},
+};
+// Traits PHYSIQUES [masculin, féminin] par famille. Choisis pour être bien distincts
+// prononcés en vocal (pas de paires type vif/vil) et sans connotation de stat.
+const FP_ENEMY_TRAITS = {
+  humain:  [['balafré','balafrée'],['tatoué','tatouée'],['borgne','borgne'],['boiteux','boiteuse'],['édenté','édentée'],
+            ['chauve','chauve'],['massif','massive'],['chétif','chétive'],['bossu','bossue'],['roux','rousse'],['crasseux','crasseuse'],['manchot','manchote']],
+  bete:    [['poilu','poilue'],['pelé','pelée'],['galeux','galeuse'],['balafré','balafrée'],['borgne','borgne'],['boiteux','boiteuse'],
+            ['massif','massive'],['chétif','chétive'],['tacheté','tachetée'],['efflanqué','efflanquée']],
+  insecte: [['luisant','luisante'],['gonflé','gonflée'],['tacheté','tachetée'],['chétif','chétive'],['massif','massive'],['borgne','borgne'],['rougeâtre','rougeâtre']],
+  carapace:[['écaillé','écaillée'],['moussu','moussue'],['ébréché','ébréchée'],['massif','massive'],['borgne','borgne'],['boueux','boueuse'],['balafré','balafrée']],
+  machine: [['rouillé','rouillée'],['cabossé','cabossée'],['rafistolé','rafistolée'],['noirci','noircie'],['grinçant','grinçante'],['borgne','borgne'],['fissuré','fissurée'],['clignotant','clignotante']],
+};
+function _fpEnemyFamily(base){
+  const t = String((window.ENNEMIS_DB && ENNEMIS_DB[base] && ENNEMIS_DB[base].type) || '').toLowerCase();
+  if(/robot|synth|tourelle|turret/.test(t + ' ' + String(base).toLowerCase())) return 'machine';
+  if(/insecte|arachnide/.test(t)) return 'insecte';
+  if(/crustac|reptile/.test(t)) return 'carapace';
+  if(/mammif/.test(t)) return 'bete';
+  return 'humain';
+}
+// base = clé ENNEMIS_DB · taken = Set des traits déjà pris dans ce combat (mis à jour)
+function fpEnemyLabel(base, taken){
+  const fr = FP_ENEMY_FR[base] || { n: base, g: 'm' };
+  const pool = FP_ENEMY_TRAITS[_fpEnemyFamily(base)] || FP_ENEMY_TRAITS.humain;
+  let free = pool.filter(p => !taken.has(p[0]));
+  if(!free.length) free = pool;                              // pool épuisé : on autorise la réutilisation
+  const p = free[Math.floor(Math.random() * free.length)];
+  taken.add(p[0]);
+  return { label: fr.n + ' ' + (fr.g === 'f' ? p[1] : p[0]), trait: p[0] };
+}
+// Complète les ennemis sans nom lisible (combats créés avant cette fonctionnalité) et
+// garantit des libellés distincts. Renvoie true si la liste a changé (→ à synchroniser).
+function fpEnsureEnemyLabels(list){
+  const taken = new Set((list || []).map(e => e.trait).filter(Boolean));
+  let changed = false;
+  (list || []).forEach(e => {
+    if(e.label) return;
+    const base = e.base || String(e.nom || '').replace(/\s+\d+$/, '');
+    const r = fpEnemyLabel(base, taken);
+    e.base = base; e.label = r.label; e.trait = r.trait; changed = true;
+  });
+  const seen = {};
+  (list || []).forEach(e => {
+    const k = e.label; seen[k] = (seen[k] || 0) + 1;
+    if(seen[k] > 1){ e.label = k + ' ' + seen[k]; changed = true; }
+  });
+  return changed;
+}
+// Nom à AFFICHER d'un ennemi (libellé lisible si présent, sinon nom technique)
+function enName(e){ return e ? (e.label || e.nom || '') : ''; }
+
+// ============================================================
+// BANDEAUX LATÉRAUX RÉTRACTABLES (écrans de combat MJ + joueur)
+// Une languette en tête de chaque colonne latérale la replie en bande étroite.
+// État mémorisé ; onChange (ex. ajuster la carte) appelé après chaque bascule.
+// ============================================================
+function fpInitSideTabs(gridSel, sides, storeKey, onChange){
+  const grid = document.querySelector(gridSel); if(!grid) return;
+  let st = {}; try { st = JSON.parse(localStorage.getItem(storeKey) || '{}'); } catch(e){}
+  sides.forEach(s => {
+    const col = grid.querySelector(s.col); if(!col) return;
+    let tab = col.querySelector(':scope > .side-tab');
+    if(!tab){ tab = document.createElement('button'); tab.type = 'button'; tab.className = 'side-tab side-' + s.key; col.insertBefore(tab, col.firstChild); }
+    const paint = () => {
+      const off = col.classList.contains('side-off');
+      grid.classList.toggle(s.key + '-off', off);
+      tab.innerHTML = off
+        ? '<span class="st-ar">' + (s.key === 'left' ? '▶' : '◀') + '</span><span class="st-lb">' + s.label + '</span>'
+        : (s.key === 'left' ? '<span class="st-ar">◀</span><span class="st-lb">Réduire</span>' : '<span class="st-lb">Réduire</span><span class="st-ar">▶</span>');
+      tab.title = off ? 'Afficher : ' + s.label : 'Replier le bandeau';
+    };
+    if(st[s.key]) col.classList.add('side-off');
+    paint();
+    tab.onclick = () => {
+      col.classList.toggle('side-off'); paint();
+      try {
+        const cur = JSON.parse(localStorage.getItem(storeKey) || '{}');
+        if(col.classList.contains('side-off')) cur[s.key] = 1; else delete cur[s.key];
+        localStorage.setItem(storeKey, JSON.stringify(cur));
+      } catch(e){}
+      if(onChange) setTimeout(onChange, 40);
+    };
+  });
+  if(onChange) setTimeout(onChange, 40);
+}
