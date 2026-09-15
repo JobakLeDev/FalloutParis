@@ -51,6 +51,27 @@ const MAJOR_ACTIONS = [
   { type: 'Test',        desc: 'Test de competence libre (permission MJ)',               mouvement: false },
 ];
 
+// Affichage des actions : libellé français, pictogramme monochrome, sous-titre court.
+// feat = action la plus jouée → tuile large en tête ; les autres vont dans « Autres actions ».
+const ACTION_UI = {
+  'Aim':         { fr: 'Viser',          ic: '◎', sub: 'relance 1d20',        feat: true },
+  'Move':        { fr: 'Se déplacer',    ic: '➔', sub: 'portée moyenne',      feat: true },
+  'Draw Item':   { fr: 'Sortir un objet',ic: '⇅', sub: 'arme ou armure' },
+  'Interact':    { fr: 'Interagir',      ic: '✋', sub: 'porte, bouton…' },
+  'Take Chem':   { fr: 'Prendre un chem',ic: '✚', sub: 'soi ou allié' },
+  'Attack':      { fr: 'Attaquer',       ic: '✦', sub: 'mêlée ou distance',   feat: true },
+  'Sprint':      { fr: 'Sprinter',       ic: '»', sub: 'portée longue',       feat: true },
+  'Defend':      { fr: 'Défendre',       ic: '⛨', sub: '+1 défense',          feat: true },
+  'First Aid':   { fr: 'Premiers soins', ic: '✚', sub: 'soigner un allié' },
+  'Assist':      { fr: 'Assister',       ic: '⇄', sub: 'aider un allié' },
+  'Command NPC': { fr: 'Ordonner',       ic: '⚑', sub: 'PNJ allié' },
+  'Rally':       { fr: 'Rallier',        ic: '↻', sub: 'générer des AP' },
+  'Ready':       { fr: 'Préparer',       ic: '⏱', sub: 'action déclenchée' },
+  'Test':        { fr: 'Test libre',     ic: '⚄', sub: 'avec accord MJ' },
+  'Pass':        { fr: 'Passer',         ic: '⏸', sub: 'ne rien faire' },
+};
+let _jaMoreOpen = { min: false, maj: false };   // « Autres actions » ouvert : survit aux re-rendus
+
 let db, joueurData = null, joueurId = null, combatId = null;
 let combatState = null;
 let tousJoueurs = {};
@@ -1609,38 +1630,61 @@ function renderActionsDeclarees(){
     const aimsUsed   = minorUsed.filter(t => t === 'Aim').length + ((minorWaiting && minorPending.type === 'Aim') ? 1 : 0);
     const aimPending = aimsUsed > attacksDone;
 
-    html += '<div class="act-cat-lbl">ACTIONS MINEURES <span style="color:var(--g)">' + (s.mineure ?? 1) + '</span></div>'
-      + '<div class="j-act-btns">';
-    MINOR_ACTIONS.forEach(a => {
+    // Tuiles d'action : les plus jouées en avant (grandes), le reste rangé dans « Autres ».
+    // Libellés en français pour l'affichage ; a.type reste la clé de logique (déclaration MJ).
+    const _tile = (cat, a, st) => {
+      const m = ACTION_UI[a.type] || { fr: a.type, ic: '•', sub: '' };
+      const cls = 'ja-tile ' + (cat === 'majeure' ? 'maj' : 'min')
+        + (st.feat ? ' feat' : '') + (st.pending ? ' pending' : '') + (st.done ? ' done' : '');
+      const sub = st.pending ? 'en attente du MJ' : st.done ? 'déjà fait' : (st.reason || m.sub);
+      return '<button onclick="prepareAction(\'' + cat + '\',\'' + a.type + '\')" class="' + cls + '"'
+        + (st.disabled ? ' disabled' : '') + ' title="' + a.desc + '">'
+        + '<span class="ja-ic">' + m.ic + '</span>'
+        + '<span class="ja-txt"><span class="ja-lb">' + m.fr + '</span>'
+        + (st.feat ? '<span class="ja-sub">' + sub + '</span>' : '') + '</span>'
+        + (st.pending ? '<span class="ja-wait"></span>' : '')
+        + '</button>';
+    };
+    const _pips = (n, max) => Array.from({length: max}, (_, k) => '<i class="' + (k < n ? 'on' : '') + '"></i>').join('');
+    const _group = (cat, list, slotsLeft, stateOf) => {
+      const feat = list.filter(a => (ACTION_UI[a.type] || {}).feat);
+      const rest = list.filter(a => !(ACTION_UI[a.type] || {}).feat);
+      const key = cat === 'majeure' ? 'maj' : 'min';
+      let h = '<div class="ja-group ' + key + '">'
+        + '<div class="ja-head"><span>' + (cat === 'majeure' ? 'Majeures' : 'Mineures') + '</span>'
+        + '<span class="ja-pips">' + _pips(slotsLeft, Math.max(2, slotsLeft)) + '</span></div>'
+        + '<div class="ja-feat">' + feat.map(a => _tile(cat, a, Object.assign({ feat: true }, stateOf(a)))).join('') + '</div>';
+      if (rest.length) {
+        h += '<details class="ja-more"' + (_jaMoreOpen[key] ? ' open' : '') + ' ontoggle="_jaMoreOpen.' + key + '=this.open">'
+          + '<summary>Autres actions ' + (cat === 'majeure' ? 'majeures' : 'mineures') + '</summary>'
+          + '<div class="ja-rest">' + rest.map(a => _tile(cat, a, stateOf(a))).join('') + '</div></details>';
+      }
+      return h + '</div>';
+    };
+
+    html += _group('mineure', MINOR_ACTIONS, (s.mineure ?? 1), a => {
       const isPendingThis = minorWaiting && minorPending.type === a.type;
       const moveBlocked   = a.mouvement && !!as.mouvement_used;
       const aimLock       = a.type === 'Aim' && aimPending && !isPendingThis;   // déjà visé, pas encore attaqué
-      const disabled      = aimLock || moveBlocked || noMinorSlots || minorWaiting || !!selectedActionDraft;
-      const lbl = isPendingThis ? '⏳ ' + a.type : aimLock ? '✓ ' + a.type : a.type;
-      const cls = 'j-act-btn' + (isPendingThis ? ' pending' : '') + (aimLock ? ' aimed' : '');
-      html += '<button onclick="prepareAction(\'mineure\',\'' + a.type + '\')" class="' + cls + '"'
-        + (disabled ? ' disabled' : '')
-        + ' title="' + a.desc + '">' + lbl + '</button>';
+      return {
+        pending: isPendingThis, done: aimLock,
+        disabled: aimLock || moveBlocked || noMinorSlots || minorWaiting || !!selectedActionDraft,
+        reason: moveBlocked ? 'déjà déplacé' : noMinorSlots ? 'plus de mineure' : '',
+      };
     });
-    html += '</div>';
     html += '<div id="j-exec-minor"></div>';   // exécution d'une action mineure (ex. Se déplacer) — entre mineures et majeures
 
     const majorPending = as.majeure?.pending;
     const noMajorSlots = (s.majeure ?? 1) <= 0;   // grisé si plus d'action majeure dispo
-
-    html += '<div class="act-cat-lbl">ACTIONS MAJEURES <span style="color:var(--g)">' + (s.majeure ?? 1) + '</span></div>'
-      + '<div class="j-act-btns">';
-    MAJOR_ACTIONS.forEach(a => {
+    html += _group('majeure', MAJOR_ACTIONS, (s.majeure ?? 1), a => {
       const isPendingThis = majorWaiting && majorPending.type === a.type;
       const moveBlocked   = a.mouvement && !!as.mouvement_used;
-      const disabled      = moveBlocked || noMajorSlots || majorWaiting || !!selectedActionDraft;
-      const lbl = isPendingThis ? '⏳ ' + a.type : a.type;
-      const cls = 'j-act-btn maj' + (isPendingThis ? ' pending' : '');
-      html += '<button onclick="prepareAction(\'majeure\',\'' + a.type + '\')" class="' + cls + '"'
-        + (disabled ? ' disabled' : '')
-        + ' title="' + a.desc + '">' + lbl + '</button>';
+      return {
+        pending: isPendingThis,
+        disabled: moveBlocked || noMajorSlots || majorWaiting || !!selectedActionDraft,
+        reason: moveBlocked ? 'déjà déplacé' : noMajorSlots ? 'plus de majeure' : '',
+      };
     });
-    html += '</div>';
     html += '<div id="j-exec-major"></div>';   // exécution d'une action majeure (Sprint/Defend/…)
     // (Le bouton « Terminer mon tour » est rendu séparément, sous le bloc « Mes jets ».)
   }
@@ -1665,13 +1709,38 @@ function renderActionsDeclarees(){
 }
 
 // Bouton « Terminer mon tour » (sous Mes jets) — visible pendant mon tour
+// Ce qui reste jouable ce tour (sert à décider si « Terminer » demande confirmation)
+function _actionsRestantes(){
+  const s = combatState?.actionsState?.[joueurId] || { mineure:1, majeure:1 };
+  const as = actionState || {};
+  const left = [];
+  if((s.mineure ?? 1) > 0) left.push((s.mineure ?? 1) + ' action' + ((s.mineure ?? 1) > 1 ? 's' : '') + ' mineure' + ((s.mineure ?? 1) > 1 ? 's' : ''));
+  if((s.majeure ?? 1) > 0) left.push((s.majeure ?? 1) + ' action' + ((s.majeure ?? 1) > 1 ? 's' : '') + ' majeure' + ((s.majeure ?? 1) > 1 ? 's' : ''));
+  const waiting = ['mineure','majeure'].some(c => as[c]?.pending?.status === 'waiting');
+  return { left, waiting, only: !left.length && !waiting };
+}
+// « Terminer mon tour » : en bas de la colonne, terne tant qu'il reste autre chose à faire
+// (clic → confirmation Oui/Non) ; il ne s'allume que lorsqu'il est la seule action restante.
 function renderFinTour(){
   const el = document.getElementById('j-fin-tour'); if(!el) return;
   const isMoTour = combatState?.ordreInitiative?.[combatState.tourActif]?.id === joueurId;
   if(isMoTour && !turnEnded){
+    const r = _actionsRestantes();
     el.style.display = 'block';
-    el.innerHTML = '<button onclick="finMonTour()" class="j-fin-btn">✓ TERMINER MON TOUR</button>';
+    el.innerHTML = '<button onclick="confirmFinTour()" class="j-fin-btn' + (r.only ? ' ready' : '') + '">'
+      + (r.only ? '✓ Terminer mon tour' : 'Terminer mon tour') + '</button>';
   } else { el.style.display = 'none'; el.innerHTML = ''; }
+}
+async function confirmFinTour(){
+  const r = _actionsRestantes();
+  if(!r.only){
+    const bits = [];
+    if(r.left.length) bits.push('Il te reste ' + r.left.join(' et ') + '.');
+    if(r.waiting) bits.push('Une action attend encore la validation du MJ.');
+    const ok = await fpConfirm(bits.join('\n') + '\n\nTerminer ton tour quand même ?', { okLabel: 'Oui', cancelLabel: 'Non' });
+    if(!ok) return;
+  }
+  finMonTour();
 }
 
 function prepareAction(category, type){

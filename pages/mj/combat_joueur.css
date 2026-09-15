@@ -524,3 +524,92 @@
 /* ---- Colonne de droite : commandes ---- */
 .cjl-right > #j-fin-tour{ margin:0; }
 .cjl-right .j-fin-btn{ width:100%; }
+
+/* ============================================================
+   TUILES D'ACTION — remplacent les boutons texte « point & click ».
+   Groupe Mineures (vert) / Majeures (ambre) · compteur en pastilles ·
+   actions les plus jouées en tuiles larges · le reste rangé dans « Autres ».
+   ============================================================ */
+.ja-group{ margin:2px 0 10px; }
+.ja-group.min{ --ja:var(--g);     --ja-rgb:102,212,102; }
+.ja-group.maj{ --ja:var(--am-br); --ja-rgb:232,168,32; }
+.ja-head{ display:flex; align-items:center; justify-content:space-between; margin:0 0 6px; }
+.ja-head > span:first-child{ font-size:8px; letter-spacing:3px; text-transform:uppercase; color:var(--ja); opacity:.85; }
+.ja-pips{ display:flex; gap:4px; }
+.ja-pips i{ width:9px; height:9px; border-radius:50%; border:1px solid var(--ja); opacity:.35; }
+.ja-pips i.on{ background:var(--ja); opacity:1; box-shadow:0 0 6px rgba(var(--ja-rgb),.7); }
+
+.ja-feat{ display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.ja-group.maj .ja-feat > .ja-tile:first-child{ grid-column:1 / -1; }   /* Attaquer : l'action reine, pleine largeur */
+
+.ja-tile{
+  position:relative; display:flex; align-items:center; gap:9px; width:100%; min-width:0;
+  padding:8px 10px; text-align:left; cursor:pointer;
+  font-family:'Share Tech Mono',monospace; color:var(--t);
+  background:linear-gradient(180deg, rgba(var(--ja-rgb),.06), rgba(0,0,0,.18));
+  border:1px solid rgba(var(--ja-rgb),.22); border-radius:var(--r-sm);
+  transition:border-color .14s, background .14s, transform .12s, box-shadow .14s;
+}
+.ja-ic{
+  flex:none; width:30px; height:30px; display:flex; align-items:center; justify-content:center;
+  font-size:16px; line-height:1; color:var(--ja);
+  background:rgba(var(--ja-rgb),.10); border:1px solid rgba(var(--ja-rgb),.30); border-radius:8px;
+  transition:background .14s, box-shadow .14s;
+}
+.ja-txt{ flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+.ja-lb{ font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:.6px; color:var(--tb); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ja-sub{ font-size:8.5px; color:var(--td); letter-spacing:.3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+.ja-tile:hover:not(:disabled){
+  border-color:rgba(var(--ja-rgb),.7);
+  background:linear-gradient(180deg, rgba(var(--ja-rgb),.14), rgba(var(--ja-rgb),.04));
+  box-shadow:0 4px 14px rgba(0,0,0,.35), 0 0 0 1px rgba(var(--ja-rgb),.15);
+  transform:translateY(-1px);
+}
+.ja-tile:hover:not(:disabled) .ja-ic{ background:rgba(var(--ja-rgb),.22); box-shadow:0 0 10px rgba(var(--ja-rgb),.45); }
+.ja-tile:active:not(:disabled){ transform:translateY(0) scale(.985); box-shadow:none; }
+.ja-tile:focus-visible{ outline:2px solid rgba(var(--ja-rgb),.8); outline-offset:1px; }
+
+.ja-tile:disabled{ cursor:default; opacity:.34; filter:saturate(.4); }
+.ja-tile.done{ opacity:.55; }
+.ja-tile.done .ja-ic::after{ content:'✓'; position:absolute; font-size:10px; margin:-18px 0 0 18px; color:var(--g); }
+.ja-tile.pending{ opacity:1; filter:none; border-color:var(--am-br); background:linear-gradient(180deg,rgba(232,168,32,.14),rgba(232,168,32,.03)); }
+.ja-tile.pending .ja-sub{ color:var(--am-br); }
+.ja-wait{ flex:none; width:8px; height:8px; border-radius:50%; background:var(--am-br); box-shadow:0 0 8px var(--am-br); animation:jaWait 1s ease-in-out infinite; }
+@keyframes jaWait{ 0%,100%{ opacity:.35; transform:scale(.8); } 50%{ opacity:1; transform:scale(1.1); } }
+
+/* Autres actions : liste compacte, repliée par défaut */
+.ja-more{ margin-top:6px; }
+.ja-more > summary{
+  list-style:none; cursor:pointer; user-select:none; font-size:8.5px; letter-spacing:1px; color:var(--td);
+  padding:4px 2px; display:flex; align-items:center; gap:5px;
+}
+.ja-more > summary::-webkit-details-marker{ display:none; }
+.ja-more > summary::before{ content:'▸'; font-size:9px; transition:transform .14s; }
+.ja-more[open] > summary::before{ transform:rotate(90deg); }
+.ja-more > summary:hover{ color:var(--ja); }
+.ja-rest{ display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-top:4px; }
+.ja-rest .ja-tile{ padding:5px 7px; gap:6px; }
+.ja-rest .ja-ic{ width:22px; height:22px; font-size:12px; border-radius:6px; }
+.ja-rest .ja-lb{ font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:.3px; }
+
+@media (prefers-reduced-motion: reduce){ .ja-tile, .ja-wait{ transition:none; animation:none; } }
+
+/* ============================================================
+   TERMINER MON TOUR — tout en bas, terne tant qu'il reste des actions
+   (clic → confirmation Oui/Non) ; s'allume quand c'est la seule option.
+   ============================================================ */
+.cjl-right > #j-fin-tour{ margin-top:2px; }
+.cjl-right .j-fin-btn{
+  width:100%; padding:8px 10px; border-radius:var(--r-sm);
+  background:transparent; border:1px solid var(--b); color:var(--td);
+  font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase;
+  box-shadow:none; opacity:.75; cursor:pointer; transition:opacity .14s, color .14s, border-color .14s;
+}
+.cjl-right .j-fin-btn:hover{ opacity:1; color:var(--t); border-color:var(--b2); background:transparent; box-shadow:none; }
+.cjl-right .j-fin-btn.ready{
+  opacity:1; color:var(--tb); border-color:var(--g);
+  background:linear-gradient(180deg,rgba(102,212,102,.14),rgba(102,212,102,.04));
+  box-shadow:0 0 14px rgba(102,212,102,.25);
+}
+.cjl-right .j-fin-btn.ready:hover{ box-shadow:0 0 20px rgba(102,212,102,.45); color:var(--tb); border-color:var(--g); }

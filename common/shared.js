@@ -523,9 +523,9 @@ function partyMinutesFor(tempsData, pid){
         }
         const row = document.createElement('div'); row.className = 'fp-alert-row';
         const done = (val) => { m.remove(); if(!o.children.length) o.style.display = 'none'; resolve(val); };
-        const cancel = document.createElement('button'); cancel.className = 'fp-alert-cancel'; cancel.textContent = 'Annuler';
+        const cancel = document.createElement('button'); cancel.className = 'fp-alert-cancel'; cancel.textContent = opts.cancelLabel || 'Annuler';
         cancel.onclick = () => done(kind === 'prompt' ? null : false);
-        const ok = document.createElement('button'); ok.className = 'fp-alert-ok'; ok.textContent = 'OK';
+        const ok = document.createElement('button'); ok.className = 'fp-alert-ok'; ok.textContent = opts.okLabel || 'OK';
         ok.onclick = () => done(kind === 'prompt' ? input.value : true);
         row.appendChild(cancel); row.appendChild(ok); m.appendChild(row);
         o.appendChild(m); o.style.display = 'flex';
@@ -535,6 +535,7 @@ function partyMinutesFor(tempsData, pid){
       if(!document.body) document.addEventListener('DOMContentLoaded', go); else go();
     });
   }
-  window.fpConfirm = (msg) => fpModal({ kind:'confirm', msg });
+  // fpConfirm(msg, {okLabel, cancelLabel}) — libellés optionnels (défaut OK / Annuler)
+  window.fpConfirm = (msg, o) => fpModal(Object.assign({ kind:'confirm', msg }, o || {}));
   window.fpPrompt  = (msg, def) => fpModal({ kind:'prompt', msg, def });
 })();
