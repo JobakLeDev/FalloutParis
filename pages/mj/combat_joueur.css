@@ -454,7 +454,7 @@
 .trk-hp > i{ display:block; height:100%; background:var(--rd); border-radius:999px; box-shadow:0 0 5px rgba(224,64,64,.6); }
 
 /* ---- Colonnes : la carte prend la place ---- */
-.cjl{ grid-template-columns:minmax(0,210px) minmax(0,1fr) minmax(0,190px); gap:10px; }
+.cjl{ grid-template-columns:minmax(0,230px) minmax(0,1fr) minmax(0,280px); gap:10px; }   /* perso & ressources | carte | commandes */
 
 /* ---- Carte en vedette ---- */
 .cjl-center #j-map-pnl #j-combat-map{ overflow:hidden; }
@@ -476,7 +476,7 @@
 .cj-dock.collapsed > .pnl-title{ margin-bottom:0; border-bottom:none; }
 /* Replié : on masque les boutons, jamais une déclaration ni le popup de jets */
 .cj-dock.collapsed > #j-actions > :not(.act-draft-pop),
-.cj-dock.collapsed > #j-actions-decl{ display:none !important; }
+.cj-dock.collapsed > #j-actions-decl > :not(.act-draft-pop){ display:none !important; }   /* la popup de déclaration vit DANS #j-actions-decl */
 .cj-dock.myturn{ border-color:var(--gd); }
 /* Boutons plus sobres : la couleur revient au survol */
 .cj-dock .j-act-btn{ font-size:10px; padding:5px 10px; color:var(--td); border-color:var(--b); }
@@ -501,3 +501,26 @@
   .cjl{ grid-template-columns:1fr; }
   .cj-hero-now b{ font-size:1.4rem; }
 }
+
+
+/* ---- Indicateurs MIN / MAJ / PA : dans le cadre du perso (ce ne sont pas des boutons) ---- */
+.j-act-state{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  margin-top:8px; padding:6px 8px; background:#0a140a; border:1px solid var(--b); border-radius:var(--r-sm); }
+.j-act-state:empty{ display:none; }
+.j-act-state .act-section-lbl{ font-size:8px; color:var(--td); letter-spacing:2px; margin:0 5px 0 0; }
+.j-act-state .act-sep{ height:16px; }
+.j-act-state .act-dot-j{ width:14px; height:14px; cursor:default; }
+.j-act-state .pa-val-j{ font-size:1.25rem; }
+
+/* ---- Blocs repliables (clic sur le cadre de titre) ---- */
+.cjl .pnl.cj-fold > .pnl-title{ cursor:pointer; user-select:none; padding-right:24px; }
+.cjl .pnl.cj-fold > .pnl-title::after{ content:'▾'; position:absolute; right:9px; top:50%; transform:translateY(-50%); color:var(--td); font-size:10px; }
+.cjl .pnl.cj-fold > .pnl-title:hover{ color:var(--g); }
+.cjl .pnl.cj-fold.pnl-collapsed{ padding-bottom:0; }
+.cjl .pnl.cj-fold.pnl-collapsed > .pnl-title{ margin-bottom:0; border-bottom:none; }
+.cjl .pnl.cj-fold.pnl-collapsed > .pnl-title::after{ content:'▸'; }
+.cjl .pnl.cj-fold.pnl-collapsed > :not(.pnl-title){ display:none !important; }
+
+/* ---- Colonne de droite : commandes ---- */
+.cjl-right > #j-fin-tour{ margin:0; }
+.cjl-right .j-fin-btn{ width:100%; }

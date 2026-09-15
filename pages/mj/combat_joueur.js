@@ -976,11 +976,13 @@ function renderActionsJoueur(){
   const el = document.getElementById('j-actions'); if(!el||!combatState) return;
   const s = combatState.actionsState?.[joueurId] || {mineure:1, majeure:1, pa:0};
 
-  // Ronds purement indicatifs (pas de dépense manuelle ici)
+  // MIN / MAJ / PA : purement INDICATIFS (pas des boutons) → affichés dans le cadre du perso
   const minDots = [0,1].map(i => '<span class="act-dot-j'+(i < s.mineure ? ' on' : '')+'"></span>').join('');
   const majDots = [0,1].map(i => '<span class="act-dot-j maj'+(i < s.majeure ? ' on' : '')+'"></span>').join('');
 
-  el.innerHTML =
+  const stateEl = document.getElementById('j-act-state');
+  el.innerHTML = '';   // le dock de commandes ne garde que de vraies actions (ex. Étranger Mystérieux)
+  if(stateEl) stateEl.innerHTML =
     '<div class="act-h-group">' +
       '<span class="act-section-lbl">MIN</span>' +
       '<div class="act-dots">' + minDots + '</div>' +
@@ -1172,6 +1174,29 @@ function renderTrackerJoueur(){
   }
   _syncDock(!!cur && cur.id === joueurId);
 }
+
+// ---- BLOCS REPLIABLES (colonne gauche : fiche, alliés, AP, Chance) ----
+// Clic sur le cadre de titre = replier/déplier. État mémorisé par bloc (localStorage),
+// posé une fois : les rendus ne touchent que le CONTENU des blocs, jamais leur classe.
+function _initFolds(){
+  let st = {};
+  try { st = JSON.parse(localStorage.getItem('fp_cjFold') || '{}'); } catch(e){}
+  document.querySelectorAll('.cjl .pnl.cj-fold').forEach(p => {
+    if(st[p.id]) p.classList.add('pnl-collapsed');
+    const t = p.querySelector(':scope > .pnl-title'); if(!t || t._foldWired) return;
+    t._foldWired = true;
+    t.addEventListener('click', ev => {
+      if(ev.target.closest('button, input, select, a, details')) return;   // pas de repli sur un contrôle du titre
+      const on = p.classList.toggle('pnl-collapsed');
+      try {
+        const cur = JSON.parse(localStorage.getItem('fp_cjFold') || '{}');
+        if(on) cur[p.id] = 1; else delete cur[p.id];
+        localStorage.setItem('fp_cjFold', JSON.stringify(cur));
+      } catch(e){}
+    });
+  });
+}
+document.addEventListener('DOMContentLoaded', _initFolds);
 
 // ---- DOCK DE COMMANDES ----
 // Le PC est l'écran de restitution, le téléphone la télécommande : les commandes
