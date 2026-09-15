@@ -74,6 +74,10 @@ let _jaMoreOpen = { min: false, maj: false };   // « Autres actions » ouvert :
 
 let db, joueurData = null, joueurId = null, combatId = null;
 let combatState = null;
+// Mode téléphone (?m=1) : même logique, mise en page tactile — le Pip-Boy ouvre cette page ainsi
+const M_MODE = new URLSearchParams(location.search).get('m') === '1';
+if(M_MODE && document.body) document.body.classList.add('m-mode');
+if(M_MODE){ const _vp = document.querySelector('meta[name=viewport]'); if(_vp) _vp.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover'; }   // le pincer sert au zoom de la carte, pas de la page
 let tousJoueurs = {};
 let armeSelectionnee = null;
 let nbDCActuel = 2;
@@ -189,13 +193,16 @@ function initJoueur(){
 
   const app = firebase.initializeApp(firebaseConfig);
   db = app.firestore();
+  if(M_MODE && typeof fpNetWake === 'function') fpNetWake(db);   // le téléphone se verrouille : relancer les listeners au réveil
 
   // Mes données
   db.collection('joueurs').doc(joueurId).onSnapshot(snap => {
     if(!snap.exists) return;
     joueurData = {...snap.data(), _id: joueurId};
     document.getElementById('hdr-nom').textContent = joueurData.nom || joueurId;
-    document.getElementById('lien-fiche').href = '../fiche_perso/fiche_perso.html?id=' + joueurId;
+    const _lf = document.getElementById('lien-fiche');
+    if(M_MODE){ _lf.href = '../mobile/mobile.html?id=' + encodeURIComponent(joueurId); _lf.textContent = '‹ Pip-Boy'; }
+    else _lf.href = '../fiche_perso/fiche_perso.html?id=' + joueurId;
     renderMaCarte();
     renderLuckJoueur();
   });
@@ -458,6 +465,7 @@ function renderJMap(){
   const bgStyle = grid.bg
     ? `;background-image:linear-gradient(rgba(4,12,7,.55),rgba(4,12,7,.55)),url('${('' + grid.bg).replace(/'/g, '')}');background-size:100% 100%;background-repeat:no-repeat`
     : '';
+  const _picking = !!(selectedActionDraft && _isAtkType(selectedActionDraft.type));   // toucher un ennemi = le cibler
   let html = `<div class="cmap${moving?' moving':''}" style="grid-template-columns:repeat(${w},var(--cs,22px))${bgStyle}">`;
   for(let y=0;y<h;y++) for(let x=0;x<w;x++){
     const key=x+','+y; const tid=byPos[key]; const t=tid?toks.find(z=>z.id===tid):null;
@@ -488,6 +496,11 @@ function renderJMap(){
     } else inner = (bt?bt.icon:'');
     if(reach && reach[key]!=null && !t) inner += '<span class="snap-dot"></span>';   // point d'accroche souris
     const eAttr = (t && t.kind==='ennemi') ? ` data-eid="${t.id.slice(1)}"` : '';
+    // Déclaration d'attaque en cours : toucher un ennemi visible le prend pour cible (PC et téléphone)
+    if(_picking && t && t.kind==='ennemi' && !t.dead && !onclick){
+      const _pe = _enemyById(t.id.slice(1));
+      if(_pe && !_pe.hidden && (typeof enemyVisible !== 'function' || enemyVisible(_pe))){ onclick = `pickTargetJ('${t.id.slice(1)}')`; cls += ' cen-pick'; }
+    }
     let tTitle = t ? t.nom : (bt ? bt.label : '');
     if(t && t.kind==='ennemi' && !t.dead){
       const _e = _enemyById(t.id.slice(1)), _n = _e ? enemyNum(_e) : 0;
@@ -1245,7 +1258,7 @@ function _syncDock(myTurn){
   if(key !== _dockTurnKey){ _dockTurnKey = key; _dockManual = null; }
   // Une déclaration en cours ne se replie jamais sous les doigts du joueur
   const busy = !!selectedActionDraft;
-  const open = busy || (_dockManual !== null ? _dockManual : myTurn);
+  const open = M_MODE || busy || (_dockManual !== null ? _dockManual : myTurn);
   d.classList.toggle('collapsed', !open);
   d.classList.toggle('myturn', !!myTurn);
   document.querySelector('.cjl')?.classList.toggle('myturn', !!myTurn);   // languette des commandes repliées : appel visuel
@@ -1262,6 +1275,7 @@ function toggleDock(){
 // Les tracés (arêtes, traits de déplacement/visée, traceurs) sont calculés sur un pas
 // fixe de 30 px : on n'agrandit donc PAS les cases, on zoome le bloc entier.
 function fitJMap(){
+  if(M_MODE){ _mzApply(); return; }
   const host = document.getElementById('j-combat-map');
   const grid = host && host.querySelector('.cmap');
   if(!grid) return;
@@ -1553,7 +1567,8 @@ function renderActionsDeclarees(){
         if(ennemisV.length){
           // La zone ne se choisit qu'en VISANT (Aim). Une attaque non visée → zone tirée au hasard.
           const showZone = (selectedActionDraft.type === 'Aim');
-          body += '<select id="j-act-cible" class="decl-in" onchange="renderJMap()">'
+          body += '<div class="decl-hint">🎯 Touche l\'ennemi sur la carte — ou choisis-le ici :</div>'
+            + '<select id="j-act-cible" class="decl-in" onchange="renderJMap()">'
             + enemyOptions(ennemisV, savedCible)
             + '</select>'
             + (showZone
@@ -1710,6 +1725,11 @@ function renderActionsDeclarees(){
   const _tDraft = selectedActionDraft && selectedActionDraft.type;
   const _mapDecl = !!_tDraft && (_isMoveType(_tDraft) || _isAtkType(_tDraft)) && !!combatState?.grid?.pos?.[joueurId];
   if(draftHtml) html += '<div class="act-draft-pop' + (_mapDecl ? ' no-veil' : '') + '">' + draftHtml + '</div>';
+  // Téléphone : la carte est au-dessus de la feuille de déclaration → on la ramène à l'écran une fois par déclaration
+  if(M_MODE){
+    if(_mapDecl && _mzScrollKey !== _tDraft){ _mzScrollKey = _tDraft; setTimeout(() => document.getElementById('j-map-pnl')?.scrollIntoView({ behavior:'smooth', block:'start' }), 60); }
+    if(!_tDraft) _mzScrollKey = null;
+  }
 
   el.innerHTML = html;
   el.style.display = html ? 'block' : 'none';
@@ -1863,3 +1883,115 @@ function reprendreDestination(){
   renderJMap();
 }
 
+
+
+// ============================================================
+// CIBLAGE AU TOUCHER — toucher un ennemi pendant une déclaration d'attaque
+// ============================================================
+function pickTargetJ(eid){
+  const sel = document.getElementById('j-act-cible'); if(!sel) return;
+  if(![...sel.options].some(o => String(o.value) === String(eid))) return;
+  sel.value = String(eid);
+  if(navigator.vibrate){ try { navigator.vibrate(15); } catch(e){} }
+  renderJMap();
+}
+
+// ============================================================
+// MODE TÉLÉPHONE — carte zoomable et déplaçable au doigt (?m=1)
+// Pincer = zoom autour des doigts · glisser = déplacer · +/− · ◎ centrer sur moi · ⛶ tout voir.
+// Les cases gardent leur pas fixe de 30 px (tracés, traceurs) : on transforme le bloc .cmap.
+// renderJMap reconstruit .cmap à chaque mise à jour → l'état (_mz) est réappliqué après rendu.
+// Un glisser ne doit pas valider une case : le clic qui suit un geste est avalé.
+// ============================================================
+let _mz = { s: 0, x: 0, y: 0, init: false };
+let _mzPtrs = new Map(), _mzStart = null, _mzMoved = false, _mzSuppress = false, _mzScrollKey = null;
+const MZ_MAX = 3.2, MZ_TOUCH = 1.45;   // ~45 px par case : taille confortable pour le doigt
+function _mzEls(){ const host = document.getElementById('j-combat-map'); return { host, grid: host && host.querySelector('.cmap') }; }
+function _mzFitScale(host, grid){ return Math.min(host.clientWidth / grid.offsetWidth, host.clientHeight / grid.offsetHeight); }
+function _mzClamp(host, grid){
+  const W = host.clientWidth, H = host.clientHeight, gw = grid.offsetWidth * _mz.s, gh = grid.offsetHeight * _mz.s, m = 60;
+  _mz.x = gw <= W ? (W - gw) / 2 : Math.min(m, Math.max(W - gw - m, _mz.x));
+  _mz.y = gh <= H ? (H - gh) / 2 : Math.min(m, Math.max(H - gh - m, _mz.y));
+}
+function _mzApply(){
+  const { host, grid } = _mzEls(); if(!host || !grid || !host.clientWidth || !grid.offsetWidth) return;
+  _mzWire(host);
+  if(!_mz.init){ _mz.init = true; mzFocusMe(true); return; }
+  _mzClamp(host, grid);
+  grid.style.zoom = ''; grid.style.maxWidth = 'none'; grid.style.transformOrigin = '0 0';
+  grid.style.transform = 'translate(' + _mz.x.toFixed(1) + 'px,' + _mz.y.toFixed(1) + 'px) scale(' + _mz.s.toFixed(3) + ')';
+}
+function _mzSetScale(ns, cx, cy){
+  const { host, grid } = _mzEls(); if(!grid) return;
+  ns = Math.max(Math.min(_mzFitScale(host, grid), 1), Math.min(MZ_MAX, ns));
+  if(cx == null){ cx = host.clientWidth / 2; cy = host.clientHeight / 2; }
+  _mz.x = cx - (cx - _mz.x) * (ns / _mz.s);
+  _mz.y = cy - (cy - _mz.y) * (ns / _mz.s);
+  _mz.s = ns; _mzApply();
+}
+function mzZoom(f){ _mzSetScale(_mz.s * f); }
+function mzFit(){ const { host, grid } = _mzEls(); if(!grid) return; _mz.s = _mzFitScale(host, grid); _mz.x = 0; _mz.y = 0; _mzApply(); }
+function mzFocusMe(first){
+  const { host, grid } = _mzEls(); if(!grid) return;
+  const p = combatState?.grid?.pos?.[joueurId];
+  if(!p){ _mz.s = _mzFitScale(host, grid); _mz.x = 0; _mz.y = 0; _mzApply(); return; }
+  if(first || _mz.s < MZ_TOUCH) _mz.s = Math.max(_mzFitScale(host, grid), MZ_TOUCH);
+  const pad = 5, pitch = 31, cs = 30;
+  const px = pad + p.x * pitch + cs / 2, py = pad + p.y * pitch + cs / 2;
+  _mz.x = host.clientWidth / 2 - px * _mz.s; _mz.y = host.clientHeight / 2 - py * _mz.s;
+  _mzApply();
+}
+function _mzWire(host){
+  if(host._mzWired) return; host._mzWired = true;
+  host.classList.add('mz-view');
+  const pnl = document.getElementById('j-map-pnl');
+  if(pnl && !pnl.querySelector('.mz-ctrl')){
+    const c = document.createElement('div'); c.className = 'mz-ctrl';
+    c.innerHTML = '<button type="button" onclick="mzZoom(1.3)" aria-label="Zoomer">+</button>'
+      + '<button type="button" onclick="mzZoom(1/1.3)" aria-label="Dézoomer">−</button>'
+      + '<button type="button" onclick="mzFocusMe()" aria-label="Centrer sur moi">◎</button>'
+      + '<button type="button" onclick="mzFit()" aria-label="Tout voir">⛶</button>';
+    pnl.appendChild(c);   // hors de #j-combat-map : son contenu est reconstruit à chaque rendu
+  }
+  host.addEventListener('pointerdown', e => {
+    _mzSuppress = false;
+    _mzPtrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if(_mzPtrs.size === 1){ _mzStart = { x: e.clientX, y: e.clientY, ox: _mz.x, oy: _mz.y }; _mzMoved = false; }
+    else if(_mzPtrs.size === 2){
+      const [a, b] = [..._mzPtrs.values()], r = host.getBoundingClientRect();
+      _mzStart = { pinch: true, d: Math.hypot(a.x - b.x, a.y - b.y) || 1, s: _mz.s, ox: _mz.x, oy: _mz.y,
+                   cx: (a.x + b.x) / 2 - r.left, cy: (a.y + b.y) / 2 - r.top };
+      _mzMoved = true;
+    }
+  });
+  host.addEventListener('pointermove', e => {
+    if(!_mzPtrs.has(e.pointerId) || !_mzStart) return;
+    _mzPtrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if(_mzStart.pinch && _mzPtrs.size >= 2){
+      const [a, b] = [..._mzPtrs.values()];
+      const { grid } = _mzEls(); if(!grid) return;
+      const ns = Math.max(Math.min(_mzFitScale(host, grid), 1), Math.min(MZ_MAX, _mzStart.s * Math.hypot(a.x - b.x, a.y - b.y) / _mzStart.d));
+      _mz.x = _mzStart.cx - (_mzStart.cx - _mzStart.ox) * (ns / _mzStart.s);
+      _mz.y = _mzStart.cy - (_mzStart.cy - _mzStart.oy) * (ns / _mzStart.s);
+      _mz.s = ns; _mzApply();
+    } else if(!_mzStart.pinch){
+      const dx = e.clientX - _mzStart.x, dy = e.clientY - _mzStart.y;
+      if(!_mzMoved && Math.hypot(dx, dy) > 8) _mzMoved = true;
+      if(_mzMoved){ _mz.x = _mzStart.ox + dx; _mz.y = _mzStart.oy + dy; _mzApply(); }
+    }
+  });
+  const end = e => {
+    _mzPtrs.delete(e.pointerId);
+    if(_mzPtrs.size === 0){ if(_mzMoved) _mzSuppress = true; _mzStart = null; }
+    else if(_mzPtrs.size === 1){ const [p] = [..._mzPtrs.values()]; _mzStart = { x: p.x, y: p.y, ox: _mz.x, oy: _mz.y }; }
+  };
+  host.addEventListener('pointerup', end);
+  host.addEventListener('pointercancel', end);
+  // Le clic qui suit un glisser/pincer ne valide ni case ni cible
+  host.addEventListener('click', e => { if(_mzSuppress){ _mzSuppress = false; e.stopPropagation(); e.preventDefault(); } }, true);
+  host.addEventListener('wheel', e => {
+    e.preventDefault(); const r = host.getBoundingClientRect();
+    _mzSetScale(_mz.s * (e.deltaY < 0 ? 1.15 : 1 / 1.15), e.clientX - r.left, e.clientY - r.top);
+  }, { passive: false });
+  window.addEventListener('resize', () => setTimeout(_mzApply, 120));
+}
