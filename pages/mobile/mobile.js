@@ -399,7 +399,8 @@ function openCombat() {
   if (!_combatId) return;
   location.href = '../mj/combat_joueur.html?id=' + encodeURIComponent(JOUEUR_ID)
     + '&combat=' + encodeURIComponent(_combatId)
-    + '&camp=' + encodeURIComponent(fpCampId());
+    + '&camp=' + encodeURIComponent(fpCampId())
+    + '&m=1';   // mode téléphone : même écran, mise en page tactile, carte zoomable
 }
 
 // ---------- Alertes ----------

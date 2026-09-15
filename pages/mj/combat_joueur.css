@@ -569,3 +569,99 @@
   box-shadow:0 0 14px rgba(102,212,102,.25);
 }
 .cjl-right .j-fin-btn.ready:hover{ box-shadow:0 0 20px rgba(102,212,102,.45); color:var(--tb); border-color:var(--g); }
+
+/* ============================================================
+   CIBLAGE AU TOUCHER (PC + téléphone) — pendant une déclaration d'attaque,
+   les ennemis visibles portent un cercle pointillé qui tourne : on les touche.
+   ============================================================ */
+.cmap-cell.cen-pick{ cursor:crosshair; }
+.cmap-cell.cen-pick:not([class*=" b-"])::after{
+  content:''; position:absolute; inset:-3px; z-index:2; pointer-events:none; border-radius:50%;
+  border:2px dashed rgba(224,64,64,.8); animation:pickSpin 6s linear infinite;
+}
+@keyframes pickSpin{ to{ transform:rotate(360deg); } }
+@media (prefers-reduced-motion: reduce){ .cmap-cell.cen-pick::after{ animation:none; } }
+.decl-hint{ font-size:9px; color:var(--am-br); margin:0 0 5px; letter-spacing:.3px; }
+
+/* ============================================================
+   MODE TÉLÉPHONE (?m=1) — l'écran de combat vu depuis le Pip-Boy.
+   Une colonne : carte zoomable → commandes (toujours ouvertes) → perso & ressources.
+   Déclaration et jets remontent en feuilles du bas ; la carte reste visible au-dessus.
+   ============================================================ */
+body.m-mode{ padding:0 !important; overscroll-behavior-y:contain; }
+body.m-mode #app{ padding:6px 6px calc(12px + env(safe-area-inset-bottom)); max-width:none; }
+body.m-mode .hdr{ padding:6px 8px; margin-bottom:6px; }
+body.m-mode .hdr-title{ font-size:14px; }
+body.m-mode #hdr-round{ display:none; }
+body.m-mode .hdr .hbtn{ padding:9px 12px; font-size:10px; }
+
+/* Bandeau de tour compact, collé en haut */
+body.m-mode .cj-hero{ position:sticky; top:0; z-index:30; gap:6px; margin-bottom:6px; padding-top:env(safe-area-inset-top); background:var(--bg); }
+body.m-mode .cj-hero-round{ min-width:3.4rem; padding:.2rem .4rem; }
+body.m-mode .cj-hero-round b{ font-size:1.35rem; }
+body.m-mode .cj-hero-now{ padding:.3rem .6rem; }
+body.m-mode .cj-hero-now small{ font-size:.5rem; }
+body.m-mode .cj-hero-now b{ font-size:1.1rem; letter-spacing:1.5px; }
+
+/* Ordre d'initiative : une ligne qui défile au doigt */
+body.m-mode .cj-order{ flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:4px; margin-bottom:6px; }
+body.m-mode .cj-order::-webkit-scrollbar{ display:none; }
+body.m-mode .cj-order .tracker-item{ flex:none; min-width:6rem; }
+
+/* Une colonne */
+body.m-mode .cjl{ grid-template-columns:1fr !important; gap:8px; }
+body.m-mode .cjl-center{ order:1; }
+body.m-mode .cjl-right{ order:2; }
+body.m-mode .cjl-left{ order:3; }
+body.m-mode .side-tab{ display:none !important; }
+
+/* Carte zoomable (pincer / glisser / boutons) */
+body.m-mode .cjl-center #j-map-pnl #j-combat-map{ padding:0; }
+body.m-mode #j-combat-map.mz-view{ position:relative; height:46vh; overflow:hidden; touch-action:none; border-radius:var(--r-sm); }
+body.m-mode #j-combat-map .cmap{ margin:0 !important; max-width:none !important; overflow:visible !important; will-change:transform; }
+body.m-mode .mz-ctrl{ position:absolute; right:16px; bottom:18px; z-index:25; display:flex; flex-direction:column; gap:6px; }
+body.m-mode .mz-ctrl button{
+  width:42px; height:42px; border-radius:11px; font-size:19px; line-height:1; cursor:pointer;
+  background:rgba(10,20,10,.86); border:1px solid var(--b2); color:var(--tb); box-shadow:0 3px 10px rgba(0,0,0,.5);
+}
+body.m-mode .mz-ctrl button:active{ background:var(--gk); border-color:var(--g); }
+
+/* Tuiles d'action : cibles au doigt */
+body.m-mode .ja-tile{ padding:11px 12px; }
+body.m-mode .ja-ic{ width:36px; height:36px; font-size:18px; }
+body.m-mode .ja-lb{ font-size:15px; }
+body.m-mode .ja-sub{ font-size:10px; }
+body.m-mode .ja-rest .ja-tile{ padding:10px 8px; }
+body.m-mode .ja-rest .ja-ic{ width:28px; height:28px; font-size:14px; }
+body.m-mode .ja-rest .ja-lb{ font-size:12px; }
+body.m-mode .ja-more > summary{ font-size:11px; padding:9px 2px; }
+body.m-mode .cjl-right .j-fin-btn{ padding:13px; font-size:12px; }
+body.m-mode .cj-dock .cj-dock-hd{ cursor:default; }
+body.m-mode .cj-dock-chev{ display:none; }
+
+/* Feuilles du bas : déclaration (compacte, la carte reste lisible) et jets */
+body.m-mode .act-draft-pop,
+body.m-mode #j-dice-panel{
+  position:fixed; left:0; right:0; bottom:0; top:auto; transform:none; width:100%; max-width:none;
+  border-radius:16px 16px 0 0; z-index:80; padding-bottom:env(safe-area-inset-bottom);
+  animation:mSheetUp .18s ease-out;
+}
+body.m-mode .act-draft-pop{ max-height:44vh; }
+body.m-mode #j-dice-panel{ max-height:78vh; }
+body.m-mode .act-draft-pop.no-veil{ box-shadow:0 -8px 26px rgba(0,0,0,.7), 0 0 22px rgba(212,160,23,.22); }
+@keyframes mSheetUp{ from{ transform:translateY(18%); opacity:.6; } to{ transform:none; opacity:1; } }
+body.m-mode .decl-box{ font-size:11px; }
+body.m-mode .decl-box .decl-in{ font-size:16px; padding:10px; }   /* 16 px : pas de zoom automatique iOS au focus */
+body.m-mode .decl-hint{ font-size:11px; }
+body.m-mode .decl-send, body.m-mode .decl-cancel{ padding:13px 10px; font-size:12px; }
+body.m-mode .des-row .dice-btn, body.m-mode .des-row .cd-btn{ padding:12px 6px; font-size:13px; }
+body.m-mode .d20opt{ padding:9px 10px; font-size:11px; }
+body.m-mode .dice-ok-btn{ padding:12px 34px; font-size:13px; }
+
+/* Pastille réseau (netwake.js) */
+body.m-mode .fp-net-pill{
+  position:fixed; top:calc(.4rem + env(safe-area-inset-top)); left:50%; transform:translateX(-50%); z-index:99997;
+  align-items:center; font-family:'Share Tech Mono',monospace; font-size:.6rem; letter-spacing:1px;
+  padding:.3rem .7rem; border-radius:999px; background:#1a1200; border:1px solid var(--am-br); color:var(--am-br);
+}
+body.m-mode .fp-net-pill.offline{ background:#1a0505; border-color:var(--rd); color:var(--rd); }

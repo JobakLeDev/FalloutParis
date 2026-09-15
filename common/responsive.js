@@ -11,7 +11,7 @@
 // ============================================================
 (function(){
   var EMBED = false;
-  try { EMBED = new URLSearchParams(location.search).get('embed') === '1'; } catch(e){}
+  try { const _q = new URLSearchParams(location.search); EMBED = _q.get('embed') === '1' || _q.get('m') === '1'; } catch(e){}   // m=1 : mode téléphone (écran de combat ouvert depuis le Pip-Boy)
 
   var DESIGN = 1460;   // largeur de contenu de référence (≈ max-width 1400 + marges)
   var MINZ = 0.8, MAXZ = 1.5;

@@ -5,6 +5,7 @@
 //   Bouton flottant 🎵 (mute/repren.) en bas à gauche. Vol/mute mémorisés.
 // ============================================================
 (function(){
+  if(new URLSearchParams(location.search).get('m') === '1') return;   // téléphone = télécommande : la musique vient du PC
   const MANIFEST = '../../radio/combat/tracks.json';
   const BASE     = '../../radio/combat/';
   let tracks = [], queue = [], audio = null;
