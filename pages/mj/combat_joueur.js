@@ -495,6 +495,7 @@ function renderJMap(){
   }
   html += '</div>';
   el.innerHTML = html;
+  fitJMap();   // agrandit la carte à la largeur dispo (lisible à distance)
 }
 // Ouvrir / fermer une porte adjacente : le joueur DÉCLARE une action mineure (Interact) → le MJ valide → la porte pivote.
 async function openDoorJ(key){
@@ -1139,13 +1140,81 @@ function renderTrackerJoueur(){
     }
     const eAttr = (c.type==='ennemi' && c.eid!=null) ? ' data-eid="'+c.eid+'"' : '';
     const nomTrk = (c.type==='ennemi' && c.eid!=null) ? (enemyLabel(_enemyById(c.eid)) || c.nom) : c.nom;
+    // Ennemi : mini-barre de PV (état du combat lisible d'un coup d'œil, depuis le canapé)
+    let hpBar = '';
+    if(c.type==='ennemi' && c.eid!=null){
+      const e = _enemyById(c.eid);
+      if(e && e.pvMax && !e.hidden){
+        const p = Math.max(0, Math.min(100, Math.round(100*(e.pvCur||0)/e.pvMax)));
+        hpBar = '<i class="trk-hp"><i style="width:'+p+'%"></i></i>';
+      }
+    }
     return '<div class="tracker-item'+(isActif?' actif':'')+(c.type==='ennemi'?' ennemi':'')+(isMe?' c-est-moi':'')+'"'+eAttr+'>'
       +'<div class="tracker-top">'
       +'<span class="tracker-nom">'+(isActif?'▶ ':'')+nomTrk+(isMe?' ◀':'')+' </span>'
       +'<span class="tracker-init">'+c.init+'</span>'
-      +'</div></div>';
+      +'</div>'+hpBar+'</div>';
   }).join('');
+
+  // Bandeau de tour : qui joue, en très gros (écran de restitution)
+  const now = document.getElementById('j-now');
+  const cur = ordre[tourActif];
+  if(now){
+    if(!cur){ now.className = 'cj-hero-now'; now.innerHTML = '<span class="empty">En attente...</span>'; }
+    else {
+      const isMe = cur.id === joueurId;
+      const nom = (cur.type==='ennemi' && cur.eid!=null) ? (enemyLabel(_enemyById(cur.eid)) || cur.nom) : cur.nom;
+      now.className = 'cj-hero-now ' + (isMe ? 'me' : cur.type==='ennemi' ? 'foe' : 'ally');
+      now.innerHTML = isMe
+        ? '<small>À toi de jouer</small><b>C\'est ton tour</b>'
+        : '<small>'+(cur.type==='ennemi' ? 'Tour ennemi' : 'Tour de')+'</small><b>'+nom+'</b>';
+    }
+  }
+  _syncDock(!!cur && cur.id === joueurId);
 }
+
+// ---- DOCK DE COMMANDES ----
+// Le PC est l'écran de restitution, le téléphone la télécommande : les commandes
+// restent disponibles sur PC (on peut jouer sans mobile) mais s'effacent hors de
+// son tour. Ouvert automatiquement à mon tour, replié sinon ; un clic sur l'en-tête
+// force l'état jusqu'au changement de tour.
+let _dockManual = null, _dockTurnKey = null;
+function _syncDock(myTurn){
+  const d = document.getElementById('cj-dock'); if(!d) return;
+  const key = (combatState?.numRound||0) + ':' + (combatState?.tourActif||0);
+  if(key !== _dockTurnKey){ _dockTurnKey = key; _dockManual = null; }
+  // Une déclaration en cours ne se replie jamais sous les doigts du joueur
+  const busy = !!selectedActionDraft;
+  const open = busy || (_dockManual !== null ? _dockManual : myTurn);
+  d.classList.toggle('collapsed', !open);
+  d.classList.toggle('myturn', !!myTurn);
+  const chev = document.getElementById('cj-dock-chev'); if(chev) chev.textContent = open ? '▾' : '▸';
+  const hint = document.getElementById('cj-dock-hint'); if(hint) hint.textContent = (!open && !myTurn) ? '· hors de ton tour' : '';
+}
+function toggleDock(){
+  const d = document.getElementById('cj-dock'); if(!d) return;
+  _dockManual = d.classList.contains('collapsed');
+  _syncDock(d.classList.contains('myturn'));
+}
+
+// ---- CARTE AJUSTÉE À LA LARGEUR ----
+// Les tracés (arêtes, traits de déplacement/visée, traceurs) sont calculés sur un pas
+// fixe de 30 px : on n'agrandit donc PAS les cases, on zoome le bloc entier.
+function fitJMap(){
+  const host = document.getElementById('j-combat-map');
+  const grid = host && host.querySelector('.cmap');
+  if(!grid) return;
+  grid.style.zoom = ''; grid.style.maxWidth = '';
+  const cs = getComputedStyle(host);
+  const avail = host.clientWidth - parseFloat(cs.paddingLeft||0) - parseFloat(cs.paddingRight||0);
+  const w = grid.offsetWidth;
+  if(!w || !avail) return;
+  const z = Math.max(1, Math.min(1.9, avail / w));
+  // Grande carte (plus large que la place) : z = 1, elle garde son défilement (max-width:100%).
+  // Petite carte agrandie : on lève le max-width, sinon il briderait le bloc zoomé.
+  if(z > 1.001){ grid.style.maxWidth = 'none'; grid.style.zoom = z.toFixed(3); }
+}
+window.addEventListener('resize', () => { clearTimeout(window._fitJMapT); window._fitJMapT = setTimeout(fitJMap, 120); });
 
 // ---- INFO ENNEMI AU SURVOL (jeton grille / ligne d'initiative) ----
 let _jEnTip;

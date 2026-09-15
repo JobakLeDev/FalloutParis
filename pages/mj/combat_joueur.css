@@ -400,3 +400,104 @@
   background:radial-gradient(ellipse at center, #0b160b 0%, #070d07 100%);
   padding:6px;
 }
+
+/* ============================================================
+   ÉCRAN DE RESTITUTION (refonte) — le PC se lit depuis le canapé,
+   le téléphone sert de télécommande. Hiérarchie : QUI JOUE > CARTE >
+   état des combattants > commandes (présentes mais discrètes).
+   ============================================================ */
+
+/* ---- Bandeau de tour ---- */
+.cj-hero{
+  display:flex; align-items:stretch; gap:10px; margin-bottom:8px;
+}
+.cj-hero-round{
+  flex:none; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  min-width:5.2rem; padding:.35rem .6rem;
+  background:linear-gradient(180deg,#0e1a0e,#0a140a); border:1px solid var(--b2); border-radius:var(--r);
+  box-shadow:var(--glow);
+}
+.cj-hero-round span{ font-size:.55rem; letter-spacing:3px; color:var(--td); text-transform:uppercase; }
+.cj-hero-round b{ font-family:'Oswald',sans-serif; font-size:2rem; line-height:1; color:var(--am-br); text-shadow:0 0 12px rgba(232,168,32,.45); }
+.cj-hero-now{
+  flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center;
+  padding:.4rem 1rem; border:1px solid var(--b2); border-radius:var(--r);
+  background:linear-gradient(90deg,rgba(102,212,102,.10),rgba(10,20,10,.4) 70%);
+  box-shadow:var(--glow);
+}
+.cj-hero-now small{ font-size:.6rem; letter-spacing:3px; color:var(--td); text-transform:uppercase; }
+.cj-hero-now b{
+  font-family:'Oswald',sans-serif; font-weight:600; font-size:1.9rem; line-height:1.1; letter-spacing:3px;
+  text-transform:uppercase; color:var(--tb); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.cj-hero-now.me{ border-color:var(--g); background:linear-gradient(90deg,rgba(102,212,102,.24),rgba(10,20,10,.4) 75%); }
+.cj-hero-now.me b{ color:var(--g); text-shadow:0 0 16px rgba(102,212,102,.65); animation:cjTurn 1.6s ease-in-out infinite; }
+.cj-hero-now.foe{ border-color:rgba(224,64,64,.55); background:linear-gradient(90deg,rgba(224,64,64,.16),rgba(10,20,10,.4) 75%); }
+.cj-hero-now.foe b{ color:#ff8a8a; text-shadow:0 0 12px rgba(224,64,64,.45); }
+@keyframes cjTurn{ 0%,100%{ opacity:1; } 50%{ opacity:.72; } }
+@media (prefers-reduced-motion: reduce){ .cj-hero-now.me b{ animation:none; } }
+
+/* ---- Ordre d'initiative : pastilles lisibles ---- */
+.cj-order{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+.cj-order .tracker-item{
+  margin:0; padding:.35rem .6rem; min-width:7rem;
+  border-radius:var(--r-sm); background:#0b150b; border:1px solid var(--b);
+}
+.cj-order .tracker-top{ margin:0; gap:.6rem; }
+.cj-order .tracker-nom{ font-size:.78rem !important; letter-spacing:.5px; }
+.cj-order .tracker-init{ font-size:.8rem !important; color:var(--td); }
+.cj-order .tracker-item.actif{ border-color:var(--g); background:#12230f; box-shadow:var(--glow-br); }
+.cj-order .tracker-item.ennemi{ border-color:#3a1515; background:#140a0a; }
+.cj-order .tracker-item.ennemi.actif{ border-color:var(--rd); box-shadow:0 0 12px rgba(224,64,64,.45); }
+.cj-order .tracker-item.c-est-moi{ border-color:var(--gd); }
+.trk-hp{ display:block; height:4px; margin-top:4px; background:#1e0b0b; border-radius:999px; overflow:hidden; }
+.trk-hp > i{ display:block; height:100%; background:var(--rd); border-radius:999px; box-shadow:0 0 5px rgba(224,64,64,.6); }
+
+/* ---- Colonnes : la carte prend la place ---- */
+.cjl{ grid-template-columns:minmax(0,210px) minmax(0,1fr) minmax(0,190px); gap:10px; }
+
+/* ---- Carte en vedette ---- */
+.cjl-center #j-map-pnl #j-combat-map{ overflow:hidden; }
+.cjl-center #j-map-pnl #j-combat-map .cmap{ margin:0 auto; }
+
+/* ---- Ma fiche : les PV se lisent de loin ; le « c'est ton tour » vit dans le bandeau ---- */
+#ma-carte .mon-tour-banner{ display:none; }
+#ma-carte .jc-name{ font-size:1rem; }
+#ma-carte .jc-bar{ height:8px; border-radius:999px; }
+#ma-carte .jc-bar > div{ border-radius:999px; }
+#ma-carte .jc-sv{ font-size:1.35rem; }
+
+/* ---- Dock de commandes : présent, discret ---- */
+.cj-dock .cj-dock-hd{ cursor:pointer; user-select:none; display:flex; align-items:center; gap:.4rem; }
+.cj-dock-hint{ color:var(--td); letter-spacing:1px; text-transform:none; font-size:8px; }
+.cj-dock-chev{ margin-left:auto; color:var(--td); font-size:10px; }
+.cj-dock.collapsed{ opacity:.6; transition:opacity .15s; }
+.cj-dock.collapsed:hover{ opacity:1; }
+.cj-dock.collapsed > .pnl-title{ margin-bottom:0; border-bottom:none; }
+/* Replié : on masque les boutons, jamais une déclaration ni le popup de jets */
+.cj-dock.collapsed > #j-actions > :not(.act-draft-pop),
+.cj-dock.collapsed > #j-actions-decl{ display:none !important; }
+.cj-dock.myturn{ border-color:var(--gd); }
+/* Boutons plus sobres : la couleur revient au survol */
+.cj-dock .j-act-btn{ font-size:10px; padding:5px 10px; color:var(--td); border-color:var(--b); }
+.cj-dock.myturn .j-act-btn:not(:disabled){ color:var(--t); border-color:var(--b2); }
+.cj-dock .act-cat-lbl{ font-size:8px; color:var(--td); }
+
+/* ---- Ressources (AP / Chance) : dépenses rangées ---- */
+.cj-more{ margin-top:6px; }
+.cj-more > summary{
+  cursor:pointer; list-style:none; font-size:8px; letter-spacing:1px; color:var(--td);
+  padding:3px 0; text-transform:uppercase;
+}
+.cj-more > summary::-webkit-details-marker{ display:none; }
+.cj-more > summary::before{ content:'▸ '; }
+.cj-more[open] > summary::before{ content:'▾ '; }
+.cj-more > summary:hover{ color:var(--am-br); }
+.j-ap-val, .j-luck-val{ font-size:1.6rem; }
+.j-ap-dot{ width:12px; height:12px; }
+.j-luck-dot{ width:11px; height:11px; }
+
+@media(max-width:1000px){
+  .cjl{ grid-template-columns:1fr; }
+  .cj-hero-now b{ font-size:1.4rem; }
+}
