@@ -601,3 +601,45 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 #app > .ap-bar .ap-btn-sm, .combat-layout .ap-btn-sm{ padding:3px 8px; font-size:8px; }
 
 @media (prefers-reduced-motion: reduce){ .cj-flow-btn, .combat-layout [class*="-btn"]{ transition:none; } }
+
+/* ============================================================
+   BANDEAUX LATÉRAUX RÉTRACTABLES (MJ + joueur) — fpInitSideTabs (mj_shared.js)
+   Languette en tête de colonne ; repliée, la colonne devient une bande de 28 px
+   et la carte récupère la place (refit automatique).
+   ============================================================ */
+.side-tab{
+  display:flex; align-items:center; justify-content:center; gap:6px; width:100%; margin:0; padding:5px 6px;
+  background:linear-gradient(180deg,#0e1a0e,#0a140a); border:1px solid var(--b); border-radius:var(--r-sm);
+  color:var(--td); font-family:'Share Tech Mono',monospace; font-size:8px; letter-spacing:2px; text-transform:uppercase;
+  cursor:pointer; opacity:.7; transition:color .14s, border-color .14s, box-shadow .14s, opacity .14s;
+}
+.side-tab:hover{ opacity:1; color:var(--g); border-color:var(--gd); box-shadow:0 0 10px rgba(102,212,102,.2); }
+.side-tab .st-ar{ font-size:9px; }
+@media (min-width:1001px){
+  .cjl .side-off > :not(.side-tab){ display:none !important; }
+  .side-off > .side-tab{
+    opacity:1; flex-direction:column; writing-mode:vertical-rl; width:28px; min-height:200px; padding:12px 0; gap:10px;
+    border-color:var(--b2); background:linear-gradient(90deg,#0e1a0e,#0a140a);
+  }
+  .side-off > .side-tab .st-ar{ writing-mode:horizontal-tb; }
+  /* Écran joueur */
+  .cjl.left-off              { grid-template-columns:28px minmax(0,1fr) minmax(0,280px); }
+  .cjl.right-off             { grid-template-columns:minmax(0,230px) minmax(0,1fr) 28px; }
+  .cjl.left-off.right-off    { grid-template-columns:28px minmax(0,1fr) 28px; }
+  /* Mon tour alors que les commandes sont repliées : la languette appelle l'œil */
+  .cjl.myturn.right-off .side-right{ color:var(--g); border-color:var(--g); box-shadow:0 0 12px rgba(102,212,102,.45); animation:sideCall 1.4s ease-in-out infinite; }
+}
+@media (min-width:1101px){
+  /* Écran MJ (sa grille passe en 1 colonne sous 1100 px) */
+  .combat-layout .side-off > :not(.side-tab){ display:none !important; }
+  .combat-layout.left-off           { grid-template-columns:28px minmax(0,1fr) minmax(0,300px); }
+  .combat-layout.right-off          { grid-template-columns:220px minmax(0,1fr) 28px; }
+  .combat-layout.left-off.right-off { grid-template-columns:28px minmax(0,1fr) 28px; }
+}
+@media (max-width:1100px){ .combat-layout .side-tab{ display:none; } }
+@media (max-width:1000px){ .cjl .side-tab{ display:none; } }
+@keyframes sideCall{ 0%,100%{ box-shadow:0 0 6px rgba(102,212,102,.25); } 50%{ box-shadow:0 0 16px rgba(102,212,102,.6); } }
+@media (prefers-reduced-motion: reduce){ .cjl.myturn.right-off .side-right{ animation:none; } }
+
+/* Badge d'homonyme sur le jeton : pilule (2 lettres de l'adjectif ou numéro) */
+.cen-num{ border-radius:999px !important; padding:0 3px !important; font-size:8px !important; letter-spacing:0; }
