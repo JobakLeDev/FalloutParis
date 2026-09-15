@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../common/style.css?v=2edc6765">
   <link rel="stylesheet" href="combat.css?v=0b1bf00a">
-  <link rel="stylesheet" href="combat_joueur.css?v=6fd067ec">
+  <link rel="stylesheet" href="combat_joueur.css?v=921e5ab5">
   <link rel="stylesheet" href="../../common/zoom.css?v=2a2cfe92">
 </head>
 <body>
@@ -47,35 +47,61 @@
     <!-- LAYOUT : gauche (fiche/alliés) · CENTRE (carte + actions/jets) · droite (AP/Luck) -->
     <div class="cjl">
 
-      <!-- GAUCHE -->
+      <!-- GAUCHE : mon perso (+ indicateurs d'actions) · alliés · AP groupe · Chance
+           Chaque bloc se replie d'un clic sur son cadre de titre (état mémorisé). -->
       <div class="cjl-col cjl-left">
-        <div class="pnl" id="ma-carte">
+        <div class="pnl cj-fold" id="ma-carte">
           <div class="pnl-title">Ma fiche</div>
           <div id="ma-carte-content"><span class="empty">Chargement...</span></div>
+          <!-- MIN / MAJ / PA : des INDICATEURS (pas des boutons) → ils vivent avec le perso -->
+          <div id="j-act-state" class="j-act-state"></div>
         </div>
-        <div class="pnl">
+        <div class="pnl cj-fold" id="pnl-allies">
           <div class="pnl-title">Alliés</div>
           <div id="j-coequipiers"><span class="empty">Aucun coéquipier</span></div>
         </div>
+        <div class="pnl bottom-ap cj-fold" id="pnl-ap">
+          <div class="pnl-title">AP Groupe</div>
+          <div class="j-ap-pool">
+            <div class="j-ap-dots" id="j-ap-dots"></div>
+            <span class="j-ap-val" id="j-ap-val">0</span><span style="font-size:7px;color:var(--td)">/6</span>
+          </div>
+          <div id="j-ap-spend-btns"></div>
+        </div>
+        <div class="pnl bottom-luck cj-fold" id="pnl-luck">
+          <div class="pnl-title">🍀 Chance</div>
+          <div class="j-luck-pool">
+            <div class="j-luck-dots" id="j-luck-dots"></div>
+            <span class="j-luck-val" id="j-luck-val">0</span><span style="font-size:7px;color:var(--td)">/<span id="j-luck-max">5</span></span>
+          </div>
+          <details class="cj-more">
+            <summary>Dépenser la Chance</summary>
+            <button class="j-ap-spend-btn" id="j-lucky-timing-btn" onclick="luckyTimingJ()">⚡ Lucky Timing (−1)</button>
+            <div class="luck-draw-row" style="margin-top:3px">
+              <input type="text" id="j-luck-draw-inp" class="luck-draw-inp" placeholder="Détail favorable...">
+              <button class="j-ap-spend-btn" onclick="luckOfTheDrawJ()">🍀 Luck of the Draw (−1)</button>
+            </div>
+          </details>
+        </div>
       </div>
 
-      <!-- CENTRE : CARTE (vedette) → Terminer mon tour → dock de commandes (discret)
-           Le PC est l'écran de restitution ; les commandes restent là pour jouer sans
-           téléphone, mais s'effacent hors de ton tour. -->
+      <!-- CENTRE : la carte, en vedette (écran de restitution) -->
       <div class="cjl-col cjl-center">
-
         <div class="pnl" id="j-map-pnl" style="display:none">
           <div class="pnl-title">🗺 Carte de combat <span id="j-map-hint" style="font-size:7px;color:var(--td)"></span></div>
           <div id="j-combat-map"></div>
         </div>
+      </div>
 
+      <!-- DROITE : commandes (discrètes hors de mon tour) -->
+      <div class="cjl-col cjl-right">
         <!-- TERMINER MON TOUR -->
         <div id="j-fin-tour" style="display:none;text-align:center"></div>
 
         <div class="pnl bottom-actions cj-dock collapsed" id="cj-dock">
           <div class="pnl-title cj-dock-hd" onclick="toggleDock()">Commandes <span class="cj-dock-hint" id="cj-dock-hint">· hors de ton tour</span><span class="cj-dock-chev" id="cj-dock-chev">▸</span></div>
-          <div id="j-actions"><span class="empty">—</span></div>
-          <div id="j-actions-decl" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid var(--b)"></div>
+          <div id="j-actions"></div>
+          <div id="j-actions-decl" style="display:none"></div>
 
         <!-- DÉS : popup flottant ANCRÉ par-dessus le bloc d'actions (la carte reste visible) -->
         <div class="pnl bottom-des" id="j-dice-panel" style="display:none">
@@ -123,36 +149,6 @@
           </div>
         </div>
         </div><!-- /cj-dock -->
-
-        <!-- (Exécution d'action — Se déplacer/Defend/… — rendue inline dans le dock : mineure entre min/maj, majeure sous les majeures) -->
-      </div>
-
-      <!-- DROITE : AP groupe + Luck -->
-      <div class="cjl-col cjl-right">
-        <div class="pnl bottom-ap">
-          <div class="pnl-title">AP Groupe</div>
-          <div class="j-ap-pool">
-            <div class="j-ap-dots" id="j-ap-dots"></div>
-            <span class="j-ap-val" id="j-ap-val">0</span><span style="font-size:7px;color:var(--td)">/6</span>
-          </div>
-          <div id="j-ap-spend-btns"></div>
-        </div>
-
-        <div class="pnl bottom-luck">
-          <div class="pnl-title">🍀 Luck</div>
-          <div class="j-luck-pool">
-            <div class="j-luck-dots" id="j-luck-dots"></div>
-            <span class="j-luck-val" id="j-luck-val">0</span><span style="font-size:7px;color:var(--td)">/<span id="j-luck-max">5</span></span>
-          </div>
-          <details class="cj-more">
-            <summary>Dépenser la Chance</summary>
-            <button class="j-ap-spend-btn" id="j-lucky-timing-btn" onclick="luckyTimingJ()">⚡ Lucky Timing (−1)</button>
-            <div class="luck-draw-row" style="margin-top:3px">
-              <input type="text" id="j-luck-draw-inp" class="luck-draw-inp" placeholder="Détail favorable...">
-              <button class="j-ap-spend-btn" onclick="luckOfTheDrawJ()">🍀 Luck of the Draw (−1)</button>
-            </div>
-          </details>
-        </div>
       </div>
 
     </div>
@@ -167,7 +163,7 @@
   <script src="../../common/db.js?v=b8ae07a6"></script>
   <script src="../../common/survie.js?v=31a541f2"></script>
   <script src="mj_shared.js?v=579350c4"></script>
-  <script src="combat_joueur.js?v=e739167b"></script>
+  <script src="combat_joueur.js?v=24c808ca"></script>
   <script src="combat_joueur_actions.js?v=5cfc7865"></script>
   <script src="combat_radio.js?v=04795fd0"></script>
   <script>document.addEventListener('DOMContentLoaded', () => window.DB_READY.then(initJoueur));</script>
