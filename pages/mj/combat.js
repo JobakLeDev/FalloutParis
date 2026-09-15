@@ -594,12 +594,30 @@ function attaqueAllie(id){
 
 function renderTracker(){
   const el = document.getElementById('tracker-tour'); if(!el) return;
+  const nowEl = document.getElementById('mj-now'), rndEl = document.getElementById('mj-round'), flowEl = document.getElementById('mj-flow');
   if(!ordreInitiative.length){
     el.innerHTML = '<span class="empty">Lance l\'initiative pour démarrer</span>';
+    if(nowEl){ nowEl.className = 'cj-hero-now'; nowEl.innerHTML = '<span class="empty">Lance l\'initiative pour démarrer</span>'; }
+    if(rndEl) rndEl.textContent = '—';
+    if(flowEl) flowEl.innerHTML = '';
     return;
   }
+  if(rndEl) rndEl.textContent = numRound;
 
-  let html = '<div class="tracker-round">ROUND <b>' + numRound + '</b></div>';
+  // Mini-barre de PV sous chaque pastille : le MJ lit l'état du combat d'un coup d'œil
+  const _pct = (cur, max) => Math.max(0, Math.min(100, Math.round(100 * (cur || 0) / max)));
+  const hpBar = c => {
+    if(c.type === 'ennemi'){
+      const e = (ennemis || []).find(x => String(x.id) === String(c.eid));
+      if(e && e.pvMax) return '<i class="trk-hp"><i style="width:' + _pct(e.pvCur, e.pvMax) + '%"></i></i>';
+    } else if(c.type === 'joueur'){
+      const d = joueurs[c.id]; const mx = d ? getHpMax(d) : 0;
+      if(mx) return '<i class="trk-hp pc"><i style="width:' + _pct(d.hp, mx) + '%"></i></i>';
+    }
+    return '';
+  };
+
+  let html = '';
 
   ordreInitiative.forEach((c, idx) => {
     const isActif = idx === tourActif;
@@ -627,22 +645,68 @@ function renderTracker(){
       return;
     }
 
-    // Entrée simple : nom + initiative (plus de contrôles par combattant)
+    // Entrée simple : nom + initiative + barre de PV
     html += '<div class="tracker-item' + (isActif?' actif':'') + (c.type==='ennemi'?' ennemi':'') + '">'
       + '<div class="tracker-top">'
       + '<span class="tracker-nom">' + (isActif?'▶ ':'') + c.nom + '</span>'
       + '<span class="tracker-init">' + c.init + '</span>'
-      + '</div></div>';
+      + '</div>' + hpBar(c) + '</div>';
   });
-
-  // Boutons de flux de combat (en bout de bandeau)
-  html += '<div class="trk-flow">'
-    + '<button class="fin-tour-btn" onclick="finDeTour()">➤ Fin de tour</button>'
-    + '<button class="fin-tour-btn" style="background:#1a1a0a;border-color:var(--am);color:var(--am)" onclick="genButinCombat()">🎒 Butin</button>'
-    + '<button class="fin-tour-btn" style="background:var(--rdk);border-color:var(--rd);color:var(--rd)" onclick="finCombat()">✕ Fin</button>'
-    + '</div>';
   el.innerHTML = html;
+
+  // Bandeau : qui joue, en gros (même langage que l'écran joueur)
+  const cur = ordreInitiative[tourActif];
+  if(nowEl){
+    if(!cur){ nowEl.className = 'cj-hero-now'; nowEl.innerHTML = '<span class="empty">—</span>'; }
+    else {
+      const foe = cur.type === 'ennemi';
+      nowEl.className = 'cj-hero-now ' + (foe ? 'foe' : 'ally');
+      nowEl.innerHTML = '<small>' + (foe ? 'Tour ennemi' : cur.type === 'allie' ? 'Tour du compagnon' : 'Tour de') + '</small><b>' + cur.nom + '</b>';
+    }
+  }
+  // Flux de combat : à droite du bandeau (le MJ pilote — ce sont ses commandes principales)
+  if(flowEl) flowEl.innerHTML =
+      '<button class="cj-flow-btn next" onclick="finDeTour()"><span class="ja-ic">➤</span><span>Tour suivant</span></button>'
+    + '<button class="cj-flow-btn loot" onclick="genButinCombat()"><span class="ja-ic">🎒</span><span>Butin</span></button>'
+    + '<button class="cj-flow-btn end" onclick="finCombat()"><span class="ja-ic">✕</span><span>Fin du combat</span></button>';
 }
+
+// ---- PANNEAUX REPLIABLES (clic sur le cadre de titre, état mémorisé) ----
+function _initFoldsMJ(){
+  let st = {};
+  try { st = JSON.parse(localStorage.getItem('fp_cmjFold') || '{}'); } catch(e){}
+  document.querySelectorAll('.combat-layout .pnl.cj-fold').forEach(p => {
+    if(st[p.id]) p.classList.add('pnl-collapsed');
+    const t = p.querySelector(':scope > .pnl-title'); if(!t || t._foldWired) return;
+    t._foldWired = true;
+    t.addEventListener('click', ev => {
+      if(ev.target.closest('button, input, select, a, details')) return;   // les boutons du titre (Initiative, + Ajouter…) restent actifs
+      const on = p.classList.toggle('pnl-collapsed');
+      try {
+        const cur = JSON.parse(localStorage.getItem('fp_cmjFold') || '{}');
+        if(on) cur[p.id] = 1; else delete cur[p.id];
+        localStorage.setItem('fp_cmjFold', JSON.stringify(cur));
+      } catch(e){}
+    });
+  });
+}
+document.addEventListener('DOMContentLoaded', _initFoldsMJ);
+
+// ---- CARTE AJUSTÉE À LA LARGEUR ----
+// Arêtes et traits sont calculés sur un pas fixe (cs=32) : on zoome le bloc, jamais les cases.
+// On réserve la place du menu latéral du jeton sélectionné (.cmap-side, à droite de la carte).
+function fitMjMap(){
+  const host = document.getElementById('combat-map');
+  const grid = host && host.querySelector('.cmap');
+  if(!grid) return;
+  grid.style.zoom = ''; grid.style.maxWidth = '';
+  const avail = host.clientWidth - 150;
+  const w = grid.offsetWidth;
+  if(!w || avail <= 0) return;
+  const z = Math.max(1, Math.min(1.8, avail / w));
+  if(z > 1.001){ grid.style.maxWidth = 'none'; grid.style.zoom = z.toFixed(3); }
+}
+window.addEventListener('resize', () => { clearTimeout(window._fitMjT); window._fitMjT = setTimeout(fitMjMap, 120); });
 
 // ---- ENNEMIS ----
 // rollDice défini dans mj_shared.js
@@ -1053,6 +1117,7 @@ function renderCombatMap(){
   else if(_edgeSel) html += '<div class="cmap-tip">Ligne « '+(_edgeSel==='erase'?'Effacer':(EDGE_TYPES.find(b=>b.id===_edgeSel)?.label||''))+' » — clique les bords entre cases.</div>';
   el.innerHTML = html;
   _markSelCards();                  // indicateur de sélection sur la carte du combattant
+  fitMjMap();                       // agrandit la carte à la largeur dispo
 }
 // Bandeau vertical à droite de la carte quand un jeton est sélectionné (masquer/démasquer, désélectionner)
 function mapSideMenu(){
