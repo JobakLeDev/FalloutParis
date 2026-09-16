@@ -445,6 +445,7 @@ function renderJMap(){
   const pnl = document.getElementById('j-map-pnl'); const el = document.getElementById('j-combat-map');
   const grid = combatState?.grid;
   if(!pnl || !el) return;
+  if(M_MODE) document.body.classList.toggle('m-nomap', !(grid && grid.w));   // sans battlemap, le téléphone repasse en pile défilante
   if(!grid || !grid.w){ pnl.style.display='none'; return; }
   pnl.style.display='';
   _refreshSeen();                       // ma position a pu changer → nouvelles cases découvertes
@@ -1255,7 +1256,9 @@ let _dockManual = null, _dockTurnKey = null;
 function _syncDock(myTurn){
   const d = document.getElementById('cj-dock'); if(!d) return;
   const key = (combatState?.numRound||0) + ':' + (combatState?.tourActif||0);
-  if(key !== _dockTurnKey){ _dockTurnKey = key; _dockManual = null; }
+  const newTurn = key !== _dockTurnKey;
+  if(newTurn){ _dockTurnKey = key; _dockManual = null; }
+  if(M_MODE){ document.getElementById('m-obar')?.classList.toggle('myturn', !!myTurn); if(newTurn && myTurn && !selectedActionDraft) mSheet('act'); }
   // Une déclaration en cours ne se replie jamais sous les doigts du joueur
   const busy = !!selectedActionDraft;
   const open = M_MODE || busy || (_dockManual !== null ? _dockManual : myTurn);
@@ -1727,7 +1730,7 @@ function renderActionsDeclarees(){
   if(draftHtml) html += '<div class="act-draft-pop' + (_mapDecl ? ' no-veil' : '') + '">' + draftHtml + '</div>';
   // Téléphone : la carte est au-dessus de la feuille de déclaration → on la ramène à l'écran une fois par déclaration
   if(M_MODE){
-    if(_mapDecl && _mzScrollKey !== _tDraft){ _mzScrollKey = _tDraft; setTimeout(() => document.getElementById('j-map-pnl')?.scrollIntoView({ behavior:'smooth', block:'start' }), 60); }
+    if(_mapDecl && _mzScrollKey !== _tDraft){ _mzScrollKey = _tDraft; setTimeout(() => mzFocusMe(), 60); }   // la carte occupe l'écran : on la recentre sur moi au lieu de la faire défiler
     if(!_tDraft) _mzScrollKey = null;
   }
 
@@ -1788,6 +1791,7 @@ function prepareAction(category, type){
     _jMoveActive = type;
     _jMoveRange = (type === 'Sprint') ? GRID_SPRINT : GRID_MOVE;
   }
+  if(M_MODE) mSheet(null);   // la popup de déclaration prend le relais : on rend la carte au joueur
   renderActionsDeclarees();
   renderJMap();
 }
@@ -1994,4 +1998,63 @@ function _mzWire(host){
     _mzSetScale(_mz.s * (e.deltaY < 0 ? 1.15 : 1 / 1.15), e.clientX - r.left, e.clientY - r.top);
   }, { passive: false });
   window.addEventListener('resize', () => setTimeout(_mzApply, 120));
+}
+
+
+// ============================================================
+// MODE TÉLÉPHONE — habillage flottant : la carte occupe l'écran, tout le reste flotte
+// Bandeau de tour collé en haut, barre de boutons en bas ; les commandes et le bloc
+// perso/ressources deviennent des FEUILLES du bas, ouvertes à la demande.
+// On DÉPLACE les éléments existants (pas de duplication) : mêmes ids, mêmes rendus.
+// ============================================================
+function _mInitOverlay(){
+  if(!M_MODE) return;
+  const host = document.getElementById('combat-actif'); if(!host || document.getElementById('m-obar')) return;
+
+  // Bandeau haut : round + « c'est ton tour » + ordre d'initiative
+  const top = document.createElement('div'); top.id = 'm-top';
+  host.insertBefore(top, host.firstChild);
+  const hero = host.querySelector('.cj-hero'), trk = document.getElementById('j-tracker');
+  if(hero) top.appendChild(hero);
+  if(trk) top.appendChild(trk);
+
+  // Barre basse : retour Pip-Boy · Actions · Perso · Terminer mon tour
+  const bar = document.createElement('div'); bar.id = 'm-obar';
+  bar.innerHTML = '<button type="button" class="m-ob" id="m-ob-act"><i>⚔</i><span>Actions</span></button>'
+    + '<button type="button" class="m-ob" id="m-ob-info"><i>👤</i><span>Perso</span></button>';
+  host.appendChild(bar);
+  bar.querySelector('#m-ob-act').onclick = () => mSheet('act');
+  bar.querySelector('#m-ob-info').onclick = () => mSheet('info');
+  const lien = document.getElementById('lien-fiche');   // « ‹ Pip-Boy » (href posé par init)
+  if(lien){ lien.className = 'm-ob back'; lien.innerHTML = '‹<span></span>'; bar.insertBefore(lien, bar.firstChild); }
+  const fin = document.getElementById('j-fin-tour'); if(fin) bar.appendChild(fin);
+
+  // Bouton de fermeture en tête de chaque feuille
+  [document.getElementById('cj-dock'), document.querySelector('.cjl-left')].forEach(s => {
+    if(!s) return;
+    const x = document.createElement('div'); x.className = 'm-sheet-x';
+    x.innerHTML = '<button type="button" aria-label="Fermer">✕</button>';
+    x.querySelector('button').onclick = () => mSheet(null);
+    s.insertBefore(x, s.firstChild);
+  });
+}
+document.addEventListener('DOMContentLoaded', _mInitOverlay);
+
+// Ouvre/ferme une feuille ('act' = commandes, 'info' = perso & ressources, null = tout fermer).
+// Un voile au-dessus de la carte évite de toucher un jeton en visant la feuille.
+function mSheet(kind){
+  if(!M_MODE) return;
+  const dock = document.getElementById('cj-dock'), left = document.querySelector('.cjl-left');
+  const cur = dock?.classList.contains('m-open') ? 'act' : left?.classList.contains('m-open') ? 'info' : null;
+  const next = (kind === cur) ? null : kind;
+  dock?.classList.toggle('m-open', next === 'act');
+  left?.classList.toggle('m-open', next === 'info');
+  document.getElementById('m-ob-act')?.classList.toggle('on', next === 'act');
+  document.getElementById('m-ob-info')?.classList.toggle('on', next === 'info');
+  let veil = document.getElementById('m-veil');
+  if(next && !veil){
+    veil = document.createElement('div'); veil.id = 'm-veil';
+    veil.addEventListener('click', () => mSheet(null));
+    document.getElementById('combat-actif')?.appendChild(veil);
+  } else if(!next && veil) veil.remove();
 }

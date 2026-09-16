@@ -585,46 +585,118 @@
 
 /* ============================================================
    MODE TÉLÉPHONE (?m=1) — l'écran de combat vu depuis le Pip-Boy.
-   Une colonne : carte zoomable → commandes (toujours ouvertes) → perso & ressources.
-   Déclaration et jets remontent en feuilles du bas ; la carte reste visible au-dessus.
+   La CARTE occupe tout l'écran ; tout le reste flotte par-dessus :
+   bandeau de tour en haut, barre de boutons en bas, commandes et perso en FEUILLES du bas,
+   déclaration et jets en feuilles par-dessus. On ne voit jamais la carte disparaître.
    ============================================================ */
-body.m-mode{ padding:0 !important; overscroll-behavior-y:contain; }
-body.m-mode #app{ padding:6px 6px calc(12px + env(safe-area-inset-bottom)); max-width:none; }
-body.m-mode .hdr{ padding:6px 8px; margin-bottom:6px; }
-body.m-mode .hdr-title{ font-size:14px; }
-body.m-mode #hdr-round{ display:none; }
-body.m-mode .hdr .hbtn{ padding:9px 12px; font-size:10px; }
+/* La carte occupe TOUT l'écran ; tout le reste flotte par-dessus en boutons/feuilles. */
+body.m-mode{ padding:0 !important; overscroll-behavior:none; overflow:hidden; height:100%; }
+body.m-mode #app{ padding:0; max-width:none; height:100vh; height:100dvh; overflow:hidden; }
+body.m-mode .hdr{ display:none; }
+body.m-mode #attente, body.m-mode #combat-termine{ padding:40px 14px; }
 
-/* Bandeau de tour compact, collé en haut */
-body.m-mode .cj-hero{ position:sticky; top:0; z-index:30; gap:6px; margin-bottom:6px; padding-top:env(safe-area-inset-top); background:var(--bg); }
-body.m-mode .cj-hero-round{ min-width:3.4rem; padding:.2rem .4rem; }
-body.m-mode .cj-hero-round b{ font-size:1.35rem; }
-body.m-mode .cj-hero-now{ padding:.3rem .6rem; }
-body.m-mode .cj-hero-now small{ font-size:.5rem; }
-body.m-mode .cj-hero-now b{ font-size:1.1rem; letter-spacing:1.5px; }
-
-/* Ordre d'initiative : une ligne qui défile au doigt */
-body.m-mode .cj-order{ flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:4px; margin-bottom:6px; }
-body.m-mode .cj-order::-webkit-scrollbar{ display:none; }
-body.m-mode .cj-order .tracker-item{ flex:none; min-width:6rem; }
-
-/* Une colonne */
-body.m-mode .cjl{ grid-template-columns:1fr !important; gap:8px; }
-body.m-mode .cjl-center{ order:1; }
-body.m-mode .cjl-right{ order:2; }
-body.m-mode .cjl-left{ order:3; }
+/* --- COUCHE 1 : la carte, plein écran --- */
+body.m-mode .cjl{ display:block !important; height:100%; gap:0; }
+body.m-mode .cjl-center{ position:fixed; inset:0; z-index:1; }
 body.m-mode .side-tab{ display:none !important; }
-
-/* Carte zoomable (pincer / glisser / boutons) */
-body.m-mode .cjl-center #j-map-pnl #j-combat-map{ padding:0; }
-body.m-mode #j-combat-map.mz-view{ position:relative; height:46vh; overflow:hidden; touch-action:none; border-radius:var(--r-sm); }
+body.m-mode #j-map-pnl{
+  position:absolute; inset:0; margin:0; padding:0; border:0; border-radius:0;
+  background:var(--bg); box-shadow:none;
+}
+body.m-mode #j-map-pnl > .pnl-title{ display:none; }
+body.m-mode #j-map-pnl::before{ display:none; }
+body.m-mode #j-combat-map{ padding:0; }
+body.m-mode #j-combat-map.mz-view{ position:absolute; inset:0; height:auto; overflow:hidden; touch-action:none; border-radius:0; }
 body.m-mode #j-combat-map .cmap{ margin:0 !important; max-width:none !important; overflow:visible !important; will-change:transform; }
-body.m-mode .mz-ctrl{ position:absolute; right:16px; bottom:18px; z-index:25; display:flex; flex-direction:column; gap:6px; }
+
+/* Boutons de zoom : au-dessus de la barre d'actions */
+body.m-mode .mz-ctrl{ position:absolute; right:10px; bottom:calc(74px + env(safe-area-inset-bottom)); z-index:25; display:flex; flex-direction:column; gap:6px; }
 body.m-mode .mz-ctrl button{
   width:42px; height:42px; border-radius:11px; font-size:19px; line-height:1; cursor:pointer;
   background:rgba(10,20,10,.86); border:1px solid var(--b2); color:var(--tb); box-shadow:0 3px 10px rgba(0,0,0,.5);
 }
 body.m-mode .mz-ctrl button:active{ background:var(--gk); border-color:var(--g); }
+
+/* --- COUCHE 2 : bandeau de tour, posé sur la carte --- */
+body.m-mode #m-top{
+  position:fixed; top:0; left:0; right:0; z-index:40; pointer-events:none;
+  padding:calc(env(safe-area-inset-top) + 4px) 6px 14px;
+  background:linear-gradient(180deg, rgba(4,9,4,.93) 55%, rgba(4,9,4,.55) 80%, rgba(4,9,4,0));
+}
+body.m-mode #m-top > *{ pointer-events:auto; }
+body.m-mode .cj-hero{ gap:6px; margin:0 0 5px; padding:0; position:static; background:none; }
+body.m-mode .cj-hero-round{ min-width:3.2rem; padding:.15rem .4rem; }
+body.m-mode .cj-hero-round b{ font-size:1.3rem; }
+body.m-mode .cj-hero-now{ padding:.25rem .6rem; }
+body.m-mode .cj-hero-now small{ font-size:.5rem; }
+body.m-mode .cj-hero-now b{ font-size:1.05rem; letter-spacing:1.5px; }
+body.m-mode .cj-order{ flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:2px; margin:0; }
+body.m-mode .cj-order::-webkit-scrollbar{ display:none; }
+body.m-mode .cj-order .tracker-item{ flex:none; min-width:5.6rem; }
+
+/* --- COUCHE 3 : barre de boutons flottante (bas d'écran) --- */
+body.m-mode #m-obar{
+  position:fixed; left:0; right:0; bottom:0; z-index:70; display:flex; gap:6px; align-items:stretch;
+  padding:6px 8px calc(6px + env(safe-area-inset-bottom));
+  background:linear-gradient(0deg, rgba(4,9,4,.95) 60%, rgba(4,9,4,0));
+}
+body.m-mode .m-ob{
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;
+  min-height:52px; padding:6px 4px; cursor:pointer; text-decoration:none;
+  font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase;
+  color:var(--tb); background:rgba(10,22,10,.9); border:1px solid var(--b2); border-radius:12px;
+  box-shadow:0 3px 12px rgba(0,0,0,.5);
+}
+body.m-mode .m-ob i{ font-style:normal; font-size:17px; line-height:1; }
+body.m-mode .m-ob.back{ flex:0 0 46px; font-size:19px; color:var(--td); }
+body.m-mode .m-ob.back span{ display:none; }
+body.m-mode .m-ob:active{ background:var(--gk); border-color:var(--g); }
+body.m-mode .m-ob.on{ background:var(--gk); border-color:var(--g); color:var(--g); }
+body.m-mode #m-obar.myturn #m-ob-act{ border-color:var(--g); color:var(--g); box-shadow:0 0 12px rgba(93,190,93,.35); }
+body.m-mode #m-obar #j-fin-tour{ flex:1; display:none; }
+body.m-mode #m-obar #j-fin-tour .j-fin-btn{ width:100%; height:100%; min-height:52px; padding:6px 4px; font-size:10px; border-radius:12px; }
+
+/* --- COUCHE 4 : feuilles du bas (commandes / perso) --- */
+body.m-mode #cj-dock, body.m-mode .cjl-left{
+  position:fixed; left:0; right:0; bottom:0; z-index:60; margin:0; width:auto;
+  max-height:min(70vh, 620px); overflow-y:auto; -webkit-overflow-scrolling:touch;
+  border-radius:16px 16px 0 0; background:var(--p2); border:1px solid var(--b2); border-bottom:0;
+  box-shadow:0 -10px 30px rgba(0,0,0,.75);
+  padding:8px 8px calc(70px + env(safe-area-inset-bottom));   /* la barre de boutons recouvre le bas */
+  animation:mSheetFade .16s ease-out;   /* surtout PAS de transform : voir la note ci-dessous */
+}
+/* Fermée : hauteur nulle et invisible — mais SANS transform ni display:none,
+   sinon la popup de déclaration et le bloc de jets (position:fixed, enfants du dock) disparaîtraient. */
+body.m-mode #cj-dock:not(.m-open), body.m-mode .cjl-left:not(.m-open){
+  height:0; min-height:0; padding:0; border-width:0; overflow:hidden; visibility:hidden; animation:none;
+}
+@keyframes mSheetFade{ from{ opacity:0; } to{ opacity:1; } }
+/* La popup de déclaration et le bloc de jets sont des enfants du dock : ils doivent rester
+   visibles quand la feuille est fermée (d'où visibility, et jamais display:none ni transform). */
+body.m-mode .act-draft-pop, body.m-mode #j-dice-panel{ visibility:visible; }
+body.m-mode .cjl-left .pnl{ margin-bottom:8px; }
+body.m-mode #m-veil{ position:fixed; inset:0; z-index:55; background:rgba(0,0,0,.35); }
+body.m-mode .m-sheet-x{
+  position:sticky; top:0; z-index:2; display:flex; justify-content:flex-end; margin:-8px -8px 4px; padding:4px 6px;
+  background:linear-gradient(180deg, var(--p2) 70%, rgba(0,0,0,0));
+}
+body.m-mode .m-sheet-x button{
+  background:none; border:0; color:var(--td); font-size:20px; line-height:1; padding:4px 10px; cursor:pointer;
+}
+/* Combat SANS battlemap (mode « bandes ») : rien à afficher en plein écran → pile défilante classique */
+body.m-mode.m-nomap, body.m-mode.m-nomap #app{ height:auto; overflow:auto; }
+body.m-mode.m-nomap #app{ padding:0 6px calc(76px + env(safe-area-inset-bottom)); }
+body.m-mode.m-nomap #m-top{ position:sticky; }
+body.m-mode.m-nomap .cjl-center{ position:static; }
+body.m-mode.m-nomap #cj-dock, body.m-mode.m-nomap .cjl-left{
+  position:static; height:auto; min-height:0; max-height:none; visibility:visible; overflow:visible;
+  padding:8px; border-width:1px; border-radius:var(--r); box-shadow:none; margin-bottom:8px; animation:none;
+}
+body.m-mode.m-nomap .m-sheet-x, body.m-mode.m-nomap #m-veil,
+body.m-mode.m-nomap .mz-ctrl, body.m-mode.m-nomap #m-ob-act, body.m-mode.m-nomap #m-ob-info{ display:none !important; }
+
+body.m-mode .cj-dock .cj-dock-hd{ cursor:default; }
+body.m-mode .cj-dock-chev, body.m-mode .cj-dock-hint{ display:none; }
 
 /* Tuiles d'action : cibles au doigt */
 body.m-mode .ja-tile{ padding:11px 12px; }
@@ -635,9 +707,6 @@ body.m-mode .ja-rest .ja-tile{ padding:10px 8px; }
 body.m-mode .ja-rest .ja-ic{ width:28px; height:28px; font-size:14px; }
 body.m-mode .ja-rest .ja-lb{ font-size:12px; }
 body.m-mode .ja-more > summary{ font-size:11px; padding:9px 2px; }
-body.m-mode .cjl-right .j-fin-btn{ padding:13px; font-size:12px; }
-body.m-mode .cj-dock .cj-dock-hd{ cursor:default; }
-body.m-mode .cj-dock-chev{ display:none; }
 
 /* Feuilles du bas : déclaration (compacte, la carte reste lisible) et jets */
 body.m-mode .act-draft-pop,

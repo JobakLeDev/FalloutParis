@@ -337,6 +337,7 @@ async function dismissRefused(category){
   } catch(e){ console.error(e); }
 }
 
+let _mDiceWasOpen = false;   // mode téléphone : mémorise l'état précédent du bloc de jets
 // ---- ACCÈS AUX DÉS (conditionné par validation de l'attaque) ----
 function renderDiceAccess(){
   const attackReady = canAttackNow();          // attaque validée par le MJ, pas encore résolue
@@ -352,6 +353,9 @@ function renderDiceAccess(){
   if(av > _lastSeenValidated){ _lastSeenValidated = av; _diceDismissed = false; }
   const showPanel = isMoTour && !turnEnded && (attackReady || attacksDone > 0) && !_diceDismissed;
   if(panel) panel.style.display = showPanel ? '' : 'none';
+  // Téléphone : à l'OUVERTURE du bloc de jets seulement (pas à chaque rendu, sinon on ne pourrait
+  // plus rouvrir une feuille pendant la résolution), on referme les feuilles du bas.
+  if(typeof M_MODE !== 'undefined' && M_MODE){ if(showPanel && !_mDiceWasOpen) mSheet(null); _mDiceWasOpen = showPanel; }
   // Filet : si l'attaque n'est plus ratée (relance Aim/Miss Fortune réussie), faire disparaître le message d'échec
   const arBox = document.getElementById('j-attack-result');
   if(arBox && !lastAttackMissed && arBox.querySelector('.miss-box')){ arBox.style.display='none'; arBox.innerHTML=''; }
