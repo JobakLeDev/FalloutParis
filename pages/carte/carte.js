@@ -599,12 +599,6 @@ async function saveData() {
   try { await fdb.collection('carte').doc(fpCampId()).set(rest); }
   catch (e) { console.error('saveData:', e); }
 }
-// Écrit UNIQUEMENT le doc des objets au sol (append/pickup/suppression)
-async function saveGroundItems() {
-  try { await fdb.collection('carte').doc('ground__' + fpCampId()).set({ items: mapData.groundItems || [] }); }
-  catch (e) { console.error('saveGroundItems:', e); }
-}
-
 // ---- Visibilité d'un élément selon la perspective ----
 function visibleFor(item) {
   if (isMJ) return true;
@@ -1116,28 +1110,50 @@ function renderGroundItems() {
 }
 async function ramasserGroundItem(itemId) {
   if (!viewerId) return;
-  const item = (mapData.groundItems || []).find(x => x.id === itemId); if (!item) return;
+  const vu = (mapData.groundItems || []).find(x => x.id === itemId); if (!vu) return;
   const myTok = mapData.tokens?.[viewerId];
-  if (!myTok || L.latLng(myTok.lat, myTok.lng).distanceTo(L.latLng(item.lat, item.lng)) > GROUND_PICK_M) { alert('Trop loin.'); return; }
-  const snap = await fdb.collection('joueurs').doc(viewerId).get();
-  const inv = snap.exists ? [...(snap.data().inventory || [])] : [];
-  const { id, lat, lng, droppedBy, ts, ...clean } = item;
-  const upd = { inventory: inv, lastUpdate: Date.now() };
-  if (clean.type === 'POWERARMOR_FRAME') {
-    // On ne « ramasse » pas une frame : on RENTRE dedans → équipée + PA active
-    inv.forEach(o => { if (o.type === 'POWERARMOR_FRAME') o.equipped = false; });
-    clean.equipped = true;
-    upd.powerArmor = true;
-  }
-  inv.push(clean);
-  await fdb.collection('joueurs').doc(viewerId).update(upd);
+  if (!myTok || L.latLng(myTok.lat, myTok.lng).distanceTo(L.latLng(vu.lat, vu.lng)) > GROUND_PICK_M) { alert('Trop loin.'); return; }
+  const groundRef = fdb.collection('carte').doc('ground__' + fpCampId());
+  const joueurRef = fdb.collection('joueurs').doc(viewerId);
+  let dejaPris = false;
+  try {
+    // UNE transaction : deux joueurs ne peuvent plus ramasser le même objet.
+    await fdb.runTransaction(async tx => {
+      dejaPris = false;   // la fonction peut être rejouée
+      const [gS, jS] = await Promise.all([tx.get(groundRef), tx.get(joueurRef)]);
+      const items = (gS.exists && Array.isArray(gS.data().items)) ? gS.data().items : [];
+      const item = items.find(x => x.id === itemId);
+      if (!item) { dejaPris = true; return; }
+      const inv = jS.exists ? [...(jS.data().inventory || [])] : [];
+      const { id, lat, lng, droppedBy, ts, ...clean } = item;
+      const upd = { inventory: inv, lastUpdate: Date.now() };
+      if (clean.type === 'POWERARMOR_FRAME') {
+        // On ne « ramasse » pas une frame : on RENTRE dedans → équipée + PA active
+        inv.forEach(o => { if (o.type === 'POWERARMOR_FRAME') o.equipped = false; });
+        clean.equipped = true;
+        upd.powerArmor = true;
+      }
+      inv.push(clean);
+      tx.update(joueurRef, upd);
+      tx.update(groundRef, { items: items.filter(x => x.id !== itemId) });
+    });
+  } catch (e) { console.error('ramasserGroundItem:', e); alert('Erreur Firebase'); return; }
   mapData.groundItems = (mapData.groundItems || []).filter(x => x.id !== itemId);
-  saveGroundItems(); map.closePopup(); renderGroundItems();
+  map.closePopup(); renderGroundItems();
+  if (dejaPris) alert('Un autre joueur a déjà ramassé cet objet.');
 }
 async function supprimerGroundItem(itemId) {
   if (!isMJ) return;
+  const groundRef = fdb.collection('carte').doc('ground__' + fpCampId());
+  try {
+    await fdb.runTransaction(async tx => {
+      const gS = await tx.get(groundRef);
+      const items = (gS.exists && Array.isArray(gS.data().items)) ? gS.data().items : [];
+      tx.set(groundRef, { items: items.filter(x => x.id !== itemId) });
+    });
+  } catch (e) { console.error('supprimerGroundItem:', e); alert('Erreur Firebase'); return; }
   mapData.groundItems = (mapData.groundItems || []).filter(x => x.id !== itemId);
-  saveGroundItems(); map.closePopup(); renderGroundItems();
+  map.closePopup(); renderGroundItems();
 }
 function renderZones() {
   zoneLayer.clearLayers();

@@ -14,6 +14,8 @@ Page d'encyclopédie — fonctionnalité de lore/bestiaire.
   - `pages/admin_perso/admin_perso.html`
   - `pages/carte/carte.html`
   - `pages/journal/journal.html`
+  - `pages/mj/mj.html`
+  - `pages/quetes/quetes.html`
 - Tab "ENCYCLO" supprimé de `pages/fiche_perso/fiche_perso.html`
 - Chargement commenté dans `common/db.js` (placeholder ajouté pour ne pas casser l'indexage)
 - Code Firebase commenté dans :

@@ -24,10 +24,15 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      # Seuls les dossiers charges par l'app sont publies : skills/ (canon et secrets),
+      # pending/, discord-bot/, implementer, firestore.rules... restent hors du site.
+      - name: Assemble site
+        run: mkdir _site && cp -r audio common data img map pages radio index.html manifest.json _site/
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: _site
 
   deploy:
     needs: build
