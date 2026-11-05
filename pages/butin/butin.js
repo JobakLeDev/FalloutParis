@@ -58,91 +58,93 @@ function itemTip(name){
   return '';
 }
 
-async function prendre(i){
-  if (!viewerId) return;
-  const loot = bData.items[i]; if (!loot) return;
-  const ref = fdb.collection('joueurs').doc(viewerId);
-  let snap;
-  try { snap = await ref.get(); } catch(e){ alert('Erreur Firebase'); return; }
-  if (!snap.exists) { alert('Fiche joueur introuvable.'); return; }
-  const d = snap.data();
+// Reconnaît un objet du pool sans dépendre de sa position ni de l'ordre de ses champs.
+function _lootKey(l){ return [l.cat,l.name,l.type,l.postcard,l.mtgcard,l.booster].join('|'); }
+
+// Ajoute un objet du pool à l'inventaire ou aux munitions (tableaux modifiés sur place).
+function _ajouterLoot(inv, ammo, loot){
   const n = loot.qty || 1;
   if (loot.cat === 'ammo'){
-    const ammo = Array.isArray(d.ammo) ? d.ammo : [];
     const ex = ammo.find(a => a.cal === loot.name);
     if (ex) ex.qty = (ex.qty||0) + n; else ammo.push({ cal: loot.name, qty: n });
-    await ref.update({ ammo, lastUpdate: Date.now() });
-  } else {
-    const inv = Array.isArray(d.inventory) ? d.inventory : [];
-    const item = buildInvItem(loot.name) || { name: loot.name, type: loot.type||'STUFF', qty:0, w: loot.w||0, equipped:false };
-    if(loot.postcard) item.postcard = loot.postcard;   // carte postale → image affichable
-    if(loot.mtgcard) item.mtgcard = loot.mtgcard;      // carte MTG → image affichable
-    if(loot.booster) item.booster = loot.booster;      // booster scellé → ouvrable par le joueur
-    if(item.type==='POWERARMOR_FRAME'){
-      // On entre dans la frame, pas dans la poche
-      inv.forEach(it=>{ if(it.type==='POWERARMOR_FRAME') it.equipped=false; });
-      item.qty=1; item.equipped=true; inv.push(item);
-    } else {
-      const ex = inv.find(it => it.name === item.name && it.type === item.type);
-      if (ex) ex.qty = (ex.qty||1) + n; else { item.qty = n; inv.push(item); }
-    }
-    await ref.update({ inventory: inv, lastUpdate: Date.now() });
+    return;
   }
-  // retirer du pool
-  bData.items.splice(i, 1);
-  await fdb.collection('butin').doc(fpCampId()).set(bData);
+  const item = buildInvItem(loot.name) || { name: loot.name, type: loot.type||'STUFF', qty:0, w: loot.w||0, equipped:false };
+  if(loot.postcard) item.postcard = loot.postcard;   // carte postale → image affichable
+  if(loot.mtgcard) item.mtgcard = loot.mtgcard;      // carte MTG → image affichable
+  if(loot.booster) item.booster = loot.booster;      // booster scellé → ouvrable par le joueur
+  if(item.type==='POWERARMOR_FRAME'){
+    // On entre dans la frame, pas dans la poche
+    inv.forEach(it=>{ if(it.type==='POWERARMOR_FRAME') it.equipped=false; });
+    item.qty=1; item.equipped=true; inv.push(item);
+  } else {
+    const ex = inv.find(it => it.name === item.name && it.type === item.type);
+    if (ex) ex.qty = (ex.qty||1) + n; else { item.qty = n; inv.push(item); }
+  }
+}
+
+// Transfert pool → fiche en UNE transaction : deux joueurs qui cliquent en même temps
+// ne peuvent plus obtenir le même objet (Firestore rejoue la fonction sur les données
+// à jour). choisir(pool, caps) renvoie { pris:[objets du pool], caps:n }.
+async function _transfererButin(choisir){
+  const butinRef = fdb.collection('butin').doc(fpCampId());
+  const joueurRef = fdb.collection('joueurs').doc(viewerId);
+  let refus = null;
+  try {
+    await fdb.runTransaction(async tx => {
+      refus = null;   // la fonction peut être rejouée
+      const [bS, jS] = await Promise.all([tx.get(butinRef), tx.get(joueurRef)]);
+      if (!jS.exists) { refus = 'Fiche joueur introuvable.'; return; }
+      const b = bS.exists ? bS.data() : {};
+      if (!(b.players||[]).includes(viewerId)) { refus = 'Ce butin ne t\'est plus accessible.'; return; }
+      const pool = Array.isArray(b.items) ? b.items : [];
+      const { pris, caps } = choisir(pool, b.caps||0);
+      if (!pris.length && !caps) { refus = 'Déjà pris par un autre joueur.'; return; }
+      const d = jS.data();
+      const upd = { lastUpdate: Date.now() };
+      if (pris.length){
+        upd.inventory = Array.isArray(d.inventory) ? d.inventory : [];
+        upd.ammo = Array.isArray(d.ammo) ? d.ammo : [];
+        pris.forEach(l => _ajouterLoot(upd.inventory, upd.ammo, l));
+      }
+      if (caps) upd.caps = (d.caps||0) + caps;
+      tx.update(joueurRef, upd);
+      tx.update(butinRef, { items: pool.filter(l => !pris.includes(l)), caps: (b.caps||0) - caps });
+    });
+  } catch(e){ console.error('butin:', e); alert('Erreur Firebase'); return; }
+  if (refus) alert(refus);
+}
+
+const _enCours = new Set();   // un double-clic ne lance pas deux transactions sur le même objet
+
+async function prendre(i){
+  const vise = bData.items[i];
+  if (!viewerId || !vise) return;
+  const cle = _lootKey(vise);
+  if (_enCours.has(cle)) return;
+  _enCours.add(cle);
+  try {
+    await _transfererButin(pool => {
+      // L'index a pu glisser si un autre joueur a pris un objet entre-temps.
+      const l = (pool[i] && _lootKey(pool[i]) === cle) ? pool[i] : pool.find(x => _lootKey(x) === cle);
+      return { pris: l ? [l] : [], caps: 0 };
+    });
+  } finally { _enCours.delete(cle); }
 }
 
 // Le joueur réclame la totalité des caps du pool
 async function prendreCaps(){
   if (!viewerId || !(bData.caps>0)) return;
-  const ref = fdb.collection('joueurs').doc(viewerId);
-  let snap;
-  try { snap = await ref.get(); } catch(e){ alert('Erreur Firebase'); return; }
-  if (!snap.exists) { alert('Fiche joueur introuvable.'); return; }
-  const d = snap.data();
-  const gain = bData.caps||0;
-  await ref.update({ caps: (d.caps||0) + gain, lastUpdate: Date.now() });
-  bData.caps = 0;
-  await fdb.collection('butin').doc(fpCampId()).set(bData);
+  await _transfererButin((pool, caps) => ({ pris: [], caps }));
 }
 
 // Le joueur récupère TOUT le pool (objets + munitions + caps) en une fois
 async function prendreTout(){
   if (!viewerId) return;
   if (!(bData.players||[]).includes(viewerId)) return;
-  const items = bData.items || [];
-  if (!items.length && !(bData.caps>0)) return;
+  if (!(bData.items||[]).length && !(bData.caps>0)) return;
   if (!await fpConfirm('Tout récupérer (objets, munitions et caps) ?')) return;
-  const ref = fdb.collection('joueurs').doc(viewerId);
-  let snap;
-  try { snap = await ref.get(); } catch(e){ alert('Erreur Firebase'); return; }
-  if (!snap.exists) { alert('Fiche joueur introuvable.'); return; }
-  const d = snap.data();
-  const ammo = Array.isArray(d.ammo) ? d.ammo : [];
-  const inv  = Array.isArray(d.inventory) ? d.inventory : [];
-  items.forEach(loot => {
-    const n = loot.qty || 1;
-    if (loot.cat === 'ammo'){
-      const ex = ammo.find(a => a.cal === loot.name);
-      if (ex) ex.qty = (ex.qty||0) + n; else ammo.push({ cal: loot.name, qty: n });
-    } else {
-      const item = buildInvItem(loot.name) || { name: loot.name, type: loot.type||'STUFF', qty:0, w: loot.w||0, equipped:false };
-      if(loot.postcard) item.postcard = loot.postcard;   // carte postale → image affichable
-      if(loot.mtgcard) item.mtgcard = loot.mtgcard;      // carte MTG → image affichable
-    if(loot.booster) item.booster = loot.booster;      // booster scellé → ouvrable par le joueur
-      if(item.type==='POWERARMOR_FRAME'){
-        inv.forEach(it=>{ if(it.type==='POWERARMOR_FRAME') it.equipped=false; });
-        item.qty=1; item.equipped=true; inv.push(item);
-      } else {
-        const ex = inv.find(it => it.name === item.name && it.type === item.type);
-        if (ex) ex.qty = (ex.qty||1) + n; else { item.qty = n; inv.push(item); }
-      }
-    }
-  });
-  await ref.update({ ammo, inventory: inv, caps: (d.caps||0) + (bData.caps||0), lastUpdate: Date.now() });
-  bData.items = []; bData.caps = 0;
-  await fdb.collection('butin').doc(fpCampId()).set(bData);
+  await _transfererButin((pool, caps) => ({ pris: pool.slice(), caps }));
 }
 
 function render(){

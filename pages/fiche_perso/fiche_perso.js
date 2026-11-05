@@ -774,16 +774,14 @@ async function leaveHere(i,skipConfirm=false){
     }
     let dest;
     if(siteDrop){
-      const gi=[...(sd.sites[siteDrop].groundItems||[]),drop];
-      await db.collection('settlements').doc(campId).update({[`sites.${siteDrop}.groundItems`]:gi});
+      // arrayUnion = ajout atomique : ne peut ni effacer ni ressusciter un objet ramassé au même moment
+      await db.collection('settlements').doc(campId).update({[`sites.${siteDrop}.groundItems`]:firebase.firestore.FieldValue.arrayUnion(drop)});
       dest={type:'refuge',name:(sd.sites[siteDrop].name||'refuge')};
     } else {
       // Objets au sol de la carte : document DÉDIÉ carte/ground__<campId> (jamais
       // touché par le .set(mapData) de la carte → plus d'effacement).
       const gref=db.collection('carte').doc('ground__'+campId);
-      const gs=await gref.get();
-      const prev=(gs.exists&&Array.isArray(gs.data().items))?gs.data().items:[];
-      await gref.set({items:[...prev,{...drop,lat:tok.lat,lng:tok.lng}]});
+      await gref.set({items:firebase.firestore.FieldValue.arrayUnion({...drop,lat:tok.lat,lng:tok.lng})},{merge:true});
       dest={type:'carte'};
     }
     char.inventory.splice(i,1);

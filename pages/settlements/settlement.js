@@ -426,24 +426,42 @@ function renderGround(site){
 async function ramasserGroundItemS(idx){
   const site=data.sites[selSite];if(!site||!me)return;
   if(!canAccess(site)||!_onSite(site)){alert('Tu dois être sur place.');return;}
-  const gi=[...(site.groundItems||[])];const it=gi[idx];if(!it)return;
-  gi.splice(idx,1);
-  const inv=(me.inventory||[]).map(x=>({...x}));
-  const{id,droppedBy,ts,...clean}=it;
-  const upd={inventory:inv,lastUpdate:Date.now()};
-  if(clean.type==='POWERARMOR_FRAME'){
-    // On ne « ramasse » pas une frame : on RENTRE dedans → équipée + PA active
-    inv.forEach(o=>{if(o.type==='POWERARMOR_FRAME')o.equipped=false;});
-    clean.equipped=true;
-    upd.powerArmor=true;
-  }
-  inv.push(clean);
+  const vu=(site.groundItems||[])[idx];if(!vu)return;
+  const sid=selSite;
+  const siteRef=fdb.collection('settlements').doc(fpCampId());
+  const joueurRef=fdb.collection('joueurs').doc(viewerId);
+  // Retrouve l'objet même si la liste a bougé entre-temps (id posé au dépôt)
+  const meme=x=>vu.id?x.id===vu.id:(x.name===vu.name&&x.ts===vu.ts);
+  let dejaPris=false,inv=null,reste=null;
   try{
-    await fdb.collection('joueurs').doc(viewerId).update(upd);
-    me.inventory=inv;
+    // UNE transaction : deux joueurs ne peuvent plus ramasser le même objet.
+    await fdb.runTransaction(async tx=>{
+      dejaPris=false;inv=null;   // la fonction peut être rejouée
+      const[sS,jS]=await Promise.all([tx.get(siteRef),tx.get(joueurRef)]);
+      const gi=[...(sS.data()?.sites?.[sid]?.groundItems||[])];
+      reste=gi;
+      const k=gi.findIndex(meme);
+      if(k<0){dejaPris=true;return;}
+      const[it]=gi.splice(k,1);
+      const nInv=(jS.data()?.inventory||[]).map(x=>({...x}));
+      const{id,droppedBy,ts,...clean}=it;
+      const upd={inventory:nInv,lastUpdate:Date.now()};
+      if(clean.type==='POWERARMOR_FRAME'){
+        // On ne « ramasse » pas une frame : on RENTRE dedans → équipée + PA active
+        nInv.forEach(o=>{if(o.type==='POWERARMOR_FRAME')o.equipped=false;});
+        clean.equipped=true;
+        upd.powerArmor=true;
+      }
+      nInv.push(clean);
+      tx.update(joueurRef,upd);
+      tx.update(siteRef,{[`sites.${sid}.groundItems`]:gi});
+      inv=nInv;
+    });
   }catch(e){alert('Erreur : '+e.message);return;}
-  site.groundItems=gi;
-  save();renderGround(site);
+  if(inv)me.inventory=inv;
+  if(reste)site.groundItems=reste;
+  renderGround(site);
+  if(dejaPris)alert('Un autre joueur a déjà ramassé cet objet.');
 }
 async function supprimerGroundItemS(idx){
   if(!isMJ)return;
